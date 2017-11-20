@@ -22,7 +22,7 @@ import static com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE;
 
 // Note: AdMob ads will now use this class as Google has deprecated the AdMob SDK.
 
-class GooglePlayServicesBanner extends CustomEventBanner {
+public class GooglePlayServicesBanner extends CustomEventBanner {
     /*
      * These keys are intended for MoPub internal use. Do not modify.
      */
