@@ -9,6 +9,11 @@
   * Place the adapter in your app's src/.../com/mopub/mobileads (for non-native ad formats) or src/.../com/mopub/nativeads (for native ad).
 
 ## Changelog
+  * 4.27.0.0
+    * Added logging for Facebook's mediation service.
+    * Added a one-hour expiration timer to clear cached ads (interstitial and rewarded video).
+    * Redid general syntax formatting.
+
   * 4.26.0.0
     * This version of the adapters has been certified with Facebook Audience Network 4.26.0
     * Improved support for clickabilitty on ad assets if they are nested in a layout.
