@@ -11,7 +11,6 @@ import com.millennialmedia.MMException;
 import com.millennialmedia.MMSDK;
 import com.mopub.common.Preconditions;
 
-
 final public class MillennialUtils {
     private static final String LOG_TAG = MillennialUtils.class.getSimpleName();
 

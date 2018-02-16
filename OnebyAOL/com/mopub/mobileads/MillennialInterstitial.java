@@ -15,11 +15,6 @@ import com.mopub.common.MoPub;
 
 import java.util.Map;
 
-
-/**
- * Compatible with version 6.6 of the Millennial Media SDK.
- */
-
 final class MillennialInterstitial extends CustomEventInterstitial {
 
     private static final String TAG = MillennialInterstitial.class.getSimpleName();

@@ -12,3 +12,4 @@
   * 6.6.1.0
     * This version of the adapters has been certified with version 6.6.1 of the ONE by AOL SDK.
     * Added support for showing the disclaimer text from AOL.
+	* Added the rewarded video adapter for ONE by AOL
