@@ -12,9 +12,6 @@ import com.unity3d.ads.metadata.MediationMetaData;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Certified with Unity Ads 2.1.1
- */
 public class UnityRouter {
     private static String sCurrentPlacementId;
     private static final String GAME_ID_KEY = "gameId";

@@ -9,9 +9,6 @@ import com.unity3d.ads.UnityAds;
 
 import java.util.Map;
 
-/**
- * Certified with Unity Ads 2.1.1
- */
 public class UnityInterstitial extends CustomEventInterstitial implements IUnityAdsExtendedListener {
 
     private CustomEventInterstitialListener mCustomEventInterstitialListener;

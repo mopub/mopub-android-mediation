@@ -14,11 +14,6 @@ import com.unity3d.ads.UnityAds;
 
 import java.util.Map;
 
-/**
- * A custom event for showing Unity rewarded videos.
- * <p>
- * Certified with Unity Ads 2.1.1
- */
 public class UnityRewardedVideo extends CustomEventRewardedVideo {
     private static final String GAME_ID_KEY = "gameId";
     private static final LifecycleListener sLifecycleListener = new UnityLifecycleListener();
