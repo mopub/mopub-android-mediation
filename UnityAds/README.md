@@ -4,11 +4,4 @@
   * For inquiries and support, please email unityads-support@unity3d.com.
   
 ## Adapter integration
-  * Ensure your ad unit ID is configured to mediate Unity Ads.
-  * Download the desired adapter file(s) for the ad format(s) you are going to mediate.
-  * Place the adapter in your app's src/.../com/mopub/mobileads (for non-native ad formats) or src/.../com/mopub/nativeads (for native ad).
-
-## Changelog
-  * 2.1.1.0
-    * This version of the adapters has been certified with Unity Ads 2.1.1
-    * Adapters no longer throwing verbose exceptions for simple errors
+  * To integrate adapters, please visit our [integration tutorial](https://developers.mopub.com/docs/android/integrating-networks/).
