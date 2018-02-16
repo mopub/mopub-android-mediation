@@ -18,18 +18,15 @@ import com.vungle.publisher.inject.Injector;
 import java.util.HashMap;
 import java.util.Map;
 
-
-/**
- * Certified with Vungle SDK 5.3.0
- */
 public class VungleRouter {
 
     private static final String ROUTER_TAG = "Vungle Router: ";
 
     // Version of the adapter, intended for Vungle internal use.
-    private static final String VERSION = "5.3.0";
+    private static final String VERSION = "5.3.2";
 
     private static VungleRouter instance = new VungleRouter();
+
     private enum SDKInitState {
         NOTINITIALIZED,
         INITIALIZING,
@@ -140,8 +137,7 @@ public class VungleRouter {
     public void playAdForPlacement(String placementId, AdConfig adConfig) {
         if (sVunglePub.isAdPlayable(placementId)) {
             sVunglePub.playAd(placementId, adConfig);
-        }
-        else {
+        } else {
             MoPubLog.w(ROUTER_TAG + "There should not be this case. playAdForPlacement is called before an ad is loaded for Placement ID: " + placementId);
         }
     }
@@ -149,7 +145,7 @@ public class VungleRouter {
     private void clearWaitingList() {
         for (Map.Entry<String, VungleRouterListener> entry : sWaitingList.entrySet()) {
             sVunglePub.loadAd(entry.getKey());
-            sVungleRouterListeners.put(entry.getKey(),entry.getValue());
+            sVungleRouterListeners.put(entry.getKey(), entry.getValue());
         }
 
         sWaitingList.clear();

@@ -9,5 +9,8 @@
   * Place the adapter in your app's src/.../com/mopub/mobileads (for non-native ad formats) or src/.../com/mopub/nativeads (for native ad).
 
 ## Changelog
+  * 5.3.2.0
+    * This version of the adapters has been certified with Vungle 5.3.2
+	* Added support to mediate Vungle's Flex View creatives
   * 5.3.0.0
     * This version of the adapters has been certified with Vungle 5.3.0
