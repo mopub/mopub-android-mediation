@@ -10,6 +10,7 @@
 
 ## Changelog
   * 4.27.0.0
+	   * This version of the adapters has been certified with Facebook Audience Network 4.27.0  
     * Added logging for Facebook's mediation service.
     * Added a one-hour expiration timer to clear cached ads (interstitial and rewarded video).
     * Redid general syntax formatting.
