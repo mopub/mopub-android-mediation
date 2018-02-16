@@ -13,14 +13,15 @@ import java.util.WeakHashMap;
  * Include this class if you want to use Flurry native video ads. This will use the FrameLayout
  * specified in the FlurryNativeViewHolder.videoView to show a video. If a video is not available,
  * this will still use the mainImageView.
- *
- *
- * Certified with Flurry 7.2.0
+ * <p>
+ * <p>
  */
 public class FlurryNativeAdRenderer implements
         MoPubAdRenderer<FlurryCustomEventNative.FlurryVideoEnabledNativeAd> {
-    @NonNull private final FlurryViewBinder mViewBinder;
-    @NonNull private final WeakHashMap<View, FlurryNativeViewHolder> mViewHolderMap;
+    @NonNull
+    private final FlurryViewBinder mViewBinder;
+    @NonNull
+    private final WeakHashMap<View, FlurryNativeViewHolder> mViewHolderMap;
 
     public FlurryNativeAdRenderer(@NonNull final FlurryViewBinder viewBinder) {
         mViewBinder = viewBinder;
@@ -36,7 +37,7 @@ public class FlurryNativeAdRenderer implements
 
     @Override
     public void renderAdView(@NonNull View view,
-            @NonNull FlurryCustomEventNative.FlurryVideoEnabledNativeAd ad) {
+                             @NonNull FlurryCustomEventNative.FlurryVideoEnabledNativeAd ad) {
         FlurryNativeViewHolder flurryNativeViewHolder = mViewHolderMap.get(view);
         if (flurryNativeViewHolder == null) {
             flurryNativeViewHolder = FlurryNativeViewHolder.fromViewBinder(view, mViewBinder);
@@ -55,7 +56,7 @@ public class FlurryNativeAdRenderer implements
     }
 
     private void update(final FlurryNativeViewHolder viewHolder,
-            final FlurryCustomEventNative.FlurryVideoEnabledNativeAd ad) {
+                        final FlurryCustomEventNative.FlurryVideoEnabledNativeAd ad) {
         NativeRendererHelper.addTextView(viewHolder.staticNativeViewHolder.titleView,
                 ad.getTitle());
         NativeRendererHelper.addTextView(viewHolder.staticNativeViewHolder.textView, ad.getText());
@@ -65,15 +66,23 @@ public class FlurryNativeAdRenderer implements
                 viewHolder.staticNativeViewHolder.iconImageView);
 
         if (ad.isVideoAd()) {
+            if (viewHolder.videoView != null) {
+                viewHolder.videoView.setVisibility(View.VISIBLE);
+            }
+            viewHolder.staticNativeViewHolder.mainImageView.setVisibility(View.GONE);
             ad.loadVideoIntoView(viewHolder.videoView);
         } else {
+            if (viewHolder.videoView != null) {
+                viewHolder.videoView.setVisibility(View.GONE);
+            }
+            viewHolder.staticNativeViewHolder.mainImageView.setVisibility(View.VISIBLE);
             NativeImageHelper.loadImageView(ad.getMainImageUrl(),
                     viewHolder.staticNativeViewHolder.mainImageView);
         }
     }
 
     private void setViewVisibility(@NonNull final FlurryNativeViewHolder viewHolder,
-            final int visibility) {
+                                   final int visibility) {
         if (viewHolder.staticNativeViewHolder.mainView != null) {
             viewHolder.staticNativeViewHolder.mainView.setVisibility(visibility);
         }
@@ -84,7 +93,7 @@ public class FlurryNativeAdRenderer implements
         private final ViewGroup videoView;
 
         private FlurryNativeViewHolder(final StaticNativeViewHolder staticNativeViewHolder,
-                final ViewGroup videoView) {
+                                       final ViewGroup videoView) {
             this.staticNativeViewHolder = staticNativeViewHolder;
             this.videoView = videoView;
         }

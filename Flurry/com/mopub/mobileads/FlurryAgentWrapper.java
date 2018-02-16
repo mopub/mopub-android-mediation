@@ -10,9 +10,6 @@ import android.util.Log;
 import com.flurry.android.FlurryAgent;
 import com.flurry.android.FlurryAgentListener;
 
-/**
- * Certified with Flurry 7.2.0
- */
 public final class FlurryAgentWrapper {
     public static final String PARAM_API_KEY = "apiKey";
     public static final String PARAM_AD_SPACE_NAME = "adSpaceName";
@@ -35,8 +32,8 @@ public final class FlurryAgentWrapper {
     }
 
     public synchronized void startSession(@NonNull final Context context,
-            final String apiKey,
-            @Nullable FlurryAgentListener flurryAgentListener) {
+                                          final String apiKey,
+                                          @Nullable FlurryAgentListener flurryAgentListener) {
         // validate parameters
         if (TextUtils.isEmpty(apiKey)) {
             return;

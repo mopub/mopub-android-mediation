@@ -16,9 +16,6 @@ import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
-/**
- * Certified with Flurry 7.2.0
- */
 class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInterstitial {
     private static final String LOG_TAG = FlurryCustomEventInterstitial.class.getSimpleName();
 
@@ -32,9 +29,9 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
     // CustomEventInterstitial
     @Override
     protected void loadInterstitial(Context context,
-            CustomEventInterstitialListener listener,
-            Map<String, Object> localExtras,
-            Map<String, String> serverExtras) {
+                                    CustomEventInterstitialListener listener,
+                                    Map<String, Object> localExtras,
+                                    Map<String, String> serverExtras) {
         if (context == null) {
             Log.e(LOG_TAG, "Context cannot be null.");
             listener.onInterstitialFailed(ADAPTER_CONFIGURATION_ERROR);
@@ -176,7 +173,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
         @Override
         public void onError(FlurryAdInterstitial adInterstitial, FlurryAdErrorType adErrorType,
-                int errorCode) {
+                            int errorCode) {
             Log.d(LOG_TAG, String.format("onError: Flurry interstitial ad not available. " +
                     "Error type: %s. Error code: %s", adErrorType.toString(), errorCode));
 

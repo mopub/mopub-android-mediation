@@ -21,9 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Certified with Flurry 7.2.0
- */
 public final class FlurryCustomEventNative extends CustomEventNative {
 
     /**
@@ -42,9 +39,9 @@ public final class FlurryCustomEventNative extends CustomEventNative {
      * Key for enabling Flurry debug logging. After manually creating a {@link MoPubNative} object,
      * pass in <code>true</code> as a value for this key in the map passed to
      * {@link MoPubNative#setLocalExtras(Map)}.
-     *
+     * <p>
      * E.g.
-     *
+     * <p>
      * <blockquote><pre>
      * {@code
      * Map<String, Object> adapterExtras = new TreeMap<String, Object>();
@@ -52,7 +49,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
      * mMoPubNative.setLocalExtras(adapterExtras);
      * }
      * </pre></blockquote>
-     *
+     * <p>
      * Debug logging is disabled on the Flurry SDK by default.
      */
     public static final String LOCAL_EXTRA_TEST_MODE = "enableTestMode";
@@ -77,9 +74,9 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
     @Override
     protected void loadNativeAd(@NonNull final Context context,
-            @NonNull final CustomEventNativeListener customEventNativeListener,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) {
+                                @NonNull final CustomEventNativeListener customEventNativeListener,
+                                @NonNull final Map<String, Object> localExtras,
+                                @NonNull final Map<String, String> serverExtras) {
 
         final String flurryApiKey;
         final String flurryAdSpace;
@@ -112,7 +109,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
     }
 
     private static synchronized void mapNativeAd(@NonNull final FlurryBaseNativeAd mopubSupportedAd,
-            @NonNull final FlurryAdNative flurryAdNative) {
+                                                 @NonNull final FlurryAdNative flurryAdNative) {
         FlurryAdNativeAsset coverImageAsset = flurryAdNative.getAsset(ASSET_SEC_HQ_IMAGE);
         FlurryAdNativeAsset iconImageAsset = flurryAdNative.getAsset(ASSET_SEC_IMAGE);
 
@@ -193,8 +190,8 @@ public final class FlurryCustomEventNative extends CustomEventNative {
     }
 
     private void fetchFlurryAd(@NonNull Context context, String flurryAdSpace,
-            @NonNull Map<String, Object> localExtras,
-            @NonNull CustomEventNativeListener customEventNativeListener) {
+                               @NonNull Map<String, Object> localExtras,
+                               @NonNull CustomEventNativeListener customEventNativeListener) {
         final FlurryAdNative flurryAdNative = new FlurryAdNative(context, flurryAdSpace);
 
         if (localExtras.containsKey(LOCAL_EXTRA_TEST_MODE) &&
@@ -236,9 +233,12 @@ public final class FlurryCustomEventNative extends CustomEventNative {
      */
     private static class FlurryStaticNativeAd extends StaticNativeAd implements FlurryBaseNativeAd {
 
-        @NonNull private final Context mContext;
-        @NonNull private final CustomEventNativeListener mCustomEventNativeListener;
-        @NonNull private final FlurryAdNative mFlurryAdNative;
+        @NonNull
+        private final Context mContext;
+        @NonNull
+        private final CustomEventNativeListener mCustomEventNativeListener;
+        @NonNull
+        private final FlurryAdNative mFlurryAdNative;
         private final FlurryAdNativeListener mFlurryNativelistener = new FlurryBaseAdListener(this) {
             @Override
             public void onClicked(final FlurryAdNative flurryAdNative) {
@@ -254,15 +254,15 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
             @Override
             public void onError(final FlurryAdNative adNative,
-                    final FlurryAdErrorType adErrorType,
-                    final int errorCode) {
+                                final FlurryAdErrorType adErrorType,
+                                final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
                 mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
             }
         };
 
         FlurryStaticNativeAd(@NonNull Context context, @NonNull FlurryAdNative adNative,
-                @NonNull CustomEventNativeListener customEventNativeListener) {
+                             @NonNull CustomEventNativeListener customEventNativeListener) {
             mContext = context;
             mFlurryAdNative = adNative;
             mCustomEventNativeListener = customEventNativeListener;
@@ -358,9 +358,12 @@ public final class FlurryCustomEventNative extends CustomEventNative {
      * are fetching only static ads. Use {@link FlurryStaticNativeAd} instead.
      */
     static class FlurryVideoEnabledNativeAd extends BaseNativeAd implements FlurryBaseNativeAd {
-        private @NonNull final Context mContext;
-        private @NonNull final CustomEventNativeListener mCustomEventNativeListener;
-        private @NonNull final FlurryAdNative mFlurryAdNative;
+        private @NonNull
+        final Context mContext;
+        private @NonNull
+        final CustomEventNativeListener mCustomEventNativeListener;
+        private @NonNull
+        final FlurryAdNative mFlurryAdNative;
         private final FlurryAdNativeListener mFlurryNativelistener = new FlurryBaseAdListener(this) {
             @Override
             public void onClicked(final FlurryAdNative flurryAdNative) {
@@ -376,27 +379,34 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
             @Override
             public void onError(final FlurryAdNative adNative,
-                    final FlurryAdErrorType adErrorType,
-                    final int errorCode) {
+                                final FlurryAdErrorType adErrorType,
+                                final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
                 mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
             }
         };
 
         // Basic fields
-        @Nullable private String mTitle;
-        @Nullable private String mText;
-        @Nullable private String mCallToAction;
-        @Nullable private String mMainImageUrl;
-        @Nullable private String mIconImageUrl;
-        @Nullable private Double mStarRating;
+        @Nullable
+        private String mTitle;
+        @Nullable
+        private String mText;
+        @Nullable
+        private String mCallToAction;
+        @Nullable
+        private String mMainImageUrl;
+        @Nullable
+        private String mIconImageUrl;
+        @Nullable
+        private Double mStarRating;
 
         // Extras
-        @NonNull private final Map<String, Object> mExtras;
+        @NonNull
+        private final Map<String, Object> mExtras;
 
 
         FlurryVideoEnabledNativeAd(@NonNull Context context, @NonNull FlurryAdNative adNative,
-                @NonNull CustomEventNativeListener customEventNativeListener) {
+                                   @NonNull CustomEventNativeListener customEventNativeListener) {
             mContext = context;
             mFlurryAdNative = adNative;
             mCustomEventNativeListener = customEventNativeListener;
@@ -576,7 +586,8 @@ public final class FlurryCustomEventNative extends CustomEventNative {
     }
 
     static abstract class FlurryBaseAdListener implements FlurryAdNativeListener {
-        private final @NonNull FlurryBaseNativeAd mBaseNativeAd;
+        private final @NonNull
+        FlurryBaseNativeAd mBaseNativeAd;
 
         FlurryBaseAdListener(@NonNull FlurryBaseNativeAd baseNativeAd) {
             mBaseNativeAd = baseNativeAd;
@@ -626,8 +637,8 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
         @Override
         public void onError(final FlurryAdNative flurryAdNative,
-                final FlurryAdErrorType adErrorType,
-                final int errorCode) {
+                            final FlurryAdErrorType adErrorType,
+                            final int errorCode) {
             Log.d(LOG_TAG, String.format("onError: Flurry native ad not available. " +
                     "Error type: %s. Error code: %s", adErrorType.toString(), errorCode));
             sFlurryNativeAds.remove(flurryAdNative);
