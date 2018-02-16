@@ -10,8 +10,11 @@ import com.facebook.ads.AdListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAd.Rating;
+import com.facebook.ads.AdSettings;
+
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.MoPub;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +28,6 @@ import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
  * Video ads will only be shown if VIDEO_ENABLED is set to true or a server configuration
  * "video_enabled" flag is set to true. The server configuration will override the local
  * configuration.
- * Certified with Facebook Audience Network 4.26.0
  */
 public class FacebookNative extends CustomEventNative {
     private static final String PLACEMENT_ID_KEY = "placement_id";
@@ -48,9 +50,9 @@ public class FacebookNative extends CustomEventNative {
     // CustomEventNative implementation
     @Override
     protected void loadNativeAd(final Context context,
-            final CustomEventNativeListener customEventNativeListener,
-            final Map<String, Object> localExtras,
-            final Map<String, String> serverExtras) {
+                                final CustomEventNativeListener customEventNativeListener,
+                                final Map<String, Object> localExtras,
+                                final Map<String, String> serverExtras) {
 
         final String placementId;
         if (extrasAreValid(serverExtras)) {
@@ -110,7 +112,7 @@ public class FacebookNative extends CustomEventNative {
     }
 
     static boolean shouldUseVideoEnabledNativeAd(final boolean isVideoRendererAvailable,
-            final String videoEnabledString, final boolean videoEnabledFromServer) {
+                                                 final String videoEnabledString, final boolean videoEnabledFromServer) {
         if (!isVideoRendererAvailable) {
             return false;
         }
@@ -143,7 +145,7 @@ public class FacebookNative extends CustomEventNative {
     }
 
     private static void assembleChildViewsWithLimit(final View view,
-            final List<View> clickableViews, final int limit) {
+                                                    final List<View> clickableViews, final int limit) {
         if (view == null) {
             MoPubLog.d("View given is null. Ignoring");
             return;
@@ -174,14 +176,15 @@ public class FacebookNative extends CustomEventNative {
         private final CustomEventNativeListener mCustomEventNativeListener;
 
         FacebookStaticNativeAd(final Context context,
-                final NativeAd nativeAd,
-                final CustomEventNativeListener customEventNativeListener) {
+                               final NativeAd nativeAd,
+                               final CustomEventNativeListener customEventNativeListener) {
             mContext = context.getApplicationContext();
             mNativeAd = nativeAd;
             mCustomEventNativeListener = customEventNativeListener;
         }
 
         void loadAd() {
+            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
             mNativeAd.setAdListener(this);
             mNativeAd.loadAd();
         }
@@ -306,8 +309,8 @@ public class FacebookNative extends CustomEventNative {
         private final Map<String, Object> mExtras;
 
         FacebookVideoEnabledNativeAd(final Context context,
-                final NativeAd nativeAd,
-                final CustomEventNativeListener customEventNativeListener) {
+                                     final NativeAd nativeAd,
+                                     final CustomEventNativeListener customEventNativeListener) {
             mContext = context.getApplicationContext();
             mNativeAd = nativeAd;
             mCustomEventNativeListener = customEventNativeListener;
@@ -315,6 +318,7 @@ public class FacebookNative extends CustomEventNative {
         }
 
         void loadAd() {
+            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
             mNativeAd.setAdListener(this);
             mNativeAd.loadAd();
         }

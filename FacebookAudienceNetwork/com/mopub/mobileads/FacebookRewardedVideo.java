@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -9,15 +10,19 @@ import android.util.Log;
 import com.facebook.ads.AdError;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
+import com.facebook.ads.AdSettings;
+
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MoPub;
+
 import com.facebook.ads.Ad;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
-/**
- * Certified with Facebook Audience Network 4.26.0
- */
+import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
+
 public class FacebookRewardedVideo extends CustomEventRewardedVideo implements RewardedVideoAdListener {
 
     @Nullable
@@ -25,6 +30,23 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
     @Nullable
     private String mPlacementId;
     private String TAG = "mopub";
+
+    public static final int ONE_HOURS_MILLIS = 60 * 60 * 1000;
+    private Handler mHandler;
+    private Runnable mAdExpiration;
+
+    public FacebookRewardedVideo() {
+        mHandler = new Handler();
+        mAdExpiration = new Runnable() {
+            @Override
+            public void run() {
+                MoPubLog.d("Expiring unused Facebook Rewarded Video ad due to Facebook's 60-minute expiration policy.");
+                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(FacebookRewardedVideo.class, mPlacementId, EXPIRED);
+
+                onInvalidate();
+            }
+        };
+    }
 
     /**
      * CustomEventRewardedVideo implementation
@@ -70,6 +92,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
         if (mRewardedVideoAd != null) {
             Log.d(TAG, "Sending Facebook an ad request.");
+            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
             mRewardedVideoAd.loadAd();
         }
     }
@@ -82,6 +105,8 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     protected void onInvalidate() {
+        cancelTimer();
+
         if (mRewardedVideoAd != null) {
             Log.d(TAG, "Performing cleanup tasks...");
             mRewardedVideoAd.setAdListener(null);
@@ -114,6 +139,8 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     public void onLoggingImpression(Ad ad) {
+        cancelTimer();
+
         MoPubRewardedVideoManager.onRewardedVideoStarted(FacebookRewardedVideo.class, mPlacementId);
         Log.d(TAG, "Facebook Rewarded Video creative started playing.");
     }
@@ -126,8 +153,15 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     public void onAdLoaded(Ad ad) {
+        cancelTimer();
+        mHandler.postDelayed(mAdExpiration, ONE_HOURS_MILLIS);
+
         MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(FacebookRewardedVideo.class, mPlacementId);
         Log.d(TAG, "Facebook Rewarded Video creative cached.");
+    }
+
+    private void cancelTimer() {
+        mHandler.removeCallbacks(mAdExpiration);
     }
 
     @Override
@@ -138,6 +172,8 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     public void onError(Ad ad, AdError adError) {
+        cancelTimer();
+
         MoPubRewardedVideoManager.onRewardedVideoLoadFailure(FacebookRewardedVideo.class, mPlacementId, mapErrorCode(adError.getErrorCode()));
         Log.d(TAG, "Loading/Playing Facebook Rewarded Video creative encountered an error: " + mapErrorCode(adError.getErrorCode()).toString());
     }

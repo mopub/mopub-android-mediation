@@ -10,14 +10,14 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
+import com.facebook.ads.AdSettings;
+
 import com.mopub.common.DataKeys;
 import com.mopub.common.util.Views;
+import com.mopub.common.MoPub;
 
 import java.util.Map;
 
-/**
- * Certified with Facebook Audience Network 4.26.0
- */
 public class FacebookBanner extends CustomEventBanner implements AdListener {
     public static final String PLACEMENT_ID_KEY = "placement_id";
 
@@ -30,9 +30,9 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
 
     @Override
     protected void loadBanner(final Context context,
-            final CustomEventBannerListener customEventBannerListener,
-            final Map<String, Object> localExtras,
-            final Map<String, String> serverExtras) {
+                              final CustomEventBannerListener customEventBannerListener,
+                              final Map<String, Object> localExtras,
+                              final Map<String, String> serverExtras) {
         mBannerListener = customEventBannerListener;
 
         final String placementId;
@@ -58,6 +58,7 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
             mBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             return;
         }
+        AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
         mFacebookBanner = new AdView(context, placementId, adSize);
         mFacebookBanner.setAdListener(this);
