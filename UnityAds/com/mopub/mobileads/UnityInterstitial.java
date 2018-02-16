@@ -21,9 +21,9 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
     @Override
     protected void loadInterstitial(Context context,
-            CustomEventInterstitialListener customEventInterstitialListener,
-            Map<String, Object> localExtras,
-            Map<String, String> serverExtras) {
+                                    CustomEventInterstitialListener customEventInterstitialListener,
+                                    Map<String, Object> localExtras,
+                                    Map<String, String> serverExtras) {
 
         mPlacementId = UnityRouter.placementIdForServerExtras(serverExtras, mPlacementId);
         mCustomEventInterstitialListener = customEventInterstitialListener;
@@ -45,7 +45,8 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
     private void initializeUnityAdsSdk(Map<String, String> serverExtras) {
         if (!UnityAds.isInitialized()) {
             if (!(mContext instanceof Activity)) {
-                throw new UnityRouter.UnityAdsException(UnityAds.UnityAdsError.INVALID_ARGUMENT, "Context is null or is not an instanceof Activity.");
+                MoPubLog.e("Context is null or is not an instanceof Activity.");
+                return;
             }
             UnityRouter.initUnityAds(serverExtras, (Activity) mContext);
         }

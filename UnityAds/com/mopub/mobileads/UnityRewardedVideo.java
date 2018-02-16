@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * A custom event for showing Unity rewarded videos.
- *
+ * <p>
  * Certified with Unity Ads 2.1.1
  */
 public class UnityRewardedVideo extends CustomEventRewardedVideo {
@@ -48,8 +48,8 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     public boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) throws Exception {
+                                         @NonNull final Map<String, Object> localExtras,
+                                         @NonNull final Map<String, String> serverExtras) throws Exception {
         synchronized (UnityRewardedVideo.class) {
             if (UnityAds.isInitialized()) {
                 return false;
@@ -59,7 +59,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
                 UnityRouter.initUnityAds(serverExtras, launcherActivity);
                 UnityRouter.addListener(sPlacementId, sUnityAdsListener);
             } catch (UnityRouter.UnityAdsException e) {
-                MoPubLog.e("Failed to initialize Unity Ads.", e);
+                MoPubLog.e("Failed to initialize Unity Ads.");
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, UnityRouter.UnityAdsUtils.getMoPubErrorCode(e.getErrorCode()));
             }
 
@@ -69,8 +69,8 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected void loadWithSdkInitialized(@NonNull Activity activity,
-            @NonNull Map<String, Object> localExtras,
-            @NonNull Map<String, String> serverExtras) throws Exception {
+                                          @NonNull Map<String, Object> localExtras,
+                                          @NonNull Map<String, String> serverExtras) throws Exception {
 
         sPlacementId = UnityRouter.placementIdForServerExtras(serverExtras, sPlacementId);
         mLauncherActivity = activity;

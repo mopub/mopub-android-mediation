@@ -11,3 +11,4 @@
 ## Changelog
   * 2.1.1.0
     * This version of the adapters has been certified with Unity Ads 2.1.1
+    * Adapters no longer throwing verbose exceptions for simple errors
