@@ -30,7 +30,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
         try {
             UnityRouter.addListener(mPlacementId, this);
             initializeUnityAdsSdk(serverExtras);
-            if (UnityAds.isReady()) {
+            if (UnityAds.isReady(mPlacementId)) {
                 mCustomEventInterstitialListener.onInterstitialLoaded();
                 loadRequested = false;
             }
@@ -48,7 +48,6 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
             UnityRouter.initUnityAds(serverExtras, (Activity) mContext);
         }
     }
-
 
     @Override
     protected void showInterstitial() {
@@ -86,7 +85,6 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
             MoPubLog.d("Unity interstitial video completed for placement " + placementId);
             mCustomEventInterstitialListener.onInterstitialDismissed();
         }
-
         UnityRouter.removeListener(placementId);
     }
 
@@ -98,7 +96,6 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
     // @Override
     public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
-
     }
 
     @Override
