@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.2.0.1
+    * Fix an NPE in FlurryNativeAdRenderer's StaticNativeViewHolder.
+
   * 8.2.0.0
     * This version of the adapters has been certified with Flurry 8.2.0.
 

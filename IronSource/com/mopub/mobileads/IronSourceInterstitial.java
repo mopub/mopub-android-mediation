@@ -5,11 +5,11 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
+import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
@@ -19,48 +19,35 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
      * private vars
      */
 
-    private static final String TAG = "MoPub";
-
     // Configuration keys
     private static final String APPLICATION_KEY = "applicationKey";
-    private static final String APP_KEY = "appKey";
-    private static final String TEST_ENABLED_KEY = "isTestEnabled";
     private static final String PLACEMENT_KEY = "placementName";
     private static final String INSTANCE_ID_KEY = "instanceId";
-
-    private static final String MEDIATION_TYPE = "mopub" ;
+    private static final String MEDIATION_TYPE = "mopub";
 
     // This is the instance id used inside ironSource SDK
-    private String mInstanceId = null;
-
+    private String mInstanceId = "0";
     // This is the placement name used inside ironSource SDK
     private String mPlacementName = null;
-
-    private boolean mIsTestEnabled;
-
     private static boolean mInitInterstitialSuccessfully;
-
-    static CustomEventInterstitialListener mMoPubListener;
-
     private static Handler sHandler;
 
+    private static CustomEventInterstitialListener mMoPubListener;
 
     /**
      * Activity Lifecycle Helper Methods
      **/
 
     public static void onActivityPaused(Activity activity) {
-
         IronSource.onPause(activity);
     }
 
     public static void onActivityResumed(Activity activity) {
-
         IronSource.onResume(activity);
     }
 
     /**
-     *  Mopub API
+     * Mopub API
      */
 
     @Override
@@ -73,21 +60,16 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
             if (!(context instanceof Activity)) {
                 // Context not an Activity context, log the reason for failure and fail the
                 // initialization.
-                onLog("IronSource load interstitial must be called from an Activity context");
+                MoPubLog.d("IronSource load interstitial must be called from an Activity context");
                 sendMoPubInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
                 return;
             }
 
             String applicationKey = "";
-            mInstanceId = "0";
-            if (serverExtras != null) {
 
+            if (serverExtras != null) {
                 if (serverExtras.get(APPLICATION_KEY) != null) {
                     applicationKey = serverExtras.get(APPLICATION_KEY);
-                }
-
-                if (serverExtras.get(TEST_ENABLED_KEY) != null) {
-                    mIsTestEnabled = Boolean.valueOf(serverExtras.get(TEST_ENABLED_KEY));
                 }
 
                 if (serverExtras.get(PLACEMENT_KEY) != null) {
@@ -95,7 +77,9 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
                 }
 
                 if (serverExtras.get(INSTANCE_ID_KEY) != null) {
-                    mInstanceId = serverExtras.get(INSTANCE_ID_KEY);
+                    if (!TextUtils.isEmpty(serverExtras.get(INSTANCE_ID_KEY))) {
+                        mInstanceId = serverExtras.get(INSTANCE_ID_KEY);
+                    }
                 }
             }
 
@@ -103,12 +87,12 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
                 initIronSourceSDK(((Activity) context), applicationKey);
                 loadInterstitial();
             } else {
-                onLog("IronSource initialization failed, make sure that 'applicationKey' server parameter is added");
+                MoPubLog.d("IronSource initialization failed, make sure that 'applicationKey' server parameter is added");
                 sendMoPubInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
             }
 
         } catch (Exception e) {
-            onLog(e.toString());
+            MoPubLog.d(e.toString());
             sendMoPubInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
         }
     }
@@ -120,13 +104,13 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
                 if (TextUtils.isEmpty(mPlacementName)) {
                     IronSource.showISDemandOnlyInterstitial(mInstanceId);
                 } else {
-                    IronSource.showISDemandOnlyInterstitial(mInstanceId,mPlacementName);
+                    IronSource.showISDemandOnlyInterstitial(mInstanceId, mPlacementName);
                 }
             } else {
                 sendMoPubInterstitialFailed(MoPubErrorCode.NO_FILL);
             }
         } catch (Exception e) {
-            onLog(e.toString());
+            MoPubLog.d(e.toString());
             sendMoPubInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
         }
     }
@@ -144,7 +128,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
         IronSource.setISDemandOnlyInterstitialListener(this);
 
         if (!mInitInterstitialSuccessfully) {
-            onLog("IronSource initialization succeeded for Interstitial");
+            MoPubLog.d("IronSource initialization succeeded for Interstitial");
             IronSource.setMediationType(MEDIATION_TYPE);
             IronSource.initISDemandOnly(activity, appKey, IronSource.AD_UNIT.INTERSTITIAL);
             mInitInterstitialSuccessfully = true;
@@ -152,17 +136,10 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
     }
 
     private void loadInterstitial() {
-
         if (IronSource.isISDemandOnlyInterstitialReady(mInstanceId)) {
             onInterstitialAdReady(mInstanceId);
         } else {
             IronSource.loadISDemandOnlyInterstitial(mInstanceId);
-        }
-    }
-
-    private void onLog(String message) {
-        if (mIsTestEnabled) {
-            Log.d(TAG, message);
         }
     }
 
@@ -196,7 +173,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
             case IronSourceError.ERROR_NO_INTERNET_CONNECTION:
                 return MoPubErrorCode.NO_CONNECTION;
             default:
-                return MoPubErrorCode.NETWORK_TIMEOUT;
+                return MoPubErrorCode.UNSPECIFIED;
         }
     }
 
@@ -206,9 +183,10 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
 
     @Override
     public void onInterstitialAdReady(String instanceId) {
-        onLog("IronSource Interstitial loaded successfully for instance " + mInstanceId);
-        if (!mInstanceId.equals(instanceId))
+        MoPubLog.d("IronSource Interstitial loaded successfully for instance " + mInstanceId);
+        if (!mInstanceId.equals(instanceId)) {
             return;
+        }
         sHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -221,17 +199,17 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
 
     @Override
     public void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        onLog("IronSource Interstitial failed to load for instance " + mInstanceId + " Error: " + ironSourceError.getErrorMessage());
+        MoPubLog.d("IronSource Interstitial failed to load for instance " + mInstanceId + " Error: " + ironSourceError.getErrorMessage());
 
-        if (!mInstanceId.equals(instanceId))
+        if (!mInstanceId.equals(instanceId)) {
             return;
-
+        }
         sendMoPubInterstitialFailed(getMoPubErrorMessage(ironSourceError));
     }
 
     @Override
     public void onInterstitialAdOpened(String instanceId) {
-        onLog("IronSource Interstitial opened ad for instance " + instanceId);
+        MoPubLog.d("IronSource Interstitial opened ad for instance " + instanceId);
 
         sHandler.post(new Runnable() {
             @Override
@@ -245,7 +223,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
 
     @Override
     public void onInterstitialAdClosed(String instanceId) {
-        onLog("IronSource Interstitial closed ad for instance " + instanceId);
+        MoPubLog.d("IronSource Interstitial closed ad for instance " + instanceId);
 
         sHandler.post(new Runnable() {
             @Override
@@ -259,18 +237,18 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
 
     @Override
     public void onInterstitialAdShowSucceeded(String instanceId) {
-        // not in use in Mopub mediation (we use the onInterstitialAdOpened for saying that the ad was shown)
+        // not in use in MoPub mediation (we use the onInterstitialAdOpened for saying that the ad was shown)
     }
 
     @Override
     public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-        onLog("IronSource Interstitial failed to show for instance " + instanceId);
+        MoPubLog.d("IronSource Interstitial failed to show for instance " + instanceId);
         // do nothing
     }
 
     @Override
     public void onInterstitialAdClicked(String instanceId) {
-        onLog("IronSource Interstitial clicked ad for instance " + instanceId);
+        MoPubLog.d("IronSource Interstitial clicked ad for instance " + instanceId);
         sHandler.post(new Runnable() {
             @Override
             public void run() {

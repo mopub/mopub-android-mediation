@@ -1,7 +1,8 @@
 package com.mopub.nativeads;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 
 import com.millennialmedia.AppInfo;
@@ -10,6 +11,8 @@ import com.millennialmedia.MMException;
 import com.millennialmedia.MMLog;
 import com.millennialmedia.MMSDK;
 import com.millennialmedia.NativeAd;
+import com.millennialmedia.internal.ActivityListenerManager;
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MillennialUtils;
 
 import java.util.ArrayList;
@@ -19,29 +22,49 @@ import java.util.Map;
 import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
 
 public class MillennialNative extends CustomEventNative {
+
     private static final String DCN_KEY = "dcn";
     private static final String APID_KEY = "adUnitID";
     private final static String TAG = MillennialNative.class.getSimpleName();
 
     MillennialStaticNativeAd staticNativeAd;
 
-    public CreativeInfo getCreativeInfo() {
+    static {
+        MoPubLog.d("Millennial Media Adapter Version: " + MillennialUtils.MEDIATOR_ID);
+    }
 
+    public CreativeInfo getCreativeInfo() {
         if (staticNativeAd == null) {
             return null;
         }
-
         return staticNativeAd.getCreativeInfo();
     }
-
 
     @Override
     protected void loadNativeAd(final Context context, final CustomEventNativeListener customEventNativeListener,
                                 Map<String, Object> localExtras, Map<String, String> serverExtras) {
+        if (context instanceof Activity) {
+            try {
+                MMSDK.initialize((Activity) context, ActivityListenerManager.LifecycleState.RESUMED);
+            } catch (IllegalStateException e) {
+                MoPubLog.d("Exception occurred initializing the MM SDK.", e);
+                customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
 
-        if (!MillennialUtils.initSdk(context)) {
-            Log.e(TAG, "MM SDK must be initialized with an Activity or Application context.");
+                return;
+            }
+        } else if (context instanceof Application) {
+            try {
+                MMSDK.initialize((Application) context);
+            } catch (MMException e) {
+                MoPubLog.d("Exception occurred initializing the MM SDK.", e);
+                customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
+
+                return;
+            }
+        } else {
+            MoPubLog.d("MM SDK must be initialized with an Activity or Application context.");
             customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
+
             return;
         }
 
@@ -54,7 +77,7 @@ public class MillennialNative extends CustomEventNative {
             return;
         }
 
-        AppInfo ai = new AppInfo().setMediator("mopubsdk").setSiteId(siteId);
+        AppInfo ai = new AppInfo().setMediator(MillennialUtils.MEDIATOR_ID).setSiteId(siteId);
 
         try {
             MMSDK.setAppInfo(ai);
@@ -66,25 +89,21 @@ public class MillennialNative extends CustomEventNative {
             staticNativeAd.loadAd();
 
         } catch (MMException e) {
-            Log.e(TAG, "An exception occurred loading a native ad from MM SDK", e);
+            MoPubLog.d("An exception occurred loading a native ad from MM SDK", e);
             customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
         }
     }
 
-
     static class MillennialStaticNativeAd extends StaticNativeAd implements NativeAd.NativeListener {
-
         private final Context context;
         private NativeAd nativeAd;
         private final ImpressionTracker impressionTracker;
         private final NativeClickHandler nativeClickHandler;
         private final CustomEventNativeListener listener;
 
-
-        public MillennialStaticNativeAd(final Context context, final NativeAd nativeAd,
-                                        final ImpressionTracker impressionTracker, final NativeClickHandler nativeClickHandler,
-                                        final CustomEventNativeListener customEventNativeListener) {
-
+        private MillennialStaticNativeAd(final Context context, final NativeAd nativeAd,
+                                         final ImpressionTracker impressionTracker, final NativeClickHandler nativeClickHandler,
+                                         final CustomEventNativeListener customEventNativeListener) {
             this.context = context.getApplicationContext();
             this.nativeAd = nativeAd;
             this.impressionTracker = impressionTracker;
@@ -94,24 +113,19 @@ public class MillennialNative extends CustomEventNative {
             nativeAd.setListener(this);
         }
 
-
         void loadAd() throws MMException {
-
-            Log.d(TAG, "Millennial native ad loading.");
+            MoPubLog.d("Millennial native ad loading.");
 
             nativeAd.load(context, null);
         }
 
-
         CreativeInfo getCreativeInfo() {
-
             if (nativeAd == null) {
                 return null;
             }
 
             return nativeAd.getCreativeInfo();
         }
-
 
         // Lifecycle Handlers
         @Override
@@ -123,58 +137,47 @@ public class MillennialNative extends CustomEventNative {
             nativeClickHandler.setOnClickListener(view, this);
         }
 
-
         @Override
         public void clear(final View view) {
-
             impressionTracker.removeView(view);
             nativeClickHandler.clearOnClickListener(view);
         }
 
-
         @Override
         public void destroy() {
-
             impressionTracker.destroy();
             nativeAd.destroy();
             nativeAd = null;
         }
 
-
         // Event Handlers
         @Override
         public void recordImpression(final View view) {
-
             notifyAdImpressed();
 
             try {
                 nativeAd.fireImpression();
-                Log.d(TAG, "Millennial native ad impression recorded.");
+                MoPubLog.d("Millennial native ad impression recorded.");
             } catch (MMException e) {
-                Log.e(TAG, "Error tracking Millennial native ad impression", e);
+                MoPubLog.d("Error tracking Millennial native ad impression", e);
             }
         }
 
-
         @Override
         public void handleClick(final View view) {
-
             notifyAdClicked();
 
             nativeClickHandler.openClickDestinationUrl(getClickDestinationUrl(), view);
             nativeAd.fireCallToActionClicked();
-            Log.d(TAG, "Millennial native ad clicked.");
+            MoPubLog.d("Millennial native ad clicked.");
         }
-
 
         // MM'S Native listener
         @Override
         public void onLoaded(NativeAd nativeAd) {
-
             CreativeInfo creativeInfo = getCreativeInfo();
             if ((creativeInfo != null) && MMLog.isDebugEnabled()) {
-
-                MMLog.d(TAG, "Native Creative Info: " + creativeInfo);
+                MoPubLog.d("Native Creative Info: " + creativeInfo);
             }
 
             // Set assets
@@ -190,8 +193,7 @@ public class MillennialNative extends CustomEventNative {
                 MillennialUtils.postOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
-                        Log.d(TAG, "Millennial native ad encountered null destination url.");
+                        MoPubLog.d("Millennial native ad encountered null destination url.");
                         listener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
                     }
                 });
@@ -210,7 +212,9 @@ public class MillennialNative extends CustomEventNative {
                 urls.add(mainImageUrl);
             }
 
+            // Add MM native assets that don't have a direct MoPub mapping
             addExtra("disclaimer", nativeAd.getDisclaimer().getText());
+            addExtra("rating", nativeAd.getRating().getText());
 
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
@@ -220,20 +224,17 @@ public class MillennialNative extends CustomEventNative {
                         @Override
                         public void onImagesCached() {
                             listener.onNativeAdLoaded(MillennialStaticNativeAd.this);
-                            Log.d(TAG, "Millennial native ad loaded.");
+                            MoPubLog.d("Millennial native ad loaded.");
                         }
-
 
                         @Override
                         public void onImagesFailedToCache(NativeErrorCode errorCode) {
                             listener.onNativeAdFailed(errorCode);
                         }
                     });
-
                 }
             });
         }
-
 
         @Override
         public void onLoadFailed(NativeAd nativeAd, NativeAd.NativeErrorStatus nativeErrorStatus) {
@@ -266,34 +267,25 @@ public class MillennialNative extends CustomEventNative {
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-
                     listener.onNativeAdFailed(error);
                 }
             });
-            Log.i(TAG, "Millennial native ad failed: " + nativeErrorStatus.getDescription());
+            MoPubLog.d("Millennial native ad failed: " + nativeErrorStatus.getDescription());
         }
-
 
         @Override
         public void onClicked(NativeAd nativeAd, NativeAd.ComponentName componentName, int i) {
-
-            Log.d(TAG, "Millennial native ad click tracker fired.");
+            MoPubLog.d("Millennial native ad click tracker fired.");
         }
-
 
         @Override
         public void onAdLeftApplication(NativeAd nativeAd) {
-
-            Log.d(TAG, "Millennial native ad has left the application.");
-
+            MoPubLog.d("Millennial native ad has left the application.");
         }
-
 
         @Override
         public void onExpired(NativeAd nativeAd) {
-
-            Log.d(TAG, "Millennial native ad has expired!");
+            MoPubLog.d("Millennial native ad has expired!");
         }
-
     }
 }

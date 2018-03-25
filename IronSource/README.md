@@ -1,6 +1,6 @@
 ## Overview
   * This folder contains mediation adapters used to mediate IronSource.
-  * To download and integrate the IronSource SDK, please check [this tutorial](http://developers.ironsrc.com/ironsource-mobile/mopub-mediation-integration-guide-android/).
+  * To download and integrate the IronSource SDK, please check [this tutorial](https://developers.ironsrc.com/ironsource-mobile/integrating-ironsource-network-mopub-mediation/).
   * For inquiries and support, please email mobile-developers@ironsrc.com
   
 ## Adapter integration

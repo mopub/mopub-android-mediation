@@ -2,7 +2,6 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
@@ -61,7 +60,9 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
         if (extrasAreValid(serverExtras)) {
             placementId = serverExtras.get(PLACEMENT_ID_KEY);
         } else {
-            mInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            if (mInterstitialListener != null) {
+                mInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
             return;
         }
 
@@ -105,7 +106,9 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     public void onAdLoaded(final Ad ad) {
         cancelExpirationTimer();
         MoPubLog.d("Facebook interstitial ad loaded successfully.");
-        mInterstitialListener.onInterstitialLoaded();
+        if (mInterstitialListener != null) {
+            mInterstitialListener.onInterstitialLoaded();
+        }
         mHandler.postDelayed(mAdExpiration, ONE_HOURS_MILLIS);
     }
 
@@ -113,12 +116,14 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     public void onError(final Ad ad, final AdError error) {
         cancelExpirationTimer();
         MoPubLog.d("Facebook interstitial ad failed to load.");
-        if (error == AdError.NO_FILL) {
-            mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
-        } else if (error == AdError.INTERNAL_ERROR) {
-            mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
-        } else {
-            mInterstitialListener.onInterstitialFailed(MoPubErrorCode.UNSPECIFIED);
+        if (mInterstitialListener != null) {
+            if (error == AdError.NO_FILL) {
+                mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            } else if (error == AdError.INTERNAL_ERROR) {
+                mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            } else {
+                mInterstitialListener.onInterstitialFailed(MoPubErrorCode.UNSPECIFIED);
+            }
         }
     }
 
@@ -126,13 +131,17 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     public void onInterstitialDisplayed(final Ad ad) {
         cancelExpirationTimer();
         MoPubLog.d("Showing Facebook interstitial ad.");
-        mInterstitialListener.onInterstitialShown();
+        if (mInterstitialListener != null) {
+            mInterstitialListener.onInterstitialShown();
+        }
     }
 
     @Override
     public void onAdClicked(final Ad ad) {
         MoPubLog.d("Facebook interstitial ad clicked.");
-        mInterstitialListener.onInterstitialClicked();
+        if (mInterstitialListener != null) {
+            mInterstitialListener.onInterstitialClicked();
+        }
     }
 
     @Override
@@ -143,7 +152,9 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     @Override
     public void onInterstitialDismissed(final Ad ad) {
         MoPubLog.d("Facebook interstitial ad dismissed.");
-        mInterstitialListener.onInterstitialDismissed();
+        if (mInterstitialListener != null) {
+            mInterstitialListener.onInterstitialDismissed();
+        }
     }
 
     private boolean extrasAreValid(final Map<String, String> serverExtras) {

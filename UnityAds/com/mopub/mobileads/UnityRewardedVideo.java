@@ -71,7 +71,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
         mLauncherActivity = activity;
 
         UnityRouter.addListener(sPlacementId, sUnityAdsListener);
-        if (UnityAds.isReady()) {
+        if (hasVideoAvailable()) {
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, sPlacementId);
         }
     }
@@ -105,7 +105,6 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
         public void onResume(@NonNull final Activity activity) {
             super.onResume(activity);
         }
-
     }
 
     private static class UnityAdsListener implements IUnityAdsExtendedListener,
@@ -154,7 +153,6 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
 
         // @Override
         public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
-
         }
 
         @Override

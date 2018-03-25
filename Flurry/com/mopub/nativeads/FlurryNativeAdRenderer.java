@@ -15,6 +15,7 @@ import java.util.WeakHashMap;
  * this will still use the mainImageView.
  * <p>
  * <p>
+ * Certified with Flurry 8.1.0
  */
 public class FlurryNativeAdRenderer implements
         MoPubAdRenderer<FlurryCustomEventNative.FlurryVideoEnabledNativeAd> {
@@ -68,16 +69,20 @@ public class FlurryNativeAdRenderer implements
         if (ad.isVideoAd()) {
             if (viewHolder.videoView != null) {
                 viewHolder.videoView.setVisibility(View.VISIBLE);
+                ad.loadVideoIntoView(viewHolder.videoView);
             }
-            viewHolder.staticNativeViewHolder.mainImageView.setVisibility(View.GONE);
-            ad.loadVideoIntoView(viewHolder.videoView);
+            if (viewHolder.staticNativeViewHolder.mainImageView != null) {
+                viewHolder.staticNativeViewHolder.mainImageView.setVisibility(View.GONE);
+            }
         } else {
             if (viewHolder.videoView != null) {
                 viewHolder.videoView.setVisibility(View.GONE);
             }
-            viewHolder.staticNativeViewHolder.mainImageView.setVisibility(View.VISIBLE);
-            NativeImageHelper.loadImageView(ad.getMainImageUrl(),
-                    viewHolder.staticNativeViewHolder.mainImageView);
+            if (viewHolder.staticNativeViewHolder.mainImageView != null) {
+                viewHolder.staticNativeViewHolder.mainImageView.setVisibility(View.VISIBLE);
+                NativeImageHelper.loadImageView(ad.getMainImageUrl(),
+                        viewHolder.staticNativeViewHolder.mainImageView);
+            }
         }
     }
 
