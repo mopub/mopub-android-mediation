@@ -56,11 +56,6 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
             sdk = retrieveSdk( serverExtras, activity );
             sdk.setPluginVersion("MoPub-Certified-2.2.0");
 
-            // Preload an incentivized ad for default zone
-            AppLovinIncentivizedInterstitial incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(activity);
-            incentivizedInterstitial.preload(null);
-            GLOBAL_INCENTIVIZED_INTERSTITIAL_ADS.put(DEFAULT_ZONE, incentivizedInterstitial);
-
             initialized = true;
 
             return true;
