@@ -9,7 +9,6 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAd.Rating;
 import com.facebook.ads.AdSettings;
 
 import com.mopub.common.Preconditions;
@@ -210,8 +209,6 @@ public class FacebookNative extends CustomEventNative {
             setIconImageUrl(icon == null ? null : icon.getUrl());
 
             setCallToAction(mNativeAd.getAdCallToAction());
-            setStarRating(getDoubleRating(mNativeAd.getAdStarRating()));
-
             addExtra(SOCIAL_CONTEXT_FOR_AD, mNativeAd.getAdSocialContext());
 
             final NativeAd.Image adChoicesIconImage = mNativeAd.getAdChoicesIcon();
@@ -284,28 +281,15 @@ public class FacebookNative extends CustomEventNative {
         public void destroy() {
             mNativeAd.destroy();
         }
-
-        private Double getDoubleRating(final Rating rating) {
-            if (rating == null) {
-                return null;
-            }
-
-            return MAX_STAR_RATING * rating.getValue() / rating.getScale();
-        }
     }
 
 
     static class FacebookVideoEnabledNativeAd extends BaseNativeAd implements AdListener {
         private static final String SOCIAL_CONTEXT_FOR_AD = "socialContextForAd";
 
-        static final double MIN_STAR_RATING = 0;
-        static final double MAX_STAR_RATING = 5;
-
         private final Context mContext;
         private final NativeAd mNativeAd;
         private final CustomEventNativeListener mCustomEventNativeListener;
-
-        private Double mStarRating;
 
         private final Map<String, Object> mExtras;
 
@@ -362,15 +346,6 @@ public class FacebookNative extends CustomEventNative {
         }
 
         /**
-         * For app install ads, this returns the associated star rating (on a 5 star scale) for the
-         * advertised app. Note that this method may return null if the star rating was either never set
-         * or invalid.
-         */
-        final public Double getStarRating() {
-            return mStarRating;
-        }
-
-        /**
          * Returns the Privacy Information click through url.
          *
          * @return String representing the Privacy Information Icon click through url, or {@code null}
@@ -399,8 +374,6 @@ public class FacebookNative extends CustomEventNative {
                 mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_STATE);
                 return;
             }
-
-            setStarRating(getDoubleRating(mNativeAd.getAdStarRating()));
 
             addExtra(SOCIAL_CONTEXT_FOR_AD, mNativeAd.getAdSocialContext());
 
@@ -507,25 +480,6 @@ public class FacebookNative extends CustomEventNative {
             if (mediaView != null) {
                 mediaView.setNativeAd(mNativeAd);
             }
-        }
-
-        private void setStarRating(final Double starRating) {
-            if (starRating == null) {
-                mStarRating = null;
-            } else if (starRating >= MIN_STAR_RATING && starRating <= MAX_STAR_RATING) {
-                mStarRating = starRating;
-            } else {
-                MoPubLog.d("Ignoring attempt to set invalid star rating (" + starRating + "). Must be "
-                        + "between " + MIN_STAR_RATING + " and " + MAX_STAR_RATING + ".");
-            }
-        }
-
-        private Double getDoubleRating(final Rating rating) {
-            if (rating == null) {
-                return null;
-            }
-
-            return MAX_STAR_RATING * rating.getValue() / rating.getScale();
         }
     }
 }
