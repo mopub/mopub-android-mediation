@@ -1,6 +1,5 @@
 ## Changelog
   * 7.8.6.1
-    * This version of the adapters has been certified with AppLovin 7.8.6.
     * Added support for passing down AppLovin's `sdk_key` via the dashboard. 
 
   * 7.8.6.0
