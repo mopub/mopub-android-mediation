@@ -1,11 +1,13 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.mopub.MoPubMediationLog;
+
+import static com.mopub.MoPubMediationLog.AdEvent.*;
 
 import java.util.Map;
 
@@ -25,12 +27,16 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             final CustomEventInterstitialListener customEventInterstitialListener,
             final Map<String, Object> localExtras,
             final Map<String, String> serverExtras) {
+
+        new MoPubMediationLog(getClass().getSimpleName());
+
         mInterstitialListener = customEventInterstitialListener;
         final String adUnitId;
 
         if (extrasAreValid(serverExtras)) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
         } else {
+            MoPubMediationLog.logParamsInvalid(AD_UNIT_ID_KEY, "serverExtras");
             mInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             return;
         }
@@ -45,6 +51,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         try {
             mGoogleInterstitialAd.loadAd(adRequest);
+            MoPubMediationLog.logAdRequestSent();
         } catch (NoClassDefFoundError e) {
             // This can be thrown by Play Services on Honeycomb.
             mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
@@ -56,12 +63,13 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         if (mGoogleInterstitialAd.isLoaded()) {
             mGoogleInterstitialAd.show();
         } else {
-            Log.d("MoPub", "Tried to show a Google Play Services interstitial ad before it finished loading. Please try again.");
+            MoPubMediationLog.logAdEvent(UNAVAILABLE);
         }
     }
 
     @Override
     protected void onInvalidate() {
+        MoPubMediationLog.logOnInvalidate();
         if (mGoogleInterstitialAd != null) {
             mGoogleInterstitialAd.setAdListener(null);
         }
@@ -77,7 +85,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     	 */
         @Override
         public void onAdClosed() {
-            Log.d("MoPub", "Google Play Services interstitial ad dismissed.");
+            MoPubMediationLog.logAdEvent(DISMISSED);
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialDismissed();
             }
@@ -85,7 +93,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         @Override
         public void onAdFailedToLoad(int errorCode) {
-            Log.d("MoPub", "Google Play Services interstitial ad failed to load.");
+            MoPubMediationLog.logAdEvent(ERROR);
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialFailed(getMoPubErrorCode(errorCode));
             }
@@ -93,7 +101,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         @Override
         public void onAdLeftApplication() {
-            Log.d("MoPub", "Google Play Services interstitial ad clicked.");
+            MoPubMediationLog.logAdEvent(CLICKED);
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialClicked();
             }
@@ -101,7 +109,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         @Override
         public void onAdLoaded() {
-            Log.d("MoPub", "Google Play Services interstitial ad loaded successfully.");
+            MoPubMediationLog.logAdEvent(LOADED);
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialLoaded();
             }
@@ -109,7 +117,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         @Override
         public void onAdOpened() {
-            Log.d("MoPub", "Showing Google Play Services interstitial ad.");
+            MoPubMediationLog.logAdEvent(SHOWN);
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialShown();
             }
