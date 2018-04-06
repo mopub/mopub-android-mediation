@@ -2,6 +2,8 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.applovin.adview.AppLovinInterstitialAd;
@@ -24,7 +26,9 @@ import java.util.Map;
 import java.util.Queue;
 
 public class AppLovinInterstitial extends CustomEventInterstitial implements AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
-    private static final String DEFAULT_ZONE = "";
+
+    private static final Handler UI_HANDLER   = new Handler(Looper.getMainLooper());
+    private static final String  DEFAULT_ZONE = "";
 
     private AppLovinSdk                     sdk;
     private CustomEventInterstitialListener listener;
@@ -118,12 +122,39 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
 
         enqueueAd(ad, zoneId);
 
+        runOnUiThread( new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                    listener.onInterstitialLoaded();
+                } catch ( Throwable th ) {
+                    MoPubLog.e( "Unable to notify listener of successful ad load.", th );
+                }
+            }
+        } );
+
         listener.onInterstitialLoaded();
     }
 
     @Override
     public void failedToReceiveAd(final int errorCode) {
         MoPubLog.d("Interstitial failed to load with error: " + errorCode);
+
+        runOnUiThread( new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                    listener.onInterstitialFailed( toMoPubErrorCode( errorCode ) );
+                } catch ( Throwable th ) {
+                    MoPubLog.e( "Unable to notify listener of failure to receive ad.", th );
+                }
+            }
+        } );
+
         listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
     }
 
@@ -227,7 +258,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     /**
      * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server parameters, or Android Manifest.
      */
-    static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
+    private static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
         final String sdkKey = serverExtras != null ? serverExtras.get("sdk_key") : null;
         final AppLovinSdk sdk;
 
@@ -237,5 +268,16 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             sdk = AppLovinSdk.getInstance(context);
         }
         return sdk;
+    }
+
+    /**
+     * Performs the given runnable on the main thread.
+     */
+    private static void runOnUiThread(final Runnable runnable) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            runnable.run();
+        } else {
+            UI_HANDLER.post(runnable);
+        }
     }
 }

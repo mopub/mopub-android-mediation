@@ -2,6 +2,8 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.applovin.adview.AppLovinAdView;
@@ -26,6 +28,9 @@ import static android.util.Log.DEBUG;
 import static android.util.Log.ERROR;
 
 public class AppLovinBanner extends CustomEventBanner {
+
+    private static final Handler UI_HANDLER = new Handler(Looper.getMainLooper());
+
     private static final int BANNER_STANDARD_HEIGHT = 50;
     private static final int BANNER_HEIGHT_OFFSET_TOLERANCE = 10;
     private static final int LEADER_STANDARD_HEIGHT = 90;
@@ -86,7 +91,7 @@ public class AppLovinBanner extends CustomEventBanner {
                 @Override
                 public void adReceived(final AppLovinAd ad) {
                     // Ensure logic is ran on main queue
-                    AppLovinSdkUtils.runOnUiThread( new Runnable()
+                    runOnUiThread( new Runnable()
                     {
                         @Override
                         public void run()
@@ -94,7 +99,12 @@ public class AppLovinBanner extends CustomEventBanner {
                             adView.renderAd(ad);
 
                             MoPubLog.d("Successfully loaded banner ad");
-                            customEventBannerListener.onBannerLoaded(adView);
+
+                            try {
+                                customEventBannerListener.onBannerLoaded(adView);
+                            } catch ( Throwable th ) {
+                                MoPubLog.e( "Unable to notify listener of successful ad load.", th );
+                            }
                         }
                     } );
                 }
@@ -102,13 +112,18 @@ public class AppLovinBanner extends CustomEventBanner {
                 @Override
                 public void failedToReceiveAd(final int errorCode) {
                     // Ensure logic is ran on main queue
-                    AppLovinSdkUtils.runOnUiThread( new Runnable()
+                    runOnUiThread( new Runnable()
                     {
                         @Override
                         public void run()
                         {
                             MoPubLog.d("Failed to load banner ad with code: " + errorCode);
-                            customEventBannerListener.onBannerFailed(toMoPubErrorCode(errorCode));
+
+                            try {
+                                customEventBannerListener.onBannerFailed(toMoPubErrorCode(errorCode));
+                            } catch ( Throwable th ) {
+                                MoPubLog.e( "Unable to notify listener of failure to receive ad.", th );
+                            }
                         }
                     } );
                 }
@@ -235,7 +250,7 @@ public class AppLovinBanner extends CustomEventBanner {
     /**
      * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server parameters, or Android Manifest.
      */
-    static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
+    private static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
         final String sdkKey = serverExtras != null ? serverExtras.get("sdk_key") : null;
         final AppLovinSdk sdk;
 
@@ -256,6 +271,17 @@ public class AppLovinBanner extends CustomEventBanner {
         } catch (Throwable th) {
             MoPubLog.d("Unable to load ad for zone: " + zoneId + "...");
             customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        }
+    }
+
+    /**
+     * Performs the given runnable on the main thread.
+     */
+    private static void runOnUiThread(final Runnable runnable) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            runnable.run();
+        } else {
+            UI_HANDLER.post(runnable);
         }
     }
 }
