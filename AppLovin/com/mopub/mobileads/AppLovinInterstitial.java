@@ -27,10 +27,10 @@ import java.util.Queue;
 
 public class AppLovinInterstitial extends CustomEventInterstitial implements AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
 
-    private static final Handler UI_HANDLER   = new Handler(Looper.getMainLooper());
-    private static final String  DEFAULT_ZONE = "";
+    private static final Handler UI_HANDLER = new Handler(Looper.getMainLooper());
+    private static final String DEFAULT_ZONE = "";
 
-    private AppLovinSdk                     sdk;
+    private AppLovinSdk sdk;
     private CustomEventInterstitialListener listener;
     private Context context;
 
@@ -62,7 +62,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         this.listener = listener;
         this.context = context;
 
-        sdk = retrieveSdk( serverExtras, context );
+        sdk = retrieveSdk(serverExtras, context);
         sdk.setPluginVersion("MoPub-Certified-2.2.0");
 
         // Zones support is available on AppLovin SDK 7.5.0 and higher
@@ -122,40 +122,32 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
 
         enqueueAd(ad, zoneId);
 
-        runOnUiThread( new Runnable()
-        {
+        runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 try {
                     listener.onInterstitialLoaded();
-                } catch ( Throwable th ) {
-                    MoPubLog.e( "Unable to notify listener of successful ad load.", th );
+                } catch (Throwable th) {
+                    MoPubLog.e("Unable to notify listener of successful ad load.", th);
                 }
             }
-        } );
-
-        listener.onInterstitialLoaded();
+        });
     }
 
     @Override
     public void failedToReceiveAd(final int errorCode) {
         MoPubLog.d("Interstitial failed to load with error: " + errorCode);
 
-        runOnUiThread( new Runnable()
-        {
+        runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 try {
-                    listener.onInterstitialFailed( toMoPubErrorCode( errorCode ) );
-                } catch ( Throwable th ) {
-                    MoPubLog.e( "Unable to notify listener of failure to receive ad.", th );
+                    listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+                } catch (Throwable th) {
+                    MoPubLog.e("Unable to notify listener of failure to receive ad.", th);
                 }
             }
-        } );
-
-        listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+        });
     }
 
     //

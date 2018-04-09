@@ -16,16 +16,12 @@ import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
-import com.applovin.sdk.AppLovinSdkUtils;
 import com.mopub.common.logging.MoPubLog;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
-
-import static android.util.Log.DEBUG;
-import static android.util.Log.ERROR;
 
 public class AppLovinBanner extends CustomEventBanner {
 
@@ -62,7 +58,7 @@ public class AppLovinBanner extends CustomEventBanner {
             sdk = retrieveSdk(serverExtras, context);
             sdk.setPluginVersion("MoPub-Certified-2.2.0");
 
-            final AppLovinAdView adView = new AppLovinAdView( sdk, adSize, context );
+            final AppLovinAdView adView = new AppLovinAdView(sdk, adSize, context);
             adView.setAdDisplayListener(new AppLovinAdDisplayListener() {
                 @Override
                 public void adDisplayed(final AppLovinAd ad) {
@@ -73,17 +69,17 @@ public class AppLovinBanner extends CustomEventBanner {
                 public void adHidden(final AppLovinAd ad) {
                     MoPubLog.d("Banner dismissed");
                 }
-            } );
-            adView.setAdClickListener( new AppLovinAdClickListener() {
+            });
+            adView.setAdClickListener(new AppLovinAdClickListener() {
                 @Override
                 public void adClicked(final AppLovinAd ad) {
                     MoPubLog.d("Banner clicked");
                     customEventBannerListener.onBannerClicked();
-                    customEventBannerListener.onLeaveApplication();
-                }} );
+                }
+            });
 
             // As of Android SDK >= 7.3.0, we added a listener for banner events
-            if ( AppLovinSdk.VERSION_CODE >= 730 ) {
+            if (AppLovinSdk.VERSION_CODE >= 730) {
                 adView.setAdViewEventListener((AppLovinAdViewEventListener) AppLovinAdViewEventListenerProxy.newInstance(customEventBannerListener));
             }
 
@@ -91,47 +87,43 @@ public class AppLovinBanner extends CustomEventBanner {
                 @Override
                 public void adReceived(final AppLovinAd ad) {
                     // Ensure logic is ran on main queue
-                    runOnUiThread( new Runnable()
-                    {
+                    runOnUiThread(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             adView.renderAd(ad);
 
                             MoPubLog.d("Successfully loaded banner ad");
 
                             try {
                                 customEventBannerListener.onBannerLoaded(adView);
-                            } catch ( Throwable th ) {
-                                MoPubLog.e( "Unable to notify listener of successful ad load.", th );
+                            } catch (Throwable th) {
+                                MoPubLog.e("Unable to notify listener of successful ad load.", th);
                             }
                         }
-                    } );
+                    });
                 }
 
                 @Override
                 public void failedToReceiveAd(final int errorCode) {
                     // Ensure logic is ran on main queue
-                    runOnUiThread( new Runnable()
-                    {
+                    runOnUiThread(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             MoPubLog.d("Failed to load banner ad with code: " + errorCode);
 
                             try {
                                 customEventBannerListener.onBannerFailed(toMoPubErrorCode(errorCode));
-                            } catch ( Throwable th ) {
-                                MoPubLog.e( "Unable to notify listener of failure to receive ad.", th );
+                            } catch (Throwable th) {
+                                MoPubLog.e("Unable to notify listener of failure to receive ad.", th);
                             }
                         }
-                    } );
+                    });
                 }
             };
 
-             // Zones support is available on AppLovin SDK 7.5.0 and higher
+            // Zones support is available on AppLovin SDK 7.5.0 and higher
             final String zoneId;
-            if ( AppLovinSdk.VERSION_CODE >= 750 && serverExtras != null && serverExtras.containsKey("zone_id")) {
+            if (AppLovinSdk.VERSION_CODE >= 750 && serverExtras != null && serverExtras.containsKey("zone_id")) {
                 zoneId = serverExtras.get("zone_id");
             } else {
                 zoneId = null;
@@ -240,7 +232,6 @@ public class AppLovinBanner extends CustomEventBanner {
                 MoPubLog.d("Banner closed fullscreen");
                 customEventBannerListener.onBannerCollapsed();
             } else if ("adLeftApplication".equals(methodName)) {
-                // We will fire onLeaveApplication() in the adClicked() callback
                 MoPubLog.d("Banner left application");
             }
             return null;
@@ -262,8 +253,7 @@ public class AppLovinBanner extends CustomEventBanner {
         return sdk;
     }
 
-    private void loadNextAd(final String zoneId, final AppLovinAdLoadListener adLoadListener, final CustomEventBannerListener customEventBannerListener)
-    {
+    private void loadNextAd(final String zoneId, final AppLovinAdLoadListener adLoadListener, final CustomEventBannerListener customEventBannerListener) {
         // Dynamically load an ad for a given zone without breaking backwards compatibility for publishers on older SDKs
         try {
             final Method method = sdk.getAdService().getClass().getMethod("loadNextAdForZoneId", String.class, AppLovinAdLoadListener.class);
