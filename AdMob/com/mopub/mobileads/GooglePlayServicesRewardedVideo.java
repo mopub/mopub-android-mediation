@@ -11,9 +11,12 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
+import com.mopub.MoPubMediationLog;
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
+
+import static com.mopub.MoPubMediationLog.AdEvent.*;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -94,6 +97,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     protected void onInvalidate() {
+        MoPubMediationLog.logOnInvalidate();
         if (mRewardedVideoAd != null) {
             mRewardedVideoAd.setRewardedVideoAdListener(null);
             mRewardedVideoAd = null;
@@ -105,6 +109,9 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                                             @NonNull Map<String, Object> localExtras,
                                             @NonNull Map<String, String> serverExtras)
             throws Exception {
+
+        new MoPubMediationLog(getClass().getSimpleName());
+
         if (!sIsInitialized.getAndSet(true)) {
             Log.i(TAG, "Adapter version - " + ADAPTER_VERSION);
 
@@ -115,6 +122,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
             }
 
             if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
+                MoPubMediationLog.logParamsInvalid(KEY_EXTRA_AD_UNIT_ID, "serverExtras");
                 // Using class name as the network ID for this callback since the ad unit ID is
                 // invalid.
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
@@ -140,6 +148,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
         if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
+            MoPubMediationLog.logParamsInvalid(KEY_EXTRA_AD_UNIT_ID, "serverExtras");
             // Using class name as the network ID for this callback since the ad unit ID is
             // invalid.
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
@@ -156,11 +165,13 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         }
 
         if (mRewardedVideoAd.isLoaded()) {
+            MoPubMediationLog.logAdEvent(LOADED);
             MoPubRewardedVideoManager
                     .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
         } else {
             mRewardedVideoAd
                     .loadAd(mAdUnitId, new AdRequest.Builder().setRequestAgent("MoPub").build());
+            MoPubMediationLog.logAdRequestSent();
         }
     }
 
@@ -183,6 +194,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     public void onRewardedVideoAdLoaded() {
+        MoPubMediationLog.logAdEvent(LOADED);
         MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
@@ -195,6 +207,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     public void onRewardedVideoStarted() {
+        MoPubMediationLog.logAdEvent(SHOWN);
         MoPubRewardedVideoManager.onRewardedVideoStarted(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
@@ -202,6 +215,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     public void onRewardedVideoAdClosed() {
+        MoPubMediationLog.logAdEvent(DISMISSED);
         MoPubRewardedVideoManager.onRewardedVideoClosed(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
@@ -209,6 +223,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     public void onRewarded(RewardItem rewardItem) {
+        MoPubMediationLog.logAdEvent(COMPLETED);
         MoPubRewardedVideoManager.onRewardedVideoCompleted(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId,
@@ -217,6 +232,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     public void onRewardedVideoAdLeftApplication() {
+        MoPubMediationLog.logAdEvent(CLICKED);
         MoPubRewardedVideoManager.onRewardedVideoClicked(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
@@ -224,6 +240,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     public void onRewardedVideoAdFailedToLoad(int error) {
+        MoPubMediationLog.logAdEvent(ERROR);
         MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId,
