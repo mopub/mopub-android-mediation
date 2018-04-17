@@ -1,4 +1,9 @@
 ## Changelog
+  * 7.8.6.1
+    * Added support for passing down AppLovin's `sdk_key` via the dashboard.
+    * Do not unnecessarily preload a non-zoned rewarded video, as some publishers may only use zone-based rewarded videos.
+    * Ensure ad load callbacks occur on the main queue.
+
   * 7.8.6.0
     * This version of the adapters has been certified with AppLovin 7.8.6.
 	

@@ -2,6 +2,8 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.applovin.adview.AppLovinInterstitialAd;
@@ -14,6 +16,7 @@ import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinSdk;
+import com.applovin.sdk.AppLovinSdkSettings;
 import com.mopub.common.logging.MoPubLog;
 
 import java.lang.reflect.Method;
@@ -23,8 +26,11 @@ import java.util.Map;
 import java.util.Queue;
 
 public class AppLovinInterstitial extends CustomEventInterstitial implements AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
+
+    private static final Handler UI_HANDLER = new Handler(Looper.getMainLooper());
     private static final String DEFAULT_ZONE = "";
 
+    private AppLovinSdk sdk;
     private CustomEventInterstitialListener listener;
     private Context context;
 
@@ -42,7 +48,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
 
     @Override
     public void loadInterstitial(final Context context, final CustomEventInterstitialListener listener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
-        MoPubLog.d("Requesting AppLovin interstitial with localExtras: " + localExtras);
+        MoPubLog.d("Requesting AppLovin interstitial with serverExtras: " + serverExtras + " and localExtras: " + localExtras);
 
         // SDK versions BELOW 7.2.0 require a instance of an Activity to be passed in as the context
         if (AppLovinSdk.VERSION_CODE < 720 && !(context instanceof Activity)) {
@@ -56,8 +62,8 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         this.listener = listener;
         this.context = context;
 
-        final AppLovinSdk sdk = AppLovinSdk.getInstance(context);
-        sdk.setPluginVersion("MoPub-Certified-2.1.0");
+        sdk = retrieveSdk(serverExtras, context);
+        sdk.setPluginVersion("MoPub-Certified-2.2.0");
 
         // Zones support is available on AppLovin SDK 7.5.0 and higher
         final String serverExtrasZoneId = serverExtras != null ? serverExtras.get("zone_id") : null;
@@ -91,8 +97,6 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     public void showInterstitial() {
         final AppLovinAd preloadedAd = dequeueAd(zoneId);
         if (preloadedAd != null) {
-            final AppLovinSdk sdk = AppLovinSdk.getInstance(context);
-
             final AppLovinInterstitialAdDialog interstitialAd = createInterstitial(context, sdk);
             interstitialAd.setAdDisplayListener(this);
             interstitialAd.setAdClickListener(this);
@@ -118,13 +122,32 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
 
         enqueueAd(ad, zoneId);
 
-        listener.onInterstitialLoaded();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    listener.onInterstitialLoaded();
+                } catch (Throwable th) {
+                    MoPubLog.e("Unable to notify listener of successful ad load.", th);
+                }
+            }
+        });
     }
 
     @Override
     public void failedToReceiveAd(final int errorCode) {
         MoPubLog.d("Interstitial failed to load with error: " + errorCode);
-        listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+                } catch (Throwable th) {
+                    MoPubLog.e("Unable to notify listener of failure to receive ad.", th);
+                }
+            }
+        });
     }
 
     //
@@ -221,6 +244,32 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             return MoPubErrorCode.NETWORK_TIMEOUT;
         } else {
             return MoPubErrorCode.UNSPECIFIED;
+        }
+    }
+
+    /**
+     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server parameters, or Android Manifest.
+     */
+    private static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
+        final String sdkKey = serverExtras != null ? serverExtras.get("sdk_key") : null;
+        final AppLovinSdk sdk;
+
+        if (!TextUtils.isEmpty(sdkKey)) {
+            sdk = AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context);
+        } else {
+            sdk = AppLovinSdk.getInstance(context);
+        }
+        return sdk;
+    }
+
+    /**
+     * Performs the given runnable on the main thread.
+     */
+    private static void runOnUiThread(final Runnable runnable) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            runnable.run();
+        } else {
+            UI_HANDLER.post(runnable);
         }
     }
 }

@@ -1,4 +1,7 @@
 ## Changelog
+  * 3.3.2.0
+    * This version of the adapters has been certified with AdColony 3.3.2.
+
   * 3.3.0.0
     * This version of the adapters has been certified with AdColony 3.3.0.
 	

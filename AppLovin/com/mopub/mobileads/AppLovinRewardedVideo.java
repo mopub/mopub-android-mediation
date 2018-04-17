@@ -1,8 +1,10 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.sdk.AppLovinAd;
@@ -13,6 +15,7 @@ import com.applovin.sdk.AppLovinAdRewardListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinSdk;
+import com.applovin.sdk.AppLovinSdkSettings;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
@@ -32,6 +35,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     private static boolean initialized;
     private String zoneId;
 
+    private AppLovinSdk sdk;
     private AppLovinIncentivizedInterstitial incentivizedInterstitial;
     private Activity parentActivity;
 
@@ -48,13 +52,9 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         MoPubLog.d("Initializing AppLovin rewarded video...");
 
         if (!initialized) {
-            AppLovinSdk.initializeSdk(activity);
-            AppLovinSdk.getInstance(activity).setPluginVersion("MoPub-Certified-2.1.0");
 
-            // Preload an incentivized ad for default zone
-            AppLovinIncentivizedInterstitial incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(activity);
-            incentivizedInterstitial.preload(null);
-            GLOBAL_INCENTIVIZED_INTERSTITIAL_ADS.put(DEFAULT_ZONE, incentivizedInterstitial);
+            sdk = retrieveSdk(serverExtras, activity);
+            sdk.setPluginVersion("MoPub-Certified-2.2.0");
 
             initialized = true;
 
@@ -65,7 +65,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
     @Override
     protected void loadWithSdkInitialized(@NonNull final Activity activity, @NonNull final Map<String, Object> localExtras, @NonNull final Map<String, String> serverExtras) throws Exception {
-        MoPubLog.d("Requesting AppLovin rewarded video with serverExtras: " + serverExtras);
+        MoPubLog.d("Requesting AppLovin banner with serverExtras: " + serverExtras + " and localExtras: " + localExtras);
 
         parentActivity = activity;
 
@@ -87,7 +87,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
             }
             // Otherwise, use the Zones API
             else {
-                incentivizedInterstitial = createIncentivizedInterstitialForZoneId(zoneId, AppLovinSdk.getInstance(activity));
+                incentivizedInterstitial = createIncentivizedInterstitialForZoneId(zoneId, sdk);
             }
 
             GLOBAL_INCENTIVIZED_INTERSTITIAL_ADS.put(zoneId, incentivizedInterstitial);
@@ -105,7 +105,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
             incentivizedInterstitial.show(parentActivity, null, this, this, this, this);
         } else {
             MoPubLog.d("Failed to show an AppLovin rewarded video before one was loaded");
-            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(this.getClass(), getAdNetworkId(), MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(getClass(), getAdNetworkId(), MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
         }
     }
 
@@ -137,13 +137,33 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     @Override
     public void adReceived(final AppLovinAd ad) {
         MoPubLog.d("Rewarded video did load ad: " + ad.getAdIdNumber());
-        MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(this.getClass(), getAdNetworkId());
+
+        parentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(AppLovinRewardedVideo.this.getClass(), getAdNetworkId());
+                } catch (Throwable th) {
+                    MoPubLog.e("Unable to notify listener of successful ad load.", th);
+                }
+            }
+        });
     }
 
     @Override
     public void failedToReceiveAd(final int errorCode) {
         MoPubLog.d("Rewarded video failed to load with error: " + errorCode);
-        MoPubRewardedVideoManager.onRewardedVideoLoadFailure(this.getClass(), getAdNetworkId(), toMoPubErrorCode(errorCode));
+
+        parentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MoPubRewardedVideoManager.onRewardedVideoLoadFailure(AppLovinRewardedVideo.this.getClass(), getAdNetworkId(), toMoPubErrorCode(errorCode));
+                } catch (Throwable th) {
+                    MoPubLog.e("Unable to notify listener of failure to receive ad.", th);
+                }
+            }
+        });
     }
 
     //
@@ -153,7 +173,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     @Override
     public void adDisplayed(final AppLovinAd ad) {
         MoPubLog.d("Rewarded video displayed");
-        MoPubRewardedVideoManager.onRewardedVideoStarted(this.getClass(), getAdNetworkId());
+        MoPubRewardedVideoManager.onRewardedVideoStarted(getClass(), getAdNetworkId());
     }
 
     @Override
@@ -162,10 +182,10 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
         if (fullyWatched && reward != null) {
             MoPubLog.d("Rewarded" + reward.getAmount() + " " + reward.getLabel());
-            MoPubRewardedVideoManager.onRewardedVideoCompleted(this.getClass(), getAdNetworkId(), reward);
+            MoPubRewardedVideoManager.onRewardedVideoCompleted(getClass(), getAdNetworkId(), reward);
         }
 
-        MoPubRewardedVideoManager.onRewardedVideoClosed(this.getClass(), getAdNetworkId());
+        MoPubRewardedVideoManager.onRewardedVideoClosed(getClass(), getAdNetworkId());
     }
 
     //
@@ -175,7 +195,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     @Override
     public void adClicked(final AppLovinAd ad) {
         MoPubLog.d("Rewarded video clicked");
-        MoPubRewardedVideoManager.onRewardedVideoClicked(this.getClass(), getAdNetworkId());
+        MoPubRewardedVideoManager.onRewardedVideoClicked(getClass(), getAdNetworkId());
     }
 
     //
@@ -216,7 +236,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     @Override
     public void userDeclinedToViewAd(final AppLovinAd appLovinAd) {
         MoPubLog.d("User declined to view rewarded video");
-        MoPubRewardedVideoManager.onRewardedVideoClosed(this.getClass(), getAdNetworkId());
+        MoPubRewardedVideoManager.onRewardedVideoClosed(getClass(), getAdNetworkId());
     }
 
     @Override
@@ -262,5 +282,20 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         } else {
             return MoPubErrorCode.UNSPECIFIED;
         }
+    }
+
+    /**
+     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server parameters, or Android Manifest.
+     */
+    private static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
+        final String sdkKey = serverExtras != null ? serverExtras.get("sdk_key") : null;
+        final AppLovinSdk sdk;
+
+        if (!TextUtils.isEmpty(sdkKey)) {
+            sdk = AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context);
+        } else {
+            sdk = AppLovinSdk.getInstance(context);
+        }
+        return sdk;
     }
 }

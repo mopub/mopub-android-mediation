@@ -1,4 +1,7 @@
 ## Changelog
+  * 11.12.0.0
+    * This version of the adapters has been certified with Tapjoy 11.12.0.
+
   * 11.11.0.0
     * This version of the adapters has been certified with Tapjoy 11.11.0.
 
