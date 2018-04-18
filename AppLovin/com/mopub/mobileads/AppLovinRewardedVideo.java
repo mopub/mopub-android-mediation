@@ -20,7 +20,6 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
