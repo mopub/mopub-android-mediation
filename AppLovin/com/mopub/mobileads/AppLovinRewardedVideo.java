@@ -32,7 +32,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     // on every ad load regardless if ad was actually displayed or not.
     private static final Map<String, AppLovinIncentivizedInterstitial> GLOBAL_INCENTIVIZED_INTERSTITIAL_ADS = new HashMap<String, AppLovinIncentivizedInterstitial>();
 
-    private static boolean initialized;
+    private boolean initialized;
     private String zoneId;
 
     private AppLovinSdk sdk;
@@ -54,7 +54,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         if (!initialized) {
 
             sdk = retrieveSdk(serverExtras, activity);
-            sdk.setPluginVersion("MoPub-Certified-2.2.0");
+            sdk.setPluginVersion("MoPub-Certified-2.2.1");
 
             initialized = true;
 

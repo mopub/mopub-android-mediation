@@ -208,6 +208,11 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     }
 
     @Override
+    public void onRewardedVideoCompleted() {
+        // Already notifying MoPub of playback completion in onRewarded(). Do nothing.
+    }
+
+    @Override
     public void onRewarded(RewardItem rewardItem) {
         MoPubRewardedVideoManager.onRewardedVideoCompleted(
                 GooglePlayServicesRewardedVideo.class,

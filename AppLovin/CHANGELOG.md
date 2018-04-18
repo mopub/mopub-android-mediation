@@ -1,4 +1,6 @@
 ## Changelog
+  * 7.8.6.2
+    * Fixed edge case of rewarded videos not loading on custom zones.
   * 7.8.6.1
     * Added support for passing down AppLovin's `sdk_key` via the dashboard.
     * Do not unnecessarily preload a non-zoned rewarded video, as some publishers may only use zone-based rewarded videos.
