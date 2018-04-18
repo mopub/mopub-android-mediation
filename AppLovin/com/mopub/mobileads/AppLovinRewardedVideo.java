@@ -87,7 +87,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
             }
             // Otherwise, use the Zones API
             else {
-                incentivizedInterstitial = createIncentivizedInterstitialForZoneId(zoneId, sdk);
+                incentivizedInterstitial = AppLovinIncentivizedInterstitial.create(zoneId, sdk);
             }
 
             GLOBAL_INCENTIVIZED_INTERSTITIAL_ADS.put(zoneId, incentivizedInterstitial);
@@ -247,23 +247,6 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         MoPubLog.d("Verified " + amount + " " + currency);
 
         reward = MoPubReward.success(currency, amount);
-    }
-
-    //
-    // Dynamically create an instance of AppLovinIncentivizedInterstitial with a given zone without breaking backwards compatibility for publishers on older SDKs.
-    //
-    private AppLovinIncentivizedInterstitial createIncentivizedInterstitialForZoneId(final String zoneId, final AppLovinSdk sdk) {
-        AppLovinIncentivizedInterstitial incent = null;
-
-        try {
-            final Method method = AppLovinIncentivizedInterstitial.class.getMethod("create", String.class, AppLovinSdk.class);
-            incent = (AppLovinIncentivizedInterstitial) method.invoke(null, zoneId, sdk);
-        } catch (Throwable th) {
-            MoPubLog.d("Unable to load ad for zone: " + zoneId + "...");
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(getClass(), getAdNetworkId(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-        }
-
-        return incent;
     }
 
     //
