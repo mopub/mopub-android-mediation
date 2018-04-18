@@ -206,10 +206,10 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
     }
-        
+
     @Override
     public void onRewardedVideoCompleted() {
-        // MoPub SDK does not have an equivalent callback for an ad opened event. Do nothing.
+        // Already notifying MoPub of playback completion in onRewarded(). Do nothing.
     }
 
     @Override
