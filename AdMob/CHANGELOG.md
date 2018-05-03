@@ -1,4 +1,7 @@
 ## Changelog
+  * 15.0.0.2
+    * Resolved the previous Known Issue (AdMob's native ads are occasionally removed from the view hierarchy when a ListView/RecyclerView is scrolled).
+
   * 15.0.0.1
     * Removed an extra class from the JCenter jar. The adapter binaries on this GitHub repository are not affected.
 
