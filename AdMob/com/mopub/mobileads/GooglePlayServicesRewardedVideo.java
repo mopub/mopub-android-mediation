@@ -1,6 +1,8 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -155,13 +157,18 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
             mRewardedVideoAd.setRewardedVideoAdListener(GooglePlayServicesRewardedVideo.this);
         }
 
-        if (mRewardedVideoAd.isLoaded()) {
-            MoPubRewardedVideoManager
-                    .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
-        } else {
-            mRewardedVideoAd
-                    .loadAd(mAdUnitId, new AdRequest.Builder().setRequestAgent("MoPub").build());
-        }
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (mRewardedVideoAd.isLoaded()) {
+                    MoPubRewardedVideoManager
+                            .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
+                } else {
+                    mRewardedVideoAd
+                            .loadAd(mAdUnitId, new AdRequest.Builder().setRequestAgent("MoPub").build());
+                }
+            }
+        });
     }
 
     @Override

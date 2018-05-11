@@ -1,4 +1,7 @@
 ## Changelog
+  * 15.0.0.3
+    * Forced AdMob's rewarded video's `isLoaded()` check to run on the main thread (in light of multithreading crashes when mediating AdMob on Unity).
+
   * 15.0.0.2
     * Resolved the previous Known Issue (AdMob's native ads are occasionally removed from the view hierarchy when a ListView/RecyclerView is scrolled).
 
