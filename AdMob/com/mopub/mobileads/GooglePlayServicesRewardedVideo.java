@@ -157,6 +157,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
             mRewardedVideoAd.setRewardedVideoAdListener(GooglePlayServicesRewardedVideo.this);
         }
 
+        /* AdMob's isLoaded() has to be called on the main thread to avoid multithreading crashes
+        when mediating on Unity */
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
