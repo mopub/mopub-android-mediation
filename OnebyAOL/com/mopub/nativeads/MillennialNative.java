@@ -14,6 +14,7 @@ import com.millennialmedia.NativeAd;
 import com.millennialmedia.internal.ActivityListenerManager;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.MillennialUtils;
 
@@ -55,13 +56,12 @@ public class MillennialNative extends CustomEventNative {
 
                 if (personalInfoManager != null) {
                     boolean gdprApplies = personalInfoManager.gdprApplies();
-                    boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
 
                     // Set if GDPR applies / if consent is required
                     setConsentRequired(gdprApplies);
 
                     // Pass the user consent from the MoPub SDK to One by AOL as per GDPR
-                    if (canCollectPersonalInfo) {
+                    if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_YES) {
                         setConsentData("mopub", "1");
                     }
                 }

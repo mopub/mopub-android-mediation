@@ -58,7 +58,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
         // Pass the user consent from the MoPub SDK to ironSource as per GDPR
-        if (personalInfoManager != null) {
+        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
             boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
             IronSource.setConsent(canCollectPersonalInfo);
         }

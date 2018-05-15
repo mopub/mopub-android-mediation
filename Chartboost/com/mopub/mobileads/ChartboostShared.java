@@ -52,7 +52,7 @@ public class ChartboostShared {
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
         // Pass the user consent from the MoPub SDK to Chartboost as per GDPR
-        if (personalInfoManager != null) {
+        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
             boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
             Chartboost.restrictDataCollection(launcherActivity.getApplicationContext(), !canCollectPersonalInfo);
         }
