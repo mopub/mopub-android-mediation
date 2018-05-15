@@ -49,13 +49,9 @@ public class ChartboostShared {
         Preconditions.checkNotNull(launcherActivity);
         Preconditions.checkNotNull(serverExtras);
 
-        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
         // Pass the user consent from the MoPub SDK to Chartboost as per GDPR
-        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-            boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
-            Chartboost.restrictDataCollection(launcherActivity.getApplicationContext(), !canCollectPersonalInfo);
-        }
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        Chartboost.restrictDataCollection(launcherActivity.getApplicationContext(), !canCollectPersonalInfo);
 
         // Validate Chartboost args
         if (!serverExtras.containsKey(APP_ID_KEY)) {

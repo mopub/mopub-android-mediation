@@ -55,13 +55,9 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
     @Override
     protected void loadInterstitial(Context context, CustomEventInterstitialListener customEventInterstitialListener, Map<String, Object> map0, Map<String, String> serverExtras) {
 
-        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
         // Pass the user consent from the MoPub SDK to ironSource as per GDPR
-        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-            boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
-            IronSource.setConsent(canCollectPersonalInfo);
-        }
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        IronSource.setConsent(canCollectPersonalInfo);
 
         try {
             mMoPubListener = customEventInterstitialListener;

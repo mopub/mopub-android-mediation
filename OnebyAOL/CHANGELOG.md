@@ -1,7 +1,7 @@
 ## Changelog
   * 6.8.1.0
     * This version of the adapters has been certified with ONE by AOL 6.8.1.
-    * Pass user consent collected from the MoPub SDK to the ONE by AOL SDK per GDPR.
+    * General Data Protection Regulation (GDPR) update to support a way for publishers to determine GDPR applicability and to obtain/manage consent from users in European Economic Area, the United Kingdom, or Switzerland to serve personalize ads. Only applicable when integrated with MoPub version 5.0.0 and above.
 
   * 6.7.0.0
     * This version of the adapters has been certified with ONE by AOL 6.7.0.

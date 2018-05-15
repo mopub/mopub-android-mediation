@@ -45,13 +45,9 @@ public class AppLovinBanner extends CustomEventBanner {
     @Override
     protected void loadBanner(final Context context, final CustomEventBannerListener customEventBannerListener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
 
-        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
         // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
-        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-            boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
-            AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
-        }
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
 
         // SDK versions BELOW 7.1.0 require a instance of an Activity to be passed in as the context
         if (AppLovinSdk.VERSION_CODE < 710 && !(context instanceof Activity)) {

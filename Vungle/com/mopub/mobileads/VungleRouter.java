@@ -73,13 +73,9 @@ public class VungleRouter {
 
     public void initVungle(Context context, String vungleAppId, String[] placementReferenceIds) {
 
-        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
         // Pass the user consent from the MoPub SDK to Vungle as per GDPR
-        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-            boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
-            Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN : Vungle.Consent.OPTED_OUT);
-        }
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN : Vungle.Consent.OPTED_OUT);
 
         Vungle.init(Arrays.asList(placementReferenceIds), vungleAppId, context.getApplicationContext(), new InitCallback() {
             @Override
