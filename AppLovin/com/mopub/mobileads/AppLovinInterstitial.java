@@ -74,7 +74,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         this.context = context;
 
         sdk = retrieveSdk(serverExtras, context);
-        sdk.setPluginVersion("MoPub-Certified-2.2.2");
+        sdk.setPluginVersion("MoPub-Certified-3.0.0");
 
         // Zones support is available on AppLovin SDK 7.5.0 and higher
         final String serverExtrasZoneId = serverExtras != null ? serverExtras.get("zone_id") : null;

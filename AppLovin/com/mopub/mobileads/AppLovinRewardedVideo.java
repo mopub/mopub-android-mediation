@@ -65,7 +65,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         if (!initialized) {
 
             sdk = retrieveSdk(serverExtras, activity);
-            sdk.setPluginVersion("MoPub-Certified-2.2.2");
+            sdk.setPluginVersion("MoPub-Certified-3.0.0");
 
             initialized = true;
 
