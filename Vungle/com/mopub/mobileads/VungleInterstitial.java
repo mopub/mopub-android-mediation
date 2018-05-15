@@ -6,10 +6,13 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import com.mopub.common.logging.MoPubLog;
-import com.vungle.publisher.AdConfig;
+import com.vungle.warren.AdConfig;
 
 import java.util.Map;
 
+/**
+ * A custom event for showing Vungle Interstitial.
+ */
 public class VungleInterstitial extends CustomEventInterstitial {
 
     private static final String INTERSTITIAL_TAG = "Vungle Interstitial: ";
@@ -60,6 +63,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
                     mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
                 }
             });
+
             return;
         }
 
@@ -86,13 +90,13 @@ public class VungleInterstitial extends CustomEventInterstitial {
             mAdConfig = new AdConfig();
             Object isSoundEnabled = localExtras.get(SOUND_ENABLED_KEY);
             if (isSoundEnabled instanceof Boolean)
-                mAdConfig.setSoundEnabled((Boolean) isSoundEnabled);
+                mAdConfig.setMuted(!(Boolean) isSoundEnabled);
             Object flexViewCloseTimeInSec = localExtras.get(FLEX_VIEW_CLOSE_TIME_KEY);
             if (flexViewCloseTimeInSec instanceof Integer)
-                mAdConfig.setFlexViewCloseTimeInSec((Integer) flexViewCloseTimeInSec);
+                mAdConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
             Object ordinalViewCount = localExtras.get(ORDINAL_VIEW_COUNT_KEY);
             if (ordinalViewCount instanceof Integer)
-                mAdConfig.setOrdinalViewCount((Integer) ordinalViewCount);
+                mAdConfig.setOrdinal((Integer) ordinalViewCount);
         }
 
         sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);

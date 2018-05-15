@@ -14,11 +14,14 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdRewardListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinErrorCodes;
+import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +51,15 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull final Activity activity, @NonNull final Map<String, Object> localExtras, @NonNull final Map<String, String> serverExtras) throws Exception {
+
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+
+        // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
+        if (personalInfoManager != null) {
+            boolean canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
+            AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, activity.getApplicationContext());
+        }
+
         MoPubLog.d("Initializing AppLovin rewarded video...");
 
         if (!initialized) {

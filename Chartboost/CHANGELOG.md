@@ -1,4 +1,8 @@
 ## Changelog
+  * 7.2.0.0
+    * This version of the adapters has been certified with Chartboost 7.2.0.
+    * Pass user consent collected from the MoPub SDK to the Chartboost SDK per GDPR.
+    
   * 7.1.0.0
     * This version of the adapters has been certified with Chartboost 7.1.0.
 

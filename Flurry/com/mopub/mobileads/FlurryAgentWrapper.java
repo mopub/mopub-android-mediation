@@ -9,6 +9,12 @@ import android.util.Log;
 
 import com.flurry.android.FlurryAgent;
 import com.flurry.android.FlurryAgentListener;
+import com.flurry.android.FlurryConsent;
+import com.mopub.common.MoPub;
+import com.mopub.common.privacy.PersonalInfoManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class FlurryAgentWrapper {
     public static final String PARAM_API_KEY = "apiKey";
@@ -24,9 +30,23 @@ public final class FlurryAgentWrapper {
     }
 
     private FlurryAgentWrapper() {
+
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+        boolean canCollectPersonalInfo = false;
+
+        // Pass the user consent from the MoPub SDK to Yahoo! Flurry as per GDPR
+        if (personalInfoManager != null) {
+            canCollectPersonalInfo = personalInfoManager.canCollectPersonalInformation();
+        }
+
+        Map<String, String> consentStrings = new HashMap<>();
+        // TODO: Put the actual consent strings once final
+        consentStrings.put("", "");
+
         mAgentBuilder = new FlurryAgent.Builder()
                 .withLogEnabled(false)
-                .withLogLevel(Log.INFO);
+                .withLogLevel(Log.INFO)
+                .withConsent((new FlurryConsent(canCollectPersonalInfo, consentStrings)));
 
         FlurryAgent.addOrigin(ORIGIN_IDENTIFIER, ORIGIN_VERSION);
     }

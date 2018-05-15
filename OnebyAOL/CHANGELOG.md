@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.8.1.0
+    * This version of the adapters has been certified with ONE by AOL 6.8.1.
+    * Pass user consent collected from the MoPub SDK to the ONE by AOL SDK per GDPR.
+
   * 6.7.0.0
     * This version of the adapters has been certified with ONE by AOL 6.7.0.
     * Reverted to use MMSDK.initialize() to initialize the ONE by AOL SDK.
