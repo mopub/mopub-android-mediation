@@ -8,6 +8,7 @@ import com.mopub.common.logging.MoPubLog;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.ads.metadata.MetaData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,14 @@ public class UnityRouter {
     private static Map<String, IUnityAdsExtendedListener> mUnityAdsListeners = new HashMap<>();
 
     static boolean initUnityAds(Map<String, String> serverExtras, Activity launcherActivity) {
+
+        // Pass the user consent from the MoPub SDK to Unity Ads as per GDPR
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+
+        MetaData gdprMetaData = new MetaData(launcherActivity.getApplicationContext());
+        gdprMetaData.set("gdpr.consent", canCollectPersonalInfo);
+        gdprMetaData.commit();
+
         String gameId = serverExtras.get(GAME_ID_KEY);
         if (gameId == null || gameId.isEmpty()) {
             MoPubLog.e("gameId is missing or entered incorrectly in the MoPub UI");
