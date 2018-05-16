@@ -92,10 +92,16 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
             PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
             if (personalInfoManager != null) {
-                boolean gdprApplies = personalInfoManager.gdprApplies();
+                try {
+                    Boolean gdprApplies = personalInfoManager.gdprApplies();
 
-                // Set if GDPR applies / if consent is required
-                setConsentRequired(gdprApplies);
+                    // Set if GDPR applies / if consent is required
+                    if (gdprApplies != null) {
+                        setConsentRequired(gdprApplies);
+                    }
+                } catch (NullPointerException e) {
+                    MoPubLog.d("GDPR applicability cannot be determined.", e);
+                }
 
                 // Pass the user consent from the MoPub SDK to One by AOL as per GDPR
                 if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_YES) {
