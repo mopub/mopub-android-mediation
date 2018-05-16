@@ -60,29 +60,29 @@ final class MillennialBanner extends CustomEventBanner {
     protected void loadBanner(final Context context, final CustomEventBannerListener customEventBannerListener,
                               final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
 
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+
+        if (personalInfoManager != null) {
+            try {
+                Boolean gdprApplies = personalInfoManager.gdprApplies();
+
+                // Set if GDPR applies / if consent is required
+                if (gdprApplies != null) {
+                    setConsentRequired(gdprApplies);
+                }
+            } catch (NullPointerException e) {
+                MoPubLog.d("GDPR applicability cannot be determined.", e);
+            }
+
+            // Pass the user consent from the MoPub SDK to One by AOL as per GDPR
+            if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_YES) {
+                setConsentData("mopub", "1");
+            }
+        }
+
         if (context instanceof Activity) {
             try {
                 MMSDK.initialize((Activity) context, ActivityListenerManager.LifecycleState.RESUMED);
-
-                PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
-                if (personalInfoManager != null) {
-                    try {
-                        Boolean gdprApplies = personalInfoManager.gdprApplies();
-
-                        // Set if GDPR applies / if consent is required
-                        if (gdprApplies != null) {
-                            setConsentRequired(gdprApplies);
-                        }
-                    } catch (NullPointerException e) {
-                        MoPubLog.d("GDPR applicability cannot be determined.", e);
-                    }
-
-                    // Pass the user consent from the MoPub SDK to One by AOL as per GDPR
-                    if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_YES) {
-                        setConsentData("mopub", "1");
-                    }
-                }
             } catch (IllegalStateException e) {
                 MoPubLog.d("Exception occurred initializing the MM SDK.", e);
                 bannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
