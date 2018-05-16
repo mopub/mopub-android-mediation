@@ -1,4 +1,7 @@
 ## Changelog
+  * 4.28.1.1
+    * Enables advanced bidding for all adapters and adds FacebookAdvancedBidder.
+
   * 4.28.1.0
     * This version of the adapters has been certified with Facebook Audience Network 4.28.1.
 

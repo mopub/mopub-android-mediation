@@ -7,8 +7,6 @@ import com.facebook.ads.BidderTokenProvider;
 import com.mopub.common.MoPubAdvancedBidder;
 
 /**
- * Certified with Facebook Audience Network 4.28.0
- *
  * Include this class to use advanced bidding from Facebook.
  */
 public class FacebookAdvancedBidder implements MoPubAdvancedBidder {
