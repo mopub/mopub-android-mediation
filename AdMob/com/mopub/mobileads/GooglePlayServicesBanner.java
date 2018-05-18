@@ -1,12 +1,15 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.mopub.common.MoPub;
 import com.mopub.common.util.Views;
 
 import java.util.Map;
@@ -24,6 +27,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     public static final String AD_WIDTH_KEY = "adWidth";
     public static final String AD_HEIGHT_KEY = "adHeight";
     public static final String LOCATION_KEY = "location";
+    public static final String NON_PERSONALIZED_ADS_KEY = "npa";
 
     private CustomEventBannerListener mBannerListener;
     private AdView mGoogleAdView;
@@ -60,8 +64,14 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         mGoogleAdView.setAdSize(adSize);
 
+        Bundle networkExtras = new Bundle();
+        if (!MoPub.canCollectPersonalInformation()) {
+            networkExtras.putString(NON_PERSONALIZED_ADS_KEY, "1");
+        }
+
         final AdRequest adRequest = new AdRequest.Builder()
                 .setRequestAgent("MoPub")
+                .addNetworkExtrasBundle(AdMobAdapter.class, networkExtras)
                 .build();
 
         try {
