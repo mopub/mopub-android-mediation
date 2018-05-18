@@ -1,11 +1,14 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.mopub.common.MoPub;
 
 import java.util.Map;
 
@@ -15,6 +18,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
      */
     public static final String AD_UNIT_ID_KEY = "adUnitID";
     public static final String LOCATION_KEY = "location";
+    public static final String NON_PERSONALIZED_ADS_KEY = "npa";
 
     private CustomEventInterstitialListener mInterstitialListener;
     private InterstitialAd mGoogleInterstitialAd;
@@ -39,8 +43,14 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         mGoogleInterstitialAd.setAdListener(new InterstitialAdListener());
         mGoogleInterstitialAd.setAdUnitId(adUnitId);
 
+        Bundle networkExtras = new Bundle();
+        if (!MoPub.canCollectPersonalInformation()) {
+            networkExtras.putString(NON_PERSONALIZED_ADS_KEY, "1");
+        }
+
         final AdRequest adRequest = new AdRequest.Builder()
                 .setRequestAgent("MoPub")
+                .addNetworkExtrasBundle(AdMobAdapter.class, networkExtras)
                 .build();
 
         try {

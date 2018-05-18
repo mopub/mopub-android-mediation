@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.reward.RewardItem;
@@ -15,6 +17,7 @@ import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 
 import java.util.Map;
@@ -38,6 +41,11 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
      * Key to obtain AdMob ad unit ID from the extras provided by MoPub.
      */
     private static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
+
+    /**
+     * Key to force ads to be non-personalized and not send any personal information.
+     */
+    public static final String KEY_NON_PERSONALIZED_ADS = "npa";
 
     /**
      * Flag to determine whether or not the adapter has been initialized.
@@ -166,8 +174,15 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                     MoPubRewardedVideoManager
                             .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
                 } else {
+                    Bundle networkExtras = new Bundle();
+                    if (!MoPub.canCollectPersonalInformation()) {
+                        networkExtras.putString(KEY_NON_PERSONALIZED_ADS, "1");
+                    }
                     mRewardedVideoAd
-                            .loadAd(mAdUnitId, new AdRequest.Builder().setRequestAgent("MoPub").build());
+                            .loadAd(mAdUnitId, new AdRequest.Builder()
+                                .setRequestAgent("MoPub")
+                                .addNetworkExtrasBundle(AdMobAdapter.class, networkExtras)
+                                .build());
                 }
             }
         });

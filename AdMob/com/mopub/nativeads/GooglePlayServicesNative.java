@@ -1,11 +1,13 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -13,6 +15,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.NativeContentAd;
+import com.mopub.common.MoPub;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +54,11 @@ public class GooglePlayServicesNative extends CustomEventNative {
      * Key to set and obtain the experimental swap margins flag.
      */
     public static final String KEY_EXPERIMENTAL_EXTRA_SWAP_MARGINS = "swap_margins";
+
+    /**
+     * Key to force ads to be non-personalized and not send any personal information.
+     */
+    public static final String KEY_NON_PERSONALIZED_ADS = "npa";
 
     /**
      * Flag to determine whether or not the adapter has been initialized.
@@ -425,7 +433,15 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             }
                         }
                     }).withNativeAdOptions(adOptions).build();
-            adLoader.loadAd(new AdRequest.Builder().setRequestAgent("MoPub").build());
+
+            Bundle networkExtras = new Bundle();
+            if (!MoPub.canCollectPersonalInformation()) {
+                networkExtras.putString(KEY_NON_PERSONALIZED_ADS, "1");
+            }
+            adLoader.loadAd(new AdRequest.Builder()
+                    .setRequestAgent("MoPub")
+                    .addNetworkExtrasBundle(AdMobAdapter.class, networkExtras)
+                    .build());
         }
 
         /**
