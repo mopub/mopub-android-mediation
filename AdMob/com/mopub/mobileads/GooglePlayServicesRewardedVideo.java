@@ -171,7 +171,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                             .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
                 } else {
                     mRewardedVideoAd
-                            .loadAd(mAdUnitId, new AdRequest.Builder().addNetworkExtrasBundle(AdMobAdapter.class, getConsent(localExtrasMap)).setRequestAgent("MoPub").build());
+                            .loadAd(mAdUnitId, new AdRequest.Builder().addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtrasMap)).setRequestAgent("MoPub").build());
                 }
             }
         });
@@ -248,7 +248,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                 getMoPubErrorCode(error));
     }
 
-    private Bundle getConsent(Map<String, Object> localExtras) {
+    private Bundle getGooglePersonalizationPreference(Map<String, Object> localExtras) {
         Bundle extras = new Bundle();
 
         String personalizationPref = localExtras.get("npa").toString();

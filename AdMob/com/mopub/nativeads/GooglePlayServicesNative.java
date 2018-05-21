@@ -427,10 +427,10 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             }
                         }
                     }).withNativeAdOptions(adOptions).build();
-            adLoader.loadAd(new AdRequest.Builder().setRequestAgent("MoPub").addNetworkExtrasBundle(AdMobAdapter.class, getConsent(localExtras)).build());
+            adLoader.loadAd(new AdRequest.Builder().setRequestAgent("MoPub").addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtras)).build());
         }
 
-        private Bundle getConsent(Map<String, Object> localExtras) {
+        private Bundle getGooglePersonalizationPreference(Map<String, Object> localExtras) {
             Bundle extras = new Bundle();
 
             String personalizationPref = localExtras.get("npa").toString();

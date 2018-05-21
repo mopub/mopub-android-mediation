@@ -44,7 +44,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         final AdRequest adRequest = new AdRequest.Builder()
                 .setRequestAgent("MoPub")
-                .addNetworkExtrasBundle(AdMobAdapter.class, getConsent(localExtras))
+                .addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtras))
                 .build();
 
         try {
@@ -71,7 +71,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         }
     }
 
-    private Bundle getConsent(Map<String, Object> localExtras) {
+    private Bundle getGooglePersonalizationPreference(Map<String, Object> localExtras) {
         Bundle extras = new Bundle();
 
         String personalizationPref = localExtras.get("npa").toString();
