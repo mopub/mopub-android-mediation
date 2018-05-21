@@ -132,6 +132,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             }
 
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+
             // App options null safety
             mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions()
                     : mAdColonyAppOptions;
@@ -156,7 +157,6 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         mZoneId = DEFAULT_ZONE_ID;
 
         if (extrasAreValid(serverExtras)) {
-            boolean reconfigure = false;
             mZoneId = serverExtras.get(ZONE_ID_KEY);
             String adColonyClientOptions = serverExtras.get(CLIENT_OPTIONS_KEY);
             String adColonyAppId = serverExtras.get(APP_ID_KEY);
@@ -172,12 +172,9 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             if (shouldReconfigure(previousAdColonyAllZoneIds, adColonyAllZoneIds)) {
                 AdColony.configure(activity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
-                reconfigure = true;
-            }
-
-            // If we aren't reconfiguring we should update the app options via setAppOptions() in case
-            // consent has changed since the last adapter initialization.
-            if (!reconfigure) {
+            } else {
+                // If we aren't reconfiguring we should update the app options via setAppOptions() in case
+                // consent has changed since the last adapter initialization.
                 AdColony.setAppOptions(mAdColonyAppOptions);
             }
         }

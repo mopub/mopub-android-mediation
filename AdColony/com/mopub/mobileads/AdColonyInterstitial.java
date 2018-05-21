@@ -80,8 +80,6 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
             allZoneIds = extractAllZoneIds(serverExtras);
             zoneId = serverExtras.get(ZONE_ID_KEY);
         }
-
-        boolean reconfigure = false;
         AdColonyAppOptions adColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(clientOptions);
 
         // App options null safety
@@ -91,18 +89,14 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
         mAdColonyInterstitialListener = getAdColonyInterstitialListener();
         if (!isAdColonyConfigured()) {
             AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
-            reconfigure = true;
         } else if ((shouldReconfigure(previousAdColonyAllZoneIds, allZoneIds))) {
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
             // different than the zones we initially called AdColony.configure() with
             AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
             previousAdColonyAllZoneIds = allZoneIds;
-            reconfigure = true;
-        }
-
-        // If state of consent has changed and we aren't calling configure again, we need
-        // to pass this via setAppOptions()
-        if (!reconfigure) {
+        } else {
+            // If state of consent has changed and we aren't calling configure again, we need
+            // to pass this via setAppOptions()
             AdColony.setAppOptions(adColonyAppOptions);
         }
         AdColony.requestInterstitial(zoneId, mAdColonyInterstitialListener);
