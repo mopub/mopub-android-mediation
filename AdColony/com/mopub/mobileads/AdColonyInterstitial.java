@@ -11,6 +11,7 @@ import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
+import com.mopub.common.MoPub;
 import com.mopub.common.util.Json;
 
 import java.util.Arrays;
@@ -32,6 +33,8 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
     private static final String DEFAULT_APP_ID = "YOUR_AD_COLONY_APP_ID_HERE";
     private static final String[] DEFAULT_ALL_ZONE_IDS = {"ZONE_ID_1", "ZONE_ID_2", "..."};
     private static final String DEFAULT_ZONE_ID = "YOUR_CURRENT_ZONE_ID";
+    private static final String CONSENT_RESPONSE = "consent_response";
+    private static final String CONSENT_GIVEN = "explicit_consent_given";
 
     /*
      * These keys are intended for MoPub internal use. Do not modify.
@@ -77,17 +80,31 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
             allZoneIds = extractAllZoneIds(serverExtras);
             zoneId = serverExtras.get(ZONE_ID_KEY);
         }
+
+        boolean reconfigure = false;
         AdColonyAppOptions adColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(clientOptions);
+
+        // App options null safety
+        adColonyAppOptions = adColonyAppOptions == null ? new AdColonyAppOptions() : adColonyAppOptions;
+        adColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                    .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
         mAdColonyInterstitialListener = getAdColonyInterstitialListener();
         if (!isAdColonyConfigured()) {
             AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
+            reconfigure = true;
         } else if ((shouldReconfigure(previousAdColonyAllZoneIds, allZoneIds))) {
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
             // different than the zones we initially called AdColony.configure() with
             AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
             previousAdColonyAllZoneIds = allZoneIds;
+            reconfigure = true;
         }
 
+        // If state of consent has changed and we aren't calling configure again, we need
+        // to pass this via setAppOptions()
+        if (!reconfigure) {
+            AdColony.setAppOptions(adColonyAppOptions);
+        }
         AdColony.requestInterstitial(zoneId, mAdColonyInterstitialListener);
     }
 
