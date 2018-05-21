@@ -131,13 +131,13 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                 adColonyAllZoneIds = extractAllZoneIds(serverExtras);
             }
 
-            setUpGlobalSettings();
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
             // App options null safety
             mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions()
                     : mAdColonyAppOptions;
             mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
                     .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            setUpGlobalSettings();
 
             if (!isAdColonyConfigured()) {
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
@@ -165,6 +165,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
             mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
                     .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            setUpGlobalSettings();
 
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
             // different than the zones we initially called AdColony.configure() with
