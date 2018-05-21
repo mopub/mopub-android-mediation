@@ -155,34 +155,30 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             @NonNull final Map<String, String> serverExtras) throws Exception {
         mZoneId = DEFAULT_ZONE_ID;
 
-        boolean reconfigure = false;
         if (extrasAreValid(serverExtras)) {
+            boolean reconfigure = false;
             mZoneId = serverExtras.get(ZONE_ID_KEY);
             String adColonyClientOptions = serverExtras.get(CLIENT_OPTIONS_KEY);
             String adColonyAppId = serverExtras.get(APP_ID_KEY);
             String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
+            mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
+            mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                    .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
 
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
             // different than the zones we initially called AdColony.configure() with
             if (shouldReconfigure(previousAdColonyAllZoneIds, adColonyAllZoneIds)) {
-                mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
-
-                // App options null safety
-                mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions()
-                        : mAdColonyAppOptions;
-                mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                        .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
                 AdColony.configure(activity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
                 reconfigure = true;
             }
-        }
 
-        // If we aren't reconfiguring we should update the app options via setAppOptions() in case
-        // consent has changed since the last adapter initialization.
-        if (!reconfigure) {
-            mAdColonyAppOptions.setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
-            AdColony.setAppOptions(mAdColonyAppOptions);
+            // If we aren't reconfiguring we should update the app options via setAppOptions() in case
+            // consent has changed since the last adapter initialization.
+            if (!reconfigure) {
+                AdColony.setAppOptions(mAdColonyAppOptions);
+            }
         }
 
         Object adUnitObject = localExtras.get(DataKeys.AD_UNIT_ID_KEY);
