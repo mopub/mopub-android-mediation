@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.reward.RewardItem;
@@ -152,6 +154,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         }
         mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
 
+        final Map<String, Object> localExtrasMap = localExtras;
+
         if (mRewardedVideoAd == null) {
             mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(activity);
             mRewardedVideoAd.setRewardedVideoAdListener(GooglePlayServicesRewardedVideo.this);
@@ -167,7 +171,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                             .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
                 } else {
                     mRewardedVideoAd
-                            .loadAd(mAdUnitId, new AdRequest.Builder().setRequestAgent("MoPub").build());
+                            .loadAd(mAdUnitId, new AdRequest.Builder().addNetworkExtrasBundle(AdMobAdapter.class, getConsent(localExtrasMap)).setRequestAgent("MoPub").build());
                 }
             }
         });
@@ -242,6 +246,17 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId,
                 getMoPubErrorCode(error));
+    }
+
+    private Bundle getConsent(Map<String, Object> localExtras) {
+        Bundle extras = new Bundle();
+
+        String personalizationPref = localExtras.get("npa").toString();
+        if (!TextUtils.isEmpty(personalizationPref)) {
+            extras.putString("npa", personalizationPref);
+        }
+
+        return extras;
     }
 
     /**

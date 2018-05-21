@@ -1,11 +1,13 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -425,7 +427,18 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             }
                         }
                     }).withNativeAdOptions(adOptions).build();
-            adLoader.loadAd(new AdRequest.Builder().setRequestAgent("MoPub").build());
+            adLoader.loadAd(new AdRequest.Builder().setRequestAgent("MoPub").addNetworkExtrasBundle(AdMobAdapter.class, getConsent(localExtras)).build());
+        }
+
+        private Bundle getConsent(Map<String, Object> localExtras) {
+            Bundle extras = new Bundle();
+
+            String personalizationPref = localExtras.get("npa").toString();
+            if (!TextUtils.isEmpty(personalizationPref)) {
+                extras.putString("npa", personalizationPref);
+            }
+
+            return extras;
         }
 
         /**

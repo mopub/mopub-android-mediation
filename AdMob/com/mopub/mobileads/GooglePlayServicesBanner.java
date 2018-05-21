@@ -1,8 +1,11 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -62,6 +65,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         final AdRequest adRequest = new AdRequest.Builder()
                 .setRequestAgent("MoPub")
+                .addNetworkExtrasBundle(AdMobAdapter.class, getConsent(localExtras))
                 .build();
 
         try {
@@ -79,6 +83,17 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             mGoogleAdView.setAdListener(null);
             mGoogleAdView.destroy();
         }
+    }
+
+    private Bundle getConsent(Map<String, Object> localExtras) {
+        Bundle extras = new Bundle();
+
+        String personalizationPref = localExtras.get("npa").toString();
+        if (!TextUtils.isEmpty(personalizationPref)) {
+            extras.putString("npa", personalizationPref);
+        }
+
+        return extras;
     }
 
     private boolean extrasAreValid(Map<String, String> serverExtras) {
