@@ -193,13 +193,13 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         if (personalInfoManager != null) {
             Boolean gdprApplies = personalInfoManager.gdprApplies();
 
-            if (gdprApplies) {
+            if (gdprApplies == true) {
                 Tapjoy.subjectToGDPR(true);
 
                 String userConsent = MoPub.canCollectPersonalInformation() ? "1" : "0";
                 Tapjoy.setUserConsent(userConsent);
 
-            } else {
+            } else if (gdprApplies == false){
                 Tapjoy.subjectToGDPR(false);
                 Tapjoy.setUserConsent("-1");
             }
