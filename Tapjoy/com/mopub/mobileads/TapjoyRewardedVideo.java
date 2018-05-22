@@ -75,7 +75,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         if (TextUtils.isEmpty(placementName)) {
             MoPubLog.d("Tapjoy rewarded video loaded with empty 'name' field. Request will fail.");
         }
-        
+
         if (!Tapjoy.isConnected()) {
             if (checkAndInitMediationSettings()) {
                 MoPubLog.d("Connecting to Tapjoy via MoPub mediation settings...");
@@ -194,34 +194,17 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         if (personalInfoManager != null) {
             Boolean gdprApplies = personalInfoManager.gdprApplies();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
             if (gdprApplies != null) {
                 Tapjoy.subjectToGDPR(gdprApplies);
-=======
-=======
->>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
-            if (gdprApplies == true) {
-                Tapjoy.subjectToGDPR(true);
->>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
 
                 if (gdprApplies) {
                     String userConsented = personalInfoManager.getPersonalInfoConsentStatus() ==
                             ConsentStatus.EXPLICIT_YES ? "1" : "0";
 
-<<<<<<< HEAD
-<<<<<<< HEAD
                     Tapjoy.setUserConsent(userConsented);
                 } else {
                     Tapjoy.setUserConsent("-1");
                 }
-=======
-=======
->>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
-            } else if (gdprApplies == false){
-                Tapjoy.subjectToGDPR(false);
-                Tapjoy.setUserConsent("-1");
->>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
             }
         }
     }
