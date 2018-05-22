@@ -51,7 +51,9 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
         mInterstitialListener = customEventInterstitialListener;
         mHandler = new Handler(Looper.getMainLooper());
-
+        
+        fetchMoPubGDPRSettings();
+        
         final String placementName = serverExtras.get(PLACEMENT_NAME);
         if (TextUtils.isEmpty(placementName)) {
             MoPubLog.d("Tapjoy interstitial loaded with empty 'name' field. Request will fail.");
@@ -97,6 +99,23 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
         tjPlacement.setMediationName(TJC_MOPUB_NETWORK_CONSTANT);
         tjPlacement.setAdapterVersion(TJC_MOPUB_ADAPTER_VERSION_NUMBER);
         tjPlacement.requestContent();
+    }
+    
+    // Collect latest Mopub GDPR settings and pass them to Tapjoy
+    private void fetchMoPubGDPRSettings()
+    {        
+        Boolean gdprApplies = MoPub.getPersonalInformationManager().gdprApplies();
+        
+        if(gdprApplies){
+            Tapjoy.subjectToGDPR(true);
+            
+            String userConsent = MoPub.canCollectPersonalInformation() ? "1" : "0";
+            Tapjoy.setUserConsent(userConsent);
+            
+        } else {
+            Tapjoy.subjectToGDPR(false);
+            Tapjoy.setUserConsent("-1");
+        }
     }
 
     @Override

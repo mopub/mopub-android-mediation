@@ -72,6 +72,8 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         if (TextUtils.isEmpty(placementName)) {
             MoPubLog.d("Tapjoy rewarded video loaded with empty 'name' field. Request will fail.");
         }
+                
+        fetchMoPubGDPRSettings();
 
         if (!Tapjoy.isConnected()) {
             if (checkAndInitMediationSettings()) {
@@ -107,6 +109,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
         MoPubLog.d("Requesting Tapjoy rewarded video");
+        fetchMoPubGDPRSettings();
         createPlacement(activity);
     }
 
@@ -181,6 +184,30 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
             return false;
         }
     }
+    
+    // Collect latest Mopub GDPR settings and pass them to Tapjoy
+    private void fetchMoPubGDPRSettings()
+    {
+        Log.d("MoPub ","GDPR setting fetched");
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+        if(personalInfoManager != null) {
+            Boolean gdprApplies = personalInfoManager.gdprApplies();
+            
+            if(gdprApplies){
+                Tapjoy.subjectToGDPR(true);
+                
+                String userConsent = MoPub.canCollectPersonalInformation() ? "1" : "0";
+                Tapjoy.setUserConsent(userConsent);
+                
+            } else {
+                Tapjoy.subjectToGDPR(false);
+                Tapjoy.setUserConsent("-1");
+            }
+        }else {
+            Tapjoy.subjectToGDPR(false);
+            Tapjoy.setUserConsent("-1");
+        }
+
 
     private static class TapjoyRewardedVideoListener implements TJPlacementListener, CustomEventRewardedVideoListener, TJVideoListener {
         @Override
