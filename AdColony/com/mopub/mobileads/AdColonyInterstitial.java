@@ -12,6 +12,7 @@ import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
 import com.mopub.common.MoPub;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
 import java.util.Arrays;
@@ -82,10 +83,13 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
         }
         AdColonyAppOptions adColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(clientOptions);
 
-        // App options null safety
+        // App options and PersonalInformationManager null safety
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
         adColonyAppOptions = adColonyAppOptions == null ? new AdColonyAppOptions() : adColonyAppOptions;
-        adColonyAppOptions.setOption(CONSENT_GIVEN, true)
+        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
+            adColonyAppOptions.setOption(CONSENT_GIVEN, true)
                     .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+        }
         mAdColonyInterstitialListener = getAdColonyInterstitialListener();
         if (!isAdColonyConfigured()) {
             AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);

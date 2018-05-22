@@ -21,6 +21,7 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
 import java.util.Arrays;
@@ -123,6 +124,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             String adColonyClientOptions = DEFAULT_CLIENT_OPTIONS;
             String adColonyAppId = DEFAULT_APP_ID;
             String[] adColonyAllZoneIds = DEFAULT_ALL_ZONE_IDS;
+            PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
             // Set up serverExtras
             if (extrasAreValid(serverExtras)) {
@@ -133,11 +135,13 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
 
-            // App options null safety
+            // App options and PersonalInfoManager null safety
             mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions()
                     : mAdColonyAppOptions;
-            mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                    .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
+                mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                        .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            }
             setUpGlobalSettings();
 
             if (!isAdColonyConfigured()) {
@@ -161,10 +165,13 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             String adColonyClientOptions = serverExtras.get(CLIENT_OPTIONS_KEY);
             String adColonyAppId = serverExtras.get(APP_ID_KEY);
             String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
+            PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
-            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
-            mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                    .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
+                mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
+                mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                        .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            }
             setUpGlobalSettings();
 
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
