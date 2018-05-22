@@ -7,8 +7,11 @@ import android.text.TextUtils;
 
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.tapjoy.TJActionRequest;
 import com.tapjoy.TJConnectListener;
 import com.tapjoy.TJError;
@@ -72,9 +75,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         if (TextUtils.isEmpty(placementName)) {
             MoPubLog.d("Tapjoy rewarded video loaded with empty 'name' field. Request will fail.");
         }
-                
-        fetchMoPubGDPRSettings();
-
+        
         if (!Tapjoy.isConnected()) {
             if (checkAndInitMediationSettings()) {
                 MoPubLog.d("Connecting to Tapjoy via MoPub mediation settings...");
@@ -185,7 +186,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         }
     }
 
-    // Collect latest Mopub GDPR settings and pass them to Tapjoy
+    // Pass the user consent from the MoPub SDK to Tapjoy as per GDPR
     private void fetchMoPubGDPRSettings() {
 
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
@@ -193,19 +194,38 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         if (personalInfoManager != null) {
             Boolean gdprApplies = personalInfoManager.gdprApplies();
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+            if (gdprApplies != null) {
+                Tapjoy.subjectToGDPR(gdprApplies);
+=======
+=======
+>>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
             if (gdprApplies == true) {
                 Tapjoy.subjectToGDPR(true);
+>>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
 
-                String userConsent = MoPub.canCollectPersonalInformation() ? "1" : "0";
-                Tapjoy.setUserConsent(userConsent);
+                if (gdprApplies) {
+                    String userConsented = personalInfoManager.getPersonalInfoConsentStatus() ==
+                            ConsentStatus.EXPLICIT_YES ? "1" : "0";
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+                    Tapjoy.setUserConsent(userConsented);
+                } else {
+                    Tapjoy.setUserConsent("-1");
+                }
+=======
+=======
+>>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
             } else if (gdprApplies == false){
                 Tapjoy.subjectToGDPR(false);
                 Tapjoy.setUserConsent("-1");
+>>>>>>> 95a051edba2518ed7a4968fa6918e82da174c2b5
             }
         }
     }
-        
+
     private static class TapjoyRewardedVideoListener implements TJPlacementListener, CustomEventRewardedVideoListener, TJVideoListener {
         @Override
         public void onRequestSuccess(TJPlacement placement) {
