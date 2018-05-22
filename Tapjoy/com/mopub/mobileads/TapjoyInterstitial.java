@@ -100,21 +100,25 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
         tjPlacement.setAdapterVersion(TJC_MOPUB_ADAPTER_VERSION_NUMBER);
         tjPlacement.requestContent();
     }
-    
+
     // Collect latest Mopub GDPR settings and pass them to Tapjoy
-    private void fetchMoPubGDPRSettings()
-    {        
-        Boolean gdprApplies = MoPub.getPersonalInformationManager().gdprApplies();
+    private void fetchMoPubGDPRSettings() {
+
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
         
-        if(gdprApplies){
-            Tapjoy.subjectToGDPR(true);
-            
-            String userConsent = MoPub.canCollectPersonalInformation() ? "1" : "0";
-            Tapjoy.setUserConsent(userConsent);
-            
-        } else {
-            Tapjoy.subjectToGDPR(false);
-            Tapjoy.setUserConsent("-1");
+        if (personalInfoManager != null) {
+            Boolean gdprApplies = personalInfoManager.gdprApplies();
+
+            if (gdprApplies) {
+                Tapjoy.subjectToGDPR(true);
+
+                String userConsent = MoPub.canCollectPersonalInformation() ? "1" : "0";
+                Tapjoy.setUserConsent(userConsent);
+
+            } else {
+                Tapjoy.subjectToGDPR(false);
+                Tapjoy.setUserConsent("-1");
+            }
         }
     }
 

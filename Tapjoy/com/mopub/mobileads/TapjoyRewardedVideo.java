@@ -184,31 +184,28 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
             return false;
         }
     }
-    
+
     // Collect latest Mopub GDPR settings and pass them to Tapjoy
-    private void fetchMoPubGDPRSettings()
-    {
-        Log.d("MoPub ","GDPR setting fetched");
+    private void fetchMoPubGDPRSettings() {
+
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-        if(personalInfoManager != null) {
+
+        if (personalInfoManager != null) {
             Boolean gdprApplies = personalInfoManager.gdprApplies();
-            
-            if(gdprApplies){
+
+            if (gdprApplies) {
                 Tapjoy.subjectToGDPR(true);
-                
+
                 String userConsent = MoPub.canCollectPersonalInformation() ? "1" : "0";
                 Tapjoy.setUserConsent(userConsent);
-                
+
             } else {
                 Tapjoy.subjectToGDPR(false);
                 Tapjoy.setUserConsent("-1");
             }
-        }else {
-            Tapjoy.subjectToGDPR(false);
-            Tapjoy.setUserConsent("-1");
         }
-
-
+    }
+        
     private static class TapjoyRewardedVideoListener implements TJPlacementListener, CustomEventRewardedVideoListener, TJVideoListener {
         @Override
         public void onRequestSuccess(TJPlacement placement) {
