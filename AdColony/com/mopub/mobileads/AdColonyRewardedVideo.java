@@ -167,8 +167,8 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
             PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
             if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-                mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
                 mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
                         .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
             }
