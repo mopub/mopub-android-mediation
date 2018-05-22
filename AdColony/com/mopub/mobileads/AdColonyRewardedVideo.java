@@ -114,8 +114,8 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     public boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) throws Exception {
+                                         @NonNull final Map<String, Object> localExtras,
+                                         @NonNull final Map<String, String> serverExtras) throws Exception {
         synchronized (AdColonyRewardedVideo.class) {
             if (sInitialized) {
                 return false;
@@ -124,7 +124,6 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             String adColonyClientOptions = DEFAULT_CLIENT_OPTIONS;
             String adColonyAppId = DEFAULT_APP_ID;
             String[] adColonyAllZoneIds = DEFAULT_ALL_ZONE_IDS;
-            PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
             // Set up serverExtras
             if (extrasAreValid(serverExtras)) {
@@ -134,15 +133,6 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             }
 
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
-
-            // App options and PersonalInfoManager null safety
-            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions()
-                    : mAdColonyAppOptions;
-            if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-                mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                        .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
-            }
-            setUpGlobalSettings();
 
             if (!isAdColonyConfigured()) {
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
@@ -156,8 +146,8 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected void loadWithSdkInitialized(@NonNull final Activity activity,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) throws Exception {
+                                          @NonNull final Map<String, Object> localExtras,
+                                          @NonNull final Map<String, String> serverExtras) throws Exception {
         mZoneId = DEFAULT_ZONE_ID;
 
         if (extrasAreValid(serverExtras)) {
@@ -165,12 +155,15 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             String adColonyClientOptions = serverExtras.get(CLIENT_OPTIONS_KEY);
             String adColonyAppId = serverExtras.get(APP_ID_KEY);
             String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
+            // Pass the user consent from the MoPub SDK to AdColony as per GDPR
             PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
             mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
-            if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-                mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                        .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            if (personalInfoManager != null && personalInfoManager.gdprApplies() != null) {
+                if (personalInfoManager.gdprApplies()) {
+                    mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                            .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+                }
             }
             setUpGlobalSettings();
 

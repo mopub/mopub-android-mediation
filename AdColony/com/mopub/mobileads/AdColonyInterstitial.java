@@ -57,13 +57,10 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
 
     @Override
     protected void loadInterstitial(@NonNull Context context,
-            @NonNull CustomEventInterstitialListener customEventInterstitialListener,
-            @Nullable Map<String, Object> localExtras,
-            @NonNull Map<String, String> serverExtras) {
-        if (context == null
-                || !(context instanceof Activity)
-                || customEventInterstitialListener == null
-                || serverExtras == null) {
+                                    @NonNull CustomEventInterstitialListener customEventInterstitialListener,
+                                    @Nullable Map<String, Object> localExtras,
+                                    @NonNull Map<String, String> serverExtras) {
+        if (!(context instanceof Activity)) {
             customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             return;
         }
@@ -81,27 +78,28 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
             allZoneIds = extractAllZoneIds(serverExtras);
             zoneId = serverExtras.get(ZONE_ID_KEY);
         }
-        AdColonyAppOptions adColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(clientOptions);
-
-        // App options and PersonalInformationManager null safety
+        AdColonyAppOptions mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(clientOptions);
+        // Pass the user consent from the MoPub SDK to AdColony as per GDPR
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-        adColonyAppOptions = adColonyAppOptions == null ? new AdColonyAppOptions() : adColonyAppOptions;
-        if (personalInfoManager != null && personalInfoManager.gdprApplies()) {
-            adColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                    .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+        mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
+        if (personalInfoManager != null && personalInfoManager.gdprApplies() != null) {
+            if (personalInfoManager.gdprApplies()) {
+                mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                        .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+            }
         }
         mAdColonyInterstitialListener = getAdColonyInterstitialListener();
         if (!isAdColonyConfigured()) {
-            AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
+            AdColony.configure((Activity) context, mAdColonyAppOptions, appId, allZoneIds);
         } else if ((shouldReconfigure(previousAdColonyAllZoneIds, allZoneIds))) {
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
             // different than the zones we initially called AdColony.configure() with
-            AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
+            AdColony.configure((Activity) context, mAdColonyAppOptions, appId, allZoneIds);
             previousAdColonyAllZoneIds = allZoneIds;
         } else {
             // If state of consent has changed and we aren't calling configure again, we need
             // to pass this via setAppOptions()
-            AdColony.setAppOptions(adColonyAppOptions);
+            AdColony.setAppOptions(mAdColonyAppOptions);
         }
         AdColony.requestInterstitial(zoneId, mAdColonyInterstitialListener);
     }
