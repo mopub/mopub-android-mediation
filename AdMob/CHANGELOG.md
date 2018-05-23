@@ -1,6 +1,6 @@
 ## Changelog
   * 15.0.0.4
-    * Pass ad personalization preference to AdMob as per GDPR. Unlike with the other mediation adapters, publishers must specify their preference ("npa") in their app implementation. The adapter will read from a MoPub's `localExtras` and forward that onto AdMob via an AdMob ad request.
+    * Append user's ad personalization preference from `localExtras` to AdMob's ad requests.
 
   * 15.0.0.3
     * Forced AdMob's rewarded video's `isLoaded()` check to run on the main thread (in light of multithreading crashes when mediating AdMob on Unity).

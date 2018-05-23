@@ -44,9 +44,8 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         final AdRequest adRequest = new AdRequest.Builder()
                 .setRequestAgent("MoPub")
-                // This setting is applicable to only publishers who use their own consent mechanism.
-                // Consent collected from MoPub's default consent dialogue should NOT be used/passed
-                // in the "npa" field here.
+                // Consent collected from the MoPub’s consent dialogue should not be used to set up
+                // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
                 .addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtras))
                 .build();
 
