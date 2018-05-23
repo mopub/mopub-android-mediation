@@ -171,7 +171,13 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                             .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
                 } else {
                     mRewardedVideoAd
-                            .loadAd(mAdUnitId, new AdRequest.Builder().addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtrasMap)).setRequestAgent("MoPub").build());
+                            .loadAd(mAdUnitId, new AdRequest.Builder()
+                                    // This setting is applicable to only publishers who use their own consent mechanism.
+                                    // Consent collected from MoPub's default consent dialogue should NOT be used/passed
+                                    // in the "npa" field here.
+                                    .addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtrasMap))
+                                    .setRequestAgent("MoPub")
+                                    .build());
                 }
             }
         });
@@ -250,12 +256,12 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     private Bundle getGooglePersonalizationPreference(Map<String, Object> localExtras) {
         Bundle extras = new Bundle();
-
-        String personalizationPref = localExtras.get("npa").toString();
-        if (!TextUtils.isEmpty(personalizationPref)) {
-            extras.putString("npa", personalizationPref);
+        if (localExtras.get("npa") != null) {
+            String personalizationPref = localExtras.get("npa").toString();
+            if (!TextUtils.isEmpty(personalizationPref)) {
+                extras.putString("npa", personalizationPref);
+            }
         }
-
         return extras;
     }
 

@@ -427,17 +427,23 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             }
                         }
                     }).withNativeAdOptions(adOptions).build();
-            adLoader.loadAd(new AdRequest.Builder().setRequestAgent("MoPub").addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtras)).build());
+            adLoader.loadAd(new AdRequest.Builder()
+                    .setRequestAgent("MoPub")
+                    // This setting is applicable to only publishers who use their own consent mechanism.
+                    // Consent collected from MoPub's default consent dialogue should NOT be used/passed
+                    // in the "npa" field here.
+                    .addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtras))
+                    .build());
         }
 
         private Bundle getGooglePersonalizationPreference(Map<String, Object> localExtras) {
             Bundle extras = new Bundle();
-
-            String personalizationPref = localExtras.get("npa").toString();
-            if (!TextUtils.isEmpty(personalizationPref)) {
-                extras.putString("npa", personalizationPref);
+            if (localExtras.get("npa") != null) {
+                String personalizationPref = localExtras.get("npa").toString();
+                if (!TextUtils.isEmpty(personalizationPref)) {
+                    extras.putString("npa", personalizationPref);
+                }
             }
-
             return extras;
         }
 
