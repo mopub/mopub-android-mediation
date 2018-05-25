@@ -15,6 +15,8 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.NativeContentAd;
+import com.mopub.common.MediationSettings;
+import com.mopub.mobileads.MoPubRewardedVideoManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,11 +61,27 @@ public class GooglePlayServicesNative extends CustomEventNative {
      */
     private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
+    /**
+     * Bundle that contains the user's preference on ad personalization.
+     */
+    private static Bundle npaBundle;
+
     @Override
     protected void loadNativeAd(@NonNull final Context context,
                                 @NonNull final CustomEventNativeListener customEventNativeListener,
                                 @NonNull Map<String, Object> localExtras,
                                 @NonNull Map<String, String> serverExtras) {
+
+        final GooglePlayServicesMediationSettings globalMediationSettings =
+                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
+
+        if (globalMediationSettings != null) {
+            npaBundle = globalMediationSettings.getNpaBundle();
+            if (npaBundle == null) {
+                npaBundle = new Bundle();
+            }
+        }
+
         if (!sIsInitialized.getAndSet(true)) {
             Log.i(TAG, "Adapter version - " + ADAPTER_VERSION);
             if (serverExtras.containsKey(KEY_EXTRA_APPLICATION_ID)
@@ -296,6 +314,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
          */
         public void loadAd(final Context context, String adUnitId,
                            Map<String, Object> localExtras) {
+
             AdLoader.Builder builder = new AdLoader.Builder(context, adUnitId);
 
             // Get the experimental swap margins extra.
@@ -431,19 +450,8 @@ public class GooglePlayServicesNative extends CustomEventNative {
                     .setRequestAgent("MoPub")
                     // Consent collected from the MoPub’s consent dialogue should not be used to set up
                     // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-                    .addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtras))
+                    .addNetworkExtrasBundle(AdMobAdapter.class, npaBundle)
                     .build());
-        }
-
-        private Bundle getGooglePersonalizationPreference(Map<String, Object> localExtras) {
-            Bundle extras = new Bundle();
-            if (localExtras.get("npa") != null) {
-                String personalizationPref = localExtras.get("npa").toString();
-                if (!TextUtils.isEmpty(personalizationPref)) {
-                    extras.putString("npa", personalizationPref);
-                }
-            }
-            return extras;
         }
 
         /**
@@ -623,6 +631,21 @@ public class GooglePlayServicesNative extends CustomEventNative {
             if (appInstallAd.getPrice() != null) {
                 setPrice(appInstallAd.getPrice().toString());
             }
+        }
+    }
+
+    public static final class GooglePlayServicesMediationSettings implements MediationSettings {
+        private Bundle npaBundle;
+
+        public GooglePlayServicesMediationSettings() {
+        }
+
+        public GooglePlayServicesMediationSettings(Bundle bundle) {
+            this.npaBundle = bundle;
+        }
+
+        private Bundle getNpaBundle() {
+            return npaBundle;
         }
     }
 }

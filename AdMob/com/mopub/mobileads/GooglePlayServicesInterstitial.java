@@ -2,13 +2,13 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.mopub.common.MediationSettings;
 
 import java.util.Map;
 
@@ -21,6 +21,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
     private CustomEventInterstitialListener mInterstitialListener;
     private InterstitialAd mGoogleInterstitialAd;
+    private Bundle npaBundle;
 
     @Override
     protected void loadInterstitial(
@@ -30,6 +31,16 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             final Map<String, String> serverExtras) {
         mInterstitialListener = customEventInterstitialListener;
         final String adUnitId;
+
+        final GooglePlayServicesMediationSettings globalMediationSettings =
+                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
+
+        if (globalMediationSettings != null) {
+            npaBundle = globalMediationSettings.getNpaBundle();
+            if (npaBundle == null) {
+                npaBundle = new Bundle();
+            }
+        }
 
         if (extrasAreValid(serverExtras)) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
@@ -46,7 +57,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
                 .setRequestAgent("MoPub")
                 // Consent collected from the MoPub’s consent dialogue should not be used to set up
                 // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-                .addNetworkExtrasBundle(AdMobAdapter.class, getGooglePersonalizationPreference(localExtras))
+                .addNetworkExtrasBundle(AdMobAdapter.class, npaBundle)
                 .build();
 
         try {
@@ -71,17 +82,6 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         if (mGoogleInterstitialAd != null) {
             mGoogleInterstitialAd.setAdListener(null);
         }
-    }
-
-    private Bundle getGooglePersonalizationPreference(Map<String, Object> localExtras) {
-        Bundle extras = new Bundle();
-        if (localExtras.get("npa") != null) {
-            String personalizationPref = localExtras.get("npa").toString();
-            if (!TextUtils.isEmpty(personalizationPref)) {
-                extras.putString("npa", personalizationPref);
-            }
-        }
-        return extras;
     }
 
     private boolean extrasAreValid(Map<String, String> serverExtras) {
@@ -158,6 +158,21 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
                     errorCode = MoPubErrorCode.UNSPECIFIED;
             }
             return errorCode;
+        }
+    }
+
+    public static final class GooglePlayServicesMediationSettings implements MediationSettings {
+        private Bundle npaBundle;
+
+        public GooglePlayServicesMediationSettings() {
+        }
+
+        public GooglePlayServicesMediationSettings(Bundle bundle) {
+            this.npaBundle = bundle;
+        }
+
+        private Bundle getNpaBundle() {
+            return npaBundle;
         }
     }
 
