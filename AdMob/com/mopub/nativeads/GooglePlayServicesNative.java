@@ -61,26 +61,11 @@ public class GooglePlayServicesNative extends CustomEventNative {
      */
     private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
-    /**
-     * Bundle that contains the user's preference on ad personalization.
-     */
-    private static Bundle npaBundle;
-
     @Override
     protected void loadNativeAd(@NonNull final Context context,
                                 @NonNull final CustomEventNativeListener customEventNativeListener,
                                 @NonNull Map<String, Object> localExtras,
                                 @NonNull Map<String, String> serverExtras) {
-
-        final GooglePlayServicesMediationSettings globalMediationSettings =
-                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
-
-        if (globalMediationSettings != null) {
-            npaBundle = globalMediationSettings.getNpaBundle();
-            if (npaBundle == null) {
-                npaBundle = new Bundle();
-            }
-        }
 
         if (!sIsInitialized.getAndSet(true)) {
             Log.i(TAG, "Adapter version - " + ADAPTER_VERSION);
@@ -446,12 +431,25 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             }
                         }
                     }).withNativeAdOptions(adOptions).build();
-            adLoader.loadAd(new AdRequest.Builder()
-                    .setRequestAgent("MoPub")
-                    // Consent collected from the MoPub’s consent dialogue should not be used to set up
-                    // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-                    .addNetworkExtrasBundle(AdMobAdapter.class, npaBundle)
-                    .build());
+            AdRequest.Builder requestBuilder = new AdRequest.Builder();
+            requestBuilder.setRequestAgent("MoPub");
+
+            // Consent collected from the MoPub’s consent dialogue should not be used to set up
+            // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
+            forwardNpaIfSet(requestBuilder);
+
+            AdRequest adRequest = requestBuilder.build();
+            adLoader.loadAd(adRequest);
+        }
+
+        private void forwardNpaIfSet(AdRequest.Builder builder) {
+            final GooglePlayServicesMediationSettings globalMediationSettings =
+                    MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
+
+            // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
+            if (globalMediationSettings != null && globalMediationSettings.getNpaBundle() != null) {
+                builder.addNetworkExtrasBundle(AdMobAdapter.class, globalMediationSettings.getNpaBundle());
+            }
         }
 
         /**
@@ -641,6 +639,10 @@ public class GooglePlayServicesNative extends CustomEventNative {
         }
 
         public GooglePlayServicesMediationSettings(Bundle bundle) {
+            this.npaBundle = bundle;
+        }
+
+        public void setNpaBundle(Bundle bundle) {
             this.npaBundle = bundle;
         }
 

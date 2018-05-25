@@ -21,7 +21,6 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
     private CustomEventInterstitialListener mInterstitialListener;
     private InterstitialAd mGoogleInterstitialAd;
-    private Bundle npaBundle;
 
     @Override
     protected void loadInterstitial(
@@ -31,16 +30,6 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             final Map<String, String> serverExtras) {
         mInterstitialListener = customEventInterstitialListener;
         final String adUnitId;
-
-        final GooglePlayServicesMediationSettings globalMediationSettings =
-                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
-
-        if (globalMediationSettings != null) {
-            npaBundle = globalMediationSettings.getNpaBundle();
-            if (npaBundle == null) {
-                npaBundle = new Bundle();
-            }
-        }
 
         if (extrasAreValid(serverExtras)) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
@@ -53,18 +42,30 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         mGoogleInterstitialAd.setAdListener(new InterstitialAdListener());
         mGoogleInterstitialAd.setAdUnitId(adUnitId);
 
-        final AdRequest adRequest = new AdRequest.Builder()
-                .setRequestAgent("MoPub")
-                // Consent collected from the MoPub’s consent dialogue should not be used to set up
-                // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-                .addNetworkExtrasBundle(AdMobAdapter.class, npaBundle)
-                .build();
+        AdRequest.Builder builder = new AdRequest.Builder();
+        builder.setRequestAgent("MoPub");
+
+        // Consent collected from the MoPub’s consent dialogue should not be used to set up
+        // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
+        forwardNpaIfSet(builder);
+
+        AdRequest adRequest = builder.build();
 
         try {
             mGoogleInterstitialAd.loadAd(adRequest);
         } catch (NoClassDefFoundError e) {
             // This can be thrown by Play Services on Honeycomb.
             mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+        }
+    }
+
+    private void forwardNpaIfSet(AdRequest.Builder builder) {
+        final GooglePlayServicesMediationSettings globalMediationSettings =
+                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
+
+        // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
+        if (globalMediationSettings != null && globalMediationSettings.getNpaBundle() != null) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, globalMediationSettings.getNpaBundle());
         }
     }
 
@@ -168,6 +169,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         }
 
         public GooglePlayServicesMediationSettings(Bundle bundle) {
+            this.npaBundle = bundle;
+        }
+
+        public void setNpaBundle(Bundle bundle) {
             this.npaBundle = bundle;
         }
 

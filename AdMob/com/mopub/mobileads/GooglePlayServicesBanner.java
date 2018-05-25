@@ -26,11 +26,9 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     public static final String AD_UNIT_ID_KEY = "adUnitID";
     public static final String AD_WIDTH_KEY = "adWidth";
     public static final String AD_HEIGHT_KEY = "adHeight";
-    public static final String LOCATION_KEY = "location";
 
     private CustomEventBannerListener mBannerListener;
     private AdView mGoogleAdView;
-    private Bundle npaBundle;
 
     @Override
     protected void loadBanner(
@@ -42,16 +40,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         final String adUnitId;
         final int adWidth;
         final int adHeight;
-
-        final GooglePlayServicesMediationSettings globalMediationSettings =
-                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
-
-        if (globalMediationSettings != null) {
-            npaBundle = globalMediationSettings.getNpaBundle();
-            if (npaBundle == null) {
-                npaBundle = new Bundle();
-            }
-        }
 
         if (extrasAreValid(serverExtras)) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
@@ -74,12 +62,14 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         mGoogleAdView.setAdSize(adSize);
 
-        final AdRequest adRequest = new AdRequest.Builder()
-                .setRequestAgent("MoPub")
-                // Consent collected from the MoPub’s consent dialogue should not be used to set up
-                // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-                .addNetworkExtrasBundle(AdMobAdapter.class, npaBundle)
-                .build();
+        AdRequest.Builder builder = new AdRequest.Builder();
+        builder.setRequestAgent("MoPub");
+
+        // Consent collected from the MoPub’s consent dialogue should not be used to set up
+        // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
+        forwardNpaIfSet(builder);
+
+        AdRequest adRequest = builder.build();
 
         try {
             mGoogleAdView.loadAd(adRequest);
@@ -95,6 +85,16 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         if (mGoogleAdView != null) {
             mGoogleAdView.setAdListener(null);
             mGoogleAdView.destroy();
+        }
+    }
+
+    private void forwardNpaIfSet(AdRequest.Builder builder) {
+        final GooglePlayServicesMediationSettings globalMediationSettings =
+                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
+
+        // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
+        if (globalMediationSettings != null && globalMediationSettings.getNpaBundle() != null) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, globalMediationSettings.getNpaBundle());
         }
     }
 
@@ -198,6 +198,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         }
 
         public GooglePlayServicesMediationSettings(Bundle bundle) {
+            this.npaBundle = bundle;
+        }
+
+        public void setNpaBundle(Bundle bundle) {
             this.npaBundle = bundle;
         }
 

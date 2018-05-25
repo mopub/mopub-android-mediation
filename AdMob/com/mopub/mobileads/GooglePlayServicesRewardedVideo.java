@@ -57,8 +57,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
      */
     private RewardedVideoAd mRewardedVideoAd;
 
-    private Bundle npaBundle;
-
     /**
      * A {@link LifecycleListener} used to forward the activity lifecycle events from MoPub SDK to
      * Google Mobile Ads SDK.
@@ -147,16 +145,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
 
-        final GooglePlayServicesMediationSettings globalMediationSettings =
-                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
-
-        if (globalMediationSettings != null) {
-            npaBundle = globalMediationSettings.getNpaBundle();
-            if (npaBundle == null) {
-                npaBundle = new Bundle();
-            }
-        }
-
         if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
             // Using class name as the network ID for this callback since the ad unit ID is
             // invalid.
@@ -182,16 +170,28 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                     MoPubRewardedVideoManager
                             .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
                 } else {
-                    mRewardedVideoAd
-                            .loadAd(mAdUnitId, new AdRequest.Builder()
-                                    // Consent collected from the MoPub’s consent dialogue should not be used to set up
-                                    // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-                                    .addNetworkExtrasBundle(AdMobAdapter.class, npaBundle)
-                                    .setRequestAgent("MoPub")
-                                    .build());
+                    AdRequest.Builder builder = new AdRequest.Builder();
+                    builder.setRequestAgent("MoPub");
+
+                    // Consent collected from the MoPub’s consent dialogue should not be used to set up
+                    // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
+                    forwardNpaIfSet(builder);
+
+                    AdRequest adRequest = builder.build();
+                    mRewardedVideoAd.loadAd(mAdUnitId, adRequest);
                 }
             }
         });
+    }
+
+    private void forwardNpaIfSet(AdRequest.Builder builder) {
+        final GooglePlayServicesMediationSettings globalMediationSettings =
+                MoPubRewardedVideoManager.getGlobalMediationSettings(GooglePlayServicesMediationSettings.class);
+
+        // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
+        if (globalMediationSettings != null && globalMediationSettings.getNpaBundle() != null) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, globalMediationSettings.getNpaBundle());
+        }
     }
 
     @Override
@@ -300,6 +300,10 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         }
 
         public GooglePlayServicesMediationSettings(Bundle bundle) {
+            this.npaBundle = bundle;
+        }
+
+        public void setNpaBundle(Bundle bundle) {
             this.npaBundle = bundle;
         }
 
