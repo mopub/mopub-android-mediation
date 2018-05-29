@@ -58,6 +58,13 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     private RewardedVideoAd mRewardedVideoAd;
 
     /**
+     * Flag to indicate whether the rewarded video has cached. AdMob's isLoaded() call crashes the
+     * app when called from a thread other than the main UI thread. Since this is unavoidable with
+     * some platforms, e.g. Unity, we implement this workaround.
+     */
+    private boolean isAdLoaded;
+
+    /**
      * A {@link LifecycleListener} used to forward the activity lifecycle events from MoPub SDK to
      * Google Mobile Ads SDK.
      */
@@ -144,6 +151,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                                           @NonNull Map<String, Object> localExtras,
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
+        isAdLoaded = false;
 
         if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
             // Using class name as the network ID for this callback since the ad unit ID is
@@ -195,7 +203,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     protected boolean hasVideoAvailable() {
-        return mRewardedVideoAd != null && mRewardedVideoAd.isLoaded();
+        return mRewardedVideoAd != null && isAdLoaded;
     }
 
     @Override
@@ -215,6 +223,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
+        isAdLoaded = true;
     }
 
     @Override
