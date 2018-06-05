@@ -13,6 +13,7 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
 
 import java.util.Collections;
@@ -47,6 +48,10 @@ public class ChartboostShared {
                                                      @NonNull Map<String, String> serverExtras) {
         Preconditions.checkNotNull(launcherActivity);
         Preconditions.checkNotNull(serverExtras);
+
+        // Pass the user consent from the MoPub SDK to Chartboost as per GDPR
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        Chartboost.restrictDataCollection(launcherActivity.getApplicationContext(), !canCollectPersonalInfo);
 
         // Validate Chartboost args
         if (!serverExtras.containsKey(APP_ID_KEY)) {

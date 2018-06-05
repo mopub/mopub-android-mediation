@@ -1,11 +1,15 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.reward.RewardItem;
@@ -13,6 +17,7 @@ import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPubReward;
 
 import java.util.Map;
@@ -51,6 +56,13 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
      * The Google Rewarded Video Ad instance.
      */
     private RewardedVideoAd mRewardedVideoAd;
+
+    /**
+     * Flag to indicate whether the rewarded video has cached. AdMob's isLoaded() call crashes the
+     * app when called from a thread other than the main UI thread. Since this is unavoidable with
+     * some platforms, e.g. Unity, we implement this workaround.
+     */
+    private boolean isAdLoaded;
 
     /**
      * A {@link LifecycleListener} used to forward the activity lifecycle events from MoPub SDK to
@@ -139,6 +151,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                                           @NonNull Map<String, Object> localExtras,
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
+        isAdLoaded = false;
+
         if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
             // Using class name as the network ID for this callback since the ad unit ID is
             // invalid.
@@ -155,18 +169,41 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
             mRewardedVideoAd.setRewardedVideoAdListener(GooglePlayServicesRewardedVideo.this);
         }
 
-        if (mRewardedVideoAd.isLoaded()) {
-            MoPubRewardedVideoManager
-                    .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
-        } else {
-            mRewardedVideoAd
-                    .loadAd(mAdUnitId, new AdRequest.Builder().setRequestAgent("MoPub").build());
+        /* AdMob's isLoaded() has to be called on the main thread to avoid multithreading crashes
+        when mediating on Unity */
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (mRewardedVideoAd.isLoaded()) {
+                    MoPubRewardedVideoManager
+                            .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
+                } else {
+                    AdRequest.Builder builder = new AdRequest.Builder();
+                    builder.setRequestAgent("MoPub");
+
+                    // Consent collected from the MoPub’s consent dialogue should not be used to set up
+                    // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
+                    forwardNpaIfSet(builder);
+
+                    AdRequest adRequest = builder.build();
+                    mRewardedVideoAd.loadAd(mAdUnitId, adRequest);
+                }
+            }
+        });
+    }
+
+    private void forwardNpaIfSet(AdRequest.Builder builder) {
+
+        // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
+        if (GooglePlayServicesMediationSettings.getNpaBundle() != null &&
+                !GooglePlayServicesMediationSettings.getNpaBundle().isEmpty()) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, GooglePlayServicesMediationSettings.getNpaBundle());
         }
     }
 
     @Override
     protected boolean hasVideoAvailable() {
-        return mRewardedVideoAd != null && mRewardedVideoAd.isLoaded();
+        return mRewardedVideoAd != null && isAdLoaded;
     }
 
     @Override
@@ -186,6 +223,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
+        isAdLoaded = true;
     }
 
     @Override
@@ -205,6 +243,11 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         MoPubRewardedVideoManager.onRewardedVideoClosed(
                 GooglePlayServicesRewardedVideo.class,
                 mAdUnitId);
+    }
+
+    @Override
+    public void onRewardedVideoCompleted() {
+        // Already notifying MoPub of playback completion in onRewarded(). Do nothing.
     }
 
     @Override
@@ -256,5 +299,28 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                 errorCode = MoPubErrorCode.UNSPECIFIED;
         }
         return errorCode;
+    }
+
+    public static final class GooglePlayServicesMediationSettings implements MediationSettings {
+        private static Bundle npaBundle;
+
+        public GooglePlayServicesMediationSettings() {
+        }
+
+        public GooglePlayServicesMediationSettings(Bundle bundle) {
+            npaBundle = bundle;
+        }
+
+        public void setNpaBundle(Bundle bundle) {
+            npaBundle = bundle;
+        }
+
+        /* The MoPub Android SDK queries MediationSettings from the rewarded video code
+        (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
+        available to publishers importing the modularized SDK(s) based on select ad formats.
+        This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
+        private static Bundle getNpaBundle() {
+            return npaBundle;
+        }
     }
 }

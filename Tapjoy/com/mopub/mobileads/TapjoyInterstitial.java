@@ -13,7 +13,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.tapjoy.TJActionRequest;
 import com.tapjoy.TJConnectListener;
 import com.tapjoy.TJError;
@@ -51,6 +54,8 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
         mInterstitialListener = customEventInterstitialListener;
         mHandler = new Handler(Looper.getMainLooper());
+
+        fetchMoPubGDPRSettings();
 
         final String placementName = serverExtras.get(PLACEMENT_NAME);
         if (TextUtils.isEmpty(placementName)) {
@@ -97,6 +102,29 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
         tjPlacement.setMediationName(TJC_MOPUB_NETWORK_CONSTANT);
         tjPlacement.setAdapterVersion(TJC_MOPUB_ADAPTER_VERSION_NUMBER);
         tjPlacement.requestContent();
+    }
+
+    // Pass the user consent from the MoPub SDK to Tapjoy as per GDPR
+    private void fetchMoPubGDPRSettings() {
+
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+
+        if (personalInfoManager != null) {
+            Boolean gdprApplies = personalInfoManager.gdprApplies();
+
+            if (gdprApplies != null) {
+                Tapjoy.subjectToGDPR(gdprApplies);
+
+                if (gdprApplies) {
+                    String userConsented = personalInfoManager.getPersonalInfoConsentStatus() ==
+                            ConsentStatus.EXPLICIT_YES ? "1" : "0";
+
+                    Tapjoy.setUserConsent(userConsented);
+                } else {
+                    Tapjoy.setUserConsent("-1");
+                }
+            }
+        }
     }
 
     @Override

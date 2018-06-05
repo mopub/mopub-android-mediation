@@ -11,8 +11,10 @@ import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.model.Placement;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.Map;
 
@@ -65,6 +67,10 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
+
+        // Pass the user consent from the MoPub SDK to ironSource as per GDPR
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        IronSource.setConsent(canCollectPersonalInfo);
 
         try {
             String applicationKey = "";

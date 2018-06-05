@@ -1,11 +1,13 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -13,6 +15,8 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.NativeAppInstallAd;
 import com.google.android.gms.ads.formats.NativeContentAd;
+import com.mopub.common.MediationSettings;
+import com.mopub.mobileads.MoPubRewardedVideoManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +66,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                 @NonNull final CustomEventNativeListener customEventNativeListener,
                                 @NonNull Map<String, Object> localExtras,
                                 @NonNull Map<String, String> serverExtras) {
+
         if (!sIsInitialized.getAndSet(true)) {
             Log.i(TAG, "Adapter version - " + ADAPTER_VERSION);
             if (serverExtras.containsKey(KEY_EXTRA_APPLICATION_ID)
@@ -294,6 +299,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
          */
         public void loadAd(final Context context, String adUnitId,
                            Map<String, Object> localExtras) {
+
             AdLoader.Builder builder = new AdLoader.Builder(context, adUnitId);
 
             // Get the experimental swap margins extra.
@@ -425,7 +431,24 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             }
                         }
                     }).withNativeAdOptions(adOptions).build();
-            adLoader.loadAd(new AdRequest.Builder().setRequestAgent("MoPub").build());
+            AdRequest.Builder requestBuilder = new AdRequest.Builder();
+            requestBuilder.setRequestAgent("MoPub");
+
+            // Consent collected from the MoPub’s consent dialogue should not be used to set up
+            // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
+            forwardNpaIfSet(requestBuilder);
+
+            AdRequest adRequest = requestBuilder.build();
+            adLoader.loadAd(adRequest);
+        }
+
+        private void forwardNpaIfSet(AdRequest.Builder builder) {
+
+            // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
+            if (GooglePlayServicesMediationSettings.getNpaBundle() != null &&
+                    !GooglePlayServicesMediationSettings.getNpaBundle().isEmpty()) {
+                builder.addNetworkExtrasBundle(AdMobAdapter.class, GooglePlayServicesMediationSettings.getNpaBundle());
+            }
         }
 
         /**
@@ -605,6 +628,29 @@ public class GooglePlayServicesNative extends CustomEventNative {
             if (appInstallAd.getPrice() != null) {
                 setPrice(appInstallAd.getPrice().toString());
             }
+        }
+    }
+
+    public static final class GooglePlayServicesMediationSettings implements MediationSettings {
+        private static Bundle npaBundle;
+
+        public GooglePlayServicesMediationSettings() {
+        }
+
+        public GooglePlayServicesMediationSettings(Bundle bundle) {
+            npaBundle = bundle;
+        }
+
+        public void setNpaBundle(Bundle bundle) {
+            npaBundle = bundle;
+        }
+
+        /* The MoPub Android SDK queries MediationSettings from the rewarded video code
+        (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
+        available to publishers importing the modularized SDK(s) based on select ad formats.
+        This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
+        private static Bundle getNpaBundle() {
+            return npaBundle;
         }
     }
 }

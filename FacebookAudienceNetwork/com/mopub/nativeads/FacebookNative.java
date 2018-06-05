@@ -1,6 +1,7 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -9,12 +10,10 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAd.Rating;
-import com.facebook.ads.AdSettings;
 
+import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.MoPub;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
  * Video ads will only be shown if VIDEO_ENABLED is set to true or a server configuration
  * "video_enabled" flag is set to true. The server configuration will override the local
  * configuration.
- * Certified with Facebook Audience Network 4.26.0
  */
 public class FacebookNative extends CustomEventNative {
     private static final String PLACEMENT_ID_KEY = "placement_id";
@@ -51,9 +49,9 @@ public class FacebookNative extends CustomEventNative {
     // CustomEventNative implementation
     @Override
     protected void loadNativeAd(final Context context,
-                                final CustomEventNativeListener customEventNativeListener,
-                                final Map<String, Object> localExtras,
-                                final Map<String, String> serverExtras) {
+            final CustomEventNativeListener customEventNativeListener,
+            final Map<String, Object> localExtras,
+            final Map<String, String> serverExtras) {
 
         final String placementId;
         if (extrasAreValid(serverExtras)) {
@@ -75,15 +73,17 @@ public class FacebookNative extends CustomEventNative {
             }
         }
 
+        final String bid = serverExtras.get(DataKeys.ADM_KEY);
+
         if (shouldUseVideoEnabledNativeAd(sIsVideoRendererAvailable, videoEnabledString,
                 videoEnabledFromServer)) {
             final FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd =
                     new FacebookVideoEnabledNativeAd(context,
-                            new NativeAd(context, placementId), customEventNativeListener);
+                            new NativeAd(context, placementId), customEventNativeListener, bid);
             facebookVideoEnabledNativeAd.loadAd();
         } else {
             final FacebookStaticNativeAd facebookStaticNativeAd = new FacebookStaticNativeAd(
-                    context, new NativeAd(context, placementId), customEventNativeListener);
+                    context, new NativeAd(context, placementId), customEventNativeListener, bid);
             facebookStaticNativeAd.loadAd();
         }
     }
@@ -113,7 +113,7 @@ public class FacebookNative extends CustomEventNative {
     }
 
     static boolean shouldUseVideoEnabledNativeAd(final boolean isVideoRendererAvailable,
-                                                 final String videoEnabledString, final boolean videoEnabledFromServer) {
+            final String videoEnabledString, final boolean videoEnabledFromServer) {
         if (!isVideoRendererAvailable) {
             return false;
         }
@@ -146,7 +146,7 @@ public class FacebookNative extends CustomEventNative {
     }
 
     private static void assembleChildViewsWithLimit(final View view,
-                                                    final List<View> clickableViews, final int limit) {
+            final List<View> clickableViews, final int limit) {
         if (view == null) {
             MoPubLog.d("View given is null. Ignoring");
             return;
@@ -175,19 +175,25 @@ public class FacebookNative extends CustomEventNative {
         private final Context mContext;
         private final NativeAd mNativeAd;
         private final CustomEventNativeListener mCustomEventNativeListener;
+        private final String mBid;
 
         FacebookStaticNativeAd(final Context context,
-                               final NativeAd nativeAd,
-                               final CustomEventNativeListener customEventNativeListener) {
+                final NativeAd nativeAd,
+                final CustomEventNativeListener customEventNativeListener,
+                final String bid) {
             mContext = context.getApplicationContext();
             mNativeAd = nativeAd;
             mCustomEventNativeListener = customEventNativeListener;
+            mBid = bid;
         }
 
         void loadAd() {
-            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
             mNativeAd.setAdListener(this);
-            mNativeAd.loadAd();
+            if (!TextUtils.isEmpty(mBid)) {
+                mNativeAd.loadAdFromBid(mBid);
+            } else {
+                mNativeAd.loadAd();
+            }
         }
 
         // AdListener
@@ -210,8 +216,6 @@ public class FacebookNative extends CustomEventNative {
             setIconImageUrl(icon == null ? null : icon.getUrl());
 
             setCallToAction(mNativeAd.getAdCallToAction());
-            setStarRating(getDoubleRating(mNativeAd.getAdStarRating()));
-
             addExtra(SOCIAL_CONTEXT_FOR_AD, mNativeAd.getAdSocialContext());
 
             final NativeAd.Image adChoicesIconImage = mNativeAd.getAdChoicesIcon();
@@ -284,44 +288,38 @@ public class FacebookNative extends CustomEventNative {
         public void destroy() {
             mNativeAd.destroy();
         }
-
-        private Double getDoubleRating(final Rating rating) {
-            if (rating == null) {
-                return null;
-            }
-
-            return MAX_STAR_RATING * rating.getValue() / rating.getScale();
-        }
     }
 
 
     static class FacebookVideoEnabledNativeAd extends BaseNativeAd implements AdListener {
         private static final String SOCIAL_CONTEXT_FOR_AD = "socialContextForAd";
 
-        static final double MIN_STAR_RATING = 0;
-        static final double MAX_STAR_RATING = 5;
-
         private final Context mContext;
         private final NativeAd mNativeAd;
         private final CustomEventNativeListener mCustomEventNativeListener;
 
-        private Double mStarRating;
-
         private final Map<String, Object> mExtras;
 
+        private final String mBid;
+
         FacebookVideoEnabledNativeAd(final Context context,
-                                     final NativeAd nativeAd,
-                                     final CustomEventNativeListener customEventNativeListener) {
+                final NativeAd nativeAd,
+                final CustomEventNativeListener customEventNativeListener,
+                final String bid) {
             mContext = context.getApplicationContext();
             mNativeAd = nativeAd;
             mCustomEventNativeListener = customEventNativeListener;
             mExtras = new HashMap<String, Object>();
+            mBid = bid;
         }
 
         void loadAd() {
-            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
             mNativeAd.setAdListener(this);
-            mNativeAd.loadAd();
+            if (!TextUtils.isEmpty(mBid)) {
+                mNativeAd.loadAdFromBid(mBid);
+            } else {
+                mNativeAd.loadAd();
+            }
         }
 
         /**
@@ -362,15 +360,6 @@ public class FacebookNative extends CustomEventNative {
         }
 
         /**
-         * For app install ads, this returns the associated star rating (on a 5 star scale) for the
-         * advertised app. Note that this method may return null if the star rating was either never set
-         * or invalid.
-         */
-        final public Double getStarRating() {
-            return mStarRating;
-        }
-
-        /**
          * Returns the Privacy Information click through url.
          *
          * @return String representing the Privacy Information Icon click through url, or {@code null}
@@ -399,8 +388,6 @@ public class FacebookNative extends CustomEventNative {
                 mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_STATE);
                 return;
             }
-
-            setStarRating(getDoubleRating(mNativeAd.getAdStarRating()));
 
             addExtra(SOCIAL_CONTEXT_FOR_AD, mNativeAd.getAdSocialContext());
 
@@ -507,25 +494,6 @@ public class FacebookNative extends CustomEventNative {
             if (mediaView != null) {
                 mediaView.setNativeAd(mNativeAd);
             }
-        }
-
-        private void setStarRating(final Double starRating) {
-            if (starRating == null) {
-                mStarRating = null;
-            } else if (starRating >= MIN_STAR_RATING && starRating <= MAX_STAR_RATING) {
-                mStarRating = starRating;
-            } else {
-                MoPubLog.d("Ignoring attempt to set invalid star rating (" + starRating + "). Must be "
-                        + "between " + MIN_STAR_RATING + " and " + MAX_STAR_RATING + ".");
-            }
-        }
-
-        private Double getDoubleRating(final Rating rating) {
-            if (rating == null) {
-                return null;
-            }
-
-            return MAX_STAR_RATING * rating.getValue() / rating.getScale();
         }
     }
 }

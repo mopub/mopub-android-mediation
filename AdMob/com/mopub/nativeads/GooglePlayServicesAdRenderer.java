@@ -159,7 +159,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
             }
 
             outerFrame.removeView(actualView);
-            googleNativeAdView.addView(actualView);
+            googleNativeAdView.addView(actualView, 0);
             outerFrame.addView(googleNativeAdView);
         } else {
             Log.w(GooglePlayServicesNative.TAG,

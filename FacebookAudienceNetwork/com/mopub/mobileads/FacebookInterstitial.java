@@ -1,20 +1,20 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdSettings;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
-import com.facebook.ads.AdSettings;
-
-import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.DataKeys;
 import com.mopub.common.MoPub;
+import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
-
-import android.os.Handler;
 
 import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
 
@@ -70,7 +70,13 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
 
         mFacebookInterstitial = new InterstitialAd(context, placementId);
         mFacebookInterstitial.setAdListener(this);
-        mFacebookInterstitial.loadAd();
+
+        final String adm = serverExtras.get(DataKeys.ADM_KEY);
+        if (!TextUtils.isEmpty(adm)) {
+            mFacebookInterstitial.loadAdFromBid(adm);
+        } else {
+            mFacebookInterstitial.loadAd();
+        }
     }
 
     @Override

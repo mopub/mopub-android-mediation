@@ -7,8 +7,11 @@ import android.text.TextUtils;
 
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.tapjoy.TJActionRequest;
 import com.tapjoy.TJConnectListener;
 import com.tapjoy.TJError;
@@ -107,6 +110,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
         MoPubLog.d("Requesting Tapjoy rewarded video");
+        fetchMoPubGDPRSettings();
         createPlacement(activity);
     }
 
@@ -179,6 +183,29 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
             return true;
         } else {
             return false;
+        }
+    }
+
+    // Pass the user consent from the MoPub SDK to Tapjoy as per GDPR
+    private void fetchMoPubGDPRSettings() {
+
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+
+        if (personalInfoManager != null) {
+            Boolean gdprApplies = personalInfoManager.gdprApplies();
+
+            if (gdprApplies != null) {
+                Tapjoy.subjectToGDPR(gdprApplies);
+
+                if (gdprApplies) {
+                    String userConsented = personalInfoManager.getPersonalInfoConsentStatus() ==
+                            ConsentStatus.EXPLICIT_YES ? "1" : "0";
+
+                    Tapjoy.setUserConsent(userConsented);
+                } else {
+                    Tapjoy.setUserConsent("-1");
+                }
+            }
         }
     }
 

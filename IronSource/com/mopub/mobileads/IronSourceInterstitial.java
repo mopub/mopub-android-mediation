@@ -9,7 +9,9 @@ import android.text.TextUtils;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
+import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.Map;
 
@@ -52,6 +54,10 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
 
     @Override
     protected void loadInterstitial(Context context, CustomEventInterstitialListener customEventInterstitialListener, Map<String, Object> map0, Map<String, String> serverExtras) {
+
+        // Pass the user consent from the MoPub SDK to ironSource as per GDPR
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        IronSource.setConsent(canCollectPersonalInfo);
 
         try {
             mMoPubListener = customEventInterstitialListener;
