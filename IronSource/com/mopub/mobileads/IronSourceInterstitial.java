@@ -29,6 +29,8 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
     private static final String PLACEMENT_KEY = "placementName";
     private static final String INSTANCE_ID_KEY = "instanceId";
     private static final String MEDIATION_TYPE = "mopub";
+    private static final String ADAPTER_VERSION = "300";
+
 
     // This is the instance id used inside ironSource SDK
     private String mInstanceId = "0";
@@ -128,7 +130,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
 
         if (!mInitInterstitialSuccessfully) {
             MoPubLog.d("IronSource initialization succeeded for Interstitial");
-            IronSource.setMediationType(MEDIATION_TYPE);
+            IronSource.setMediationType(MEDIATION_TYPE + ADAPTER_VERSION);
             IronSource.initISDemandOnly(activity, appKey, IronSource.AD_UNIT.INTERSTITIAL);
             mInitInterstitialSuccessfully = true;
         }
