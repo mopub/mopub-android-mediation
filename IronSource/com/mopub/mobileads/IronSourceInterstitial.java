@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
+import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
+import com.mopub.common.MoPubLifecycleManager;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.PersonalInfoManager;
 
@@ -37,24 +40,14 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
     private static CustomEventInterstitialListener mMoPubListener;
 
     /**
-     * Activity Lifecycle Helper Methods
-     **/
-
-    public static void onActivityPaused(Activity activity) {
-        IronSource.onPause(activity);
-    }
-
-    public static void onActivityResumed(Activity activity) {
-        IronSource.onResume(activity);
-    }
-
-    /**
      * Mopub API
      */
 
     @Override
     protected void loadInterstitial(Context context, CustomEventInterstitialListener customEventInterstitialListener, Map<String, Object> map0, Map<String, String> serverExtras) {
 
+
+        MoPubLifecycleManager.getInstance((Activity) context).addLifecycleListener(lifecycleListener);
         // Pass the user consent from the MoPub SDK to ironSource as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         IronSource.setConsent(canCollectPersonalInfo);
@@ -249,7 +242,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
     @Override
     public void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
         MoPubLog.d("IronSource Interstitial failed to show for instance " + instanceId);
-        // do nothing
+        sendMoPubInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
     }
 
     @Override
@@ -264,4 +257,49 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
             }
         });
     }
+
+
+
+    private static LifecycleListener lifecycleListener = new LifecycleListener() {
+        @Override
+        public void onCreate(@NonNull Activity activity) {
+
+        }
+
+        @Override
+        public void onStart(@NonNull Activity activity) {
+
+        }
+
+        @Override
+        public void onPause(@NonNull Activity activity) {
+            IronSource.onPause(activity);
+        }
+
+        @Override
+        public void onResume(@NonNull Activity activity) {
+            IronSource.onResume(activity);
+
+        }
+
+        @Override
+        public void onRestart(@NonNull Activity activity) {
+
+        }
+
+        @Override
+        public void onStop(@NonNull Activity activity) {
+
+        }
+
+        @Override
+        public void onDestroy(@NonNull Activity activity) {
+
+        }
+
+        @Override
+        public void onBackPressed(@NonNull Activity activity) {
+
+        }
+    };
 }
