@@ -14,7 +14,6 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubLifecycleManager;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.Map;
 
@@ -47,7 +46,6 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
 
     @Override
     protected void loadInterstitial(Context context, CustomEventInterstitialListener customEventInterstitialListener, Map<String, Object> map0, Map<String, String> serverExtras) {
-
 
         MoPubLifecycleManager.getInstance((Activity) context).addLifecycleListener(lifecycleListener);
         // Pass the user consent from the MoPub SDK to ironSource as per GDPR
@@ -260,17 +258,13 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
         });
     }
 
-
-
     private static LifecycleListener lifecycleListener = new LifecycleListener() {
         @Override
         public void onCreate(@NonNull Activity activity) {
-
         }
 
         @Override
         public void onStart(@NonNull Activity activity) {
-
         }
 
         @Override
@@ -281,27 +275,22 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
         @Override
         public void onResume(@NonNull Activity activity) {
             IronSource.onResume(activity);
-
         }
 
         @Override
         public void onRestart(@NonNull Activity activity) {
-
         }
 
         @Override
         public void onStop(@NonNull Activity activity) {
-
         }
 
         @Override
         public void onDestroy(@NonNull Activity activity) {
-
         }
 
         @Override
         public void onBackPressed(@NonNull Activity activity) {
-
         }
     };
 }
