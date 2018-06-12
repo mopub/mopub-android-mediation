@@ -1,6 +1,7 @@
 ## Changelog
   * 6.7.9.1
     * Add Activity lifecycle listeners
+    * Call MoPub's `onInterstitialFailed()` when an ironSource interstitial fails to show
 
   * 6.7.9.0
     * This version of the adapters has been certified with IronSource 6.7.9.
