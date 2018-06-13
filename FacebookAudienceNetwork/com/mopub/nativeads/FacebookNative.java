@@ -1,6 +1,7 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -9,11 +10,10 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
-import com.facebook.ads.AdSettings;
 
+import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.MoPub;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
  * Video ads will only be shown if VIDEO_ENABLED is set to true or a server configuration
  * "video_enabled" flag is set to true. The server configuration will override the local
  * configuration.
- * Certified with Facebook Audience Network 4.26.0
  */
 public class FacebookNative extends CustomEventNative {
     private static final String PLACEMENT_ID_KEY = "placement_id";
@@ -50,9 +49,9 @@ public class FacebookNative extends CustomEventNative {
     // CustomEventNative implementation
     @Override
     protected void loadNativeAd(final Context context,
-                                final CustomEventNativeListener customEventNativeListener,
-                                final Map<String, Object> localExtras,
-                                final Map<String, String> serverExtras) {
+            final CustomEventNativeListener customEventNativeListener,
+            final Map<String, Object> localExtras,
+            final Map<String, String> serverExtras) {
 
         final String placementId;
         if (extrasAreValid(serverExtras)) {
@@ -74,15 +73,17 @@ public class FacebookNative extends CustomEventNative {
             }
         }
 
+        final String bid = serverExtras.get(DataKeys.ADM_KEY);
+
         if (shouldUseVideoEnabledNativeAd(sIsVideoRendererAvailable, videoEnabledString,
                 videoEnabledFromServer)) {
             final FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd =
                     new FacebookVideoEnabledNativeAd(context,
-                            new NativeAd(context, placementId), customEventNativeListener);
+                            new NativeAd(context, placementId), customEventNativeListener, bid);
             facebookVideoEnabledNativeAd.loadAd();
         } else {
             final FacebookStaticNativeAd facebookStaticNativeAd = new FacebookStaticNativeAd(
-                    context, new NativeAd(context, placementId), customEventNativeListener);
+                    context, new NativeAd(context, placementId), customEventNativeListener, bid);
             facebookStaticNativeAd.loadAd();
         }
     }
@@ -112,7 +113,7 @@ public class FacebookNative extends CustomEventNative {
     }
 
     static boolean shouldUseVideoEnabledNativeAd(final boolean isVideoRendererAvailable,
-                                                 final String videoEnabledString, final boolean videoEnabledFromServer) {
+            final String videoEnabledString, final boolean videoEnabledFromServer) {
         if (!isVideoRendererAvailable) {
             return false;
         }
@@ -145,7 +146,7 @@ public class FacebookNative extends CustomEventNative {
     }
 
     private static void assembleChildViewsWithLimit(final View view,
-                                                    final List<View> clickableViews, final int limit) {
+            final List<View> clickableViews, final int limit) {
         if (view == null) {
             MoPubLog.d("View given is null. Ignoring");
             return;
@@ -174,19 +175,25 @@ public class FacebookNative extends CustomEventNative {
         private final Context mContext;
         private final NativeAd mNativeAd;
         private final CustomEventNativeListener mCustomEventNativeListener;
+        private final String mBid;
 
         FacebookStaticNativeAd(final Context context,
-                               final NativeAd nativeAd,
-                               final CustomEventNativeListener customEventNativeListener) {
+                final NativeAd nativeAd,
+                final CustomEventNativeListener customEventNativeListener,
+                final String bid) {
             mContext = context.getApplicationContext();
             mNativeAd = nativeAd;
             mCustomEventNativeListener = customEventNativeListener;
+            mBid = bid;
         }
 
         void loadAd() {
-            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
             mNativeAd.setAdListener(this);
-            mNativeAd.loadAd();
+            if (!TextUtils.isEmpty(mBid)) {
+                mNativeAd.loadAdFromBid(mBid);
+            } else {
+                mNativeAd.loadAd();
+            }
         }
 
         // AdListener
@@ -293,19 +300,26 @@ public class FacebookNative extends CustomEventNative {
 
         private final Map<String, Object> mExtras;
 
+        private final String mBid;
+
         FacebookVideoEnabledNativeAd(final Context context,
-                                     final NativeAd nativeAd,
-                                     final CustomEventNativeListener customEventNativeListener) {
+                final NativeAd nativeAd,
+                final CustomEventNativeListener customEventNativeListener,
+                final String bid) {
             mContext = context.getApplicationContext();
             mNativeAd = nativeAd;
             mCustomEventNativeListener = customEventNativeListener;
             mExtras = new HashMap<String, Object>();
+            mBid = bid;
         }
 
         void loadAd() {
-            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
             mNativeAd.setAdListener(this);
-            mNativeAd.loadAd();
+            if (!TextUtils.isEmpty(mBid)) {
+                mNativeAd.loadAdFromBid(mBid);
+            } else {
+                mNativeAd.loadAd();
+            }
         }
 
         /**

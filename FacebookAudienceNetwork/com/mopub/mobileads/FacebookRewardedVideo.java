@@ -6,15 +6,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdSettings;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
-import com.facebook.ads.AdSettings;
-
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
-
-import com.facebook.ads.Ad;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
@@ -91,7 +90,13 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
         if (mRewardedVideoAd != null) {
             MoPubLog.d("Sending Facebook an ad request.");
             AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
-            mRewardedVideoAd.loadAd();
+
+            final String adm = serverExtras.get(DataKeys.ADM_KEY);
+            if (!TextUtils.isEmpty(adm)) {
+                mRewardedVideoAd.loadAdFromBid(adm);
+            } else {
+                mRewardedVideoAd.loadAd();
+            }
         }
     }
 

@@ -19,7 +19,6 @@ import static android.view.View.VISIBLE;
  * Include this class if you want to use Facebook native video ads. This renderer handles Facebook
  * static and video native ads. This will automatically replace the main image view with the
  * Facebook MediaView that handles showing the main asset.
- * Certified with Facebook Audience Network 4.26.1
  */
 public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.FacebookVideoEnabledNativeAd> {
     private final ViewBinder mViewBinder;
@@ -82,9 +81,8 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
 
     @Override
     public void renderAdView(final View view,
-                             final FacebookNative.FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd) {
+            final FacebookNative.FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd) {
         FacebookNativeViewHolder facebookNativeViewHolder = mViewHolderMap.get(view);
-
         if (facebookNativeViewHolder == null) {
             facebookNativeViewHolder = FacebookNativeViewHolder.fromViewBinder(view, mViewBinder);
             mViewHolderMap.put(view, facebookNativeViewHolder);
@@ -104,8 +102,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
     }
 
     private void update(final FacebookNativeViewHolder facebookNativeViewHolder,
-                        final FacebookNative.FacebookVideoEnabledNativeAd nativeAd) {
-
+            final FacebookNative.FacebookVideoEnabledNativeAd nativeAd) {
         final ImageView mainImageView = facebookNativeViewHolder.getMainImageView();
         NativeRendererHelper.addTextView(facebookNativeViewHolder.getTitleView(),
                 nativeAd.getTitle());
@@ -133,7 +130,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
     }
 
     private static void setViewVisibility(final FacebookNativeViewHolder facebookNativeViewHolder,
-                                          final int visibility) {
+            final int visibility) {
         if (facebookNativeViewHolder.getMainView() != null) {
             facebookNativeViewHolder.getMainView().setVisibility(visibility);
         }
@@ -146,14 +143,14 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
 
         // Use fromViewBinder instead of a constructor
         private FacebookNativeViewHolder(final StaticNativeViewHolder staticNativeViewHolder,
-                                         final MediaView mediaView, final boolean mainImageViewInRelativeView) {
+                final MediaView mediaView, final boolean mainImageViewInRelativeView) {
             mStaticNativeViewHolder = staticNativeViewHolder;
             mMediaView = mediaView;
             isMainImageViewInRelativeView = mainImageViewInRelativeView;
         }
 
         static FacebookNativeViewHolder fromViewBinder(final View view,
-                                                       final ViewBinder viewBinder) {
+                final ViewBinder viewBinder) {
             StaticNativeViewHolder staticNativeViewHolder = StaticNativeViewHolder.fromViewBinder(view, viewBinder);
             final View mainImageView = staticNativeViewHolder.mainImageView;
             boolean mainImageViewInRelativeView = false;

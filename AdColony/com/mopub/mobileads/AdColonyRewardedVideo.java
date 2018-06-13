@@ -19,7 +19,9 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
 import java.util.Arrays;
@@ -44,6 +46,8 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     private static final String DEFAULT_APP_ID = "YOUR_AD_COLONY_APP_ID_HERE";
     private static final String[] DEFAULT_ALL_ZONE_IDS = {"ZONE_ID_1", "ZONE_ID_2", "..."};
     private static final String DEFAULT_ZONE_ID = "YOUR_CURRENT_ZONE_ID";
+    private static final String CONSENT_RESPONSE = "consent_response";
+    private static final String CONSENT_GIVEN = "explicit_consent_given";
 
     /*
      * These keys are intended for MoPub internal use. Do not modify.
@@ -110,8 +114,8 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     public boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) throws Exception {
+                                         @NonNull final Map<String, Object> localExtras,
+                                         @NonNull final Map<String, String> serverExtras) throws Exception {
         synchronized (AdColonyRewardedVideo.class) {
             if (sInitialized) {
                 return false;
@@ -128,8 +132,8 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                 adColonyAllZoneIds = extractAllZoneIds(serverExtras);
             }
 
-            setUpGlobalSettings();
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+
             if (!isAdColonyConfigured()) {
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
                 AdColony.configure(launcherActivity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
@@ -142,21 +146,36 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected void loadWithSdkInitialized(@NonNull final Activity activity,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) throws Exception {
+                                          @NonNull final Map<String, Object> localExtras,
+                                          @NonNull final Map<String, String> serverExtras) throws Exception {
         mZoneId = DEFAULT_ZONE_ID;
+
         if (extrasAreValid(serverExtras)) {
             mZoneId = serverExtras.get(ZONE_ID_KEY);
             String adColonyClientOptions = serverExtras.get(CLIENT_OPTIONS_KEY);
             String adColonyAppId = serverExtras.get(APP_ID_KEY);
             String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
+            // Pass the user consent from the MoPub SDK to AdColony as per GDPR
+            PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+            mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
+            if (personalInfoManager != null && personalInfoManager.gdprApplies() != null) {
+                if (personalInfoManager.gdprApplies()) {
+                    mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                            .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+                }
+            }
+            setUpGlobalSettings();
 
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
             // different than the zones we initially called AdColony.configure() with
             if (shouldReconfigure(previousAdColonyAllZoneIds, adColonyAllZoneIds)) {
-                mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
                 AdColony.configure(activity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
+            } else {
+                // If we aren't reconfiguring we should update the app options via setAppOptions() in case
+                // consent has changed since the last adapter initialization.
+                AdColony.setAppOptions(mAdColonyAppOptions);
             }
         }
 
@@ -323,7 +342,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         }
 
         @Override
-        public void onRequestFilled(@NonNull com.adcolony.sdk.AdColonyInterstitial adColonyInterstitial) {
+        public void onRequestFilled(@NonNull AdColonyInterstitial adColonyInterstitial) {
             sZoneIdToAdMap.put(adColonyInterstitial.getZoneID(), adColonyInterstitial);
         }
 
@@ -337,7 +356,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         }
 
         @Override
-        public void onClosed(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
+        public void onClosed(@NonNull AdColonyInterstitial ad) {
             Log.d(TAG, "AdColony rewarded ad has been dismissed.");
             MoPubRewardedVideoManager.onRewardedVideoClosed(
                     AdColonyRewardedVideo.class,
@@ -345,7 +364,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         }
 
         @Override
-        public void onOpened(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
+        public void onOpened(@NonNull AdColonyInterstitial ad) {
             Log.d(TAG, "AdColony rewarded ad shown: " + ad.getZoneID());
             MoPubRewardedVideoManager.onRewardedVideoStarted(
                     AdColonyRewardedVideo.class,
@@ -353,13 +372,13 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         }
 
         @Override
-        public void onExpiring(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
+        public void onExpiring(@NonNull AdColonyInterstitial ad) {
             Log.d(TAG, "AdColony rewarded ad is expiring; requesting new ad");
             AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
         }
 
         @Override
-        public void onClicked(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
+        public void onClicked(@NonNull AdColonyInterstitial ad) {
             MoPubRewardedVideoManager.onRewardedVideoClicked(
                     AdColonyRewardedVideo.class,
                     ad.getZoneID());

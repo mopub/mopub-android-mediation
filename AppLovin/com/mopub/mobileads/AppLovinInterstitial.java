@@ -15,9 +15,12 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinErrorCodes;
+import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
+import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -47,6 +50,11 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
 
     @Override
     public void loadInterstitial(final Context context, final CustomEventInterstitialListener listener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
+
+        // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
+
         MoPubLog.d("Requesting AppLovin interstitial with serverExtras: " + serverExtras + " and localExtras: " + localExtras);
 
         // SDK versions BELOW 7.2.0 require a instance of an Activity to be passed in as the context
@@ -62,7 +70,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         this.context = context;
 
         sdk = retrieveSdk(serverExtras, context);
-        sdk.setPluginVersion("MoPub-Certified-2.2.2");
+        sdk.setPluginVersion("MoPub-Certified-3.0.0");
 
         // Zones support is available on AppLovin SDK 7.5.0 and higher
         final String serverExtrasZoneId = serverExtras != null ? serverExtras.get("zone_id") : null;
@@ -81,7 +89,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             // Otherwise, use the Zones API
             else {
                 // Dynamically load an ad for a given zone without breaking backwards compatibility for publishers on older SDKs
-                sdk.getAdService().loadNextAdForZoneId( zoneId, this );
+                sdk.getAdService().loadNextAdForZoneId(zoneId, this);
             }
         }
     }
@@ -90,7 +98,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     public void showInterstitial() {
         final AppLovinAd preloadedAd = dequeueAd(zoneId);
         if (preloadedAd != null) {
-            final AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create( sdk, context );
+            final AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(sdk, context);
             interstitialAd.setAdDisplayListener(this);
             interstitialAd.setAdClickListener(this);
             interstitialAd.setAdVideoPlaybackListener(this);

@@ -15,9 +15,12 @@ import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
+import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
+import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.Map;
 
@@ -41,6 +44,11 @@ public class AppLovinBanner extends CustomEventBanner {
 
     @Override
     protected void loadBanner(final Context context, final CustomEventBannerListener customEventBannerListener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
+
+        // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
+
         // SDK versions BELOW 7.1.0 require a instance of an Activity to be passed in as the context
         if (AppLovinSdk.VERSION_CODE < 710 && !(context instanceof Activity)) {
             MoPubLog.d("Unable to request AppLovin banner. Invalid context provided.");
@@ -54,7 +62,7 @@ public class AppLovinBanner extends CustomEventBanner {
         final AppLovinAdSize adSize = appLovinAdSizeFromLocalExtras(localExtras);
         if (adSize != null) {
             sdk = retrieveSdk(serverExtras, context);
-            sdk.setPluginVersion("MoPub-Certified-2.2.2");
+            sdk.setPluginVersion("MoPub-Certified-3.0.0");
 
             final AppLovinAdView adView = new AppLovinAdView(sdk, adSize, context);
             adView.setAdDisplayListener(new AppLovinAdDisplayListener() {
@@ -77,30 +85,28 @@ public class AppLovinBanner extends CustomEventBanner {
             });
 
 
-            adView.setAdViewEventListener( new AppLovinAdViewEventListener() {
+            adView.setAdViewEventListener(new AppLovinAdViewEventListener() {
                 @Override
-                public void adOpenedFullscreen(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView)
-                {
+                public void adOpenedFullscreen(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView) {
                     MoPubLog.d("Banner opened fullscreen");
                     customEventBannerListener.onBannerExpanded();
                 }
 
                 @Override
-                public void adClosedFullscreen(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView)
-                {
+                public void adClosedFullscreen(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView) {
                     MoPubLog.d("Banner closed fullscreen");
                     customEventBannerListener.onBannerCollapsed();
                 }
 
                 @Override
-                public void adLeftApplication(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView)
-                {
+                public void adLeftApplication(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView) {
                     MoPubLog.d("Banner left application");
                 }
 
                 @Override
-                public void adFailedToDisplay(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView, final AppLovinAdViewDisplayErrorCode appLovinAdViewDisplayErrorCode) {}
-            } );
+                public void adFailedToDisplay(final AppLovinAd appLovinAd, final AppLovinAdView appLovinAdView, final AppLovinAdViewDisplayErrorCode appLovinAdViewDisplayErrorCode) {
+                }
+            });
 
             final AppLovinAdLoadListener adLoadListener = new AppLovinAdLoadListener() {
                 @Override
@@ -149,7 +155,7 @@ public class AppLovinBanner extends CustomEventBanner {
             }
 
             if (!TextUtils.isEmpty(zoneId)) {
-                sdk.getAdService().loadNextAdForZoneId( zoneId, adLoadListener );
+                sdk.getAdService().loadNextAdForZoneId(zoneId, adLoadListener);
             } else {
                 sdk.getAdService().loadNextAd(adSize, adLoadListener);
             }

@@ -3,18 +3,18 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
+import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
-import com.facebook.ads.AdSettings;
-
 import com.mopub.common.DataKeys;
+import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
-import com.mopub.common.MoPub;
 
 import java.util.Map;
 
@@ -62,7 +62,13 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         mFacebookBanner = new AdView(context, placementId, adSize);
         mFacebookBanner.setAdListener(this);
         mFacebookBanner.disableAutoRefresh();
-        mFacebookBanner.loadAd();
+
+        final String adm = serverExtras.get(DataKeys.ADM_KEY);
+        if (!TextUtils.isEmpty(adm)) {
+            mFacebookBanner.loadAdFromBid(adm);
+        } else {
+            mFacebookBanner.loadAd();
+        }
     }
 
     @Override
@@ -120,8 +126,8 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
     @Nullable
     private AdSize calculateAdSize(int width, int height) {
         // Use the smallest AdSize that will properly contain the adView
-        if (height <= AdSize.BANNER_320_50.getHeight()) {
-            return AdSize.BANNER_320_50;
+        if (height <= AdSize.BANNER_HEIGHT_50.getHeight()) {
+            return AdSize.BANNER_HEIGHT_50;
         } else if (height <= AdSize.BANNER_HEIGHT_90.getHeight()) {
             return AdSize.BANNER_HEIGHT_90;
         } else if (height <= AdSize.RECTANGLE_HEIGHT_250.getHeight()) {

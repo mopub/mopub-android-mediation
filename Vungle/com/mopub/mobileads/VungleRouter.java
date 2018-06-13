@@ -6,8 +6,10 @@ import android.support.annotation.NonNull;
 
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -31,6 +33,7 @@ public class VungleRouter {
     private static final String VERSION = "6.2.5";
 
     private static VungleRouter instance = new VungleRouter();
+
     private enum SDKInitState {
         NOTINITIALIZED,
         INITIALIZING,
@@ -53,7 +56,6 @@ public class VungleRouter {
         }
     };
 
-
     private VungleRouter() {
         VungleApiClient.addWrapperInfo(VungleApiClient.WrapperFramework.mopub,
                 VERSION.replace('.', '_'));
@@ -67,8 +69,8 @@ public class VungleRouter {
         return sLifecycleListener;
     }
 
-
     public void initVungle(Context context, String vungleAppId, String[] placementReferenceIds) {
+
         Vungle.init(Arrays.asList(placementReferenceIds), vungleAppId, context.getApplicationContext(), new InitCallback() {
             @Override
             public void onSuccess() {
@@ -77,6 +79,10 @@ public class VungleRouter {
                 sInitState = SDKInitState.INITIALIZED;
 
                 clearWaitingList();
+
+                // Pass the user consent from the MoPub SDK to Vungle as per GDPR
+                boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+                Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN : Vungle.Consent.OPTED_OUT);
             }
 
             @Override
@@ -144,8 +150,7 @@ public class VungleRouter {
     public void playAdForPlacement(String placementId, AdConfig adConfig) {
         if (Vungle.canPlayAd(placementId)) {
             Vungle.playAd(placementId, adConfig, playAdCallback);
-        }
-        else {
+        } else {
             MoPubLog.w(ROUTER_TAG + "There should not be this case. playAdForPlacement is called before an ad is loaded for Placement ID: " + placementId);
         }
     }
@@ -161,7 +166,7 @@ public class VungleRouter {
     private void clearWaitingList() {
         for (Map.Entry<String, VungleRouterListener> entry : sWaitingList.entrySet()) {
             Vungle.loadAd(entry.getKey(), loadAdCallback);
-            sVungleRouterListeners.put(entry.getKey(),entry.getValue());
+            sVungleRouterListeners.put(entry.getKey(), entry.getValue());
         }
 
         sWaitingList.clear();
