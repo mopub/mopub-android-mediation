@@ -1,4 +1,8 @@
 ## Changelog
+  * 4.99.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 4.99.0.
+    * This version of the Audience Network SDK deprecates several existing native ad APIs used in the existing adapters. As a result, existing native ad adapters do not compile. Publishers are recommended to disable their native ad integration in that case, and re-enable it when updated native ad adapters are released.
+
   * 4.28.1.1
     * Enables advanced bidding for all adapters and adds FacebookAdvancedBidder.
 
