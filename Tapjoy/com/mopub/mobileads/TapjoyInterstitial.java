@@ -17,6 +17,7 @@ import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
+import com.mopub.common.util.Json;
 import com.tapjoy.TJActionRequest;
 import com.tapjoy.TJConnectListener;
 import com.tapjoy.TJError;
@@ -25,6 +26,9 @@ import com.tapjoy.TJPlacementListener;
 import com.tapjoy.Tapjoy;
 import com.tapjoy.TapjoyLog;
 
+import org.json.JSONException;
+
+import java.util.HashMap;
 import java.util.Map;
 
 public class TapjoyInterstitial extends CustomEventInterstitial implements TJPlacementListener {
@@ -36,6 +40,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
     public static final String SDK_KEY = "sdkKey";
     public static final String DEBUG_ENABLED = "debugEnabled";
     public static final String PLACEMENT_NAME = "name";
+    private static final String ADM_KEY = "adm";
 
     private TJPlacement tjPlacement;
     private CustomEventInterstitialListener mInterstitialListener;
@@ -62,6 +67,8 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
             MoPubLog.d("Tapjoy interstitial loaded with empty 'name' field. Request will fail.");
         }
 
+        final String adm = serverExtras.get(ADM_KEY);
+
         boolean canRequestPlacement = true;
         if (!Tapjoy.isConnected()) {
             // Check if configuration data is available
@@ -75,7 +82,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
                     @Override
                     public void onConnectSuccess() {
                         MoPubLog.d("Tapjoy connected successfully");
-                        createPlacement(context, placementName);
+                        createPlacement(context, placementName, adm);
                     }
 
                     @Override
@@ -93,14 +100,24 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
         }
 
         if (canRequestPlacement) {
-            createPlacement(context, placementName);
+            createPlacement(context, placementName, adm);
         }
     }
 
-    private void createPlacement(Context context, String placementName) {
+    private void createPlacement(Context context, String placementName, final String adm) {
         tjPlacement = new TJPlacement(context, placementName, this);
         tjPlacement.setMediationName(TJC_MOPUB_NETWORK_CONSTANT);
         tjPlacement.setAdapterVersion(TJC_MOPUB_ADAPTER_VERSION_NUMBER);
+
+        if (!TextUtils.isEmpty(adm)) {
+            try {
+                Map<String, String> auctionData = Json.jsonStringToMap(adm);
+                tjPlacement.setAuctionData(new HashMap<>(auctionData));
+            } catch (JSONException e) {
+                MoPubLog.d("Unable to parse auction data.");
+            }
+        }
+
         tjPlacement.requestContent();
     }
 
