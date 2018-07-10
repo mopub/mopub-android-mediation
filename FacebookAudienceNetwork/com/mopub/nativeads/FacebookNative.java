@@ -7,10 +7,10 @@ import android.view.ViewGroup;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
-import com.facebook.ads.AdListener;
+import com.facebook.ads.AdIconView;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
-
+import com.facebook.ads.NativeAdListener;
 import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
-
 /**
  * FacebookAdRenderer is also necessary in order to show video ads.
  * Video ads will only be shown if VIDEO_ENABLED is set to true or a server configuration
@@ -30,28 +28,13 @@ import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
  */
 public class FacebookNative extends CustomEventNative {
     private static final String PLACEMENT_ID_KEY = "placement_id";
-    private static final String VIDEO_ENABLED_KEY = "video_enabled";
-
-    /**
-     * Sets whether or not Facebook native video ads will be shown. This value is overridden with
-     * server extras.
-     */
-    private static boolean VIDEO_ENABLED = false;
-
-    /**
-     * Sets whether or not there is a video renderer available. This class will check for the
-     * default Facebook video renderer. This value can be overridden with {@link
-     * FacebookNative#setVideoRendererAvailable} if there already is a custom Facebook video
-     * renderer.
-     */
-    private static Boolean sIsVideoRendererAvailable = null;
 
     // CustomEventNative implementation
     @Override
     protected void loadNativeAd(final Context context,
-            final CustomEventNativeListener customEventNativeListener,
-            final Map<String, Object> localExtras,
-            final Map<String, String> serverExtras) {
+                                final CustomEventNativeListener customEventNativeListener,
+                                final Map<String, Object> localExtras,
+                                final Map<String, String> serverExtras) {
 
         final String placementId;
         if (extrasAreValid(serverExtras)) {
@@ -61,68 +44,12 @@ public class FacebookNative extends CustomEventNative {
             return;
         }
 
-        final String videoEnabledString = serverExtras.get(VIDEO_ENABLED_KEY);
-        boolean videoEnabledFromServer = Boolean.parseBoolean(videoEnabledString);
-
-        if (sIsVideoRendererAvailable == null) {
-            try {
-                Class.forName("com.mopub.nativeads.FacebookAdRenderer");
-                sIsVideoRendererAvailable = true;
-            } catch (ClassNotFoundException e) {
-                sIsVideoRendererAvailable = false;
-            }
-        }
-
         final String bid = serverExtras.get(DataKeys.ADM_KEY);
 
-        if (shouldUseVideoEnabledNativeAd(sIsVideoRendererAvailable, videoEnabledString,
-                videoEnabledFromServer)) {
-            final FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd =
-                    new FacebookVideoEnabledNativeAd(context,
-                            new NativeAd(context, placementId), customEventNativeListener, bid);
-            facebookVideoEnabledNativeAd.loadAd();
-        } else {
-            final FacebookStaticNativeAd facebookStaticNativeAd = new FacebookStaticNativeAd(
-                    context, new NativeAd(context, placementId), customEventNativeListener, bid);
-            facebookStaticNativeAd.loadAd();
-        }
-    }
-
-    /**
-     * Sets whether Facebook native video ads may be shown. This value is overridden by the value of
-     * the "video_enabled" key that may be sent from the MoPub ad server.
-     * com.mopub.nativeads.FacebookAdRenderer must also be used to display video-enabled ads.
-     *
-     * @param videoEnabled True if you want to enable Facebook native video.
-     */
-    public static void setVideoEnabled(final boolean videoEnabled) {
-        VIDEO_ENABLED = videoEnabled;
-    }
-
-    /**
-     * Sets whether a renderer is available that supports Facebook video ads.
-     * <p/>
-     * If you use a custom renderer class that is not com.mopub.nativeads.FacebookAdRenderer to show
-     * video-enabled native ads, you should set this to true.
-     *
-     * @param videoRendererAvailable Whether or not there is a renderer available for video-enabled
-     *                               Facebook native ads.
-     */
-    public static void setVideoRendererAvailable(final boolean videoRendererAvailable) {
-        sIsVideoRendererAvailable = videoRendererAvailable;
-    }
-
-    static boolean shouldUseVideoEnabledNativeAd(final boolean isVideoRendererAvailable,
-            final String videoEnabledString, final boolean videoEnabledFromServer) {
-        if (!isVideoRendererAvailable) {
-            return false;
-        }
-        return (videoEnabledString != null && videoEnabledFromServer) ||
-                (videoEnabledString == null && VIDEO_ENABLED);
-    }
-
-    static Boolean isVideoRendererAvailable() {
-        return sIsVideoRendererAvailable;
+        final FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd =
+                new FacebookVideoEnabledNativeAd(context,
+                        new NativeAd(context, placementId), customEventNativeListener, bid);
+        facebookVideoEnabledNativeAd.loadAd();
     }
 
     private boolean extrasAreValid(final Map<String, String> serverExtras) {
@@ -130,7 +57,8 @@ public class FacebookNative extends CustomEventNative {
         return (placementId != null && placementId.length() > 0);
     }
 
-    private static void registerChildViewsForInteraction(final View view, final NativeAd nativeAd) {
+    private static void registerChildViewsForInteraction(final View view, final NativeAd nativeAd,
+                                                         final MediaView mediaView, final AdIconView adIconView) {
         if (nativeAd == null) {
             return;
         }
@@ -139,14 +67,14 @@ public class FacebookNative extends CustomEventNative {
         assembleChildViewsWithLimit(view, clickableViews, 10);
 
         if (clickableViews.size() == 1) {
-            nativeAd.registerViewForInteraction(view);
+            nativeAd.registerViewForInteraction(view, mediaView, adIconView);
         } else {
-            nativeAd.registerViewForInteraction(view, clickableViews);
+            nativeAd.registerViewForInteraction(view, mediaView, adIconView, clickableViews);
         }
     }
 
     private static void assembleChildViewsWithLimit(final View view,
-            final List<View> clickableViews, final int limit) {
+                                                    final List<View> clickableViews, final int limit) {
         if (view == null) {
             MoPubLog.d("View given is null. Ignoring");
             return;
@@ -169,129 +97,7 @@ public class FacebookNative extends CustomEventNative {
         clickableViews.add(view);
     }
 
-    static class FacebookStaticNativeAd extends StaticNativeAd implements AdListener {
-        private static final String SOCIAL_CONTEXT_FOR_AD = "socialContextForAd";
-
-        private final Context mContext;
-        private final NativeAd mNativeAd;
-        private final CustomEventNativeListener mCustomEventNativeListener;
-        private final String mBid;
-
-        FacebookStaticNativeAd(final Context context,
-                final NativeAd nativeAd,
-                final CustomEventNativeListener customEventNativeListener,
-                final String bid) {
-            mContext = context.getApplicationContext();
-            mNativeAd = nativeAd;
-            mCustomEventNativeListener = customEventNativeListener;
-            mBid = bid;
-        }
-
-        void loadAd() {
-            mNativeAd.setAdListener(this);
-            if (!TextUtils.isEmpty(mBid)) {
-                mNativeAd.loadAdFromBid(mBid);
-            } else {
-                mNativeAd.loadAd();
-            }
-        }
-
-        // AdListener
-        @Override
-        public void onAdLoaded(final Ad ad) {
-            // This identity check is from Facebook's Native API sample code:
-            // https://developers.facebook.com/docs/audience-network/android/native-api
-            if (!mNativeAd.equals(ad) || !mNativeAd.isAdLoaded()) {
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_STATE);
-                return;
-            }
-
-            setTitle(mNativeAd.getAdTitle());
-            setText(mNativeAd.getAdBody());
-
-            final NativeAd.Image coverImage = mNativeAd.getAdCoverImage();
-            setMainImageUrl(coverImage == null ? null : coverImage.getUrl());
-
-            final NativeAd.Image icon = mNativeAd.getAdIcon();
-            setIconImageUrl(icon == null ? null : icon.getUrl());
-
-            setCallToAction(mNativeAd.getAdCallToAction());
-            addExtra(SOCIAL_CONTEXT_FOR_AD, mNativeAd.getAdSocialContext());
-
-            final NativeAd.Image adChoicesIconImage = mNativeAd.getAdChoicesIcon();
-            setPrivacyInformationIconImageUrl(adChoicesIconImage == null ? null : adChoicesIconImage
-                    .getUrl());
-            setPrivacyInformationIconClickThroughUrl(mNativeAd.getAdChoicesLinkUrl());
-
-            final List<String> imageUrls = new ArrayList<String>();
-            final String mainImageUrl = getMainImageUrl();
-            if (mainImageUrl != null) {
-                imageUrls.add(getMainImageUrl());
-            }
-            final String iconUrl = getIconImageUrl();
-            if (iconUrl != null) {
-                imageUrls.add(getIconImageUrl());
-            }
-            final String privacyInformationIconImageUrl = getPrivacyInformationIconImageUrl();
-            if (privacyInformationIconImageUrl != null) {
-                imageUrls.add(privacyInformationIconImageUrl);
-            }
-
-            preCacheImages(mContext, imageUrls, new NativeImageHelper.ImageListener() {
-                @Override
-                public void onImagesCached() {
-                    mCustomEventNativeListener.onNativeAdLoaded(FacebookStaticNativeAd.this);
-                }
-
-                @Override
-                public void onImagesFailedToCache(NativeErrorCode errorCode) {
-                    mCustomEventNativeListener.onNativeAdFailed(errorCode);
-                }
-            });
-        }
-
-        @Override
-        public void onError(final Ad ad, final AdError adError) {
-            if (adError == null) {
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED);
-            } else if (adError.getErrorCode() == AdError.NO_FILL.getErrorCode()) {
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
-            } else if (adError.getErrorCode() == AdError.INTERNAL_ERROR.getErrorCode()) {
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_STATE);
-            } else {
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED);
-            }
-        }
-
-        @Override
-        public void onAdClicked(final Ad ad) {
-            notifyAdClicked();
-        }
-
-        @Override
-        public void onLoggingImpression(final Ad ad) {
-            notifyAdImpressed();
-        }
-
-        // BaseForwardingNativeAd
-        @Override
-        public void prepare(final View view) {
-            registerChildViewsForInteraction(view, mNativeAd);
-        }
-
-        @Override
-        public void clear(final View view) {
-            mNativeAd.unregisterView();
-        }
-
-        @Override
-        public void destroy() {
-            mNativeAd.destroy();
-        }
-    }
-
-
-    static class FacebookVideoEnabledNativeAd extends BaseNativeAd implements AdListener {
+    static class FacebookVideoEnabledNativeAd extends BaseNativeAd implements NativeAdListener {
         private static final String SOCIAL_CONTEXT_FOR_AD = "socialContextForAd";
 
         private final Context mContext;
@@ -303,9 +109,9 @@ public class FacebookNative extends CustomEventNative {
         private final String mBid;
 
         FacebookVideoEnabledNativeAd(final Context context,
-                final NativeAd nativeAd,
-                final CustomEventNativeListener customEventNativeListener,
-                final String bid) {
+                                     final NativeAd nativeAd,
+                                     final CustomEventNativeListener customEventNativeListener,
+                                     final String bid) {
             mContext = context.getApplicationContext();
             mNativeAd = nativeAd;
             mCustomEventNativeListener = customEventNativeListener;
@@ -326,30 +132,14 @@ public class FacebookNative extends CustomEventNative {
          * Returns the String corresponding to the ad's title.
          */
         final public String getTitle() {
-            return mNativeAd.getAdTitle();
+            return mNativeAd.getAdHeadline();
         }
 
         /**
          * Returns the String corresponding to the ad's body text. May be null.
          */
         final public String getText() {
-            return mNativeAd.getAdBody();
-        }
-
-        /**
-         * Returns the String url corresponding to the ad's main image. May be null.
-         */
-        final public String getMainImageUrl() {
-            final NativeAd.Image coverImage = mNativeAd.getAdCoverImage();
-            return coverImage == null ? null : coverImage.getUrl();
-        }
-
-        /**
-         * Returns the String url corresponding to the ad's icon image. May be null.
-         */
-        final public String getIconImageUrl() {
-            final NativeAd.Image icon = mNativeAd.getAdIcon();
-            return icon == null ? null : icon.getUrl();
+            return mNativeAd.getAdBodyText();
         }
 
         /**
@@ -369,16 +159,6 @@ public class FacebookNative extends CustomEventNative {
             return mNativeAd.getAdChoicesLinkUrl();
         }
 
-        /**
-         * Returns the Privacy Information image url.
-         *
-         * @return String representing the Privacy Information Icon click through url, or {@code
-         * null} if not set.
-         */
-        final public String getPrivacyInformationIconImageUrl() {
-            return mNativeAd.getAdChoicesIcon() == null ? null : mNativeAd.getAdChoicesIcon().getUrl();
-        }
-
         // AdListener
         @Override
         public void onAdLoaded(final Ad ad) {
@@ -390,32 +170,7 @@ public class FacebookNative extends CustomEventNative {
             }
 
             addExtra(SOCIAL_CONTEXT_FOR_AD, mNativeAd.getAdSocialContext());
-
-            final List<String> imageUrls = new ArrayList<String>();
-            final String mainImageUrl = getMainImageUrl();
-            if (mainImageUrl != null) {
-                imageUrls.add(mainImageUrl);
-            }
-            final String iconImageUrl = getIconImageUrl();
-            if (iconImageUrl != null) {
-                imageUrls.add(iconImageUrl);
-            }
-            final String privacyInformationIconImageUrl = getPrivacyInformationIconImageUrl();
-            if (privacyInformationIconImageUrl != null) {
-                imageUrls.add(privacyInformationIconImageUrl);
-            }
-
-            preCacheImages(mContext, imageUrls, new NativeImageHelper.ImageListener() {
-                @Override
-                public void onImagesCached() {
-                    mCustomEventNativeListener.onNativeAdLoaded(FacebookVideoEnabledNativeAd.this);
-                }
-
-                @Override
-                public void onImagesFailedToCache(NativeErrorCode errorCode) {
-                    mCustomEventNativeListener.onNativeAdFailed(errorCode);
-                }
-            });
+            mCustomEventNativeListener.onNativeAdLoaded(FacebookVideoEnabledNativeAd.this);
         }
 
         @Override
@@ -444,7 +199,6 @@ public class FacebookNative extends CustomEventNative {
         // BaseForwardingNativeAd
         @Override
         public void prepare(final View view) {
-            registerChildViewsForInteraction(view, mNativeAd);
         }
 
         @Override
@@ -485,15 +239,17 @@ public class FacebookNative extends CustomEventNative {
             mExtras.put(key, value);
         }
 
-        /**
-         * Attaches the native ad to the MediaView, if it exists.
-         *
-         * @param mediaView The View that holds the main media.
-         */
-        public void updateMediaView(final MediaView mediaView) {
-            if (mediaView != null) {
-                mediaView.setNativeAd(mNativeAd);
-            }
+        void registerChildViewsForInteraction(final View view, final MediaView mediaView,
+                                              final AdIconView adIconView) {
+            FacebookNative.registerChildViewsForInteraction(view, mNativeAd, mediaView, adIconView);
+        }
+
+        @Override
+        public void onMediaDownloaded(final Ad ad) {
+        }
+
+        NativeAd getFacebookNativeAd() {
+            return mNativeAd;
         }
     }
 }

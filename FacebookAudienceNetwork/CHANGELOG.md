@@ -1,4 +1,7 @@
 ## Changelog
+  * 4.99.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 4.99.1 for all ad formats. Publishers must use the latest native ad adapters for compatibility.
+
   * 4.99.0.0
     * This version of the adapters has been certified with Facebook Audience Network 4.99.0 for all ad formats except native ads.
     * This version of the Audience Network SDK deprecates several existing native ad APIs used in the existing adapters. As a result, the current native ad adapters are not compatible. Updates require changes from the MoPub SDK as well, so we are planning to release new native ad adapters along with our next SDK release. Publishers integrated with Facebook native ads are recommended to use the pre-4.99.0 SDKs until the updates are available.
