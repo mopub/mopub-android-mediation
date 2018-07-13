@@ -8,7 +8,8 @@ import com.tapjoy.Tapjoy;
 public class TapjoyAdvancedBidder implements MoPubAdvancedBidder {
     @Override
     public String getToken(final Context context) {
-        return "1";
+        String token = Tapjoy.getUserToken();
+        return (token != null && !token.isEmpty() ? token : "1");
     }
 
     @Override
