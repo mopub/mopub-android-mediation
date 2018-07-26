@@ -53,6 +53,9 @@ public class VungleInterstitial extends CustomEventInterstitial {
                                     CustomEventInterstitialListener customEventInterstitialListener,
                                     Map<String, Object> localExtras,
                                     Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mIsPlaying = false;
 
@@ -209,6 +212,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
                     @Override
                     public void run() {
                         mCustomEventInterstitialListener.onInterstitialShown();
+                        mCustomEventInterstitialListener.onInterstitialImpression();
                     }
                 });
             }

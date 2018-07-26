@@ -22,6 +22,8 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
                                     Map<String, Object> localExtras,
                                     Map<String, String> serverExtras) {
 
+        setAutomaticImpressionAndClickTracking(false);
+
         mPlacementId = UnityRouter.placementIdForServerExtras(serverExtras, mPlacementId);
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mContext = context;
@@ -74,6 +76,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
     @Override
     public void onUnityAdsStart(String placementId) {
         mCustomEventInterstitialListener.onInterstitialShown();
+        mCustomEventInterstitialListener.onInterstitialImpression();
     }
 
     @Override

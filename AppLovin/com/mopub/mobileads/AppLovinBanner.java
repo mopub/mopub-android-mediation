@@ -45,6 +45,8 @@ public class AppLovinBanner extends CustomEventBanner {
     @Override
     protected void loadBanner(final Context context, final CustomEventBannerListener customEventBannerListener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
 
+        setAutomaticImpressionAndClickTracking(false);
+
         // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
@@ -69,6 +71,7 @@ public class AppLovinBanner extends CustomEventBanner {
                 @Override
                 public void adDisplayed(final AppLovinAd ad) {
                     MoPubLog.d("Banner displayed");
+                    customEventBannerListener.onBannerImpression();
                 }
 
                 @Override

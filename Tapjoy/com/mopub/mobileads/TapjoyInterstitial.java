@@ -55,6 +55,9 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
                                     CustomEventInterstitialListener customEventInterstitialListener,
                                     Map<String, Object> localExtras,
                                     Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         MoPubLog.d("Requesting Tapjoy interstitial");
 
         mInterstitialListener = customEventInterstitialListener;
@@ -193,6 +196,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
             @Override
             public void run() {
                 mInterstitialListener.onInterstitialShown();
+                mInterstitialListener.onInterstitialImpression();
             }
         });
     }

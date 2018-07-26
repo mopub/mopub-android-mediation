@@ -65,6 +65,8 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
             return;
         }
 
+        setAutomaticImpressionAndClickTracking(false);
+
         String clientOptions = DEFAULT_CLIENT_OPTIONS;
         String appId = DEFAULT_APP_ID;
         String[] allZoneIds = DEFAULT_ALL_ZONE_IDS;
@@ -179,6 +181,7 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
                         @Override
                         public void run() {
                             mCustomEventInterstitialListener.onInterstitialShown();
+                            mCustomEventInterstitialListener.onInterstitialImpression();
                         }
                     });
                 }
