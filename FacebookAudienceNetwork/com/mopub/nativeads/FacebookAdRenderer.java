@@ -1,19 +1,23 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.facebook.ads.AdChoicesView;
+import com.facebook.ads.AdIconView;
 import com.facebook.ads.MediaView;
 import com.mopub.common.Preconditions;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.WeakHashMap;
-
-import static android.view.View.VISIBLE;
 
 /**
  * Include this class if you want to use Facebook native video ads. This renderer handles Facebook
@@ -21,10 +25,11 @@ import static android.view.View.VISIBLE;
  * Facebook MediaView that handles showing the main asset.
  */
 public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.FacebookVideoEnabledNativeAd> {
-    private final ViewBinder mViewBinder;
+    private final FacebookViewBinder mViewBinder;
 
     // This is used instead of View.setTag, which causes a memory leak in 2.3
     // and earlier: https://code.google.com/p/android/issues/detail?id=18273
+    @NonNull
     final WeakHashMap<View, FacebookNativeViewHolder> mViewHolderMap;
 
     /**
@@ -32,56 +37,21 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
      *
      * @param viewBinder The view binder to use when inflating and rendering an ad.
      */
-    public FacebookAdRenderer(final ViewBinder viewBinder) {
+    public FacebookAdRenderer(final FacebookViewBinder viewBinder) {
         mViewBinder = viewBinder;
         mViewHolderMap = new WeakHashMap<View, FacebookNativeViewHolder>();
     }
 
     @Override
     public View createAdView(final Context context, final ViewGroup parent) {
-        final View adView = LayoutInflater
+        return LayoutInflater
                 .from(context)
                 .inflate(mViewBinder.layoutId, parent, false);
-        final View mainImageView = adView.findViewById(mViewBinder.mainImageId);
-        if (mainImageView == null) {
-            return adView;
-        }
-
-        final ViewGroup.LayoutParams mainImageViewLayoutParams = mainImageView.getLayoutParams();
-        final MediaView.LayoutParams mediaViewLayoutParams = new MediaView.LayoutParams(
-                mainImageViewLayoutParams.width, mainImageViewLayoutParams.height);
-
-        if (mainImageViewLayoutParams instanceof ViewGroup.MarginLayoutParams) {
-            final ViewGroup.MarginLayoutParams marginParams =
-                    (ViewGroup.MarginLayoutParams) mainImageViewLayoutParams;
-            mediaViewLayoutParams.setMargins(marginParams.leftMargin,
-                    marginParams.topMargin,
-                    marginParams.rightMargin,
-                    marginParams.bottomMargin);
-        }
-
-        if (mainImageViewLayoutParams instanceof RelativeLayout.LayoutParams) {
-            final RelativeLayout.LayoutParams mainImageViewRelativeLayoutParams =
-                    (RelativeLayout.LayoutParams) mainImageViewLayoutParams;
-            final int[] rules = mainImageViewRelativeLayoutParams.getRules();
-            for (int i = 0; i < rules.length; i++) {
-                mediaViewLayoutParams.addRule(i, rules[i]);
-            }
-            mainImageView.setVisibility(View.INVISIBLE);
-        } else {
-            mainImageView.setVisibility(View.GONE);
-        }
-
-        final MediaView mediaView = new MediaView(context);
-        ViewGroup mainImageParent = (ViewGroup) mainImageView.getParent();
-        int mainImageIndex = mainImageParent.indexOfChild(mainImageView);
-        mainImageParent.addView(mediaView, mainImageIndex + 1, mediaViewLayoutParams);
-        return adView;
     }
 
     @Override
     public void renderAdView(final View view,
-            final FacebookNative.FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd) {
+                             final FacebookNative.FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd) {
         FacebookNativeViewHolder facebookNativeViewHolder = mViewHolderMap.get(view);
         if (facebookNativeViewHolder == null) {
             facebookNativeViewHolder = FacebookNativeViewHolder.fromViewBinder(view, mViewBinder);
@@ -92,7 +62,6 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         NativeRendererHelper.updateExtras(facebookNativeViewHolder.getMainView(),
                 mViewBinder.extras,
                 facebookVideoEnabledNativeAd.getExtras());
-        setViewVisibility(facebookNativeViewHolder, VISIBLE);
     }
 
     @Override
@@ -102,107 +71,196 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
     }
 
     private void update(final FacebookNativeViewHolder facebookNativeViewHolder,
-            final FacebookNative.FacebookVideoEnabledNativeAd nativeAd) {
-        final ImageView mainImageView = facebookNativeViewHolder.getMainImageView();
+                        final FacebookNative.FacebookVideoEnabledNativeAd nativeAd) {
         NativeRendererHelper.addTextView(facebookNativeViewHolder.getTitleView(),
                 nativeAd.getTitle());
         NativeRendererHelper.addTextView(facebookNativeViewHolder.getTextView(), nativeAd.getText());
         NativeRendererHelper.addTextView(facebookNativeViewHolder.getCallToActionView(),
                 nativeAd.getCallToAction());
-        NativeImageHelper.loadImageView(nativeAd.getMainImageUrl(), mainImageView);
-        NativeImageHelper.loadImageView(nativeAd.getIconImageUrl(),
-                facebookNativeViewHolder.getIconImageView());
-        NativeRendererHelper.addPrivacyInformationIcon(
-                facebookNativeViewHolder.getPrivacyInformationIconImageView(),
-                nativeAd.getPrivacyInformationIconImageUrl(),
-                nativeAd.getPrivacyInformationIconClickThroughUrl());
-        final MediaView mediaView = facebookNativeViewHolder.getMediaView();
-        if (mediaView != null && mainImageView != null) {
-            nativeAd.updateMediaView(mediaView);
-            mediaView.setVisibility(View.VISIBLE);
-            if (facebookNativeViewHolder.isMainImageViewInRelativeView()) {
-                mainImageView.setVisibility(View.INVISIBLE);
-            } else {
-                mainImageView.setVisibility(View.GONE);
+        final RelativeLayout adChoicesContainer =
+                facebookNativeViewHolder.getAdChoicesContainer();
+        nativeAd.registerChildViewsForInteraction(facebookNativeViewHolder.getMainView(),
+                facebookNativeViewHolder.getMediaView(), facebookNativeViewHolder.getAdIconView());
+        if (adChoicesContainer != null) {
+            adChoicesContainer.removeAllViews();
+            final AdChoicesView adChoicesView = new AdChoicesView(adChoicesContainer.getContext(),
+                    nativeAd.getFacebookNativeAd(), true);
+            ViewGroup.LayoutParams layoutParams = adChoicesView.getLayoutParams();
+            if (layoutParams instanceof RelativeLayout.LayoutParams) {
+                ((RelativeLayout.LayoutParams) layoutParams).addRule(RelativeLayout.ALIGN_PARENT_END);
             }
-
-        }
-    }
-
-    private static void setViewVisibility(final FacebookNativeViewHolder facebookNativeViewHolder,
-            final int visibility) {
-        if (facebookNativeViewHolder.getMainView() != null) {
-            facebookNativeViewHolder.getMainView().setVisibility(visibility);
+            adChoicesContainer.addView(adChoicesView);
         }
     }
 
     static class FacebookNativeViewHolder {
-        private final StaticNativeViewHolder mStaticNativeViewHolder;
-        private final MediaView mMediaView;
-        private final boolean isMainImageViewInRelativeView;
+        @Nullable
+        private View mainView;
+        @Nullable
+        private TextView titleView;
+        @Nullable
+        private TextView textView;
+        @Nullable
+        private TextView callToActionView;
+        @Nullable
+        private RelativeLayout adChoicesContainer;
+        @Nullable
+        private MediaView mediaView;
+        @Nullable
+        private AdIconView adIconView;
 
         // Use fromViewBinder instead of a constructor
-        private FacebookNativeViewHolder(final StaticNativeViewHolder staticNativeViewHolder,
-                final MediaView mediaView, final boolean mainImageViewInRelativeView) {
-            mStaticNativeViewHolder = staticNativeViewHolder;
-            mMediaView = mediaView;
-            isMainImageViewInRelativeView = mainImageViewInRelativeView;
+        private FacebookNativeViewHolder() {
         }
 
-        static FacebookNativeViewHolder fromViewBinder(final View view,
-                final ViewBinder viewBinder) {
-            StaticNativeViewHolder staticNativeViewHolder = StaticNativeViewHolder.fromViewBinder(view, viewBinder);
-            final View mainImageView = staticNativeViewHolder.mainImageView;
-            boolean mainImageViewInRelativeView = false;
-            MediaView mediaView = null;
-            if (mainImageView != null) {
-                final ViewGroup mainImageParent = (ViewGroup) mainImageView.getParent();
-                if (mainImageParent instanceof RelativeLayout) {
-                    mainImageViewInRelativeView = true;
-                }
-                final int mainImageIndex = mainImageParent.indexOfChild(mainImageView);
-                final View viewAfterImageView = mainImageParent.getChildAt(mainImageIndex + 1);
-                if (viewAfterImageView instanceof MediaView) {
-                    mediaView = (MediaView) viewAfterImageView;
-                }
+        static FacebookNativeViewHolder fromViewBinder(@Nullable final View view,
+                                                       @Nullable final FacebookViewBinder facebookViewBinder) {
+            if (view == null || facebookViewBinder == null) {
+                return new FacebookNativeViewHolder();
             }
-            return new FacebookNativeViewHolder(staticNativeViewHolder, mediaView, mainImageViewInRelativeView);
+
+            final FacebookNativeViewHolder viewHolder = new FacebookNativeViewHolder();
+            viewHolder.mainView = view;
+            viewHolder.titleView = view.findViewById(facebookViewBinder.titleId);
+            viewHolder.textView = view.findViewById(facebookViewBinder.textId);
+            viewHolder.callToActionView =
+                    view.findViewById(facebookViewBinder.callToActionId);
+            viewHolder.adChoicesContainer =
+                    view.findViewById(facebookViewBinder.adChoicesRelativeLayoutId);
+            viewHolder.mediaView = view.findViewById(facebookViewBinder.mediaViewId);
+            viewHolder.adIconView = view.findViewById(facebookViewBinder.adIconViewId);
+            return viewHolder;
         }
 
+        @Nullable
         public View getMainView() {
-            return mStaticNativeViewHolder.mainView;
+            return mainView;
         }
 
+        @Nullable
         public TextView getTitleView() {
-            return mStaticNativeViewHolder.titleView;
+            return titleView;
         }
 
+        @Nullable
         public TextView getTextView() {
-            return mStaticNativeViewHolder.textView;
+            return textView;
         }
 
+        @Nullable
         public TextView getCallToActionView() {
-            return mStaticNativeViewHolder.callToActionView;
+            return callToActionView;
         }
 
-        public ImageView getMainImageView() {
-            return mStaticNativeViewHolder.mainImageView;
+        @Nullable
+        public RelativeLayout getAdChoicesContainer() {
+            return adChoicesContainer;
         }
 
-        public ImageView getIconImageView() {
-            return mStaticNativeViewHolder.iconImageView;
+        @Nullable
+        public AdIconView getAdIconView() {
+            return adIconView;
         }
 
-        public ImageView getPrivacyInformationIconImageView() {
-            return mStaticNativeViewHolder.privacyInformationIconImageView;
-        }
-
+        @Nullable
         public MediaView getMediaView() {
-            return mMediaView;
+            return mediaView;
         }
 
-        public boolean isMainImageViewInRelativeView() {
-            return isMainImageViewInRelativeView;
+    }
+
+    public static class FacebookViewBinder {
+
+        final int layoutId;
+        final int titleId;
+        final int textId;
+        final int callToActionId;
+        final int adChoicesRelativeLayoutId;
+        @NonNull
+        final Map<String, Integer> extras;
+        final int mediaViewId;
+        final int adIconViewId;
+
+        private FacebookViewBinder(@NonNull final Builder builder) {
+            this.layoutId = builder.layoutId;
+            this.titleId = builder.titleId;
+            this.textId = builder.textId;
+            this.callToActionId = builder.callToActionId;
+            this.adChoicesRelativeLayoutId = builder.adChoicesRelativeLayoutId;
+            this.extras = builder.extras;
+            this.mediaViewId = builder.mediaViewId;
+            this.adIconViewId = builder.adIconViewId;
+        }
+
+        public static class Builder {
+
+            private final int layoutId;
+            private int titleId;
+            private int textId;
+            private int callToActionId;
+            private int adChoicesRelativeLayoutId;
+            @NonNull
+            private Map<String, Integer> extras = Collections.emptyMap();
+            private int mediaViewId;
+            private int adIconViewId;
+
+            public Builder(final int layoutId) {
+                this.layoutId = layoutId;
+                this.extras = new HashMap<>();
+            }
+
+            @NonNull
+            public final Builder titleId(final int titleId) {
+                this.titleId = titleId;
+                return this;
+            }
+
+            @NonNull
+            public final Builder textId(final int textId) {
+                this.textId = textId;
+                return this;
+            }
+
+            @NonNull
+            public final Builder callToActionId(final int callToActionId) {
+                this.callToActionId = callToActionId;
+                return this;
+            }
+
+            @NonNull
+            public final Builder adChoicesRelativeLayoutId(final int adChoicesRelativeLayoutId) {
+                this.adChoicesRelativeLayoutId = adChoicesRelativeLayoutId;
+                return this;
+            }
+
+            @NonNull
+            public final Builder extras(final Map<String, Integer> resourceIds) {
+                this.extras = new HashMap<String, Integer>(resourceIds);
+                return this;
+            }
+
+            @NonNull
+            public final Builder addExtra(final String key, final int resourceId) {
+                this.extras.put(key, resourceId);
+                return this;
+            }
+
+            @NonNull
+            public Builder mediaViewId(final int mediaViewId) {
+                this.mediaViewId = mediaViewId;
+                return this;
+            }
+
+            @NonNull
+            public Builder adIconViewId(final int adIconViewId) {
+                this.adIconViewId = adIconViewId;
+                return this;
+            }
+
+            @NonNull
+            public FacebookViewBinder build() {
+                return new FacebookViewBinder(this);
+            }
         }
     }
 }

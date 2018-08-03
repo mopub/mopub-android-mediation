@@ -1,4 +1,7 @@
 ## Changelog
+  * 10.1.0.0
+    * This version of the adapters has been certified with Flurry 10.1.0.
+
   * 9.0.0.0
     * This version of the adapters has been certified with Flurry 9.0.0.
 
