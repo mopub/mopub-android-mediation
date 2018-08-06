@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.8.1.2
+    * Roll back GDPR consent passing per AOL's request.
+    * Add a null check for the native rating asset.
+
   * 6.8.1.1
     * Guard against a potential NullPointerException when getting GDPR applicability.
 
