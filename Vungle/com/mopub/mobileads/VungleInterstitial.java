@@ -97,6 +97,9 @@ public class VungleInterstitial extends CustomEventInterstitial {
             Object ordinalViewCount = localExtras.get(ORDINAL_VIEW_COUNT_KEY);
             if (ordinalViewCount instanceof Integer)
                 mAdConfig.setOrdinal((Integer) ordinalViewCount);
+			
+			//	Set autorotation
+			mAdConfig.setAutoRotate(true);
         }
 
         sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);

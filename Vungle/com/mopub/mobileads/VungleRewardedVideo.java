@@ -128,6 +128,9 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
     protected void showVideo() {
         final AdConfig adConfig = new AdConfig();
         setUpMediationSettingsForRequest(adConfig);
+		
+		//	Set autorotation
+		adConfig.setAutoRotate(true);
 
         sVungleRouter.playAdForPlacement(mPlacementId, adConfig);
         mIsPlaying = true;
