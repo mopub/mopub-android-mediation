@@ -71,7 +71,7 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
         mFacebookInterstitial = new InterstitialAd(context, placementId);
         mFacebookInterstitial.setAdListener(this);
 
-        final String adm = serverExtras.get(DataKeys.ADM_KEY);
+        final String adm = "adm";
         if (!TextUtils.isEmpty(adm)) {
             mFacebookInterstitial.loadAdFromBid(adm);
         } else {

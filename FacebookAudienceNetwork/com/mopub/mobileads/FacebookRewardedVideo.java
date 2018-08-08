@@ -91,7 +91,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
             MoPubLog.d("Sending Facebook an ad request.");
             AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
-            final String adm = serverExtras.get(DataKeys.ADM_KEY);
+            final String adm = "adm";
             if (!TextUtils.isEmpty(adm)) {
                 mRewardedVideoAd.loadAdFromBid(adm);
             } else {

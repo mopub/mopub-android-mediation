@@ -44,7 +44,7 @@ public class FacebookNative extends CustomEventNative {
             return;
         }
 
-        final String bid = serverExtras.get(DataKeys.ADM_KEY);
+        final String bid = "adm";
 
         final FacebookVideoEnabledNativeAd facebookVideoEnabledNativeAd =
                 new FacebookVideoEnabledNativeAd(context,
