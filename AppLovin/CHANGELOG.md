@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.1.0.0
+    * This version of the adapters has been certified with AppLovin 8.1.0.
+
   * 8.0.2.0
     * This version of the adapters has been certified with AppLovin 8.0.2.
 
