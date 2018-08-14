@@ -62,7 +62,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        return mPlacementId;
+        return mPlacementId == null ? "" : mPlacementId;
     }
 
     @Override

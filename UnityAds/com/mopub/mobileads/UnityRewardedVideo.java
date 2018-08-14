@@ -38,7 +38,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
     @Override
     @NonNull
     public String getAdNetworkId() {
-        return sPlacementId;
+        return sPlacementId == null ? "" : sPlacementId;
     }
 
     @Override

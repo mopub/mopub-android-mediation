@@ -42,7 +42,7 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
     @Override
     @NonNull
     public String getAdNetworkId() {
-        return mLocation;
+        return mLocation == null ? "" : mLocation;
     }
 
     @Override
