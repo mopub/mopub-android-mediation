@@ -31,14 +31,12 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
     public static final String VUNGLE_NETWORK_ID_DEFAULT = "vngl_id";
     private static final String VUNGLE_DEFAULT_APP_ID = "YOUR_APP_ID_HERE";
-    private static final String[] VUNGLE_DEFAULT_ALL_PLACEMENT_IDS = {"PLACEMENT_ID_1", "PLACEMENT_ID_2", "..."};
 
     private static VungleRouter sVungleRouter;
     private VungleRewardedRouterListener mVungleRewardedRouterListener;
     private static boolean sInitialized;
     private String mAppId;
     private String mPlacementId;
-    private String[] mPlacementIds;
     private boolean mIsPlaying;
 
     private String mAdUnitId;
@@ -76,11 +74,10 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
             if (!validateIdsInServerExtras(serverExtras)) {
                 mAppId = VUNGLE_DEFAULT_APP_ID;
-                mPlacementIds = VUNGLE_DEFAULT_ALL_PLACEMENT_IDS;
             }
 
             if (!sVungleRouter.isVungleInitialized()) {
-                sVungleRouter.initVungle(launcherActivity, mAppId, mPlacementIds);
+                sVungleRouter.initVungle(launcherActivity, mAppId);
             }
 
             sInitialized = true;
@@ -169,27 +166,9 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         }
 
         if (serverExtras.containsKey(PLACEMENT_IDS_KEY)) {
-            mPlacementIds = serverExtras.get(PLACEMENT_IDS_KEY).replace(" ", "").split(",", 0);
-            if (mPlacementIds.length == 0) {
-                MoPubLog.w(REWARDED_TAG + "Placement IDs are empty.");
-                isAllDataValid = false;
-            }
-        } else {
-            MoPubLog.w(REWARDED_TAG + "Placement IDs for this Ad Unit is not in serverExtras.");
-            isAllDataValid = false;
-        }
-
-        if (isAllDataValid) {
-            boolean foundInList = false;
-            for (String pid:  mPlacementIds) {
-                if(pid.equals(mPlacementId)) {
-                    foundInList = true;
-                }
-            }
-            if(!foundInList) {
-                MoPubLog.w(REWARDED_TAG + "Placement IDs for this Ad Unit is not in the array of Placement IDs");
-                isAllDataValid = false;
-            }
+            MoPubLog.w(REWARDED_TAG + "No need to set placement IDs " +
+                    "in MoPub dashboard with Vungle SDK version " +
+                    com.vungle.warren.BuildConfig.VERSION_NAME);
         }
 
         return isAllDataValid;

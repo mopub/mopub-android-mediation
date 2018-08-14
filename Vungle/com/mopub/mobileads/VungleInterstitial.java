@@ -38,7 +38,6 @@ public class VungleInterstitial extends CustomEventInterstitial {
     private VungleInterstitialRouterListener mVungleRouterListener;
     private String mAppId;
     private String mPlacementId;
-    private String[] mPlacementIds;
     private AdConfig mAdConfig;
     private boolean mIsPlaying;
 
@@ -83,7 +82,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
         }
 
         if (!sVungleRouter.isVungleInitialized()) {
-            sVungleRouter.initVungle(context, mAppId, mPlacementIds);
+            sVungleRouter.initVungle(context, mAppId);
         }
 
         if (localExtras != null) {
@@ -148,27 +147,9 @@ public class VungleInterstitial extends CustomEventInterstitial {
         }
 
         if (serverExtras.containsKey(PLACEMENT_IDS_KEY)) {
-            mPlacementIds = serverExtras.get(PLACEMENT_IDS_KEY).replace(" ", "").split(",", 0);
-            if (mPlacementIds.length == 0) {
-                MoPubLog.w(INTERSTITIAL_TAG + "Placement IDs are empty.");
-                isAllDataValid = false;
-            }
-        } else {
-            MoPubLog.w(INTERSTITIAL_TAG + "Placement IDs for this Ad Unit is not in serverExtras.");
-            isAllDataValid = false;
-        }
-
-        if (isAllDataValid) {
-            boolean foundInList = false;
-            for (String pid : mPlacementIds) {
-                if (pid.equals(mPlacementId)) {
-                    foundInList = true;
-                }
-            }
-            if (!foundInList) {
-                MoPubLog.w(INTERSTITIAL_TAG + "Placement IDs for this Ad Unit is not in the array of Placement IDs");
-                isAllDataValid = false;
-            }
+            MoPubLog.w(INTERSTITIAL_TAG + "No need to set placement IDs " +
+                    "in MoPub dashboard with Vungle SDK version " +
+                    com.vungle.warren.BuildConfig.VERSION_NAME);
         }
 
         return isAllDataValid;
