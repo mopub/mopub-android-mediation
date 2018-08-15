@@ -117,6 +117,10 @@ public class ChartboostShared {
                     }
 
                     @Override
+                    public void onInterstitialImpression() {
+                    }
+
+                    @Override
                     public void onLeaveApplication() {
                     }
 
