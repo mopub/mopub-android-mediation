@@ -78,7 +78,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        return mInstanceId;
+        return mInstanceId == null ? "" : mInstanceId;
     }
 
     @Override

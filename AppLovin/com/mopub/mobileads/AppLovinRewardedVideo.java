@@ -130,7 +130,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     @Override
     @NonNull
     protected String getAdNetworkId() {
-        return zoneId;
+        return zoneId == null ? "" : zoneId;
     }
 
     @Override

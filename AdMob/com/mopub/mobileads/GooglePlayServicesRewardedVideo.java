@@ -101,7 +101,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     protected String getAdNetworkId() {
         // Google rewarded videos do not have a unique identifier for each ad; using ad unit ID as
         // an identifier for all ads.
-        return mAdUnitId;
+        return mAdUnitId == null ? "" : mAdUnitId;
     }
 
     @Override

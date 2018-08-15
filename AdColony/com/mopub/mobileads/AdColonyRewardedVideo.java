@@ -97,7 +97,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     @NonNull
     @Override
     public String getAdNetworkId() {
-        return mZoneId;
+        return mZoneId == null ? "" : mZoneId;
     }
 
     @Override
