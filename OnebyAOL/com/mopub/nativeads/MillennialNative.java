@@ -214,7 +214,9 @@ public class MillennialNative extends CustomEventNative {
             }
 
             // Add MM native assets that don't have a direct MoPub mapping
-            addExtra("disclaimer", nativeAd.getDisclaimer().getText());
+            if (nativeAd.getDisclaimer() != null) {
+                addExtra("disclaimer", nativeAd.getDisclaimer().getText());
+            }
 
             if (nativeAd.getRating() != null) {
                 addExtra("rating", nativeAd.getRating().getText());
