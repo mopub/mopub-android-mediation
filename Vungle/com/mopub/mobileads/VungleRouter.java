@@ -21,7 +21,7 @@ import java.util.Map;
 
 
 /**
- * Certified with Vungle SDK 6.3.12
+ * Certified with Vungle SDK 6.3.17
  */
 public class VungleRouter {
 
