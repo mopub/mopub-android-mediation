@@ -12,18 +12,13 @@ import com.millennialmedia.MMLog;
 import com.millennialmedia.MMSDK;
 import com.millennialmedia.NativeAd;
 import com.millennialmedia.internal.ActivityListenerManager;
-import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.ConsentStatus;
-import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.MillennialUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.millennialmedia.MMSDK.setConsentData;
-import static com.millennialmedia.MMSDK.setConsentRequired;
 import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
 
 public class MillennialNative extends CustomEventNative {
@@ -48,26 +43,6 @@ public class MillennialNative extends CustomEventNative {
     @Override
     protected void loadNativeAd(final Context context, final CustomEventNativeListener customEventNativeListener,
                                 Map<String, Object> localExtras, Map<String, String> serverExtras) {
-
-        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
-        if (personalInfoManager != null) {
-            try {
-                Boolean gdprApplies = personalInfoManager.gdprApplies();
-
-                // Set if GDPR applies / if consent is required
-                if (gdprApplies != null) {
-                    setConsentRequired(gdprApplies);
-                }
-            } catch (NullPointerException e) {
-                MoPubLog.d("GDPR applicability cannot be determined.", e);
-            }
-
-            // Pass the user consent from the MoPub SDK to One by AOL as per GDPR
-            if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_YES) {
-                setConsentData("mopub", "1");
-            }
-        }
 
         if (context instanceof Activity) {
             try {
@@ -239,8 +214,13 @@ public class MillennialNative extends CustomEventNative {
             }
 
             // Add MM native assets that don't have a direct MoPub mapping
-            addExtra("disclaimer", nativeAd.getDisclaimer().getText());
-            addExtra("rating", nativeAd.getRating().getText());
+            if (nativeAd.getDisclaimer() != null) {
+                addExtra("disclaimer", nativeAd.getDisclaimer().getText());
+            }
+
+            if (nativeAd.getRating() != null) {
+                addExtra("rating", nativeAd.getRating().getText());
+            }
 
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override

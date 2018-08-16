@@ -1,4 +1,7 @@
 ## Changelog
+  * 7.2.1.1
+    * Add `onInterstitialImpression` that is introduced in the 5.3.0 MoPub release to ChartboostShared.java.
+
   * 7.2.1.0
     * This version of the adapters has been certified with Chartboost 7.2.1.
 
