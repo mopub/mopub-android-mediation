@@ -47,6 +47,8 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
     @Override
     protected void loadInterstitial(Context context, CustomEventInterstitialListener customEventInterstitialListener, Map<String, Object> map0, Map<String, String> serverExtras) {
 
+        setAutomaticImpressionAndClickTracking(false);
+
         MoPubLifecycleManager.getInstance((Activity) context).addLifecycleListener(lifecycleListener);
         // Pass the user consent from the MoPub SDK to ironSource as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
@@ -215,6 +217,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
             public void run() {
                 if (mMoPubListener != null) {
                     mMoPubListener.onInterstitialShown();
+                    mMoPubListener.onInterstitialImpression();
                 }
             }
         });

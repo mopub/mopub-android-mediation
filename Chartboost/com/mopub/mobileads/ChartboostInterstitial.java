@@ -34,6 +34,8 @@ class ChartboostInterstitial extends CustomEventInterstitial {
         Preconditions.checkNotNull(localExtras);
         Preconditions.checkNotNull(serverExtras);
 
+        setAutomaticImpressionAndClickTracking(false);
+
         if (!(context instanceof Activity)) {
             interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             return;

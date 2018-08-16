@@ -13,7 +13,6 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
 
 import java.util.Collections;
@@ -212,6 +211,7 @@ public class ChartboostShared {
         public void didDisplayInterstitial(String location) {
             MoPubLog.d("Chartboost interstitial ad shown.");
             getInterstitialListener(location).onInterstitialShown();
+            getInterstitialListener(location).onInterstitialImpression();
         }
 
         //******************
