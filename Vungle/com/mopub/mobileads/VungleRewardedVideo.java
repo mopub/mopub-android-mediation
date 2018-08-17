@@ -77,6 +77,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
             }
 
             if (!sVungleRouter.isVungleInitialized()) {
+                // No longer passing the placement IDs (pids) param per Vungle 6.3.17
                 sVungleRouter.initVungle(launcherActivity, mAppId);
             }
 
@@ -163,12 +164,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         } else {
             MoPubLog.w(REWARDED_TAG + "Placement ID for this Ad Unit is not in serverExtras.");
             isAllDataValid = false;
-        }
-
-        if (serverExtras.containsKey(PLACEMENT_IDS_KEY)) {
-            MoPubLog.w(REWARDED_TAG + "No need to set placement IDs " +
-                    "in MoPub dashboard with Vungle SDK version " +
-                    com.vungle.warren.BuildConfig.VERSION_NAME);
         }
 
         return isAllDataValid;

@@ -80,7 +80,11 @@ public class VungleRouter {
 
                 // Pass the user consent from the MoPub SDK to Vungle as per GDPR
                 boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
-                Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN : Vungle.Consent.OPTED_OUT, "");
+
+                // (New) Pass consentMessageVersion per Vungle 6.3.17:
+                // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
+                Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN :
+                        Vungle.Consent.OPTED_OUT, "");
             }
 
             @Override
@@ -154,6 +158,9 @@ public class VungleRouter {
     }
 
     public void updateConsentStatus(Vungle.Consent status) {
+
+        // (New) Pass consentMessageVersion per Vungle 6.3.17:
+        // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
         Vungle.updateConsentStatus(status, "");
     }
 
