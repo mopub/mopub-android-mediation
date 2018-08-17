@@ -1,4 +1,9 @@
 ## Changelog
+  * 6.3.17.0
+    * This version of the adapters has been certified with Vungle 6.13.17.
+    * Deprecate the use of placement IDs at Vungle's initialization time per Vungle's new SDK.
+    * Update the implementation of Vungle's `updateConsentStatus()` to now also pass a `consentMessageVersion`.
+
   * 6.2.5.1
     * Fixed an NPE when passing consent before the Vungle SDK is initialized.
 
