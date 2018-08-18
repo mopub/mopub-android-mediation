@@ -62,15 +62,15 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     private static String[] previousAdColonyAllZoneIds;
 
     AdColonyInterstitial mAd;
-    private String mZoneId;
+    @NonNull
+    private String mZoneId = "";
     private AdColonyListener mAdColonyListener;
     private AdColonyAdOptions mAdColonyAdOptions = new AdColonyAdOptions();
     private AdColonyAppOptions mAdColonyAppOptions = new AdColonyAppOptions();
     private static WeakHashMap<String, AdColonyInterstitial> sZoneIdToAdMap = new WeakHashMap<>();
 
-
-    @Nullable
-    private String mAdUnitId;
+    @NonNull
+    private String mAdUnitId = "";
     private boolean mIsLoading = false;
 
     // For waiting and notifying the SDK:

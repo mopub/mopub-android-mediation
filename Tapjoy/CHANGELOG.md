@@ -1,4 +1,7 @@
 ## Changelog
+  * 12.0.0.1
+    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+
   * 12.0.0.0
     * This version of the adapters has been certified with Tapjoy 12.0.0.
     * Add `TapjoyAdvancedBidder.java` for publishers using Advanced Bidding.

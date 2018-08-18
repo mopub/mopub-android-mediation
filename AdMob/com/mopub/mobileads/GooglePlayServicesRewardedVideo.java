@@ -50,7 +50,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     /**
      * Google Mobile Ads rewarded video ad unit ID.
      */
-    private String mAdUnitId;
+    @NonNull
+    private String mAdUnitId = "";
 
     /**
      * The Google Rewarded Video Ad instance.

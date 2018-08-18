@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.3.17.1
+    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+
   * 6.3.17.0
     * This version of the adapters has been certified with Vungle 6.13.17.
     * Remove the placement IDS (pids) parameter from Vungle's init call per Vungle's new SDK requirements.

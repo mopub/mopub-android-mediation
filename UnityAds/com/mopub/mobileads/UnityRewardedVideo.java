@@ -15,9 +15,9 @@ import com.unity3d.ads.UnityAds;
 import java.util.Map;
 
 public class UnityRewardedVideo extends CustomEventRewardedVideo {
-    private static final String GAME_ID_KEY = "gameId";
     private static final LifecycleListener sLifecycleListener = new UnityLifecycleListener();
     private static final UnityAdsListener sUnityAdsListener = new UnityAdsListener();
+    @NonNull
     private static String sPlacementId = "";
 
     @Nullable

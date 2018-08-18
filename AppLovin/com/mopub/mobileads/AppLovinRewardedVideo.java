@@ -21,7 +21,6 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +34,8 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     private static final Map<String, AppLovinIncentivizedInterstitial> GLOBAL_INCENTIVIZED_INTERSTITIAL_ADS = new HashMap<String, AppLovinIncentivizedInterstitial>();
 
     private boolean initialized;
-    private String zoneId;
+    @NonNull
+    private String zoneId = "";
 
     private AppLovinSdk sdk;
     private AppLovinIncentivizedInterstitial incentivizedInterstitial;

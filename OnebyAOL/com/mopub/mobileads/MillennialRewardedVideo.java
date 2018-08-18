@@ -36,7 +36,8 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
     private InterstitialAd millennialInterstitial;
     private MillennialRewardedVideoListener millennialRewardedVideoListener = new MillennialRewardedVideoListener();
     private Activity activity;
-    private String apid = null;
+    @NonNull
+    private String apid = "";
 
     static {
         MoPubLog.d("Millennial Media Adapter Version: " + MillennialUtils.MEDIATOR_ID);
@@ -66,7 +67,7 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        return (apid == null) ? "" : apid;
+        return apid;
     }
 
     @Override
@@ -74,7 +75,7 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
         if (millennialInterstitial != null) {
             millennialInterstitial.destroy();
             millennialInterstitial = null;
-            apid = null;
+            apid = "";
         }
     }
 

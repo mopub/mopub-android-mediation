@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.1.0.1
+    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+
   * 8.1.0.0
     * This version of the adapters has been certified with AppLovin 8.1.0.
 

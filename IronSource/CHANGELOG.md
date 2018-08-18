@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.7.10.2
+    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+
   * 6.7.10.1
     * This version of the adapters has been certified with IronSource 6.7.10
 

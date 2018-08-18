@@ -41,6 +41,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
 
 
     // This is the instance id used inside ironSource SDK
+    @NonNull
     private String mInstanceId = "0";
     // This is the placement name used inside ironSource SDK
     private String mPlacementName = null;

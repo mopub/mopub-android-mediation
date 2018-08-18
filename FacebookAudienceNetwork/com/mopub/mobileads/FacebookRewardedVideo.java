@@ -26,8 +26,8 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
     private static final int ONE_HOURS_MILLIS = 60 * 60 * 1000;
     @Nullable
     private RewardedVideoAd mRewardedVideoAd;
-    @Nullable
-    private String mPlacementId;
+    @NonNull
+    private String mPlacementId = "";
     @NonNull
     private Handler mHandler;
     private Runnable mAdExpiration;
@@ -103,7 +103,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        return (mRewardedVideoAd != null) ? (mRewardedVideoAd.getPlacementId()) : ("");
+        return mPlacementId;
     }
 
     @Override

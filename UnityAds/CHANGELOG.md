@@ -1,4 +1,7 @@
 ## Changelog
+  * 2.3.0.1
+    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+
   * 2.3.0.0
     * This version of the adapters has been certified with Unity Ads 2.3.0.
 

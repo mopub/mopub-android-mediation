@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.8.1.3
+    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+
   * 6.8.1.2
     * MoPub will not be obtaining consent on behalf of One by AOL. Publishers should work directly with One by AOL to understand their obligations to comply with GDPR. Changes are updated on the supported partners page and our GDPR FAQ.
     * Add a null check for the native rating and disclaimer assets.

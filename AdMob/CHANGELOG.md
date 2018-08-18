@@ -1,4 +1,7 @@
 ## Changelog
+  * 15.0.0.9
+    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+
   * 15.0.0.8
     * Really fix the AdMob `isLoaded()` crash (15.0.0.3).
 
