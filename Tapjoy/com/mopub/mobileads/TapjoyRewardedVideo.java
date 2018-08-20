@@ -32,7 +32,6 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
     private static final String TAG = TapjoyRewardedVideo.class.getSimpleName();
     private static final String TJC_MOPUB_NETWORK_CONSTANT = "mopub";
     private static final String TJC_MOPUB_ADAPTER_VERSION_NUMBER = "4.1.0";
-    @NonNull
     private static final String TAPJOY_AD_NETWORK_CONSTANT = "tapjoy_id";
 
     // Configuration keys

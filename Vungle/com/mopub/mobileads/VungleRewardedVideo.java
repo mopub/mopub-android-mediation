@@ -36,7 +36,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
     private static boolean sInitialized;
     private String mAppId;
     @NonNull
-    private String mPlacementId = "";
+    private String mPlacementId = VUNGLE_NETWORK_ID_DEFAULT;
     private boolean mIsPlaying;
 
     private String mAdUnitId;
@@ -92,7 +92,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         mIsPlaying = false;
 
         if (!validateIdsInServerExtras(serverExtras)) {
-            mPlacementId = VUNGLE_NETWORK_ID_DEFAULT;
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VungleRewardedVideo.class, mPlacementId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             return;

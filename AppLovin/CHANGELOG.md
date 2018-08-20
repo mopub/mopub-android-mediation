@@ -1,6 +1,6 @@
 ## Changelog
   * 8.1.0.1
-    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+    * Update the zone ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
 
   * 8.1.0.0
     * This version of the adapters has been certified with AppLovin 8.1.0.

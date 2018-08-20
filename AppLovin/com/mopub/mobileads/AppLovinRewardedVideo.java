@@ -35,7 +35,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
     private boolean initialized;
     @NonNull
-    private String zoneId = "";
+    private String zoneId = DEFAULT_ZONE;
 
     private AppLovinSdk sdk;
     private AppLovinIncentivizedInterstitial incentivizedInterstitial;
@@ -79,10 +79,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         // Zones support is available on AppLovin SDK 7.5.0 and higher
         if (AppLovinSdk.VERSION_CODE >= 750 && serverExtras != null && serverExtras.containsKey("zone_id")) {
             zoneId = serverExtras.get("zone_id");
-        } else {
-            zoneId = DEFAULT_ZONE;
         }
-
 
         // Check if incentivized ad for zone already exists
         if (GLOBAL_INCENTIVIZED_INTERSTITIAL_ADS.containsKey(zoneId)) {

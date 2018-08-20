@@ -1,6 +1,6 @@
 ## Changelog
   * 15.0.0.9
-    * Fix an NPE caused by null third party network ID passed to the MoPub SDK.
+    * Update the ad unit ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
 
   * 15.0.0.8
     * Really fix the AdMob `isLoaded()` crash (15.0.0.3).
