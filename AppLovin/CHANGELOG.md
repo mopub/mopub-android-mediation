@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.1.0.2
+    * Align MoPub's banner impression tracking to that of AppLovin.
+
   * 8.1.0.1
     * Update the zone ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
 
