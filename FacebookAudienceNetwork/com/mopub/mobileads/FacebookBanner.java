@@ -32,6 +32,9 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
                               final CustomEventBannerListener customEventBannerListener,
                               final Map<String, Object> localExtras,
                               final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         mBannerListener = customEventBannerListener;
 
         final String placementId;
@@ -111,6 +114,7 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
     @Override
     public void onLoggingImpression(Ad ad) {
         MoPubLog.d("Facebook banner ad logged impression.");
+        mBannerListener.onBannerImpression();
     }
 
     private boolean serverExtrasAreValid(final Map<String, String> serverExtras) {
