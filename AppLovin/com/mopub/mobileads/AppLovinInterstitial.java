@@ -20,7 +20,6 @@ import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,6 +49,8 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
 
     @Override
     public void loadInterstitial(final Context context, final CustomEventInterstitialListener listener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
 
         // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
@@ -159,6 +160,7 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     public void adDisplayed(final AppLovinAd appLovinAd) {
         MoPubLog.d("Interstitial displayed");
         listener.onInterstitialShown();
+        listener.onInterstitialImpression();
     }
 
     @Override
