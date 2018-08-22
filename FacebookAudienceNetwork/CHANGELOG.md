@@ -1,6 +1,6 @@
 ## Changelog
   * 4.99.1.2
-    * Align MoPub's banner impression tracking to that of Facebook Audience Network.
+    * Align MoPub's banner and interstitial impression tracking to that of Facebook Audience Network.
 
   * 4.99.1.1
     * Update the placement ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.

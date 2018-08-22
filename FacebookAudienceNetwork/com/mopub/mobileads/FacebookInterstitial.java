@@ -53,6 +53,9 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
                                     final CustomEventInterstitialListener customEventInterstitialListener,
                                     final Map<String, Object> localExtras,
                                     final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         MoPubLog.d("Loading Facebook interstitial");
         mInterstitialListener = customEventInterstitialListener;
 
@@ -153,6 +156,9 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     @Override
     public void onLoggingImpression(Ad ad) {
         MoPubLog.d("Facebook interstitial ad logged impression.");
+        if (mInterstitialListener != null) {
+            mInterstitialListener.onInterstitialImpression();
+        }
     }
 
     @Override
