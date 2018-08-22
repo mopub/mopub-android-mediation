@@ -1,4 +1,7 @@
 ## Changelog
+  * 10.1.0.1
+    * Align MoPub's interstitial impression tracking to that of Flurry.
+
   * 10.1.0.0
     * This version of the adapters has been certified with Flurry 10.1.0.
 
