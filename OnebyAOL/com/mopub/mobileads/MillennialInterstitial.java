@@ -47,6 +47,9 @@ final class MillennialInterstitial extends CustomEventInterstitial {
     protected void loadInterstitial(final Context context,
                                     final CustomEventInterstitialListener customEventInterstitialListener, final Map<String, Object> localExtras,
                                     final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         interstitialListener = customEventInterstitialListener;
         this.context = context;
 
@@ -244,6 +247,7 @@ final class MillennialInterstitial extends CustomEventInterstitial {
                 @Override
                 public void run() {
                     interstitialListener.onInterstitialShown();
+                    interstitialListener.onInterstitialImpression();
                 }
             });
         }

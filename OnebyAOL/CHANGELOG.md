@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.8.1.4
+    * Align MoPub's interstitial impression tracking to that of One by AOL.
+
   * 6.8.1.3
     * Update the placement ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
 
