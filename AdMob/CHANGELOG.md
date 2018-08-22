@@ -1,6 +1,6 @@
 ## Changelog
   * 15.0.0.10
-    * Align MoPub's banner impression tracking to that of AdMob.
+    * Align MoPub's banner and interstitial impression tracking to that of AdMob.
 
   * 15.0.0.9
     * Update the ad unit ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
