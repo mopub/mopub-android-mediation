@@ -15,7 +15,7 @@ public final class FlurryAgentWrapper {
     public static final String PARAM_AD_SPACE_NAME = "adSpaceName";
 
     private static final String ORIGIN_IDENTIFIER = "Flurry_Mopub_Android";
-    private static final String ORIGIN_VERSION = "6.5.0";
+    private static final String ORIGIN_VERSION = "11.2.0";
 
     private FlurryAgent.Builder mAgentBuilder;
 
