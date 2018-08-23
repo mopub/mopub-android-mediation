@@ -61,7 +61,11 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         // SDK versions BELOW 7.2.0 require a instance of an Activity to be passed in as the context
         if (AppLovinSdk.VERSION_CODE < 720 && !(context instanceof Activity)) {
             MoPubLog.d("Unable to request AppLovin banner. Invalid context provided.");
-            listener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+            if (listener != null) {
+                listener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
+
 
             return;
         }
@@ -106,7 +110,10 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             interstitialAd.showAndRender(preloadedAd);
         } else {
             MoPubLog.d("Failed to show an AppLovin interstitial before one was loaded");
-            listener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+
+            if (listener != null) {
+                listener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            }
         }
     }
 
@@ -128,7 +135,9 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             @Override
             public void run() {
                 try {
-                    listener.onInterstitialLoaded();
+                    if (listener != null) {
+                        listener.onInterstitialLoaded();
+                    }
                 } catch (Throwable th) {
                     MoPubLog.e("Unable to notify listener of successful ad load.", th);
                 }
@@ -144,7 +153,9 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             @Override
             public void run() {
                 try {
-                    listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+                    if (listener != null) {
+                        listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+                    }
                 } catch (Throwable th) {
                     MoPubLog.e("Unable to notify listener of failure to receive ad.", th);
                 }
@@ -159,14 +170,20 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     @Override
     public void adDisplayed(final AppLovinAd appLovinAd) {
         MoPubLog.d("Interstitial displayed");
-        listener.onInterstitialShown();
-        listener.onInterstitialImpression();
+
+        if (listener != null) {
+            listener.onInterstitialShown();
+            listener.onInterstitialImpression();
+        }
     }
 
     @Override
     public void adHidden(final AppLovinAd appLovinAd) {
         MoPubLog.d("Interstitial dismissed");
-        listener.onInterstitialDismissed();
+
+        if (listener != null) {
+            listener.onInterstitialDismissed();
+        }
     }
 
     //
@@ -176,7 +193,10 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     @Override
     public void adClicked(final AppLovinAd appLovinAd) {
         MoPubLog.d("Interstitial clicked");
-        listener.onLeaveApplication();
+
+        if (listener != null) {
+            listener.onLeaveApplication();
+        }
     }
 
     //
