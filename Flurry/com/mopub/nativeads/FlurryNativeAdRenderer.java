@@ -15,7 +15,7 @@ import java.util.WeakHashMap;
  * this will still use the mainImageView.
  * <p>
  * <p>
- * Certified with Flurry 8.1.0
+ * Certified with Flurry 11.2.0
  */
 public class FlurryNativeAdRenderer implements
         MoPubAdRenderer<FlurryCustomEventNative.FlurryVideoEnabledNativeAd> {
