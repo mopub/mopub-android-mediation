@@ -1,6 +1,7 @@
 ## Changelog
   * 8.1.0.2
-    * Align MoPub's banner and interstitial impression tracking to that of AppLovin. This change requires MoPub 5.3.0 or higher.
+    * Align MoPub's banner and interstitial impression tracking to that of AppLovin.
+        * `setAutomaticImpressionAndClickTracking` is set to `false`, and AppLovin's `adDisplayed` callback is leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
 
   * 8.1.0.1
     * Update the zone ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
