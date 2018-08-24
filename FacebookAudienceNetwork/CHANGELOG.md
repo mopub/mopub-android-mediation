@@ -1,4 +1,7 @@
 ## Changelog
+  * 4.99.1.3
+    * Fix a crash caused by the FB AdChoices icon getting positioned using `ALIGN_PARENT_END`. Older Android APIs will use `ALIGN_PARENT_RIGHT`.
+
   * 4.99.1.2
     * Align MoPub's banner and interstitial impression tracking to that of Facebook Audience Network.
         * `setAutomaticImpressionAndClickTracking` is set to `false`, and Facebook's `onLoggingImpression` callback is leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
