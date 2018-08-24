@@ -1,6 +1,7 @@
 ## Changelog
   * 15.0.0.10
-    * Align MoPub's banner and interstitial impression tracking to that of AdMob. This change requires MoPub 5.3.0 or higher.
+    * Align MoPub's banner and interstitial impression tracking to that of AdMob.
+        * `setAutomaticImpressionAndClickTracking` is set to `false`, and AdMob's `onAdImpression` and `onAdOpened` callbacks are leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
 
   * 15.0.0.9
     * Update the ad unit ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
