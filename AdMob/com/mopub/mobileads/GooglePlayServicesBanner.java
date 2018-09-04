@@ -41,7 +41,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         final int adWidth;
         final int adHeight;
 
-        setAutomaticImpressionAndClickTracking(false);
 
         if (extrasAreValid(serverExtras)) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
@@ -129,13 +128,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         /*
          * Google Play Services AdListener implementation
          */
-
-        @Override
-        public void onAdImpression() {
-            if (mBannerListener != null) {
-                mBannerListener.onBannerImpression();
-            }
-        }
 
         @Override
         public void onAdClosed() {

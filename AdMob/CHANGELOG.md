@@ -1,4 +1,7 @@
 ## Changelog
+  * 15.0.0.11
+    * Remove manual impression tracking for banner, since AdMob does not have an equivalent callback for impressions.
+
   * 15.0.0.10
     * Align MoPub's banner and interstitial impression tracking to that of AdMob.
         * `setAutomaticImpressionAndClickTracking` is set to `false`, and AdMob's `onAdImpression` and `onAdOpened` callbacks are leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
