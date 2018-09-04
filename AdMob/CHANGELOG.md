@@ -1,6 +1,6 @@
 ## Changelog
   * 15.0.0.11
-    * Remove manual impression tracking for banner, since AdMob does not have an equivalent callback for impressions.
+    * Remove manual impression tracking for banner, since AdMob does not have an equivalent callback for impressions (AdListener.onAdImpression() is only applicable for Google's native ads).
 
   * 15.0.0.10
     * Align MoPub's banner and interstitial impression tracking to that of AdMob.
