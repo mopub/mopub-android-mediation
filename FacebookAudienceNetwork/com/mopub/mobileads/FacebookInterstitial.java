@@ -177,10 +177,4 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     private void cancelExpirationTimer() {
         mHandler.removeCallbacks(mAdExpiration);
     }
-
-    @Deprecated
-        // for testing
-    InterstitialAd getInterstitialAd() {
-        return mFacebookInterstitial;
-    }
 }

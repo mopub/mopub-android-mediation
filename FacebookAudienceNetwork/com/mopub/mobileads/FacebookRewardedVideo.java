@@ -128,7 +128,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
             MoPubLog.d("Facebook Rewarded Video creative is available. Showing...");
             mRewardedVideoAd.show();
         } else {
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(FacebookRewardedVideo.class, mPlacementId, MoPubErrorCode.VIDEO_NOT_AVAILABLE);
+            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(FacebookRewardedVideo.class, mPlacementId, MoPubErrorCode.VIDEO_NOT_AVAILABLE);
             MoPubLog.d("Facebook Rewarded Video creative is not available. Try re-requesting.");
         }
     }

@@ -71,7 +71,6 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
 
         mFacebookBanner = new AdView(context, placementId, adSize);
         mFacebookBanner.setAdListener(this);
-        mFacebookBanner.disableAutoRefresh();
 
         final String adm = serverExtras.get(DataKeys.ADM_KEY);
         if (!TextUtils.isEmpty(adm)) {
@@ -158,11 +157,5 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         } else {
             return null;
         }
-    }
-
-    @Deprecated
-        // for testing
-    AdView getAdView() {
-        return mFacebookBanner;
     }
 }
