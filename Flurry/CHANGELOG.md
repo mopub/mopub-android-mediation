@@ -1,4 +1,7 @@
 ## Changelog
+  * 10.1.0.2
+    * Expose the Flurry advertiser name asset.
+
   * 10.1.0.1
     * Align MoPub's interstitial impression tracking to that of Flurry. 
         * `setAutomaticImpressionAndClickTracking` is set to `false`, and Flurry's `onRendered` callback is leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.

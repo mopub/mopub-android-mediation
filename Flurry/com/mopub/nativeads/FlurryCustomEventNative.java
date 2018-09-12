@@ -36,6 +36,11 @@ public final class FlurryCustomEventNative extends CustomEventNative {
      */
     public static final String EXTRA_SEC_BRANDING_LOGO = "flurry_brandingimage";
     /**
+     * Extra image asset for the Flurry native ad advertiser name.
+     */
+    public static final String EXTRA_SEC_ADVERTISER_NAME = "flurry_advertisername";
+
+    /**
      * Key for enabling Flurry debug logging. After manually creating a {@link MoPubNative} object,
      * pass in <code>true</code> as a value for this key in the map passed to
      * {@link MoPubNative#setLocalExtras(Map)}.
@@ -65,6 +70,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
     private static final String ASSET_SUMMARY = "summary";
     private static final String ASSET_CALL_TO_ACTION = "callToAction";
     private static final String ASSET_VIDEO = "videoUrl";
+    private static final String ASSET_ADVERTISER_NAME = "source";
     private static final double MOPUB_STAR_RATING_SCALE = StaticNativeAd.MAX_STAR_RATING;
 
     private FlurryAgentListener mFlurryAgentListener;
@@ -124,6 +130,8 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         mopubSupportedAd.setText(flurryAdNative.getAsset(ASSET_SUMMARY).getValue());
         mopubSupportedAd.addExtra(EXTRA_SEC_BRANDING_LOGO,
                 flurryAdNative.getAsset(ASSET_SEC_HQ_BRANDING_LOGO).getValue());
+        mopubSupportedAd.addExtra(EXTRA_SEC_ADVERTISER_NAME,
+                flurryAdNative.getAsset(ASSET_ADVERTISER_NAME).getValue());
 
         if (mopubSupportedAd.isAppInstallAd()) {
             // App rating image URL may be null
