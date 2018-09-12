@@ -129,6 +129,13 @@ public class FacebookNative extends CustomEventNative {
         }
 
         /**
+         * Returns the String corresponding to the advertiser name
+         */
+        final public String getAdvertiserName() {
+            return mNativeAd.getAdvertiserName();
+        }
+
+        /**
          * Returns the String corresponding to the ad's title.
          */
         final public String getTitle() {
