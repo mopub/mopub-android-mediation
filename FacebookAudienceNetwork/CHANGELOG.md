@@ -4,7 +4,7 @@
     * Remove calls to `disableAutoRefresh()` for banner (deprecated by Facebook).
     * Remove calls to `getAdView()` and `getInterstitialAd()` for banner and interstitial, respectively (deprecated and used for testing).
     * Fire MoPub's `onRewardedVideoPlaybackError()` instead of `onRewardedVideoLoadFailure()` when there is no rewarded video to play (parity with other rewarded video adapters).
-    * Expose the native ad's advertiser name asset for publishers to show as required by Facebook (https://developers.facebook.com/docs/audience-network/guidelines/native-ads#name).
+    * Enable publishers to use the advertiser name asset as it is a required asset starting in Facebook 4.99.0 (https://developers.facebook.com/docs/audience-network/guidelines/native-ads#name).
 
   * 4.99.1.3
     * Fix a crash caused by the FB AdChoices icon getting positioned using `ALIGN_PARENT_END`. Older Android APIs will use `ALIGN_PARENT_RIGHT`.
