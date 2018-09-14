@@ -1,6 +1,6 @@
 ## Changelog
   * 10.1.0.2
-    * Expose the Flurry advertiser name asset.
+    * Expose the native ad's advertiser name asset for publishers to show as required by Flurry (https://developer.yahoo.com/flurry/docs/publisher/gettingstarted/nativeadguidelines/).
 
   * 10.1.0.1
     * Align MoPub's interstitial impression tracking to that of Flurry. 
