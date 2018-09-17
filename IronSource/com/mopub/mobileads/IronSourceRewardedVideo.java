@@ -163,6 +163,8 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
             }
         } else {
             MoPubLog.d("IronSource initialization Failed, make sure that 'applicationKey' server parameter is added");
+            onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, mInstanceId,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
     }
 

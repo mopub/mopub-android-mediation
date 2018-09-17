@@ -80,6 +80,8 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
                         mInstanceId = serverExtras.get(INSTANCE_ID_KEY);
                     }
                 }
+            } else {
+                sendMoPubInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
 
             if (!TextUtils.isEmpty(applicationKey)) {
