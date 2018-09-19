@@ -81,6 +81,7 @@ public class IronSourceInterstitial extends CustomEventInterstitial implements I
                     }
                 }
             } else {
+                MoPubLog.d("serverExtras is null. Make sure you have entered ironSource's application and instance keys on the MoPub dashboard");
                 sendMoPubInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
 
