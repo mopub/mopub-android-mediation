@@ -18,13 +18,8 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
-/**
- * Compatible with version 6.6 of the Millennial Media SDK.
- */
-
 final class MillennialInterstitial extends CustomEventInterstitial {
 
-    private static final String TAG = MillennialInterstitial.class.getSimpleName();
     private static final String DCN_KEY = "dcn";
     private static final String APID_KEY = "adUnitID";
 
@@ -233,7 +228,6 @@ final class MillennialInterstitial extends CustomEventInterstitial {
                     if (interstitialListener != null) {
                         interstitialListener.onInterstitialFailed(moPubErrorCode);
                     }
-
                 }
             });
         }

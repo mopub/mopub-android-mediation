@@ -22,10 +22,6 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
-/**
- * Compatible with version 6.6 of the Millennial Media SDK.
- */
-
 @SuppressWarnings("unused")
 final class MillennialRewardedVideo extends CustomEventRewardedVideo {
 
