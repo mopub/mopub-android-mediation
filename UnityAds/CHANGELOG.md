@@ -1,4 +1,7 @@
 ## Changelog
+  * 2.3.0.2
+    * Handle no-fill scenarios from Unity Ads. 
+
   * 2.3.0.1
     * Update the placement ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
 
