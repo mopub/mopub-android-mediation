@@ -12,11 +12,9 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.mopub.common.MediationSettings;
-import com.mopub.mobileads.MoPubRewardedVideoManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +67,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                 @NonNull final CustomEventNativeListener customEventNativeListener,
                                 @NonNull Map<String, Object> localExtras,
                                 @NonNull Map<String, String> serverExtras) {
+
         if (!sIsInitialized.getAndSet(true)) {
             Log.i(TAG, "Adapter version - " + ADAPTER_VERSION);
             if (serverExtras.containsKey(KEY_EXTRA_APPLICATION_ID)
@@ -84,9 +83,8 @@ public class GooglePlayServicesNative extends CustomEventNative {
             customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST);
             return;
         }
-        GooglePlayServicesNativeAd nativeAd =
-                new GooglePlayServicesNativeAd(customEventNativeListener);
 
+        GooglePlayServicesNativeAd nativeAd = new GooglePlayServicesNativeAd(customEventNativeListener);
         nativeAd.loadAd(context, adUnitId, localExtras);
     }
 
@@ -132,10 +130,12 @@ public class GooglePlayServicesNative extends CustomEventNative {
         public String getMediaView() {
             return mMediaView;
         }
+
         public void setMediaView(String mediaView) {
             this.mMediaView = mediaView;
 
         }
+
         /**
          * @return the title string associated with this native ad.
          */
@@ -281,8 +281,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
          *
          * @param context  required to request a Google native ad.
          * @param adUnitId Google's AdMob Ad Unit ID.
-         *
-         *
          */
         public void loadAd(final Context context, String adUnitId,
                            Map<String, Object> localExtras) {
@@ -320,6 +318,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 optionsBuilder.setAdChoicesPlacement(
                         (int) localExtras.get(KEY_EXTRA_AD_CHOICES_PLACEMENT));
             }
+
             NativeAdOptions adOptions = optionsBuilder.build();
 
             AdLoader adLoader =
@@ -390,6 +389,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             }
                         }
                     }).withNativeAdOptions(adOptions).build();
+
             AdRequest.Builder requestBuilder = new AdRequest.Builder();
             requestBuilder.setRequestAgent("MoPub");
 
@@ -448,12 +448,12 @@ public class GooglePlayServicesNative extends CustomEventNative {
         }
 
         /**
-         * This method will check whether or not the given content ad has all the required assets
+         * This method will check whether or not the given ad has all the required assets
          * (title, text, main image url, icon url and call to action) for it to be correctly
          * mapped to a {@link GooglePlayServicesNativeAd}.
          *
          * @param unifiedNativeAd to be checked if it is valid.
-         * @return {@code true} if the given native content ad has all the necessary assets to
+         * @return {@code true} if the given native ad has all the necessary assets to
          * create a {@link GooglePlayServicesNativeAd}, {@code false} otherwise.
          */
 
@@ -498,7 +498,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                     new NativeImageHelper.ImageListener() {
                         @Override
                         public void onImagesCached() {
-                            if (mUnifiedNativeAd != null){
+                            if (mUnifiedNativeAd != null) {
                                 prepareUnifiedNativeAd(mUnifiedNativeAd);
                                 mCustomEventNativeListener.onNativeAdLoaded(
                                         GooglePlayServicesNativeAd.this);
@@ -513,7 +513,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
         }
 
         /**
-         * This method will map the Google native content ad loaded to this
+         * This method will map the Google native ad loaded to this
          * {@link GooglePlayServicesNativeAd}.
          *
          * @param unifiedNativeAd that needs to be mapped to this native ad.
@@ -525,24 +525,22 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
             com.google.android.gms.ads.formats.NativeAd.Image icon = unifiedNativeAd.getIcon();
             setIconImageUrl(icon.getUri().toString());
-            setCallToAction(unifiedNativeAd.getCallToAction().toString());
-            setTitle(unifiedNativeAd.getHeadline().toString());
+            setCallToAction(unifiedNativeAd.getCallToAction());
+            setTitle(unifiedNativeAd.getHeadline());
 
-            setText(unifiedNativeAd.getBody().toString());
+            setText(unifiedNativeAd.getBody());
             if (unifiedNativeAd.getStarRating() != null) {
                 setStarRating(unifiedNativeAd.getStarRating());
             }
             // Add store asset if available.
             if (unifiedNativeAd.getStore() != null) {
-                setStore(unifiedNativeAd.getStore().toString());
+                setStore(unifiedNativeAd.getStore());
             }
             // Add price asset if available.
             if (unifiedNativeAd.getPrice() != null) {
-                setPrice(unifiedNativeAd.getPrice().toString());
+                setPrice(unifiedNativeAd.getPrice());
             }
         }
-
-
     }
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {

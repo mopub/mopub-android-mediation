@@ -18,9 +18,6 @@ import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.nativeads.GooglePlayServicesNative.GooglePlayServicesNativeAd;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -104,15 +101,11 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
             mViewHolderMap.put(view, viewHolder);
         }
         removeGoogleUnifiedAdView(view, nativeAd.shouldSwapMargins());
-        UnifiedNativeAdView unifiedAdView = null;
-        unifiedAdView = new UnifiedNativeAdView(view.getContext());
+
+        UnifiedNativeAdView unifiedAdView = new UnifiedNativeAdView(view.getContext());
+
         updateUnifiedAdview(nativeAd, viewHolder, unifiedAdView);
-        if (unifiedAdView != null) {
-            insertGoogleUnifiedAdView(unifiedAdView, view, nativeAd.shouldSwapMargins());
-        } else {
-            Log.w(GooglePlayServicesNative.TAG,
-                    "Couldn't add Google native ad view. NativeAdView is null.");
-        }
+        insertGoogleUnifiedAdView(unifiedAdView, view, nativeAd.shouldSwapMargins());
     }
 
     /**
@@ -120,10 +113,10 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
      * MoPub native ad view.
      *
      * @param googleUnifiedAdView Google's unified ad view to be added as a parent to the MoPub's
-     *                           view.
-     * @param moPubNativeAdView  MoPub's native ad view created by this renderer.
-     * @param swapMargins        {@code true} if the margins need to be swapped, {@code false}
-     *                           otherwise.
+     *                            view.
+     * @param moPubNativeAdView   MoPub's native ad view created by this renderer.
+     * @param swapMargins         {@code true} if the margins need to be swapped, {@code false}
+     *                            otherwise.
      */
     private static void insertGoogleUnifiedAdView(UnifiedNativeAdView googleUnifiedAdView,
                                                   View moPubNativeAdView,
@@ -204,13 +197,13 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
 
     /**
      * This method will render the given native ad view using the native ad and set the views to
-     * Google's native content ad view.
+     * Google's native ad view.
      *
      * @param staticNativeAd         a static native ad object containing the required assets to
      *                               set to the native ad view.
      * @param staticNativeViewHolder a static native view holder object containing the mapped
      *                               views from the view binder.
-     * @param unifiedAdView        the Google unified ad view in the view hierarchy.
+     * @param unifiedAdView          the Google unified ad view in the view hierarchy.
      */
 
 
@@ -223,7 +216,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         NativeRendererHelper.addTextView(
                 staticNativeViewHolder.mTextView, staticNativeAd.getText());
         unifiedAdView.setBodyView(staticNativeViewHolder.mTextView);
-        if (staticNativeViewHolder.mMediaView != null){
+        if (staticNativeViewHolder.mMediaView != null) {
             MediaView mediaview = new MediaView(unifiedAdView.getContext());
             staticNativeViewHolder.mMediaView.removeAllViews();
             staticNativeViewHolder.mMediaView.addView(mediaview);
