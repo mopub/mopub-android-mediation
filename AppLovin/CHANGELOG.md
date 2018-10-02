@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.1.4.0
+    * This version of the adapters has been certified with AppLovin 8.1.4.
+
   * 8.1.0.2
     * Align MoPub's banner and interstitial impression tracking to that of AppLovin.
         * `setAutomaticImpressionAndClickTracking` is set to `false`, and AppLovin's `adDisplayed` callback is leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
