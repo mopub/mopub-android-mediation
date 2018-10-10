@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.0.0.0
+    * This version of the adapters has been certified with AdMob 17.0.0.
+
   * 15.0.1.0
     * This version of the adapters has been certified with AdMob 15.0.1.
     * Update the native ad adapter to use Google's MediaView and UnifiedNativeAd per requirements (https://developers.google.com/admob/android/native-unified).
