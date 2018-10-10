@@ -50,8 +50,6 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     @Override
     public void loadInterstitial(final Context context, final CustomEventInterstitialListener listener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
 
-        setAutomaticImpressionAndClickTracking(false);
-
         // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
@@ -173,7 +171,6 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
 
         if (listener != null) {
             listener.onInterstitialShown();
-            listener.onInterstitialImpression();
         }
     }
 

@@ -1,6 +1,6 @@
 ## Changelog
   * 8.1.4.1
-    * Roll back the change introduced in v8.1.0.2 that aligned MoPub's banner impression tracking to that of AppLovin. The interstitial adapter continues to use v8.1.0.2's tracking logic.
+    * Roll back the change introduced in v8.1.0.2 that aligned MoPub's banner and interstitial impression tracking to that of AppLovin.
 
   * 8.1.4.0
     * This version of the adapters has been certified with AppLovin 8.1.4.
