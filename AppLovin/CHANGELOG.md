@@ -1,6 +1,6 @@
 ## Changelog
   * 8.1.4.1
-    * Roll back the change introduced in v8.1.0.2 that aligned MoPub's banner and interstitial impression tracking to that of AppLovin.
+    * Roll back the change introduced in v8.1.0.2 that aligned MoPub's banner and interstitial impression tracking to that of AppLovin. The decision was taken to avoid incorrectly overcounting impressions - `adDisplayed()` callback instances are not de-duped.
 
   * 8.1.4.0
     * This version of the adapters has been certified with AppLovin 8.1.4.
