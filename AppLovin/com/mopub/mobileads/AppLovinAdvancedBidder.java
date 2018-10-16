@@ -11,17 +11,14 @@ import com.mopub.common.MoPubAdvancedBidder;
  * Created by Thomas So on 5/22/18.
  */
 public class AppLovinAdvancedBidder
-        implements MoPubAdvancedBidder
-{
+        implements MoPubAdvancedBidder {
     @Override
-    public String getCreativeNetworkName()
-    {
+    public String getCreativeNetworkName() {
         return "applovin_sdk";
     }
 
     @Override
-    public String getToken(final Context context)
-    {
-        return AppLovinSdk.getInstance( context ).getAdService().getBidToken();
+    public String getToken(final Context context) {
+        return AppLovinSdk.getInstance(context).getAdService().getBidToken();
     }
 }
