@@ -5,11 +5,6 @@ import android.content.Context;
 import com.applovin.sdk.AppLovinSdk;
 import com.mopub.common.MoPubAdvancedBidder;
 
-/**
- * Include this class to use advanced bidding from AppLovin.
- * <p>
- * Created by Thomas So on 5/22/18.
- */
 public class AppLovinAdvancedBidder
         implements MoPubAdvancedBidder {
     @Override
