@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.7.11.0
+    * This version of the adapters has been certified with ironSource 6.7.11.
+    * Fail the adapter and exit if the ironSource application key is returned empty.
+
   * 6.7.10.2
     * Update the instance ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
 

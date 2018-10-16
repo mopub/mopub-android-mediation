@@ -22,10 +22,6 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
-/**
- * Compatible with version 6.6 of the Millennial Media SDK.
- */
-
 final class MillennialBanner extends CustomEventBanner {
 
     private static final String TAG = MillennialBanner.class.getSimpleName();

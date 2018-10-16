@@ -73,6 +73,9 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
         UnityRouter.addListener(sPlacementId, sUnityAdsListener);
         if (hasVideoAvailable()) {
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, sPlacementId);
+        } else if (UnityAds.getPlacementState(sPlacementId) == UnityAds.PlacementState.NO_FILL){
+            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, MoPubErrorCode.NO_FILL);
+            UnityRouter.removeListener(sPlacementId);
         }
     }
 
@@ -153,6 +156,12 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
 
         // @Override
         public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
+            if (placementId.equals(sPlacementId)) {
+                if(newState == UnityAds.PlacementState.NO_FILL) {
+                    MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, MoPubErrorCode.NO_FILL);
+                    UnityRouter.removeListener(sPlacementId);
+                }
+            }
         }
 
         @Override

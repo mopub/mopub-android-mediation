@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.8.2.0
+    * This version of the adapters has been certified with ONE by AOL 6.8.2.
+
   * 6.8.1.4
     * Align MoPub's interstitial impression tracking to that of One by AOL. 
         * `setAutomaticImpressionAndClickTracking` is set to `false`, and AOL's `onShown` callback is leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
