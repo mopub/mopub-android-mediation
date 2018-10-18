@@ -37,7 +37,6 @@ public class AppLovinBanner extends CustomEventBanner {
     private static final String AD_WIDTH_KEY = "com_mopub_ad_width";
     private static final String AD_HEIGHT_KEY = "com_mopub_ad_height";
 
-    private AppLovinSdk sdk;
     private static final String ZONE_ID_SERVER_EXTRAS_KEY = "zone_id";
 
     //
@@ -46,6 +45,8 @@ public class AppLovinBanner extends CustomEventBanner {
 
     @Override
     protected void loadBanner(final Context context, final CustomEventBannerListener customEventBannerListener, final Map<String, Object> localExtras, final Map<String, String> serverExtras) {
+
+        AppLovinSdk.initializeSdk(context);
 
         // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
