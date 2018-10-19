@@ -1,7 +1,6 @@
 ## Changelog
   * 8.1.4.2
     * Add support for AppLovin to be an Advanced Bidder on the MoPub platform.
-    * Initialize AppLovin in the adapters as a fallback. Publishers must also initialize AppLovin in their apps for the initial ad request to succeed.
 
   * 8.1.4.1
     * Roll back the change introduced in v8.1.0.2 that aligned MoPub's banner and interstitial impression tracking to that of AppLovin. The decision was taken to avoid incorrectly overcounting impressions - `adDisplayed()` callback instances are not de-duped.

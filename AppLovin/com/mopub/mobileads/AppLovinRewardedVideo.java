@@ -58,8 +58,6 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     @Override
     protected boolean checkAndInitializeSdk(@NonNull final Activity activity, @NonNull final Map<String, Object> localExtras, @NonNull final Map<String, String> serverExtras) throws Exception {
 
-        AppLovinSdk.initializeSdk(activity.getApplicationContext());
-
         // Pass the user consent from the MoPub SDK to AppLovin as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, activity.getApplicationContext());
