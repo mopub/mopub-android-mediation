@@ -11,17 +11,20 @@ import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
+import com.facebook.ads.AudienceNetworkAds;
 import com.mopub.common.DataKeys;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FacebookBanner extends CustomEventBanner implements AdListener {
     private static final String PLACEMENT_ID_KEY = "placement_id";
     private AdView mFacebookBanner;
     private CustomEventBannerListener mBannerListener;
+    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     /**
      * CustomEventBanner implementation
@@ -32,7 +35,9 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
                               final CustomEventBannerListener customEventBannerListener,
                               final Map<String, Object> localExtras,
                               final Map<String, String> serverExtras) {
-
+        if(!sIsInitialized.getAndSet(true)) {
+            AudienceNetworkAds.initialize(context);
+        }
         setAutomaticImpressionAndClickTracking(false);
 
         mBannerListener = customEventBannerListener;

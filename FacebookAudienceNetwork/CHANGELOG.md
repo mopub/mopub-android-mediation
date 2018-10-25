@@ -1,4 +1,8 @@
 ## Changelog
+
+  * 5.1.0.0-beta
+    * Initialize the Facebook Audience Network SDK for all ad formats.
+
   * 5.0.0.0
     * This version of the adapters has been certified with Facebook Audience Network 5.0.0.
     * Remove calls to `disableAutoRefresh()` for banner (deprecated by Facebook).
