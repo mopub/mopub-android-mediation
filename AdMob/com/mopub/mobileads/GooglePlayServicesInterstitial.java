@@ -28,6 +28,9 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             final CustomEventInterstitialListener customEventInterstitialListener,
             final Map<String, Object> localExtras,
             final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         mInterstitialListener = customEventInterstitialListener;
         final String adUnitId;
 
@@ -129,6 +132,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             Log.d("MoPub", "Showing Google Play Services interstitial ad.");
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialShown();
+                mInterstitialListener.onInterstitialImpression();
             }
         }
 
@@ -175,6 +179,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             npaBundle = bundle;
         }
 
+        /* The MoPub Android SDK queries MediationSettings from the rewarded video code
+        (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
+        available to publishers importing the modularized SDK(s) based on select ad formats.
+        This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
         private static Bundle getNpaBundle() {
             return npaBundle;
         }

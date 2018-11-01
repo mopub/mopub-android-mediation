@@ -27,11 +27,16 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
         mContext = context;
         loadRequested = true;
 
+
         UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
+        UnityRouter.getInterstitialRouter().setCurrentPlacementId(mPlacementId);
         initializeUnityAdsSdk(serverExtras);
         if (UnityAds.isReady(mPlacementId)) {
             mCustomEventInterstitialListener.onInterstitialLoaded();
             loadRequested = false;
+        } else if (UnityAds.getPlacementState(mPlacementId) == UnityAds.PlacementState.NO_FILL){
+            mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NO_FILL);
+            UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
         }
     }
 
@@ -92,6 +97,12 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
     // @Override
     public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
+        if (placementId.equals(mPlacementId)) {
+            if(newState == UnityAds.PlacementState.NO_FILL) {
+                mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NO_FILL);
+                UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+            }
+        }
     }
 
     @Override

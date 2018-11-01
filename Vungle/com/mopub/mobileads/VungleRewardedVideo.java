@@ -27,18 +27,16 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
      */
     public static final String APP_ID_KEY = "appId";
     public static final String PLACEMENT_ID_KEY = "pid";
-    public static final String PLACEMENT_IDS_KEY = "pids";
 
     public static final String VUNGLE_NETWORK_ID_DEFAULT = "vngl_id";
     private static final String VUNGLE_DEFAULT_APP_ID = "YOUR_APP_ID_HERE";
-    private static final String[] VUNGLE_DEFAULT_ALL_PLACEMENT_IDS = {"PLACEMENT_ID_1", "PLACEMENT_ID_2", "..."};
 
     private static VungleRouter sVungleRouter;
     private VungleRewardedRouterListener mVungleRewardedRouterListener;
     private static boolean sInitialized;
     private String mAppId;
-    private String mPlacementId;
-    private String[] mPlacementIds;
+    @NonNull
+    private String mPlacementId = VUNGLE_NETWORK_ID_DEFAULT;
     private boolean mIsPlaying;
 
     private String mAdUnitId;
@@ -76,11 +74,11 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
             if (!validateIdsInServerExtras(serverExtras)) {
                 mAppId = VUNGLE_DEFAULT_APP_ID;
-                mPlacementIds = VUNGLE_DEFAULT_ALL_PLACEMENT_IDS;
             }
 
             if (!sVungleRouter.isVungleInitialized()) {
-                sVungleRouter.initVungle(launcherActivity, mAppId, mPlacementIds);
+                // No longer passing the placement IDs (pids) param per Vungle 6.3.17
+                sVungleRouter.initVungle(launcherActivity, mAppId);
             }
 
             sInitialized = true;
@@ -94,7 +92,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         mIsPlaying = false;
 
         if (!validateIdsInServerExtras(serverExtras)) {
-            mPlacementId = VUNGLE_NETWORK_ID_DEFAULT;
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VungleRewardedVideo.class, mPlacementId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             return;
@@ -112,8 +109,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
         if (sVungleRouter.isVungleInitialized()) {
             sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRewardedRouterListener);
-        }
-        else {
+        } else {
             MoPubLog.d(REWARDED_TAG + "There should not be this case. loadWithSdkInitialized is called before the SDK starts initialization for Placement ID: " + mPlacementId);
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VungleRewardedVideo.class, mPlacementId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
@@ -143,7 +139,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
 
     //private functions
-    private boolean validateIdsInServerExtras (Map<String, String> serverExtras) {
+    private boolean validateIdsInServerExtras(Map<String, String> serverExtras) {
         boolean isAllDataValid = true;
 
         if (serverExtras.containsKey(APP_ID_KEY)) {
@@ -166,30 +162,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         } else {
             MoPubLog.w(REWARDED_TAG + "Placement ID for this Ad Unit is not in serverExtras.");
             isAllDataValid = false;
-        }
-
-        if (serverExtras.containsKey(PLACEMENT_IDS_KEY)) {
-            mPlacementIds = serverExtras.get(PLACEMENT_IDS_KEY).replace(" ", "").split(",", 0);
-            if (mPlacementIds.length == 0) {
-                MoPubLog.w(REWARDED_TAG + "Placement IDs are empty.");
-                isAllDataValid = false;
-            }
-        } else {
-            MoPubLog.w(REWARDED_TAG + "Placement IDs for this Ad Unit is not in serverExtras.");
-            isAllDataValid = false;
-        }
-
-        if (isAllDataValid) {
-            boolean foundInList = false;
-            for (String pid:  mPlacementIds) {
-                if(pid.equals(mPlacementId)) {
-                    foundInList = true;
-                }
-            }
-            if(!foundInList) {
-                MoPubLog.w(REWARDED_TAG + "Placement IDs for this Ad Unit is not in the array of Placement IDs");
-                isAllDataValid = false;
-            }
         }
 
         return isAllDataValid;
@@ -289,8 +261,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
                         MoPubLog.d(REWARDED_TAG + "rewarded video ad successfully loaded - Placement ID: " + placementReferenceId);
                         MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(VungleRewardedVideo.class,
                                 mPlacementId);
-                    }
-                    else {
+                    } else {
                         MoPubLog.d(REWARDED_TAG + "rewarded video ad is not loaded - Placement ID: " + placementReferenceId);
                         MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VungleRewardedVideo.class,
                                 mPlacementId, MoPubErrorCode.NETWORK_NO_FILL);
@@ -302,21 +273,31 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
 
     public static class VungleMediationSettings implements MediationSettings {
-        @Nullable private final String userId;
-        @Nullable private final String title;
-        @Nullable private final String body;
-        @Nullable private final String closeButtonText;
-        @Nullable private final String keepWatchingButtonText;
+        @Nullable
+        private final String userId;
+        @Nullable
+        private final String title;
+        @Nullable
+        private final String body;
+        @Nullable
+        private final String closeButtonText;
+        @Nullable
+        private final String keepWatchingButtonText;
         private final boolean isSoundEnabled;
         private final int flexViewCloseTimeInSec;
         private final int ordinalViewCount;
 
         public static class Builder {
-            @Nullable private String userId;
-            @Nullable private String title;
-            @Nullable private String body;
-            @Nullable private String closeButtonText;
-            @Nullable private String keepWatchingButtonText;
+            @Nullable
+            private String userId;
+            @Nullable
+            private String title;
+            @Nullable
+            private String body;
+            @Nullable
+            private String closeButtonText;
+            @Nullable
+            private String keepWatchingButtonText;
             private boolean isSoundEnabled = true;
             private int flexViewCloseTimeInSec = 0;
             private int ordinalViewCount = 0;

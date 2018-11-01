@@ -56,6 +56,8 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
             return;
         }
 
+        setAutomaticImpressionAndClickTracking(false);
+
         mContext = context;
         mListener = listener;
 
@@ -138,7 +140,9 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
         public void onDisplay(FlurryAdInterstitial adInterstitial) {
             Log.d(LOG_TAG, "onDisplay: Flurry interstitial ad displayed");
 
-            // no-op
+            if (mListener != null) {
+                mListener.onInterstitialImpression();
+            }
         }
 
         @Override

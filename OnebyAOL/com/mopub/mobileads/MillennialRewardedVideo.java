@@ -19,17 +19,8 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.ConsentStatus;
-import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.Map;
-
-import static com.millennialmedia.MMSDK.setConsentData;
-import static com.millennialmedia.MMSDK.setConsentRequired;
-
-/**
- * Compatible with version 6.6 of the Millennial Media SDK.
- */
 
 @SuppressWarnings("unused")
 final class MillennialRewardedVideo extends CustomEventRewardedVideo {
@@ -41,7 +32,8 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
     private InterstitialAd millennialInterstitial;
     private MillennialRewardedVideoListener millennialRewardedVideoListener = new MillennialRewardedVideoListener();
     private Activity activity;
-    private String apid = null;
+    @NonNull
+    private String apid = "";
 
     static {
         MoPubLog.d("Millennial Media Adapter Version: " + MillennialUtils.MEDIATOR_ID);
@@ -71,7 +63,7 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        return (apid == null) ? "" : apid;
+        return apid;
     }
 
     @Override
@@ -79,7 +71,7 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
         if (millennialInterstitial != null) {
             millennialInterstitial.destroy();
             millennialInterstitial = null;
-            apid = null;
+            apid = "";
         }
     }
 
@@ -88,26 +80,6 @@ final class MillennialRewardedVideo extends CustomEventRewardedVideo {
                                             @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
         try {
             MMSDK.initialize(launcherActivity, ActivityListenerManager.LifecycleState.RESUMED);
-
-            PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
-            if (personalInfoManager != null) {
-                try {
-                    Boolean gdprApplies = personalInfoManager.gdprApplies();
-
-                    // Set if GDPR applies / if consent is required
-                    if (gdprApplies != null) {
-                        setConsentRequired(gdprApplies);
-                    }
-                } catch (NullPointerException e) {
-                    MoPubLog.d("GDPR applicability cannot be determined.", e);
-                }
-
-                // Pass the user consent from the MoPub SDK to One by AOL as per GDPR
-                if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_YES) {
-                    setConsentData("mopub", "1");
-                }
-            }
         } catch (IllegalStateException e) {
             MoPubLog.d("An exception occurred initializing the MM SDK", e);
 

@@ -41,6 +41,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         final int adWidth;
         final int adHeight;
 
+
         if (extrasAreValid(serverExtras)) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
             adWidth = Integer.parseInt(serverExtras.get(AD_WIDTH_KEY));
@@ -127,6 +128,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         /*
          * Google Play Services AdListener implementation
          */
+
         @Override
         public void onAdClosed() {
 
@@ -204,6 +206,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             npaBundle = bundle;
         }
 
+        /* The MoPub Android SDK queries MediationSettings from the rewarded video code
+        (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
+        available to publishers importing the modularized SDK(s) based on select ad formats.
+        This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
         private static Bundle getNpaBundle() {
             return npaBundle;
         }

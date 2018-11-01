@@ -38,7 +38,6 @@ public class VungleInterstitial extends CustomEventInterstitial {
     private VungleInterstitialRouterListener mVungleRouterListener;
     private String mAppId;
     private String mPlacementId;
-    private String[] mPlacementIds;
     private AdConfig mAdConfig;
     private boolean mIsPlaying;
 
@@ -50,9 +49,9 @@ public class VungleInterstitial extends CustomEventInterstitial {
 
     @Override
     protected void loadInterstitial(Context context,
-                                    CustomEventInterstitialListener customEventInterstitialListener,
-                                    Map<String, Object> localExtras,
-                                    Map<String, String> serverExtras) {
+            CustomEventInterstitialListener customEventInterstitialListener,
+            Map<String, Object> localExtras,
+            Map<String, String> serverExtras) {
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mIsPlaying = false;
 
@@ -83,7 +82,8 @@ public class VungleInterstitial extends CustomEventInterstitial {
         }
 
         if (!sVungleRouter.isVungleInitialized()) {
-            sVungleRouter.initVungle(context, mAppId, mPlacementIds);
+            // No longer passing the placement IDs (pids) param per Vungle 6.3.17
+            sVungleRouter.initVungle(context, mAppId);
         }
 
         if (localExtras != null) {
@@ -145,30 +145,6 @@ public class VungleInterstitial extends CustomEventInterstitial {
         } else {
             MoPubLog.w(INTERSTITIAL_TAG + "Placement ID for this Ad Unit is not in serverExtras.");
             isAllDataValid = false;
-        }
-
-        if (serverExtras.containsKey(PLACEMENT_IDS_KEY)) {
-            mPlacementIds = serverExtras.get(PLACEMENT_IDS_KEY).replace(" ", "").split(",", 0);
-            if (mPlacementIds.length == 0) {
-                MoPubLog.w(INTERSTITIAL_TAG + "Placement IDs are empty.");
-                isAllDataValid = false;
-            }
-        } else {
-            MoPubLog.w(INTERSTITIAL_TAG + "Placement IDs for this Ad Unit is not in serverExtras.");
-            isAllDataValid = false;
-        }
-
-        if (isAllDataValid) {
-            boolean foundInList = false;
-            for (String pid : mPlacementIds) {
-                if (pid.equals(mPlacementId)) {
-                    foundInList = true;
-                }
-            }
-            if (!foundInList) {
-                MoPubLog.w(INTERSTITIAL_TAG + "Placement IDs for this Ad Unit is not in the array of Placement IDs");
-                isAllDataValid = false;
-            }
         }
 
         return isAllDataValid;

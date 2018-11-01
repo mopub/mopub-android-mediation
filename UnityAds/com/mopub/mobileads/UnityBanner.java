@@ -31,6 +31,7 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 		placementId = UnityRouter.placementIdForServerExtras(serverExtras, placementId);
 		this.customEventBannerListener = customEventBannerListener;
 		this.context = context;
+		UnityRouter.getBannerRouter().setCurrentPlacementId(placementId);
 
 		if (UnityRouter.initUnityAds(serverExtras, (Activity)context)) {
 			UnityRouter.getBannerRouter().addListener(placementId, this);

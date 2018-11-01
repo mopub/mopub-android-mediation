@@ -62,11 +62,15 @@ public class UnityRouter {
 
         if (personalInfoManager != null) {
             ConsentStatus consentStatus = personalInfoManager.getPersonalInfoConsentStatus();
-            boolean userConsented = consentStatus == ConsentStatus.EXPLICIT_YES;
 
-            MetaData gdprMetaData = new MetaData(context);
-            gdprMetaData.set("gdpr.consent", userConsented);
-            gdprMetaData.commit();
+            if(consentStatus == ConsentStatus.EXPLICIT_YES || consentStatus == ConsentStatus.EXPLICIT_NO) {
+                MetaData gdprMetaData = new MetaData(context);
+
+                // Set if the user has explicitly said yes or no
+                boolean doesConsent = consentStatus == ConsentStatus.EXPLICIT_YES;
+                gdprMetaData.set("gdpr.consent", doesConsent);
+                gdprMetaData.commit();
+            }
         }
     }
 

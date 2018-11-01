@@ -1,4 +1,16 @@
 ## Changelog
+  * 2.3.0.2
+    * Handle no-fill scenarios from Unity Ads. 
+
+  * 2.3.0.1
+    * Update the placement ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
+
+  * 2.3.0.0
+    * This version of the adapters has been certified with Unity Ads 2.3.0.
+
+  * 2.2.1.2
+    * Update to share consent with Unity Ads only when user provides an explicit yes/no. In all other cases, Unity Ads SDK will collect its own consent per the guidelines published in https://unity3d.com/legal/gdpr
+
   * 2.2.1.1
     * Pass explicit consent to Unity Ads.
 

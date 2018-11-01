@@ -9,7 +9,6 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 
-import com.mopub.common.privacy.PersonalInfoManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -17,20 +16,19 @@ import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.network.VungleApiClient;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 
 /**
- * Certified with Vungle SDK 6.2.5
+ * Certified with Vungle SDK 6.3.17
  */
 public class VungleRouter {
 
     private static final String ROUTER_TAG = "Vungle Router: ";
 
     // Version of the adapter, intended for Vungle internal use.
-    private static final String VERSION = "6.2.5";
+    private static final String VERSION = "6.3.0";
 
     private static VungleRouter instance = new VungleRouter();
 
@@ -69,9 +67,9 @@ public class VungleRouter {
         return sLifecycleListener;
     }
 
-    public void initVungle(Context context, String vungleAppId, String[] placementReferenceIds) {
+    public void initVungle(Context context, String vungleAppId) {
 
-        Vungle.init(Arrays.asList(placementReferenceIds), vungleAppId, context.getApplicationContext(), new InitCallback() {
+        Vungle.init(vungleAppId, context.getApplicationContext(), new InitCallback() {
             @Override
             public void onSuccess() {
                 MoPubLog.d(ROUTER_TAG + "SDK is initialized successfully.");
@@ -82,7 +80,11 @@ public class VungleRouter {
 
                 // Pass the user consent from the MoPub SDK to Vungle as per GDPR
                 boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
-                Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN : Vungle.Consent.OPTED_OUT);
+
+                // (New) Pass consentMessageVersion per Vungle 6.3.17:
+                // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
+                Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN :
+                        Vungle.Consent.OPTED_OUT, "");
             }
 
             @Override
@@ -156,13 +158,16 @@ public class VungleRouter {
     }
 
     public void updateConsentStatus(Vungle.Consent status) {
-        Vungle.updateConsentStatus(status);
+
+        // (New) Pass consentMessageVersion per Vungle 6.3.17:
+        // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
+        Vungle.updateConsentStatus(status, "");
     }
 
     public Vungle.Consent getConsentStatus() {
         return Vungle.getConsentStatus();
     }
-
+    
     private void clearWaitingList() {
         for (Map.Entry<String, VungleRouterListener> entry : sWaitingList.entrySet()) {
             Vungle.loadAd(entry.getKey(), loadAdCallback);

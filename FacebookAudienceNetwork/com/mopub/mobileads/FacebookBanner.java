@@ -32,13 +32,18 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
                               final CustomEventBannerListener customEventBannerListener,
                               final Map<String, Object> localExtras,
                               final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         mBannerListener = customEventBannerListener;
 
         final String placementId;
         if (serverExtrasAreValid(serverExtras)) {
             placementId = serverExtras.get(PLACEMENT_ID_KEY);
         } else {
-            mBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            if (mBannerListener != null) {
+                mBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
             return;
         }
 
@@ -48,20 +53,24 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
             width = (Integer) localExtras.get(DataKeys.AD_WIDTH);
             height = (Integer) localExtras.get(DataKeys.AD_HEIGHT);
         } else {
-            mBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            if (mBannerListener != null) {
+                mBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
             return;
         }
 
         AdSize adSize = calculateAdSize(width, height);
         if (adSize == null) {
-            mBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+            if (mBannerListener != null) {
+                mBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
             return;
         }
         AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
         mFacebookBanner = new AdView(context, placementId, adSize);
         mFacebookBanner.setAdListener(this);
-        mFacebookBanner.disableAutoRefresh();
 
         final String adm = serverExtras.get(DataKeys.ADM_KEY);
         if (!TextUtils.isEmpty(adm)) {
@@ -87,30 +96,43 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
     @Override
     public void onAdLoaded(Ad ad) {
         MoPubLog.d("Facebook banner ad loaded successfully. Showing ad...");
-        mBannerListener.onBannerLoaded(mFacebookBanner);
+
+        if (mBannerListener != null) {
+            mBannerListener.onBannerLoaded(mFacebookBanner);
+        }
     }
 
     @Override
     public void onError(final Ad ad, final AdError error) {
         MoPubLog.d("Facebook banner ad failed to load.");
-        if (error == AdError.NO_FILL) {
-            mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-        } else if (error == AdError.INTERNAL_ERROR) {
-            mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
-        } else {
-            mBannerListener.onBannerFailed(MoPubErrorCode.UNSPECIFIED);
+
+        if (mBannerListener != null) {
+            if (error == AdError.NO_FILL) {
+                mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            } else if (error == AdError.INTERNAL_ERROR) {
+                mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            } else {
+                mBannerListener.onBannerFailed(MoPubErrorCode.UNSPECIFIED);
+            }
         }
     }
 
     @Override
     public void onAdClicked(Ad ad) {
         MoPubLog.d("Facebook banner ad clicked.");
-        mBannerListener.onBannerClicked();
+
+        if (mBannerListener != null) {
+            mBannerListener.onBannerClicked();
+        }
     }
 
     @Override
     public void onLoggingImpression(Ad ad) {
         MoPubLog.d("Facebook banner ad logged impression.");
+
+        if (mBannerListener != null) {
+            mBannerListener.onBannerImpression();
+        }
     }
 
     private boolean serverExtrasAreValid(final Map<String, String> serverExtras) {
@@ -135,11 +157,5 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         } else {
             return null;
         }
-    }
-
-    @Deprecated
-        // for testing
-    AdView getAdView() {
-        return mFacebookBanner;
     }
 }

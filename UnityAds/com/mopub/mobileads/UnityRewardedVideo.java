@@ -17,6 +17,7 @@ import java.util.Map;
 public class UnityRewardedVideo extends CustomEventRewardedVideo {
     private static final LifecycleListener sLifecycleListener = new UnityLifecycleListener();
     private static final UnityAdsListener sUnityAdsListener = new UnityAdsListener();
+    @NonNull
     private static String sPlacementId = "";
 
     @Nullable
@@ -45,10 +46,12 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
                                          @NonNull final Map<String, Object> localExtras,
                                          @NonNull final Map<String, String> serverExtras) throws Exception {
         synchronized (UnityRewardedVideo.class) {
+            sPlacementId = UnityRouter.placementIdForServerExtras(serverExtras, sPlacementId);
             if (UnityAds.isInitialized()) {
                 return false;
             }
 
+            UnityRouter.getInterstitialRouter().setCurrentPlacementId(sPlacementId);
 			if (UnityRouter.initUnityAds(serverExtras, launcherActivity)) {
                 UnityRouter.getInterstitialRouter().addListener(sPlacementId, sUnityAdsListener);
                 return true;
@@ -67,8 +70,12 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
         mLauncherActivity = activity;
 
         UnityRouter.getInterstitialRouter().addListener(sPlacementId, sUnityAdsListener);
+        UnityRouter.getInterstitialRouter().setCurrentPlacementId(sPlacementId);
         if (hasVideoAvailable()) {
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, sPlacementId);
+        } else if (UnityAds.getPlacementState(sPlacementId) == UnityAds.PlacementState.NO_FILL){
+            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, MoPubErrorCode.NO_FILL);
+            UnityRouter.getInterstitialRouter().removeListener(sPlacementId);
         }
     }
 
@@ -149,6 +156,12 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
 
         // @Override
         public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
+            if (placementId.equals(sPlacementId)) {
+                if(newState == UnityAds.PlacementState.NO_FILL) {
+                    MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, MoPubErrorCode.NO_FILL);
+                    UnityRouter.getInterstitialRouter().removeListener(sPlacementId);
+                }
+            }
         }
 
         @Override
