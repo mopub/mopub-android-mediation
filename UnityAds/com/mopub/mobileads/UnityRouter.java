@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.mopub.common.MoPub;
@@ -11,7 +12,11 @@ import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.ads.metadata.MetaData;
+import com.unity3d.services.banners.UnityBanners;
+import com.unity3d.services.core.properties.SdkProperties;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,11 +25,38 @@ public class UnityRouter {
     private static final String GAME_ID_KEY = "gameId";
     private static final String ZONE_ID_KEY = "zoneId";
     private static final String PLACEMENT_ID_KEY = "placementId";
-    private static final UnityAdsListener sUnityAdsListener = new UnityAdsListener();
-    private static Map<String, IUnityAdsExtendedListener> mUnityAdsListeners = new HashMap<>();
+    private static final UnityInterstitialCallbackRouter interstitialRouter = new UnityInterstitialCallbackRouter();
+    private static final UnityBannerCallbackRouter bannerRouter = new UnityBannerCallbackRouter();
 
     static boolean initUnityAds(Map<String, String> serverExtras, Activity launcherActivity) {
+        initGdpr(launcherActivity.getApplicationContext());
 
+        String gameId = serverExtras.get(GAME_ID_KEY);
+        if (gameId == null || gameId.isEmpty()) {
+            MoPubLog.e("gameId is missing or entered incorrectly in the MoPub UI");
+            return false;
+        }
+        initMediationMetadata(launcherActivity);
+        UnityBanners.setBannerListener(bannerRouter);
+
+        try {
+            SdkProperties.setConfigUrl("http://10.1.81.35:8000/build/dev/config.json");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        MetaData debugMetaData = new MetaData(launcherActivity);
+        debugMetaData.set("test.debugOverlayEnabled", true);
+        debugMetaData.set("test.serverUrl", "https://fake-ads-backend.applifier.info");
+        debugMetaData.commit();
+
+        UnityAds.initialize(launcherActivity, gameId, interstitialRouter );
+        return true;
+    }
+
+    static void initGdpr(Context context) {
         // Pass the user consent from the MoPub SDK to Unity Ads as per GDPR
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
@@ -32,24 +64,17 @@ public class UnityRouter {
             ConsentStatus consentStatus = personalInfoManager.getPersonalInfoConsentStatus();
             boolean userConsented = consentStatus == ConsentStatus.EXPLICIT_YES;
 
-            MetaData gdprMetaData = new MetaData(launcherActivity.getApplicationContext());
+            MetaData gdprMetaData = new MetaData(context);
             gdprMetaData.set("gdpr.consent", userConsented);
             gdprMetaData.commit();
         }
+    }
 
-        String gameId = serverExtras.get(GAME_ID_KEY);
-        if (gameId == null || gameId.isEmpty()) {
-            MoPubLog.e("gameId is missing or entered incorrectly in the MoPub UI");
-            return false;
-        }
-
-        MediationMetaData mediationMetaData = new MediationMetaData(launcherActivity);
+    static void initMediationMetadata(Context context) {
+        MediationMetaData mediationMetaData = new MediationMetaData(context);
         mediationMetaData.setName("MoPub");
         mediationMetaData.setVersion(MoPub.SDK_VERSION);
         mediationMetaData.commit();
-
-        UnityAds.initialize(launcherActivity, gameId, sUnityAdsListener);
-        return true;
     }
 
     static String placementIdForServerExtras(Map<String, String> serverExtras, String defaultPlacementId) {
@@ -62,63 +87,12 @@ public class UnityRouter {
         return TextUtils.isEmpty(placementId) ? defaultPlacementId : placementId;
     }
 
-    static void showAd(Activity activity, String placementId) {
-        sCurrentPlacementId = placementId;
-        UnityAds.show(activity, placementId);
+    static UnityInterstitialCallbackRouter getInterstitialRouter() {
+        return interstitialRouter;
     }
 
-    static void addListener(String placementId, IUnityAdsExtendedListener unityListener) {
-        mUnityAdsListeners.put(placementId, unityListener);
-    }
-
-    static void removeListener(String placementId) {
-        mUnityAdsListeners.remove(placementId);
-    }
-
-    private static class UnityAdsListener implements IUnityAdsExtendedListener {
-        @Override
-        public void onUnityAdsReady(String placementId) {
-            IUnityAdsExtendedListener listener = mUnityAdsListeners.get(placementId);
-            if (listener != null) {
-                listener.onUnityAdsReady(placementId);
-            }
-        }
-
-        @Override
-        public void onUnityAdsStart(String placementId) {
-            IUnityAdsExtendedListener listener = mUnityAdsListeners.get(placementId);
-            if (listener != null) {
-                listener.onUnityAdsStart(placementId);
-            }
-        }
-
-        @Override
-        public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-            IUnityAdsExtendedListener listener = mUnityAdsListeners.get(placementId);
-            if (listener != null) {
-                listener.onUnityAdsFinish(placementId, finishState);
-            }
-        }
-
-        @Override
-        public void onUnityAdsClick(String placementId) {
-            IUnityAdsExtendedListener listener = mUnityAdsListeners.get(placementId);
-            if (listener != null) {
-                listener.onUnityAdsClick(placementId);
-            }
-        }
-
-        // @Override
-        public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
-        }
-
-        @Override
-        public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-            IUnityAdsExtendedListener listener = mUnityAdsListeners.get(sCurrentPlacementId);
-            if (listener != null) {
-                listener.onUnityAdsError(unityAdsError, message);
-            }
-        }
+    static UnityBannerCallbackRouter getBannerRouter() {
+        return bannerRouter;
     }
 
     static final class UnityAdsUtils {
@@ -138,23 +112,6 @@ public class UnityRouter {
                     errorCode = MoPubErrorCode.NETWORK_NO_FILL;
                     break;
             }
-            return errorCode;
-        }
-    }
-
-    static class UnityAdsException extends RuntimeException {
-        private final UnityAds.UnityAdsError errorCode;
-
-        public UnityAdsException(UnityAds.UnityAdsError errorCode, String detailFormat, Object... args) {
-            this(errorCode, String.format(detailFormat, args));
-        }
-
-        public UnityAdsException(UnityAds.UnityAdsError errorCode, String detailMessage) {
-            super(detailMessage);
-            this.errorCode = errorCode;
-        }
-
-        public UnityAds.UnityAdsError getErrorCode() {
             return errorCode;
         }
     }

@@ -15,7 +15,6 @@ import com.unity3d.ads.UnityAds;
 import java.util.Map;
 
 public class UnityRewardedVideo extends CustomEventRewardedVideo {
-    private static final String GAME_ID_KEY = "gameId";
     private static final LifecycleListener sLifecycleListener = new UnityLifecycleListener();
     private static final UnityAdsListener sUnityAdsListener = new UnityAdsListener();
     private static String sPlacementId = "";
@@ -50,15 +49,12 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
                 return false;
             }
 
-            try {
-                UnityRouter.initUnityAds(serverExtras, launcherActivity);
-                UnityRouter.addListener(sPlacementId, sUnityAdsListener);
-            } catch (UnityRouter.UnityAdsException e) {
-                MoPubLog.e("Failed to initialize Unity Ads.");
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, UnityRouter.UnityAdsUtils.getMoPubErrorCode(e.getErrorCode()));
+			if (UnityRouter.initUnityAds(serverExtras, launcherActivity)) {
+                UnityRouter.getInterstitialRouter().addListener(sPlacementId, sUnityAdsListener);
+                return true;
+            } else {
+                return false;
             }
-
-            return true;
         }
     }
 
@@ -70,7 +66,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
         sPlacementId = UnityRouter.placementIdForServerExtras(serverExtras, sPlacementId);
         mLauncherActivity = activity;
 
-        UnityRouter.addListener(sPlacementId, sUnityAdsListener);
+        UnityRouter.getInterstitialRouter().addListener(sPlacementId, sUnityAdsListener);
         if (hasVideoAvailable()) {
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, sPlacementId);
         }
@@ -92,7 +88,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected void onInvalidate() {
-        UnityRouter.removeListener(sPlacementId);
+        UnityRouter.getInterstitialRouter().removeListener(sPlacementId);
     }
 
     private static final class UnityLifecycleListener extends BaseLifecycleListener {
@@ -142,7 +138,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
                 MoPubLog.d("Unity ad was skipped, no reward will be given.");
             }
             MoPubRewardedVideoManager.onRewardedVideoClosed(UnityRewardedVideo.class, sPlacementId);
-            UnityRouter.removeListener(placementId);
+            UnityRouter.getInterstitialRouter().removeListener(placementId);
         }
 
         @Override
