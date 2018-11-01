@@ -52,7 +52,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
             }
 
             UnityRouter.getInterstitialRouter().setCurrentPlacementId(sPlacementId);
-			if (UnityRouter.initUnityAds(serverExtras, launcherActivity)) {
+            if (UnityRouter.initUnityAds(serverExtras, launcherActivity)) {
                 UnityRouter.getInterstitialRouter().addListener(sPlacementId, sUnityAdsListener);
                 return true;
             } else {
