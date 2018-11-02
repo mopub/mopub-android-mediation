@@ -5,7 +5,7 @@
     * For all ad formats, add support to initialize Facebook Audience Network SDK at the time of the first ad request to Facebook Audience Network.
  
   * 5.0.1.0
-    * This version of the adapters has been certified with Facebook Audience Network 5.0.1
+    * This version of the adapters has been certified with Facebook Audience Network 5.0.1.
 
   * 5.0.0.0
     * This version of the adapters has been certified with Facebook Audience Network 5.0.0.
