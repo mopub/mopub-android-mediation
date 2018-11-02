@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.7.12.0
+    * This version of the adapters has been certified with ironSource 6.7.12.
+
   * 6.7.11.0
     * This version of the adapters has been certified with ironSource 6.7.11.
     * Fail the adapter and exit if the ironSource application key is returned empty.

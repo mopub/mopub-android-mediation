@@ -100,7 +100,6 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
             viewHolder = GoogleStaticNativeViewHolder.fromViewBinder(view, mViewBinder);
             mViewHolderMap.put(view, viewHolder);
         }
-        removeGoogleUnifiedAdView(view, nativeAd.shouldSwapMargins());
 
         UnifiedNativeAdView unifiedAdView = new UnifiedNativeAdView(view.getContext());
 
@@ -154,44 +153,6 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         } else {
             Log.w(GooglePlayServicesNative.TAG,
                     "Couldn't add Google native ad view. Wrapping view not found.");
-        }
-    }
-
-    /**
-     * This method will remove the Google unified ad view from the view hierarchy if one is present.
-     *
-     * @param view        the view from which to remove the Google unified ad view.
-     * @param swapMargins {@code true} if the margins need to be swapped before removing the
-     *                    Google native ad view, {@code false} otherwise.
-     */
-    protected static void removeGoogleUnifiedAdView(@NonNull View view, boolean swapMargins) {
-        if (view instanceof FrameLayout && view.getId() == ID_WRAPPING_FRAME) {
-            View adView = view.findViewById(ID_GOOGLE_NATIVE_VIEW);
-            if (adView != null) {
-                ViewGroup outerView = (ViewGroup) view;
-                int index = outerView.indexOfChild(adView);
-                outerView.removeView(adView);
-                View actualNativeView = ((ViewGroup) adView).getChildAt(0);
-                if (actualNativeView != null) {
-                    if (swapMargins) {
-                        FrameLayout.LayoutParams actualViewParams =
-                                (FrameLayout.LayoutParams) actualNativeView.getLayoutParams();
-                        FrameLayout.LayoutParams googleNativeViewParams =
-                                (FrameLayout.LayoutParams) adView.getLayoutParams();
-                        actualViewParams.setMargins(
-                                googleNativeViewParams.leftMargin,
-                                googleNativeViewParams.topMargin,
-                                googleNativeViewParams.rightMargin,
-                                googleNativeViewParams.bottomMargin);
-                    }
-                    ((ViewGroup) adView).removeView(actualNativeView);
-                    outerView.addView(actualNativeView, index);
-                }
-
-                if (adView instanceof UnifiedNativeAdView) {
-                    ((UnifiedNativeAdView) adView).destroy();
-                }
-            }
         }
     }
 
