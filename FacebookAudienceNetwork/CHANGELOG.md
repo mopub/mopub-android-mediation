@@ -1,6 +1,7 @@
 ## Changelog
 
-  * 5.1.0.0-beta
+  * 5.1.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.1.0
     * Initialize the Facebook Audience Network SDK for all ad formats.
 
   * 5.0.0.0
