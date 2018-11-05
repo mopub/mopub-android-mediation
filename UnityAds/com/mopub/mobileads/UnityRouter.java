@@ -39,19 +39,6 @@ public class UnityRouter {
         initMediationMetadata(launcherActivity);
         UnityBanners.setBannerListener(bannerRouter);
 
-        try {
-            SdkProperties.setConfigUrl("http://10.1.81.35:8000/build/dev/config.json");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        MetaData debugMetaData = new MetaData(launcherActivity);
-        debugMetaData.set("test.debugOverlayEnabled", true);
-        debugMetaData.set("test.serverUrl", "https://fake-ads-backend.applifier.info");
-        debugMetaData.commit();
-
         UnityAds.initialize(launcherActivity, gameId, interstitialRouter );
         return true;
     }
