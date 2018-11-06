@@ -18,6 +18,7 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 	private Context context;
 	private String placementId = "banner";
 	private CustomEventBannerListener customEventBannerListener;
+	private View view;
 
 	@Override
 	protected void loadBanner(Context context, CustomEventBannerListener customEventBannerListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
@@ -58,48 +59,59 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 		UnityRouter.getBannerRouter().removeListener(placementId);
 		UnityRouter.getInterstitialRouter().removeListener(placementId);
 		UnityBanners.destroy();
+		view = null;
 	}
 
 	@Override
 	public void onUnityBannerLoaded(String placementId, View view) {
+		MoPubLog.i(String.format("Banner did load for placement %s", placementId));
 		customEventBannerListener.onBannerLoaded(view);
+		this.view = view;
 	}
 
 	@Override
 	public void onUnityBannerUnloaded(String placementId) {
+		MoPubLog.i(String.format("Banner did unload for placement %s", placementId));
 	}
 
 	@Override
 	public void onUnityBannerShow(String placementId) {
+		MoPubLog.i(String.format("Banner did show for placement %s", placementId));
 		customEventBannerListener.onBannerImpression();
 	}
 
 	@Override
 	public void onUnityBannerClick(String placementId) {
+		MoPubLog.i(String.format("Banner did click for placement %s", placementId));
+		customEventBannerListener.onBannerClicked();
 	}
 
 	@Override
 	public void onUnityBannerHide(String placementIds) {
+		MoPubLog.i(String.format("Banner did hide for placement %s", placementId));
 	}
 
 	@Override
-	public void onUnityBannerError(String placementId) {
+	public void onUnityBannerError(String message) {
+		MoPubLog.i(String.format("Banner did error for placement %s with error %s", placementId, message));
 		customEventBannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
 	}
 
 	@Override
-	public void onUnityAdsClick(String s) {
+	public void onUnityAdsClick(String placementId) {
 
 	}
 
 	@Override
-	public void onUnityAdsPlacementStateChanged(String s, UnityAds.PlacementState placementState, UnityAds.PlacementState placementState1) {
+	public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState placementState, UnityAds.PlacementState placementState1) {
 
 	}
 
 	@Override
 	public void onUnityAdsReady(String placementId) {
-		UnityBanners.loadBanner((Activity)context, placementId);
+		if (view == null) {
+			UnityBanners.loadBanner((Activity)context, placementId);
+		}
 	}
 
 	@Override
