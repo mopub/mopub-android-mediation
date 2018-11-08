@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdIconView;
+import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdListener;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * FacebookAdRenderer is also necessary in order to show video ads.
@@ -28,6 +30,7 @@ import java.util.Map;
  */
 public class FacebookNative extends CustomEventNative {
     private static final String PLACEMENT_ID_KEY = "placement_id";
+    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     // CustomEventNative implementation
     @Override
@@ -36,6 +39,9 @@ public class FacebookNative extends CustomEventNative {
                                 final Map<String, Object> localExtras,
                                 final Map<String, String> serverExtras) {
 
+        if(!sIsInitialized.getAndSet(true)) {
+            AudienceNetworkAds.initialize(context);
+        }
         final String placementId;
         if (extrasAreValid(serverExtras)) {
             placementId = serverExtras.get(PLACEMENT_ID_KEY);
@@ -126,6 +132,13 @@ public class FacebookNative extends CustomEventNative {
             } else {
                 mNativeAd.loadAd();
             }
+        }
+
+        /**
+         * Returns the String corresponding to the advertiser name
+         */
+        final public String getAdvertiserName() {
+            return mNativeAd.getAdvertiserName();
         }
 
         /**

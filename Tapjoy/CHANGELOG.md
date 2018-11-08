@@ -1,4 +1,10 @@
 ## Changelog
+  * 12.1.0.0
+    * This version of the adapters has been certified with Tapjoy 12.1.0.
+
+  * 12.0.0.1
+    * Update the ad network constant returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
+
   * 12.0.0.0
     * This version of the adapters has been certified with Tapjoy 12.0.0.
     * Add `TapjoyAdvancedBidder.java` for publishers using Advanced Bidding.

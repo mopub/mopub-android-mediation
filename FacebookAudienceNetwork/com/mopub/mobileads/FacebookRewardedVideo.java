@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdSettings;
+import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
 import com.mopub.common.DataKeys;
@@ -18,6 +19,7 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
 
@@ -26,11 +28,12 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
     private static final int ONE_HOURS_MILLIS = 60 * 60 * 1000;
     @Nullable
     private RewardedVideoAd mRewardedVideoAd;
-    @Nullable
-    private String mPlacementId;
+    @NonNull
+    private String mPlacementId = "";
     @NonNull
     private Handler mHandler;
     private Runnable mAdExpiration;
+    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     public FacebookRewardedVideo() {
         mHandler = new Handler();
@@ -57,8 +60,11 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
-        // Facebook doesn't have a dedicated initialization call, so we return false and do nothing.
-        return false;
+        boolean requiresInitialization = !sIsInitialized.getAndSet(true);
+        if(requiresInitialization) {
+            AudienceNetworkAds.initialize(launcherActivity);
+        }
+        return requiresInitialization;
     }
 
     @Override
@@ -103,7 +109,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        return (mRewardedVideoAd != null) ? (mRewardedVideoAd.getPlacementId()) : ("");
+        return mPlacementId;
     }
 
     @Override
@@ -128,7 +134,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
             MoPubLog.d("Facebook Rewarded Video creative is available. Showing...");
             mRewardedVideoAd.show();
         } else {
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(FacebookRewardedVideo.class, mPlacementId, MoPubErrorCode.VIDEO_NOT_AVAILABLE);
+            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(FacebookRewardedVideo.class, mPlacementId, MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             MoPubLog.d("Facebook Rewarded Video creative is not available. Try re-requesting.");
         }
     }

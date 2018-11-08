@@ -15,12 +15,13 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinErrorCodes;
+import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
+import com.mopub.common.DataKeys;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,8 +30,10 @@ import java.util.Queue;
 
 public class AppLovinInterstitial extends CustomEventInterstitial implements AppLovinAdLoadListener, AppLovinAdDisplayListener, AppLovinAdClickListener, AppLovinAdVideoPlaybackListener {
 
-    private static final Handler UI_HANDLER = new Handler(Looper.getMainLooper());
     private static final String DEFAULT_ZONE = "";
+    private static final String ZONE_ID_SERVER_EXTRAS_KEY = "zone_id";
+
+    private static final Handler UI_HANDLER = new Handler(Looper.getMainLooper());
 
     private AppLovinSdk sdk;
     private CustomEventInterstitialListener listener;
@@ -43,6 +46,8 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     private static final Object GLOBAL_INTERSTITIAL_ADS_LOCK = new Object();
 
     private String zoneId; // The zone identifier this instance of the custom event is loading for
+    private boolean isTokenEvent;
+    private AppLovinAd tokenAd;
 
     //
     // MoPub Custom Event Methods
@@ -55,12 +60,14 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
 
-        MoPubLog.d("Requesting AppLovin interstitial with serverExtras: " + serverExtras + " and localExtras: " + localExtras);
-
         // SDK versions BELOW 7.2.0 require a instance of an Activity to be passed in as the context
         if (AppLovinSdk.VERSION_CODE < 720 && !(context instanceof Activity)) {
-            MoPubLog.d("Unable to request AppLovin banner. Invalid context provided.");
-            listener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            MoPubLog.d("Unable to request AppLovin interstitial. Invalid context provided.");
+
+            if (listener != null) {
+                listener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
+
 
             return;
         }
@@ -70,33 +77,49 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         this.context = context;
 
         sdk = retrieveSdk(serverExtras, context);
-        sdk.setPluginVersion("MoPub-Certified-3.0.0");
+        sdk.setPluginVersion("MoPub-3.1.0");
+        sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
 
-        // Zones support is available on AppLovin SDK 7.5.0 and higher
-        final String serverExtrasZoneId = serverExtras != null ? serverExtras.get("zone_id") : null;
-        zoneId = (!TextUtils.isEmpty(serverExtrasZoneId) && AppLovinSdk.VERSION_CODE >= 750) ? serverExtrasZoneId : DEFAULT_ZONE;
+        final String adMarkup = serverExtras.get(DataKeys.ADM_KEY);
+        final boolean hasAdMarkup = !TextUtils.isEmpty(adMarkup);
 
-        // Check if we already have a preloaded ad for the given zone
-        final AppLovinAd preloadedAd = dequeueAd(zoneId);
-        if (preloadedAd != null) {
-            MoPubLog.d("Found preloaded ad for zone: {" + zoneId + "}");
-            adReceived(preloadedAd);
+        MoPubLog.d("Requesting AppLovin interstitial with serverExtras: " + serverExtras + ", localExtras: " + localExtras + " and has adMarkup: " + hasAdMarkup);
+
+        if (hasAdMarkup) {
+            isTokenEvent = true;
+
+            // Use token API
+            sdk.getAdService().loadNextAdForAdToken(adMarkup, this);
         } else {
-            // If this is a default Zone, create the incentivized ad normally
-            if (DEFAULT_ZONE.equals(zoneId)) {
-                sdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, this);
+            final String serverExtrasZoneId = serverExtras.get(ZONE_ID_SERVER_EXTRAS_KEY);
+            zoneId = !TextUtils.isEmpty(serverExtrasZoneId) ? serverExtrasZoneId : DEFAULT_ZONE;
+
+            // Check if we already have a preloaded ad for the given zone
+            final AppLovinAd preloadedAd = dequeueAd(zoneId);
+            if (preloadedAd != null) {
+                MoPubLog.d("Found preloaded ad for zone: {" + zoneId + "}");
+                adReceived(preloadedAd);
             }
-            // Otherwise, use the Zones API
+            // No ad currently preloaded
             else {
-                // Dynamically load an ad for a given zone without breaking backwards compatibility for publishers on older SDKs
-                sdk.getAdService().loadNextAdForZoneId(zoneId, this);
+                if (!TextUtils.isEmpty(zoneId)) {
+                    sdk.getAdService().loadNextAdForZoneId(zoneId, this);
+                } else {
+                    sdk.getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, this);
+                }
             }
         }
     }
 
     @Override
     public void showInterstitial() {
-        final AppLovinAd preloadedAd = dequeueAd(zoneId);
+        final AppLovinAd preloadedAd;
+        if (isTokenEvent && tokenAd != null) {
+            preloadedAd = tokenAd;
+        } else {
+            preloadedAd = dequeueAd(zoneId);
+        }
+
         if (preloadedAd != null) {
             final AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(sdk, context);
             interstitialAd.setAdDisplayListener(this);
@@ -105,7 +128,10 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             interstitialAd.showAndRender(preloadedAd);
         } else {
             MoPubLog.d("Failed to show an AppLovin interstitial before one was loaded");
-            listener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+
+            if (listener != null) {
+                listener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            }
         }
     }
 
@@ -121,13 +147,19 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     public void adReceived(final AppLovinAd ad) {
         MoPubLog.d("Interstitial did load ad: " + ad.getAdIdNumber());
 
-        enqueueAd(ad, zoneId);
+        if (isTokenEvent) {
+            tokenAd = ad;
+        } else {
+            enqueueAd(ad, zoneId);
+        }
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    listener.onInterstitialLoaded();
+                    if (listener != null) {
+                        listener.onInterstitialLoaded();
+                    }
                 } catch (Throwable th) {
                     MoPubLog.e("Unable to notify listener of successful ad load.", th);
                 }
@@ -143,7 +175,9 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             @Override
             public void run() {
                 try {
-                    listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+                    if (listener != null) {
+                        listener.onInterstitialFailed(toMoPubErrorCode(errorCode));
+                    }
                 } catch (Throwable th) {
                     MoPubLog.e("Unable to notify listener of failure to receive ad.", th);
                 }
@@ -158,13 +192,19 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     @Override
     public void adDisplayed(final AppLovinAd appLovinAd) {
         MoPubLog.d("Interstitial displayed");
-        listener.onInterstitialShown();
+
+        if (listener != null) {
+            listener.onInterstitialShown();
+        }
     }
 
     @Override
     public void adHidden(final AppLovinAd appLovinAd) {
         MoPubLog.d("Interstitial dismissed");
-        listener.onInterstitialDismissed();
+
+        if (listener != null) {
+            listener.onInterstitialDismissed();
+        }
     }
 
     //
@@ -174,7 +214,10 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     @Override
     public void adClicked(final AppLovinAd appLovinAd) {
         MoPubLog.d("Interstitial clicked");
-        listener.onLeaveApplication();
+
+        if (listener != null) {
+            listener.onLeaveApplication();
+        }
     }
 
     //

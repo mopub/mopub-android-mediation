@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.3.17.1
+    * Update the placement ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
+
+
   * 6.3.17.0
     * This version of the adapters has been certified with Vungle 6.13.17.
     * Remove the placement IDS (pids) parameter from Vungle's init call per Vungle's new SDK requirements.

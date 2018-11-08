@@ -62,15 +62,15 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     private static String[] previousAdColonyAllZoneIds;
 
     AdColonyInterstitial mAd;
-    private String mZoneId;
+    @NonNull
+    private String mZoneId = DEFAULT_ZONE_ID;
     private AdColonyListener mAdColonyListener;
     private AdColonyAdOptions mAdColonyAdOptions = new AdColonyAdOptions();
     private AdColonyAppOptions mAdColonyAppOptions = new AdColonyAppOptions();
     private static WeakHashMap<String, AdColonyInterstitial> sZoneIdToAdMap = new WeakHashMap<>();
 
-
-    @Nullable
-    private String mAdUnitId;
+    @NonNull
+    private String mAdUnitId = "";
     private boolean mIsLoading = false;
 
     // For waiting and notifying the SDK:
@@ -148,7 +148,6 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     protected void loadWithSdkInitialized(@NonNull final Activity activity,
                                           @NonNull final Map<String, Object> localExtras,
                                           @NonNull final Map<String, String> serverExtras) throws Exception {
-        mZoneId = DEFAULT_ZONE_ID;
 
         if (extrasAreValid(serverExtras)) {
             mZoneId = serverExtras.get(ZONE_ID_KEY);

@@ -1,4 +1,20 @@
 ## Changelog
+  * 8.1.4.2
+    * Add support for AppLovin to be an Advanced Bidder on the MoPub platform.
+
+  * 8.1.4.1
+    * Roll back the change introduced in v8.1.0.2 that aligned MoPub's banner and interstitial impression tracking to that of AppLovin. The decision was taken to avoid incorrectly overcounting impressions - `adDisplayed()` callback instances are not de-duped.
+
+  * 8.1.4.0
+    * This version of the adapters has been certified with AppLovin 8.1.4.
+
+  * 8.1.0.2
+    * Align MoPub's banner and interstitial impression tracking to that of AppLovin.
+        * `setAutomaticImpressionAndClickTracking` is set to `false`, and AppLovin's `adDisplayed` callback is leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
+
+  * 8.1.0.1
+    * Update the zone ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
+
   * 8.1.0.0
     * This version of the adapters has been certified with AppLovin 8.1.0.
 

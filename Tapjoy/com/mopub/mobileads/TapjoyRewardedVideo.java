@@ -61,6 +61,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         return null;
     }
 
+    @NonNull
     @Override
     protected String getAdNetworkId() {
         return TAPJOY_AD_NETWORK_CONSTANT;

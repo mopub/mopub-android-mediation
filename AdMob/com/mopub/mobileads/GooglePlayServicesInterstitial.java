@@ -28,6 +28,9 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             final CustomEventInterstitialListener customEventInterstitialListener,
             final Map<String, Object> localExtras,
             final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         mInterstitialListener = customEventInterstitialListener;
         final String adUnitId;
 
@@ -129,6 +132,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             Log.d("MoPub", "Showing Google Play Services interstitial ad.");
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialShown();
+                mInterstitialListener.onInterstitialImpression();
             }
         }
 

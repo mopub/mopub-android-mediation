@@ -15,9 +15,9 @@ import com.unity3d.ads.UnityAds;
 import java.util.Map;
 
 public class UnityRewardedVideo extends CustomEventRewardedVideo {
-    private static final String GAME_ID_KEY = "gameId";
     private static final LifecycleListener sLifecycleListener = new UnityLifecycleListener();
     private static final UnityAdsListener sUnityAdsListener = new UnityAdsListener();
+    @NonNull
     private static String sPlacementId = "";
 
     @Nullable
@@ -73,6 +73,9 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
         UnityRouter.addListener(sPlacementId, sUnityAdsListener);
         if (hasVideoAvailable()) {
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, sPlacementId);
+        } else if (UnityAds.getPlacementState(sPlacementId) == UnityAds.PlacementState.NO_FILL){
+            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, MoPubErrorCode.NO_FILL);
+            UnityRouter.removeListener(sPlacementId);
         }
     }
 
@@ -153,6 +156,12 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo {
 
         // @Override
         public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
+            if (placementId.equals(sPlacementId)) {
+                if(newState == UnityAds.PlacementState.NO_FILL) {
+                    MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, sPlacementId, MoPubErrorCode.NO_FILL);
+                    UnityRouter.removeListener(sPlacementId);
+                }
+            }
         }
 
         @Override

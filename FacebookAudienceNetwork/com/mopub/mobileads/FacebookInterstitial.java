@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdSettings;
+import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
 import com.mopub.common.DataKeys;
@@ -15,6 +16,7 @@ import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
 
@@ -26,6 +28,7 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     @NonNull
     private Handler mHandler;
     private Runnable mAdExpiration;
+    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     public FacebookInterstitial() {
         mHandler = new Handler();
@@ -53,6 +56,11 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
                                     final CustomEventInterstitialListener customEventInterstitialListener,
                                     final Map<String, Object> localExtras,
                                     final Map<String, String> serverExtras) {
+        if(!sIsInitialized.getAndSet(true)) {
+            AudienceNetworkAds.initialize(context);
+        }
+        setAutomaticImpressionAndClickTracking(false);
+
         MoPubLog.d("Loading Facebook interstitial");
         mInterstitialListener = customEventInterstitialListener;
 
@@ -153,6 +161,9 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     @Override
     public void onLoggingImpression(Ad ad) {
         MoPubLog.d("Facebook interstitial ad logged impression.");
+        if (mInterstitialListener != null) {
+            mInterstitialListener.onInterstitialImpression();
+        }
     }
 
     @Override
@@ -170,11 +181,5 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
 
     private void cancelExpirationTimer() {
         mHandler.removeCallbacks(mAdExpiration);
-    }
-
-    @Deprecated
-        // for testing
-    InterstitialAd getInterstitialAd() {
-        return mFacebookInterstitial;
     }
 }

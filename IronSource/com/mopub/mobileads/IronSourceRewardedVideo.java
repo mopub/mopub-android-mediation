@@ -41,6 +41,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
 
 
     // This is the instance id used inside ironSource SDK
+    @NonNull
     private String mInstanceId = "0";
     // This is the placement name used inside ironSource SDK
     private String mPlacementName = null;
@@ -162,6 +163,8 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
             }
         } else {
             MoPubLog.d("IronSource initialization Failed, make sure that 'applicationKey' server parameter is added");
+            onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, mInstanceId,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
     }
 

@@ -41,6 +41,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         final int adWidth;
         final int adHeight;
 
+
         if (extrasAreValid(serverExtras)) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
             adWidth = Integer.parseInt(serverExtras.get(AD_WIDTH_KEY));
@@ -127,6 +128,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         /*
          * Google Play Services AdListener implementation
          */
+
         @Override
         public void onAdClosed() {
 
