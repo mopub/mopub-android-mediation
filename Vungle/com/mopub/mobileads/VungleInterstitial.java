@@ -147,6 +147,12 @@ public class VungleInterstitial extends CustomEventInterstitial {
             isAllDataValid = false;
         }
 
+        if (serverExtras.containsKey(PLACEMENT_IDS_KEY)) {
+            MoPubLog.w(INTERSTITIAL_TAG + "No need to set placement IDs " +
+                    "in MoPub dashboard with Vungle SDK version " +
+                    com.vungle.warren.BuildConfig.VERSION_NAME);
+        }
+
         return isAllDataValid;
     }
 
