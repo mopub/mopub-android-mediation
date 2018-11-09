@@ -10,7 +10,6 @@ import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 import com.tapjoy.TJActionRequest;

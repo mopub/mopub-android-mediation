@@ -1,4 +1,7 @@
 ## Changelog
+  * 12.1.0.1
+    * Pass the signal from `MoPub.canCollectPersonalInformation()` as a consent status to Tapjoy for consistency with the other mediated adapters.
+
   * 12.1.0.0
     * This version of the adapters has been certified with Tapjoy 12.1.0.
 
