@@ -133,8 +133,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
                 Tapjoy.subjectToGDPR(gdprApplies);
 
                 if (gdprApplies) {
-                    String userConsented = personalInfoManager.getPersonalInfoConsentStatus() ==
-                            ConsentStatus.EXPLICIT_YES ? "1" : "0";
+                    String userConsented = MoPub.canCollectPersonalInformation() ? "1" : "0";
 
                     Tapjoy.setUserConsent(userConsented);
                 } else {
