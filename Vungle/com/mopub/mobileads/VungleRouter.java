@@ -131,7 +131,7 @@ public class VungleRouter {
                 break;
 
             case INITIALIZED:
-                if(isValidPlacement(placementId)) {
+                if (isValidPlacement(placementId)) {
                     addRouterListener(placementId, routerListener);
                     Vungle.loadAd(placementId, loadAdCallback);
                 } else {
@@ -163,6 +163,7 @@ public class VungleRouter {
 
     /**
      * Checks and returns if the passed Placement ID is a valid placement for App ID
+     *
      * @param placementId
      * @return
      */
@@ -181,7 +182,7 @@ public class VungleRouter {
     public Vungle.Consent getConsentStatus() {
         return Vungle.getConsentStatus();
     }
-    
+
     private void clearWaitingList() {
         for (Map.Entry<String, VungleRouterListener> entry : sWaitingList.entrySet()) {
             Vungle.loadAd(entry.getKey(), loadAdCallback);

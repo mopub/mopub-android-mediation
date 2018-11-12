@@ -49,9 +49,9 @@ public class VungleInterstitial extends CustomEventInterstitial {
 
     @Override
     protected void loadInterstitial(Context context,
-            CustomEventInterstitialListener customEventInterstitialListener,
-            Map<String, Object> localExtras,
-            Map<String, String> serverExtras) {
+                                    CustomEventInterstitialListener customEventInterstitialListener,
+                                    Map<String, Object> localExtras,
+                                    Map<String, String> serverExtras) {
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mIsPlaying = false;
 

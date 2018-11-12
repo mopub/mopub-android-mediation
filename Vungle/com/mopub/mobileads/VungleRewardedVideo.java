@@ -65,8 +65,8 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) throws Exception {
+                                            @NonNull final Map<String, Object> localExtras,
+                                            @NonNull final Map<String, String> serverExtras) throws Exception {
         synchronized (VungleRewardedVideo.class) {
             if (sInitialized) {
                 return false;
@@ -108,7 +108,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         }
 
         if (sVungleRouter.isVungleInitialized()) {
-            if(sVungleRouter.isValidPlacement(mPlacementId)) {
+            if (sVungleRouter.isValidPlacement(mPlacementId)) {
                 sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRewardedRouterListener);
             } else {
                 MoPubLog.d(REWARDED_TAG + "Invalid or Inactive Placement ID: " + mPlacementId);
