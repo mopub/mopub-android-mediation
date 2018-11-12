@@ -62,11 +62,12 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
     @Override
     protected void onInvalidate() {
         UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+        mCustomEventInterstitialListener = null;
     }
 
     @Override
     public void onUnityAdsReady(String placementId) {
-        if (loadRequested) {
+        if (loadRequested && mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialLoaded();
             loadRequested = false;
         }
@@ -74,30 +75,36 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
     @Override
     public void onUnityAdsStart(String placementId) {
-        mCustomEventInterstitialListener.onInterstitialShown();
+        if (mCustomEventInterstitialListener != null) {
+            mCustomEventInterstitialListener.onInterstitialShown();
+        }
     }
 
     @Override
     public void onUnityAdsFinish(String placementId, UnityAds.FinishState finishState) {
-        if (finishState == UnityAds.FinishState.ERROR) {
-            MoPubLog.d("Unity interstitial video encountered a playback error for placement " + placementId);
-            mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
-        } else {
-            MoPubLog.d("Unity interstitial video completed for placement " + placementId);
-            mCustomEventInterstitialListener.onInterstitialDismissed();
+        if (mCustomEventInterstitialListener != null) {
+            if (finishState == UnityAds.FinishState.ERROR) {
+                MoPubLog.d("Unity interstitial video encountered a playback error for placement " + placementId);
+                mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+            } else {
+                MoPubLog.d("Unity interstitial video completed for placement " + placementId);
+                mCustomEventInterstitialListener.onInterstitialDismissed();
+            }
         }
         UnityRouter.getInterstitialRouter().removeListener(placementId);
     }
 
     @Override
     public void onUnityAdsClick(String placementId) {
-        mCustomEventInterstitialListener.onInterstitialClicked();
+        if (mCustomEventInterstitialListener != null) {
+            mCustomEventInterstitialListener.onInterstitialClicked();
+        }
     }
 
 
     // @Override
     public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
-        if (placementId.equals(mPlacementId)) {
+        if (placementId.equals(mPlacementId) && mCustomEventInterstitialListener != null) {
             if(newState == UnityAds.PlacementState.NO_FILL) {
                 mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NO_FILL);
                 UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
@@ -107,8 +114,10 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-        MoPubLog.d("Unity interstitial video cache failed for placement " + mPlacementId + ".");
-        MoPubErrorCode errorCode = UnityRouter.UnityAdsUtils.getMoPubErrorCode(unityAdsError);
-        mCustomEventInterstitialListener.onInterstitialFailed(errorCode);
+        if (mCustomEventInterstitialListener != null) {
+            MoPubLog.d("Unity interstitial video cache failed for placement " + mPlacementId + ".");
+            MoPubErrorCode errorCode = UnityRouter.UnityAdsUtils.getMoPubErrorCode(unityAdsError);
+            mCustomEventInterstitialListener.onInterstitialFailed(errorCode);
+        }
     }
 }

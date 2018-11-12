@@ -44,7 +44,9 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 			}
 		} else {
 			MoPubLog.e("Failed to initialize Unity Ads");
-			customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+			if (customEventBannerListener != null) {
+				customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+			}
 		}
 	}
 
@@ -58,6 +60,7 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 	protected void onInvalidate() {
 		UnityRouter.getBannerRouter().removeListener(placementId);
 		UnityRouter.getInterstitialRouter().removeListener(placementId);
+		customEventBannerListener = null;
 		UnityBanners.destroy();
 		view = null;
 	}
@@ -65,8 +68,10 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 	@Override
 	public void onUnityBannerLoaded(String placementId, View view) {
 		MoPubLog.i(String.format("Banner did load for placement %s", placementId));
-		customEventBannerListener.onBannerLoaded(view);
-		this.view = view;
+		if (customEventBannerListener != null) {
+			customEventBannerListener.onBannerLoaded(view);
+			this.view = view;
+		}
 	}
 
 	@Override
@@ -76,25 +81,31 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 
 	@Override
 	public void onUnityBannerShow(String placementId) {
-		MoPubLog.i(String.format("Banner did show for placement %s", placementId));
-		customEventBannerListener.onBannerImpression();
+		if (customEventBannerListener != null) {
+			MoPubLog.i(String.format("Banner did show for placement %s", placementId));
+			customEventBannerListener.onBannerImpression();
+		}
 	}
 
 	@Override
 	public void onUnityBannerClick(String placementId) {
-		MoPubLog.i(String.format("Banner did click for placement %s", placementId));
-		customEventBannerListener.onBannerClicked();
+		if (customEventBannerListener != null) {
+			MoPubLog.i(String.format("Banner did click for placement %s", placementId));
+			customEventBannerListener.onBannerClicked();
+		}
 	}
 
 	@Override
 	public void onUnityBannerHide(String placementIds) {
-		MoPubLog.i(String.format("Banner did hide for placement %s", placementId));
+		MoPubLog.i(String.format("Banner did hide for placement %s", placementIds));
 	}
 
 	@Override
 	public void onUnityBannerError(String message) {
-		MoPubLog.i(String.format("Banner did error for placement %s with error %s", placementId, message));
-		customEventBannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
+		if (customEventBannerListener != null) {
+			MoPubLog.i(String.format("Banner did error for placement %s with error %s", placementId, message));
+			customEventBannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
+		}
 	}
 
 	@Override
