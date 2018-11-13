@@ -18,7 +18,7 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 	private Context context;
 	private String placementId = "banner";
 	private CustomEventBannerListener customEventBannerListener;
-	private View view;
+	private View bannerView;
 
 	@Override
 	protected void loadBanner(Context context, CustomEventBannerListener customEventBannerListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
@@ -49,9 +49,9 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 	}
 
 	private void initNoRefreshMetaData(Context context) {
-		MetaData gdprMetaData = new MetaData(context);
-		gdprMetaData.set("banner.refresh", false);
-		gdprMetaData.commit();
+		MetaData metaData = new MetaData(context);
+		metaData.set("banner.refresh", false);
+		metaData.commit();
 	}
 
 	@Override
@@ -59,14 +59,14 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 		UnityRouter.getBannerRouter().removeListener(placementId);
 		UnityRouter.getInterstitialRouter().removeListener(placementId);
 		UnityBanners.destroy();
-		view = null;
+		bannerView = null;
 	}
 
 	@Override
 	public void onUnityBannerLoaded(String placementId, View view) {
 		MoPubLog.i(String.format("Banner did load for placement %s", placementId));
 		customEventBannerListener.onBannerLoaded(view);
-		this.view = view;
+		this.bannerView = view;
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
 
 	@Override
 	public void onUnityAdsReady(String placementId) {
-		if (view == null) {
+		if (bannerView == null) {
 			UnityBanners.loadBanner((Activity)context, placementId);
 		}
 	}
