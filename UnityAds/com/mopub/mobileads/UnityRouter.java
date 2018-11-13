@@ -9,19 +9,13 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.UnityBanners;
-import com.unity3d.services.core.properties.SdkProperties;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class UnityRouter {
-    private static String sCurrentPlacementId;
     private static final String GAME_ID_KEY = "gameId";
     private static final String ZONE_ID_KEY = "zoneId";
     private static final String PLACEMENT_ID_KEY = "placementId";
