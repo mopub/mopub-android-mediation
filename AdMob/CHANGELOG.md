@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.0.0.2
+    * Add a null check when calling AdMob's `isLoaded()` for rewarded video ads.
+    
   * 17.0.0.1
     * Fix a bug where AdMob's native ads disappear when scrolling through a ListView/RecyclerView using MoPub's Ad Placer technology.
 
