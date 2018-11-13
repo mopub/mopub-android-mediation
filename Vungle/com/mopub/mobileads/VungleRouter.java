@@ -21,14 +21,14 @@ import java.util.Map;
 
 
 /**
- * Certified with Vungle SDK 6.3.17
+ * Certified with Vungle SDK 6.3.24
  */
 public class VungleRouter {
 
     private static final String ROUTER_TAG = "Vungle Router: ";
 
     // Version of the adapter, intended for Vungle internal use.
-    private static final String VERSION = "6.3.0";
+    private static final String VERSION = "6.3.24";
 
     private static VungleRouter instance = new VungleRouter();
 
@@ -131,8 +131,12 @@ public class VungleRouter {
                 break;
 
             case INITIALIZED:
-                addRouterListener(placementId, routerListener);
-                Vungle.loadAd(placementId, loadAdCallback);
+                if (isValidPlacement(placementId)) {
+                    addRouterListener(placementId, routerListener);
+                    Vungle.loadAd(placementId, loadAdCallback);
+                } else {
+                    routerListener.onUnableToPlayAd(placementId, "Invalid/Inactive Placement Id");
+                }
                 break;
         }
     }
@@ -157,6 +161,17 @@ public class VungleRouter {
         }
     }
 
+    /**
+     * Checks and returns if the passed Placement ID is a valid placement for App ID
+     *
+     * @param placementId
+     * @return
+     */
+    public boolean isValidPlacement(String placementId) {
+        return Vungle.isInitialized() &&
+                Vungle.getValidPlacements().contains(placementId);
+    }
+
     public void updateConsentStatus(Vungle.Consent status) {
 
         // (New) Pass consentMessageVersion per Vungle 6.3.17:
@@ -167,7 +182,7 @@ public class VungleRouter {
     public Vungle.Consent getConsentStatus() {
         return Vungle.getConsentStatus();
     }
-    
+
     private void clearWaitingList() {
         for (Map.Entry<String, VungleRouterListener> entry : sWaitingList.entrySet()) {
             Vungle.loadAd(entry.getKey(), loadAdCallback);

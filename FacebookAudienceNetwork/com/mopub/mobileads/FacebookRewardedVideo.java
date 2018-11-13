@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdSettings;
+import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
 import com.mopub.common.DataKeys;
@@ -18,6 +19,7 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
 
@@ -31,6 +33,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
     @NonNull
     private Handler mHandler;
     private Runnable mAdExpiration;
+    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     public FacebookRewardedVideo() {
         mHandler = new Handler();
@@ -57,8 +60,11 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
-        // Facebook doesn't have a dedicated initialization call, so we return false and do nothing.
-        return false;
+        boolean requiresInitialization = !sIsInitialized.getAndSet(true);
+        if(requiresInitialization) {
+            AudienceNetworkAds.initialize(launcherActivity);
+        }
+        return requiresInitialization;
     }
 
     @Override
