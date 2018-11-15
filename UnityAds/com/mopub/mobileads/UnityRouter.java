@@ -38,20 +38,14 @@ public class UnityRouter {
     }
 
     static void initGdpr(Context context) {
-        // Pass the user consent from the MoPub SDK to Unity Ads as per GDPR
+
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+        if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
 
-        if (personalInfoManager != null) {
-            ConsentStatus consentStatus = personalInfoManager.getPersonalInfoConsentStatus();
-
-            if(consentStatus == ConsentStatus.EXPLICIT_YES || consentStatus == ConsentStatus.EXPLICIT_NO) {
-                MetaData gdprMetaData = new MetaData(context);
-
-                // Set if the user has explicitly said yes or no
-                boolean doesConsent = consentStatus == ConsentStatus.EXPLICIT_YES;
-                gdprMetaData.set("gdpr.consent", doesConsent);
-                gdprMetaData.commit();
-            }
+            boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+            MetaData gdprMetaData = new MetaData(context);
+            gdprMetaData.set("gdpr.consent", canCollectPersonalInfo);
+            gdprMetaData.commit();
         }
     }
 
