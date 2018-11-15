@@ -178,7 +178,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                 if (mRewardedVideoAd != null && mRewardedVideoAd.isLoaded()) {
                     MoPubRewardedVideoManager
                             .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
-                } else {
+                } else if (mRewardedVideoAd != null) {
                     AdRequest.Builder builder = new AdRequest.Builder();
                     builder.setRequestAgent("MoPub");
 
