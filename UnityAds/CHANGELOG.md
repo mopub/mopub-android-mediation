@@ -1,4 +1,9 @@
 ## Changelog
+  * 3.0.0.0
+  	* This version of the adapters has been certified with UnityAds 3.0.0.
+  	* Add support for banner ad.
+  	* Update GDPR consent passing logic to use MoPub's `isGDPRApplicable` and `canCollectPersonalInfo`.
+  
   * 2.3.0.2
     * Handle no-fill scenarios from Unity Ads. 
 
