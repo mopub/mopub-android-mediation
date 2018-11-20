@@ -91,8 +91,8 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         if (hasAdMarkup) {
             zoneId = DEFAULT_TOKEN_ZONE;
         } else {
-            serverExtrasZoneId = serverExtras.get(ZONE_ID_SERVER_EXTRAS_KEY);
-            if (!TextUtils.isEmpty(serverExtrasZoneId)) {
+            if (!TextUtils.isEmpty(serverExtras.get(ZONE_ID_SERVER_EXTRAS_KEY))) {
+                serverExtrasZoneId = serverExtras.get(ZONE_ID_SERVER_EXTRAS_KEY);
                 zoneId = serverExtrasZoneId;
             } else {
                 zoneId = DEFAULT_ZONE;

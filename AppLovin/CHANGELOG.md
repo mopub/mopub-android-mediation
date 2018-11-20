@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.1.4.3
+    * Guard against `getAdNetworkId()` returning null.
+
   * 8.1.4.2
     * Add support for AppLovin to be an Advanced Bidder on the MoPub platform.
 
