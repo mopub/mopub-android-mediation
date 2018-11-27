@@ -1,4 +1,7 @@
 ## Changelog
+  * 7.3.0.0
+    * Use Chartboost's `setPIDataUseConsent()` instead of `restrictDataCollection() to pass GDPR consent data per Chartboost's 7.3.0 release.
+
   * 7.2.1.1
     * Add `onInterstitialImpression` that is introduced in the 5.3.0 MoPub release to ChartboostShared.java.
 
