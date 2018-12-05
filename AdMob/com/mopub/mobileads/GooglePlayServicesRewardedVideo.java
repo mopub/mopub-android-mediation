@@ -175,7 +175,10 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (mRewardedVideoAd != null && mRewardedVideoAd.isLoaded()) {
+                if (mRewardedVideoAd == null) {
+                    return;
+                }
+                if (mRewardedVideoAd.isLoaded()) {
                     MoPubRewardedVideoManager
                             .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
                 } else {
