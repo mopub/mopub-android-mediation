@@ -43,6 +43,11 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     private static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
 
     /**
+     * Key to obtain AdMob content Url from the extras provided by MoPub.
+     */
+    public static final String CONTENT_URL_KEY = "contentUrl";
+
+    /**
      * Flag to determine whether or not the adapter has been initialized.
      */
     private static AtomicBoolean sIsInitialized;
@@ -149,7 +154,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     protected void loadWithSdkInitialized(@NonNull Activity activity,
-                                          @NonNull Map<String, Object> localExtras,
+                                          @NonNull final Map<String, Object> localExtras,
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
         isAdLoaded = false;
@@ -181,6 +186,14 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                 } else {
                     AdRequest.Builder builder = new AdRequest.Builder();
                     builder.setRequestAgent("MoPub");
+
+                    // Publishers may append a content URL by passing it to the MoPubRewardedVideos.setLocalExtras() call.
+                    if (localExtras.get(CONTENT_URL_KEY) != null) {
+                        String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
+                        if (!TextUtils.isEmpty(contentUrl)) {
+                            builder.setContentUrl(contentUrl);
+                        }
+                    }
 
                     // Consent collected from the MoPub’s consent dialogue should not be used to set up
                     // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.

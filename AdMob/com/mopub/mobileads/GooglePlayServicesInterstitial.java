@@ -2,6 +2,7 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.ads.mediation.admob.AdMobAdapter;
@@ -17,7 +18,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
      * These keys are intended for MoPub internal use. Do not modify.
      */
     public static final String AD_UNIT_ID_KEY = "adUnitID";
-    public static final String LOCATION_KEY = "location";
+    public static final String CONTENT_URL_KEY = "contentUrl";
 
     private CustomEventInterstitialListener mInterstitialListener;
     private InterstitialAd mGoogleInterstitialAd;
@@ -47,6 +48,14 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
+
+        // Publishers may append a content URL by passing it to the MoPubInterstitial.setLocalExtras() call.
+        if (localExtras.get(CONTENT_URL_KEY) != null) {
+            String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
+            if (!TextUtils.isEmpty(contentUrl)) {
+                builder.setContentUrl(contentUrl);
+            }
+        }
 
         // Consent collected from the MoPub’s consent dialogue should not be used to set up
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.

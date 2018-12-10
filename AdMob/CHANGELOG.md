@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.0.0.3
+    * Add support for publishers to pass a content URL to AdMob's ad request via the localExtras (if set).
+
   * 17.0.0.2
     * Add a null check when calling AdMob's `isLoaded()` for rewarded video ads.
     
