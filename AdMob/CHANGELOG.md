@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.1.2.0
+    * This version of the adapters has been certified with AdMob 17.1.2.
+
   * 17.0.0.2
     * Add a null check when calling AdMob's `isLoaded()` for rewarded video ads.
     
