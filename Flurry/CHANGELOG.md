@@ -1,4 +1,7 @@
 ## Changelog
+  * 11.4.0.0
+    * This version of the adapters has been certified with Flurry 11.4.0.
+    
   * 10.1.0.2
     * Expose the native ad's advertiser name asset for publishers to show as required by Flurry (https://developer.yahoo.com/flurry/docs/publisher/gettingstarted/nativeadguidelines/).
 
