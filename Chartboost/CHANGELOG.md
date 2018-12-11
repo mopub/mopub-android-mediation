@@ -1,4 +1,7 @@
 ## Changelog
+  * 7.3.1.0
+    * This version of the adapters has been certified with Chartboost 7.3.1.
+
   * 7.3.0.0
     * Use Chartboost's `setPIDataUseConsent()` instead of `restrictDataCollection()` to pass GDPR consent data per Chartboost's 7.3.0 release.
 
