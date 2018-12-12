@@ -21,6 +21,7 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
@@ -159,9 +160,12 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
             mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
             if (personalInfoManager != null && personalInfoManager.gdprApplies() != null) {
-                if (personalInfoManager.gdprApplies()) {
+                ConsentStatus consent = personalInfoManager.getPersonalInfoConsentStatus();
+                boolean consentGranted = consent.equals(ConsentStatus.EXPLICIT_YES);
+                boolean consentDenied = consent.equals(ConsentStatus.EXPLICIT_NO);
+                if ((consentGranted || consentDenied) && personalInfoManager.gdprApplies()) {
                     mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                            .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+                            .setOption(CONSENT_RESPONSE, consentGranted);
                 }
             }
             setUpGlobalSettings();
