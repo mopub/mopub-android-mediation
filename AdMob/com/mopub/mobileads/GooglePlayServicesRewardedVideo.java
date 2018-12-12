@@ -43,11 +43,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     private static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
 
     /**
-     * Key to obtain AdMob content Url from the extras provided by MoPub.
-     */
-    public static final String CONTENT_URL_KEY = "contentUrl";
-
-    /**
      * Flag to determine whether or not the adapter has been initialized.
      */
     private static AtomicBoolean sIsInitialized;
@@ -154,7 +149,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     protected void loadWithSdkInitialized(@NonNull Activity activity,
-                                          @NonNull final Map<String, Object> localExtras,
+                                          @NonNull Map<String, Object> localExtras,
                                           @NonNull Map<String, String> serverExtras)
             throws Exception {
         isAdLoaded = false;
@@ -187,12 +182,11 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                     AdRequest.Builder builder = new AdRequest.Builder();
                     builder.setRequestAgent("MoPub");
 
-                    // Publishers may append a content URL by passing it to the MoPubRewardedVideos.setLocalExtras() call.
-                    if (localExtras.get(CONTENT_URL_KEY) != null) {
-                        String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
-                        if (!TextUtils.isEmpty(contentUrl)) {
-                            builder.setContentUrl(contentUrl);
-                        }
+                    /* Publishers may append a content URL by passing it to the GooglePlayServicesMediationSettings
+                    instance when initializing the MoPub SDK: https://developers.mopub.com/docs/mediation/networks/google/#android */
+                    String contentUrl = GooglePlayServicesMediationSettings.getContentUrl();
+                    if (!TextUtils.isEmpty(contentUrl)) {
+                        builder.setContentUrl(contentUrl);
                     }
 
                     // Consent collected from the MoPub’s consent dialogue should not be used to set up
@@ -317,6 +311,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {
         private static Bundle npaBundle;
+        private static String contentUrl;
 
         public GooglePlayServicesMediationSettings() {
         }
@@ -325,8 +320,17 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
             npaBundle = bundle;
         }
 
+        public GooglePlayServicesMediationSettings(Bundle bundle, String url) {
+            npaBundle = bundle;
+            contentUrl = url;
+        }
+
         public void setNpaBundle(Bundle bundle) {
             npaBundle = bundle;
+        }
+
+        public void setContentUrl(String url) {
+            contentUrl = url;
         }
 
         /* The MoPub Android SDK queries MediationSettings from the rewarded video code
@@ -335,6 +339,10 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
         private static Bundle getNpaBundle() {
             return npaBundle;
+        }
+
+        private static String getContentUrl() {
+            return contentUrl;
         }
     }
 }

@@ -1,5 +1,5 @@
 ## Changelog
-  * 17.0.0.3
+  * 17.1.2.1
     * Add support for publishers to pass a content URL to AdMob's ad request via the localExtras (if set).
 
   * 17.0.0.2
