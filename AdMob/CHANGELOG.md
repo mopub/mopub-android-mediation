@@ -2,6 +2,9 @@
   * 17.1.2.1
     * Add support for publishers to pass a content URL to AdMob's ad request via the localExtras (if set).
 
+  * 17.1.2.0
+    * This version of the adapters has been certified with AdMob 17.1.2.
+
   * 17.0.0.2
     * Add a null check when calling AdMob's `isLoaded()` for rewarded video ads.
     
