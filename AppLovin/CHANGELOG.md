@@ -1,4 +1,7 @@
 ## Changelog
+  * 9.1.3.0
+    * This version of the adapters has been certified with AppLovin 9.1.3.
+
   * 8.1.4.3
     * Guard against nullable zone IDs. 
 
