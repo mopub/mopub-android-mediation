@@ -63,6 +63,11 @@ public class GooglePlayServicesNative extends CustomEventNative {
     public static final String KEY_CONTENT_URL = "contentUrl";
 
     /**
+     * Key to set and obtain the test device ID String to be passed with AdMob's ad request.
+     */
+    public static final String TEST_DEVICES_KEY = "testDevices";
+
+    /**
      * Flag to determine whether or not the adapter has been initialized.
      */
     private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
@@ -403,6 +408,14 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 String contentUrl = localExtras.get(KEY_CONTENT_URL).toString();
                 if (!TextUtils.isEmpty(contentUrl)) {
                     requestBuilder.setContentUrl(contentUrl);
+                }
+            }
+
+            // Publishers may request for test ads by passing test device IDs to the MoPubNative.setLocalExtras() call.
+            if (localExtras.get(TEST_DEVICES_KEY) != null) {
+                String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
+                if (!TextUtils.isEmpty(testDeviceId)) {
+                    requestBuilder.addTestDevice(testDeviceId);
                 }
             }
 

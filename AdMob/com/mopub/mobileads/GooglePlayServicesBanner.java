@@ -28,6 +28,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     public static final String AD_WIDTH_KEY = "adWidth";
     public static final String AD_HEIGHT_KEY = "adHeight";
     public static final String CONTENT_URL_KEY = "contentUrl";
+    public static final String TEST_DEVICES_KEY = "testDevices";
 
     private CustomEventBannerListener mBannerListener;
     private AdView mGoogleAdView;
@@ -73,6 +74,14 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
             if (!TextUtils.isEmpty(contentUrl)) {
                 builder.setContentUrl(contentUrl);
+            }
+        }
+
+        // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
+        if (localExtras.get(TEST_DEVICES_KEY) != null) {
+            String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
+            if (!TextUtils.isEmpty(testDeviceId)) {
+                builder.addTestDevice(testDeviceId);
             }
         }
 

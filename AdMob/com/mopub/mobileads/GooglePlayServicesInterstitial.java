@@ -19,6 +19,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
      */
     public static final String AD_UNIT_ID_KEY = "adUnitID";
     public static final String CONTENT_URL_KEY = "contentUrl";
+    public static final String TEST_DEVICES_KEY = "testDevices";
 
     private CustomEventInterstitialListener mInterstitialListener;
     private InterstitialAd mGoogleInterstitialAd;
@@ -54,6 +55,14 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
             if (!TextUtils.isEmpty(contentUrl)) {
                 builder.setContentUrl(contentUrl);
+            }
+        }
+
+        // Publishers may request for test ads by passing test device IDs to the MoPubInterstitial.setLocalExtras() call.
+        if (localExtras.get(TEST_DEVICES_KEY) != null) {
+            String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
+            if (!TextUtils.isEmpty(testDeviceId)) {
+                builder.addTestDevice(testDeviceId);
             }
         }
 
