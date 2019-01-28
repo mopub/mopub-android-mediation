@@ -4,7 +4,19 @@ import android.app.Activity;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.text.TextUtils;
+
+import com.mopub.common.logging.MoPubLog;
+
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdOptions;
@@ -21,6 +33,7 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
@@ -30,11 +43,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Please reference the Supported Mediation Partner page at http://bit.ly/2mqsuFH for the latest version and ad format certifications.
- */
 public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
-    private static final String TAG = "AdColonyRewardedVideo";
     /*
      * We recommend passing the AdColony client options, app ID, all zone IDs, and current zone ID
      * in the serverExtras Map by specifying Custom Event Data in MoPub's web interface.
@@ -56,19 +65,21 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     public static final String APP_ID_KEY = "appId";
     public static final String ALL_ZONE_IDS_KEY = "allZoneIds";
     public static final String ZONE_ID_KEY = "zoneId";
+    public static final String ADAPTER_NAME = AdColonyRewardedVideo.class.getSimpleName();
 
     private static boolean sInitialized = false;
     private static LifecycleListener sLifecycleListener = new BaseLifecycleListener();
     private static String[] previousAdColonyAllZoneIds;
+    @NonNull
+    private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
 
-    AdColonyInterstitial mAd;
+    private AdColonyInterstitial mAd;
     @NonNull
     private String mZoneId = DEFAULT_ZONE_ID;
     private AdColonyListener mAdColonyListener;
     private AdColonyAdOptions mAdColonyAdOptions = new AdColonyAdOptions();
     private AdColonyAppOptions mAdColonyAppOptions = new AdColonyAppOptions();
     private static WeakHashMap<String, AdColonyInterstitial> sZoneIdToAdMap = new WeakHashMap<>();
-
     @NonNull
     private String mAdUnitId = "";
     private boolean mIsLoading = false;
@@ -80,6 +91,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     public AdColonyRewardedVideo() {
         mScheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
         mHandler = new Handler();
+        mAdColonyAdapterConfiguration = new AdColonyAdapterConfiguration();
     }
 
     @Nullable
@@ -105,10 +117,9 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         mScheduledThreadPoolExecutor.shutdownNow();
         AdColonyInterstitial ad = sZoneIdToAdMap.get(mZoneId);
         if (ad != null) {
-            ad.setListener(null);
             ad.destroy();
             sZoneIdToAdMap.remove(mZoneId);
-            Log.d(TAG, "AdColony rewarded video destroyed");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColony rewarded video destroyed");
         }
     }
 
@@ -132,9 +143,11 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                 adColonyAllZoneIds = extractAllZoneIds(serverExtras);
             }
 
-            mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+            if (!TextUtils.isEmpty(adColonyClientOptions)) {
+                mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+            }
 
-            if (!isAdColonyConfigured()) {
+            if (!isAdColonyConfigured() && !TextUtils.isEmpty(adColonyAppId)) {
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
                 AdColony.configure(launcherActivity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
             }
@@ -150,26 +163,44 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                                           @NonNull final Map<String, String> serverExtras) throws Exception {
 
         if (extrasAreValid(serverExtras)) {
+            mAdColonyAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
             mZoneId = serverExtras.get(ZONE_ID_KEY);
-            String adColonyClientOptions = serverExtras.get(CLIENT_OPTIONS_KEY);
             String adColonyAppId = serverExtras.get(APP_ID_KEY);
             String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
+
             // Pass the user consent from the MoPub SDK to AdColony as per GDPR
             PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-            mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
-            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() : mAdColonyAppOptions;
-            if (personalInfoManager != null && personalInfoManager.gdprApplies() != null) {
-                if (personalInfoManager.gdprApplies()) {
+
+            boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+            boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
+
+            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() :
+                    mAdColonyAppOptions;
+
+            if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
+                if (shouldAllowLegitimateInterest) {
+                    if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
+                            || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
+                        mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                                .setOption(CONSENT_RESPONSE, false);
+                    } else {
+                        mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
+                                .setOption(CONSENT_RESPONSE, true);
+                    }
+                } else {
                     mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                            .setOption(CONSENT_RESPONSE, MoPub.canCollectPersonalInformation());
+                            .setOption(CONSENT_RESPONSE, canCollectPersonalInfo);
                 }
             }
+
             setUpGlobalSettings();
 
             // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
             // different than the zones we initially called AdColony.configure() with
             if (shouldReconfigure(previousAdColonyAllZoneIds, adColonyAllZoneIds)) {
-                AdColony.configure(activity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
+                if (!TextUtils.isEmpty(adColonyAppId)) {
+                    AdColony.configure(activity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
+                }
                 previousAdColonyAllZoneIds = adColonyAllZoneIds;
             } else {
                 // If we aren't reconfiguring we should update the app options via setAppOptions() in case
@@ -179,7 +210,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         }
 
         Object adUnitObject = localExtras.get(DataKeys.AD_UNIT_ID_KEY);
-        if (adUnitObject != null && adUnitObject instanceof String) {
+        if (adUnitObject instanceof String) {
             mAdUnitId = (String) adUnitObject;
         }
 
@@ -189,6 +220,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         AdColony.setRewardListener(mAdColonyListener);
         AdColony.requestInterstitial(mZoneId, mAdColonyListener, mAdColonyAdOptions);
         scheduleOnVideoReady();
+        MoPubLog.log(mZoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     private static boolean shouldReconfigure(String[] previousZones, String[] newZones) {
@@ -224,13 +256,15 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     public void showVideo() {
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
         if (this.hasVideoAvailable()) {
             mAd.show();
         } else {
             MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
                     AdColonyRewardedVideo.class,
                     mZoneId,
-                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                    MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
         }
     }
 
@@ -287,11 +321,12 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                         @Override
                         public void run() {
                             if (hasVideoAvailable()) {
-                                Log.d(TAG, "AdColony rewarded ad has been successfully loaded.");
+                                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                                 MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
                                         AdColonyRewardedVideo.class,
                                         mZoneId);
                             } else {
+                                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
                                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
                                         AdColonyRewardedVideo.class,
                                         mZoneId,
@@ -315,7 +350,6 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     private static class AdColonyListener extends AdColonyInterstitialListener
             implements AdColonyRewardListener, CustomEventRewardedVideoListener {
-        private static final String TAG = "AdColonyListener";
         private AdColonyAdOptions mAdOptions;
 
         AdColonyListener(AdColonyAdOptions adOptions) {
@@ -326,11 +360,13 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         public void onReward(@NonNull AdColonyReward a) {
             MoPubReward reward;
             if (a.success()) {
-                Log.d(TAG, "AdColonyReward name: " + a.getRewardName());
-                Log.d(TAG, "AdColonyReward amount: " + a.getRewardAmount());
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColonyReward name - " + a.getRewardName());
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColonyReward amount - " + a.getRewardAmount());
                 reward = MoPubReward.success(a.getRewardName(), a.getRewardAmount());
+
+                MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, a.getRewardAmount(), a.getRewardName());
             } else {
-                Log.d(TAG, "AdColonyReward failed");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColonyReward failed");
                 reward = MoPubReward.failure();
             }
 
@@ -347,16 +383,17 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onRequestNotFilled(@NonNull AdColonyZone zone) {
-            Log.d(TAG, "AdColony rewarded ad has no fill.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColony rewarded ad has no fill");
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
                     AdColonyRewardedVideo.class,
                     zone.getZoneID(),
                     MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
         }
 
         @Override
         public void onClosed(@NonNull AdColonyInterstitial ad) {
-            Log.d(TAG, "AdColony rewarded ad has been dismissed.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Adcolony rewarded ad has been dismissed");
             MoPubRewardedVideoManager.onRewardedVideoClosed(
                     AdColonyRewardedVideo.class,
                     ad.getZoneID());
@@ -364,15 +401,14 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onOpened(@NonNull AdColonyInterstitial ad) {
-            Log.d(TAG, "AdColony rewarded ad shown: " + ad.getZoneID());
             MoPubRewardedVideoManager.onRewardedVideoStarted(
                     AdColonyRewardedVideo.class,
                     ad.getZoneID());
+            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
         public void onExpiring(@NonNull AdColonyInterstitial ad) {
-            Log.d(TAG, "AdColony rewarded ad is expiring; requesting new ad");
             AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
         }
 
@@ -381,6 +417,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             MoPubRewardedVideoManager.onRewardedVideoClicked(
                     AdColonyRewardedVideo.class,
                     ad.getZoneID());
+            MoPubLog.log(CLICKED, ADAPTER_NAME);
         }
     }
 
