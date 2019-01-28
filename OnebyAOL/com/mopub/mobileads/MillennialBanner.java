@@ -22,9 +22,18 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+
 final class MillennialBanner extends CustomEventBanner {
 
-    private static final String TAG = MillennialBanner.class.getSimpleName();
+    private static final String ADAPTER_NAME = MillennialBanner.class.getSimpleName();
 
     private static final String DCN_KEY = "dcn";
     private static final String APID_KEY = "adUnitID";
@@ -36,7 +45,7 @@ final class MillennialBanner extends CustomEventBanner {
     private FrameLayout internalView;
 
     static {
-        MoPubLog.d("Millennial Media Adapter Version: " + MillennialUtils.MEDIATOR_ID);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Media Adapter Version: " + MillennialUtils.MEDIATOR_ID);
     }
 
     private CreativeInfo getCreativeInfo() {
@@ -55,8 +64,13 @@ final class MillennialBanner extends CustomEventBanner {
             try {
                 MMSDK.initialize((Activity) context, ActivityListenerManager.LifecycleState.RESUMED);
             } catch (IllegalStateException e) {
-                MoPubLog.d("Exception occurred initializing the MM SDK.", e);
-                bannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Exception occurred initializing the " +
+                        "MM SDK.", e);
+                bannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
 
                 return;
             }
@@ -64,14 +78,23 @@ final class MillennialBanner extends CustomEventBanner {
             try {
                 MMSDK.initialize((Application) context);
             } catch (MMException e) {
-                MoPubLog.d("Exception occurred initializing the MM SDK.", e);
-                bannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Exception occurred initializing the " +
+                        "MM SDK.", e);
+                bannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
 
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
                 return;
             }
         } else {
-            MoPubLog.d("MM SDK must be initialized with an Activity or Application context.");
-            bannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "MM SDK must be initialized with an Activity or " +
+                    "Application context.");
+            bannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
 
             return;
         }
@@ -83,9 +106,14 @@ final class MillennialBanner extends CustomEventBanner {
         int height = Integer.parseInt(serverExtras.get(AD_HEIGHT_KEY));
 
         if (MillennialUtils.isEmpty(apid) || (width < 0) || (height < 0)) {
-            MoPubLog.d("We were given invalid extras! Make sure placement ID, width, and height are specified.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "We were given invalid extras! Make sure placement ID, " +
+                    "width, and height are specified.");
 
-            bannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            bannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
 
             return;
         }
@@ -116,15 +144,21 @@ final class MillennialBanner extends CustomEventBanner {
             AdViewController.setShouldHonorServerDimensions(internalView);
 
             inlineAd.request(mInlineAdMetadata);
-
+            MoPubLog.log(apid, LOAD_ATTEMPTED, ADAPTER_NAME);
         } catch (MMException e) {
-            MoPubLog.d("MM SDK exception occurred obtaining an inline ad unit.", e);
-            bannerListener.onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, "MM SDK exception occurred obtaining an " +
+                    "inline ad unit.", e);
+            bannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
         }
     }
 
     @Override
     protected void onInvalidate() {
+
         // Destroy any hanging references.
         if (inlineAd != null) {
             inlineAd.destroy();
@@ -137,12 +171,13 @@ final class MillennialBanner extends CustomEventBanner {
         @Override
         public void onAdLeftApplication(InlineAd inlineAd) {
             // onLeaveApplication is an alias to on clicked. We are not required to call this.
-            MoPubLog.d("Millennial Inline Ad - Leaving application");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Inline Ad - Leaving application");
         }
 
         @Override
         public void onClicked(InlineAd inlineAd) {
-            MoPubLog.d("Millennial Inline Ad - Ad clicked");
+            MoPubLog.log(CLICKED, ADAPTER_NAME);
+
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -153,7 +188,7 @@ final class MillennialBanner extends CustomEventBanner {
 
         @Override
         public void onCollapsed(InlineAd inlineAd) {
-            MoPubLog.d("Millennial Inline Ad - Banner collapsed");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Inline Ad - Banner collapsed");
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -164,7 +199,7 @@ final class MillennialBanner extends CustomEventBanner {
 
         @Override
         public void onExpanded(InlineAd inlineAd) {
-            MoPubLog.d("Millennial Inline Ad - Banner expanded");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Inline Ad - Banner expanded");
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -175,8 +210,8 @@ final class MillennialBanner extends CustomEventBanner {
 
         @Override
         public void onRequestFailed(InlineAd inlineAd, InlineErrorStatus inlineErrorStatus) {
-            MoPubLog.d("Millennial Inline Ad - Banner failed (" + inlineErrorStatus.getErrorCode() + "): " +
-                    inlineErrorStatus.getDescription());
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Inline Ad - Banner failed (" +
+                    inlineErrorStatus.getErrorCode() + "): " + inlineErrorStatus.getDescription());
 
             MoPubErrorCode mopubErrorCode;
 
@@ -206,18 +241,24 @@ final class MillennialBanner extends CustomEventBanner {
                 @Override
                 public void run() {
                     bannerListener.onBannerFailed(fErrorCode);
+
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                            fErrorCode.getIntCode(),
+                            fErrorCode);
                 }
             });
         }
 
         @Override
         public void onRequestSucceeded(InlineAd inlineAd) {
-            MoPubLog.d("Millennial Inline Ad - Banner request succeeded");
+            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
 
             CreativeInfo creativeInfo = getCreativeInfo();
 
             if ((creativeInfo != null) && MMLog.isDebugEnabled()) {
-                MMLog.d(TAG, "Banner Creative Info: " + creativeInfo);
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Banner Creative Info: " + creativeInfo);
             }
 
             MillennialUtils.postOnUiThread(new Runnable() {
@@ -230,13 +271,15 @@ final class MillennialBanner extends CustomEventBanner {
 
         @Override
         public void onResize(InlineAd inlineAd, int w, int h) {
-            MoPubLog.d("Millennial Inline Ad - Banner about to resize (width: " + w + ", height: " + h + ")");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Inline Ad - Banner about to resize (width: " +
+                    w + ", height: " + h + ")");
         }
 
         @Override
         public void onResized(InlineAd inlineAd, int w, int h, boolean isClosed) {
-            MoPubLog.d("Millennial Inline Ad - Banner resized (width: " + w + ", height: " + h + "). " +
-                    (isClosed ? "Returned to original placement." : "Got a fresh, new place."));
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Inline Ad - Banner resized (width: " + w + ", " +
+                    "height: " + h + "). " + (isClosed ? "Returned to original placement." :
+                    "Got a fresh, new place."));
         }
     }
 }
