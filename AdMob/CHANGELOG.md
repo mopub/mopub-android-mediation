@@ -1,4 +1,11 @@
 ## Changelog
+  * 17.1.2.3
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `GooglePlayServicesAdapterConfiguration` class to: 
+         * pre-initialize the AdMob SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
+
   * 17.1.2.2
     * Allow publishers to pass test device IDs to the adapters (via localExtras) to get test ads from AdMob.
     * Guard against a NullPointerException for rewarded video.

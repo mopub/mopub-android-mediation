@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +20,10 @@ import com.mopub.nativeads.GooglePlayServicesNative.GooglePlayServicesNativeAd;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+
 /**
  * The {@link GooglePlayServicesAdRenderer} class is used to render
  * GooglePlayServicesStaticNativeAds.
@@ -30,27 +33,27 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
     /**
      * Key to set and get star rating text view as an extra in the view binder.
      */
-    public static final String VIEW_BINDER_KEY_STAR_RATING = "key_star_rating";
+    private static final String VIEW_BINDER_KEY_STAR_RATING = "key_star_rating";
 
     /**
      * Key to set and get advertiser text view as an extra in the view binder.
      */
-    public static final String VIEW_BINDER_KEY_ADVERTISER = "key_advertiser";
+    private static final String VIEW_BINDER_KEY_ADVERTISER = "key_advertiser";
 
     /**
      * Key to set and get store text view as an extra in the view binder.
      */
-    public static final String VIEW_BINDER_KEY_STORE = "key_store";
+    private static final String VIEW_BINDER_KEY_STORE = "key_store";
 
     /**
      * Key to set and get price text view as an extra in the view binder.
      */
-    public static final String VIEW_BINDER_KEY_PRICE = "key_price";
+    private static final String VIEW_BINDER_KEY_PRICE = "key_price";
 
     /**
      * Key to set and get the AdChoices icon view as an extra in the view binder.
      */
-    public static final String VIEW_BINDER_KEY_AD_CHOICES_ICON_CONTAINER = "ad_choices_container";
+    private static final String VIEW_BINDER_KEY_AD_CHOICES_ICON_CONTAINER = "ad_choices_container";
 
     /**
      * ID for the frame layout that wraps the Google ad view.
@@ -74,6 +77,11 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
      */
     private final WeakHashMap<View, GoogleStaticNativeViewHolder> mViewHolderMap;
 
+    /**
+     * String to store the simple class name for this adapter.
+     */
+    private static final String ADAPTER_NAME = GooglePlayServicesAdRenderer.class.getSimpleName();
+
     public GooglePlayServicesAdRenderer(MediaViewBinder viewBinder) {
         this.mViewBinder = viewBinder;
         this.mViewHolderMap = new WeakHashMap<>();
@@ -88,7 +96,8 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         FrameLayout wrappingView = new FrameLayout(context);
         wrappingView.setId(ID_WRAPPING_FRAME);
         wrappingView.addView(view);
-        Log.i(GooglePlayServicesNative.TAG, "Ad view created.");
+
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad view created.");
         return wrappingView;
     }
 
@@ -120,8 +129,12 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
     private static void insertGoogleUnifiedAdView(UnifiedNativeAdView googleUnifiedAdView,
                                                   View moPubNativeAdView,
                                                   boolean swapMargins) {
+
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+
         if (moPubNativeAdView instanceof FrameLayout
                 && moPubNativeAdView.getId() == ID_WRAPPING_FRAME) {
+
             googleUnifiedAdView.setId(ID_GOOGLE_NATIVE_VIEW);
             FrameLayout outerFrame = (FrameLayout) moPubNativeAdView;
             View actualView = outerFrame.getChildAt(0);
@@ -151,8 +164,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
             googleUnifiedAdView.addView(actualView);
             outerFrame.addView(googleUnifiedAdView);
         } else {
-            Log.w(GooglePlayServicesNative.TAG,
-                    "Couldn't add Google native ad view. Wrapping view not found.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Couldn't add Google native ad view. Wrapping view not found.");
         }
     }
 
@@ -290,7 +302,8 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
                 }
                 return viewHolder;
             } catch (ClassCastException exception) {
-                MoPubLog.w("Could not cast from id in ViewBinder to expected View type", exception);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Could not cast from id in ViewBinder to " +
+                        "expected View type", exception);
                 return EMPTY_VIEW_HOLDER;
             }
         }
