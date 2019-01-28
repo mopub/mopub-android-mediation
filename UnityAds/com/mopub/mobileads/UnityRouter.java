@@ -15,36 +15,53 @@ import com.unity3d.services.banners.UnityBanners;
 
 import java.util.Map;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+
 public class UnityRouter {
     private static final String GAME_ID_KEY = "gameId";
     private static final String ZONE_ID_KEY = "zoneId";
     private static final String PLACEMENT_ID_KEY = "placementId";
+    private static final String ADAPTER_NAME = UnityRouter.class.getSimpleName();
+
     private static final UnityInterstitialCallbackRouter interstitialRouter = new UnityInterstitialCallbackRouter();
     private static final UnityBannerCallbackRouter bannerRouter = new UnityBannerCallbackRouter();
 
     static boolean initUnityAds(Map<String, String> serverExtras, Activity launcherActivity) {
-        initGdpr(launcherActivity.getApplicationContext());
+        initGdpr(launcherActivity);
 
         String gameId = serverExtras.get(GAME_ID_KEY);
         if (gameId == null || gameId.isEmpty()) {
-            MoPubLog.e("gameId is missing or entered incorrectly in the MoPub UI");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "gameId is missing or entered incorrectly in the MoPub UI");
             return false;
         }
         initMediationMetadata(launcherActivity);
         UnityBanners.setBannerListener(bannerRouter);
 
-        UnityAds.initialize(launcherActivity, gameId, interstitialRouter );
+        UnityAds.initialize(launcherActivity, gameId, interstitialRouter);
         return true;
     }
 
-    static void initGdpr(Context context) {
+    static void initGdpr(Activity activity) {
 
+        // Pass the user consent from the MoPub SDK to Unity Ads as per GDPR
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-        if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
 
-            boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
-            MetaData gdprMetaData = new MetaData(context);
-            gdprMetaData.set("gdpr.consent", canCollectPersonalInfo);
+        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
+
+        if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
+            MetaData gdprMetaData = new MetaData(activity.getApplicationContext());
+
+            if (shouldAllowLegitimateInterest) {
+                if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
+                        || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
+                    gdprMetaData.set("gdpr.consent", false);
+                } else {
+                    gdprMetaData.set("gdpr.consent", true);
+                }
+            } else {
+                gdprMetaData.set("gdpr.consent", canCollectPersonalInfo);
+            }
             gdprMetaData.commit();
         }
     }

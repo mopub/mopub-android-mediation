@@ -1,8 +1,17 @@
 ## Changelog
+  * 3.0.0.1
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `UnityAdsAdapterConfiguration` class to: 
+         * pre-initialize the Unity Ads SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
+    * Fix missing callbacks for subsequent rewarded videos. The adapter now registers Unity Ads listeners for every new ad request.
+    * Allow supported mediated networks and publishers to opt-in to process a user’s personal data based on legitimate interest basis. More details [here](https://developers.mopub.com/docs/publisher/gdpr-guide/#legitimate-interest-support).
+
   * 3.0.0.0
-  	* This version of the adapters has been certified with UnityAds 3.0.0.
-  	* Add support for banner ad.
-  	* Update GDPR consent passing logic to use MoPub's `gdprApplies()` and `canCollectPersonalInfo`.
+    * This version of the adapters has been certified with UnityAds 3.0.0.
+    * Add support for banner ad.
+    * Update GDPR consent passing logic to use MoPub's `gdprApplies()` and `canCollectPersonalInfo`.
   
   * 2.3.0.2
     * Handle no-fill scenarios from Unity Ads. 
