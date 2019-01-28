@@ -3,7 +3,7 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.text.TextUtils;
 
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
@@ -13,6 +13,7 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
 
@@ -22,6 +23,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.VIDEO_DOWNLOAD_ERROR;
 
@@ -31,10 +38,12 @@ public class ChartboostShared {
     /*
      * These keys are intended for MoPub internal use. Do not modify.
      */
-    public static final String APP_ID_KEY = "appId";
-    public static final String APP_SIGNATURE_KEY = "appSignature";
     public static final String LOCATION_KEY = "location";
     public static final String LOCATION_DEFAULT = "Default";
+
+    private static final String APP_ID_KEY = "appId";
+    private static final String APP_SIGNATURE_KEY = "appSignature";
+    private static final String ADAPTER_NAME = ChartboostShared.class.getSimpleName();
 
     @Nullable
     private static String mAppId;
@@ -50,16 +59,44 @@ public class ChartboostShared {
         Preconditions.checkNotNull(serverExtras);
 
         // Pass the user consent from the MoPub SDK to Chartboost as per GDPR
-        boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
-        Chartboost.setPIDataUseConsent(launcherActivity.getApplicationContext(), canCollectPersonalInfo ? Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL : Chartboost.CBPIDataUseConsent.NO_BEHAVIORAL);
+        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+
+        final boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+        final boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
+
+        if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
+
+            if (shouldAllowLegitimateInterest) {
+                if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
+                        || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
+                    Chartboost.setPIDataUseConsent(launcherActivity.getApplicationContext(),
+                            Chartboost.CBPIDataUseConsent.NO_BEHAVIORAL);
+                } else {
+                    Chartboost.setPIDataUseConsent(launcherActivity.getApplicationContext(),
+                            Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL);
+                }
+            } else {
+                Chartboost.setPIDataUseConsent(launcherActivity.getApplicationContext(),
+                        canCollectPersonalInfo ? Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL :
+                                Chartboost.CBPIDataUseConsent.NO_BEHAVIORAL);
+            }
+        }
 
         // Validate Chartboost args
         if (!serverExtras.containsKey(APP_ID_KEY)) {
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
             throw new IllegalStateException("Chartboost rewarded video initialization" +
                     " failed due to missing application ID.");
         }
 
         if (!serverExtras.containsKey(APP_SIGNATURE_KEY)) {
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
             throw new IllegalStateException("Chartboost rewarded video initialization" +
                     " failed due to missing application signature.");
         }
@@ -67,9 +104,11 @@ public class ChartboostShared {
         final String appId = serverExtras.get(APP_ID_KEY);
         final String appSignature = serverExtras.get(APP_SIGNATURE_KEY);
 
-        if (appId.equals(mAppId) && appSignature.equals(mAppSignature)) {
-            // We don't need to reinitialize.
-            return false;
+        if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appSignature)) {
+            if (appId.equals(mAppId) && appSignature.equals(mAppSignature)) {
+                // We don't need to reinitialize.
+                return false;
+            }
         }
 
         mAppId = appId;
@@ -179,39 +218,46 @@ public class ChartboostShared {
         //******************
         @Override
         public void didCacheInterstitial(String location) {
-            MoPubLog.d("Chartboost interstitial loaded successfully.");
             getInterstitialListener(location).onInterstitialLoaded();
+            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+
         }
 
         @Override
         public void didFailToLoadInterstitial(String location, CBError.CBImpressionError error) {
             String suffix = error != null ? "Error: " + error.name() : "";
-            Log.d("MoPub", "Chartboost interstitial ad failed to load." + suffix);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost interstitial ad failed to load." + suffix);
+
             getInterstitialListener(location).onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
         }
 
         @Override
         public void didDismissInterstitial(String location) {
             // Note that this method is fired before didCloseInterstitial and didClickInterstitial.
-            MoPubLog.d("Chartboost interstitial ad dismissed.");
             getInterstitialListener(location).onInterstitialDismissed();
         }
 
         @Override
         public void didCloseInterstitial(String location) {
-            MoPubLog.d("Chartboost interstitial ad closed.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost interstitial ad closed.");
         }
 
         @Override
         public void didClickInterstitial(String location) {
-            MoPubLog.d("Chartboost interstitial ad clicked.");
             getInterstitialListener(location).onInterstitialClicked();
+
+            MoPubLog.log(CLICKED, ADAPTER_NAME);
         }
 
         @Override
         public void didDisplayInterstitial(String location) {
-            MoPubLog.d("Chartboost interstitial ad shown.");
             getInterstitialListener(location).onInterstitialShown();
+
+            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
         }
 
         //******************
@@ -222,9 +268,13 @@ public class ChartboostShared {
             super.didCacheRewardedVideo(location);
 
             if (mRewardedVideoLocationsToLoad.contains(location)) {
-                MoPubLog.d("Chartboost rewarded video cached for location " + location + ".");
+
                 MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(ChartboostRewardedVideo.class, location);
                 mRewardedVideoLocationsToLoad.remove(location);
+
+                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video cached for location " +
+                        location + ".");
             }
         }
 
@@ -234,12 +284,18 @@ public class ChartboostShared {
             String suffix = error != null ? " with error: " + error.name() : "";
             if (mRewardedVideoLocationsToLoad.contains(location)) {
                 MoPubErrorCode errorCode = VIDEO_DOWNLOAD_ERROR;
-                MoPubLog.d("Chartboost rewarded video cache failed for location " + location + suffix);
+
                 if (CBError.CBImpressionError.INVALID_LOCATION.equals(error)) {
                     errorCode = ADAPTER_CONFIGURATION_ERROR;
                 }
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(ChartboostRewardedVideo.class, location, errorCode);
                 mRewardedVideoLocationsToLoad.remove(location);
+
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        errorCode.getIntCode(),
+                        errorCode);
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video cache failed for location " +
+                        location + suffix);
             }
         }
 
@@ -248,38 +304,54 @@ public class ChartboostShared {
             // This is called before didCloseRewardedVideo and didClickRewardedVideo
             super.didDismissRewardedVideo(location);
             MoPubRewardedVideoManager.onRewardedVideoClosed(ChartboostRewardedVideo.class, location);
-            MoPubLog.d("Chartboost rewarded video dismissed for location " + location + ".");
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video dismissed for location " +
+                    location + ".");
         }
 
         @Override
         public void didCloseRewardedVideo(String location) {
             super.didCloseRewardedVideo(location);
-            MoPubLog.d("Chartboost rewarded video closed for location " + location + ".");
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video closed for location " +
+                    location + ".");
         }
 
         @Override
         public void didClickRewardedVideo(String location) {
             super.didClickRewardedVideo(location);
+
             MoPubRewardedVideoManager.onRewardedVideoClicked(ChartboostRewardedVideo.class, location);
-            MoPubLog.d("Chartboost rewarded video clicked for location " + location + ".");
+
+            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video clicked for location " +
+                    location + ".");
         }
 
         @Override
         public void didCompleteRewardedVideo(String location, int reward) {
             super.didCompleteRewardedVideo(location, reward);
-            MoPubLog.d("Chartboost rewarded video completed for location " + location + " with "
-                    + "reward amount " + reward);
+
+            MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, reward, location);
+
             MoPubRewardedVideoManager.onRewardedVideoCompleted(
                     ChartboostRewardedVideo.class,
                     location,
                     MoPubReward.success(MoPubReward.NO_REWARD_LABEL, reward));
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video completed for location " +
+                    location + " with " + "reward amount " + reward);
         }
 
         @Override
         public void didDisplayRewardedVideo(String location) {
             super.didDisplayRewardedVideo(location);
-            MoPubLog.d("Chartboost rewarded video displayed for location " + location + ".");
+
             MoPubRewardedVideoManager.onRewardedVideoStarted(ChartboostRewardedVideo.class, location);
+
+            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video displayed for location " +
+                    location + ".");
         }
 
         //******************
