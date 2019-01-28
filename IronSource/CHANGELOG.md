@@ -1,4 +1,11 @@
 ## Changelog
+  * 6.8.0.1.1
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `IronSourceAdapterConfiguration` class to: 
+         * pre-initialize the ironSource SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
+
   * 6.8.0.1.0
     * This version of the adapters has been certified with ironSource 6.8.0.1.
     
