@@ -11,6 +11,7 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.mopub.common.MoPub;
@@ -24,6 +25,13 @@ import com.tapjoy.TJPlacement;
 import com.tapjoy.TJPlacementListener;
 import com.tapjoy.Tapjoy;
 import com.tapjoy.TapjoyLog;
+
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 
 import org.json.JSONException;
 
@@ -39,7 +47,10 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
     public static final String SDK_KEY = "sdkKey";
     public static final String DEBUG_ENABLED = "debugEnabled";
     public static final String PLACEMENT_NAME = "name";
+    public static final String ADAPTER_NAME = TapjoyInterstitial.class.getSimpleName();
     private static final String ADM_KEY = "adm";
+    @NonNull
+    private TapjoyAdapterConfiguration mTapjoyAdapterConfiguration;
 
     private TJPlacement tjPlacement;
     private CustomEventInterstitialListener mInterstitialListener;
@@ -49,12 +60,15 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
         TapjoyLog.i(TAG, "Class initialized with network adapter version " + TJC_MOPUB_ADAPTER_VERSION_NUMBER);
     }
 
+    public TapjoyInterstitial() {
+        mTapjoyAdapterConfiguration = new TapjoyAdapterConfiguration();
+    }
+
     @Override
     protected void loadInterstitial(final Context context,
-                                    CustomEventInterstitialListener customEventInterstitialListener,
-                                    Map<String, Object> localExtras,
-                                    Map<String, String> serverExtras) {
-        MoPubLog.d("Requesting Tapjoy interstitial");
+                                    final CustomEventInterstitialListener customEventInterstitialListener,
+                                    final Map<String, Object> localExtras,
+                                    final Map<String, String> serverExtras) {
 
         mInterstitialListener = customEventInterstitialListener;
         mHandler = new Handler(Looper.getMainLooper());
@@ -63,7 +77,8 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
         final String placementName = serverExtras.get(PLACEMENT_NAME);
         if (TextUtils.isEmpty(placementName)) {
-            MoPubLog.d("Tapjoy interstitial loaded with empty 'name' field. Request will fail.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy interstitial loaded with empty 'name' field. Request will fail.");
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
         }
 
         final String adm = serverExtras.get(ADM_KEY);
@@ -76,17 +91,19 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
             String sdkKey = serverExtras.get(SDK_KEY);
             if (!TextUtils.isEmpty(sdkKey)) {
-                MoPubLog.d("Connecting to Tapjoy via MoPub dashboard settings...");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Connecting to Tapjoy via MoPub dashboard settings...");
                 Tapjoy.connect(context, sdkKey, null, new TJConnectListener() {
                     @Override
                     public void onConnectSuccess() {
-                        MoPubLog.d("Tapjoy connected successfully");
+                        MoPubLog.log(CUSTOM, "Tapjoy connected successfully");
+                        mTapjoyAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy connected successfully");
                         createPlacement(context, placementName, adm);
                     }
 
                     @Override
                     public void onConnectFailure() {
-                        MoPubLog.d("Tapjoy connect failed");
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy connect failed");
                     }
                 });
 
@@ -94,7 +111,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
                 // after auto-connect succeeds
                 canRequestPlacement = false;
             } else {
-                MoPubLog.d("Tapjoy interstitial is initialized with empty 'sdkKey'. You must call Tapjoy.connect()");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy interstitial is initialized with empty 'sdkKey'. You must call Tapjoy.connect()");
             }
         }
 
@@ -113,11 +130,12 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
                 Map<String, String> auctionData = Json.jsonStringToMap(adm);
                 tjPlacement.setAuctionData(new HashMap<>(auctionData));
             } catch (JSONException e) {
-                MoPubLog.d("Unable to parse auction data.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to parse auction data.");
             }
         }
 
         tjPlacement.requestContent();
+        MoPubLog.log(placementName, LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     // Pass the user consent from the MoPub SDK to Tapjoy as per GDPR
@@ -149,7 +167,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
     @Override
     protected void showInterstitial() {
-        MoPubLog.d("Tapjoy interstitial will be shown");
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
         tjPlacement.showContent();
     }
 
@@ -161,11 +179,11 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
             @Override
             public void run() {
                 if (placement.isContentAvailable()) {
-                    MoPubLog.d("Tapjoy interstitial request successful");
                     mInterstitialListener.onInterstitialLoaded();
+                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                 } else {
-                    MoPubLog.d("No Tapjoy interstitials available");
                     mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
                 }
             }
         });
@@ -173,31 +191,31 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
     @Override
     public void onRequestFailure(TJPlacement placement, TJError error) {
-        MoPubLog.d("Tapjoy interstitial request failed");
 
         mHandler.post(new Runnable() {
             @Override
             public void run() {
                 mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             }
         });
     }
 
     @Override
     public void onContentShow(TJPlacement placement) {
-        MoPubLog.d("Tapjoy interstitial shown");
 
         mHandler.post(new Runnable() {
             @Override
             public void run() {
                 mInterstitialListener.onInterstitialShown();
+                MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
             }
         });
     }
 
     @Override
     public void onContentDismiss(TJPlacement placement) {
-        MoPubLog.d("Tapjoy interstitial dismissed");
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy interstitial dismissed");
 
         mHandler.post(new Runnable() {
             @Override
