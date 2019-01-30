@@ -73,11 +73,11 @@ public class AppLovinBanner extends CustomEventBanner {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to request AppLovin banner. Invalid context provided");
 
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             if (customEventBannerListener != null) {
-                customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
 
             return;
@@ -92,8 +92,8 @@ public class AppLovinBanner extends CustomEventBanner {
                     serverExtras + ", localExtras: " + localExtras + " and has ad markup: " + hasAdMarkup);
 
             AppLovinSdk sdk = retrieveSdk(serverExtras, context);
-            sdk.setPluginVersion("MoPub-3.1.0");
             sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
+            sdk.setPluginVersion(AppLovinAdapterConfiguration.APPLOVIN_PLUGIN_VERSION);
 
             mAppLovinAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
@@ -218,11 +218,11 @@ public class AppLovinBanner extends CustomEventBanner {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to request AppLovin banner");
 
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             if (customEventBannerListener != null) {
-                customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
         }
     }

@@ -86,10 +86,10 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
                     "provided.");
 
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             if (listener != null) {
-                listener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                listener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
             return;
         }
@@ -99,8 +99,8 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         this.context = context;
 
         sdk = retrieveSdk(serverExtras, context);
-        sdk.setPluginVersion("MoPub-3.1.0");
         sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
+        sdk.setPluginVersion(AppLovinAdapterConfiguration.APPLOVIN_PLUGIN_VERSION);
 
         final String adMarkup = serverExtras.get(DataKeys.ADM_KEY);
         final boolean hasAdMarkup = !TextUtils.isEmpty(adMarkup);
@@ -159,14 +159,14 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
             interstitialAd.setAdVideoPlaybackListener(this);
             interstitialAd.showAndRender(preloadedAd);
         } else {
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show an AppLovin interstitial before one was " +
                     "loaded");
 
             if (listener != null) {
-                listener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                listener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
         }
     }

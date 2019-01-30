@@ -1,119 +1,133 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.applovin.sdk.AppLovinAdService;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
-import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
+public class AppLovinAdapterConfiguration
+        extends BaseAdapterConfiguration
+{
+    private static final String MOPUB_NETWORK_NAME      = "applovin_sdk";
+    private static final String ADAPTER_VERSION         = "9.1.3.2";
+    static final         String APPLOVIN_PLUGIN_VERSION = "MoPub-" + ADAPTER_VERSION;
 
-public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
-
-    private static final String ADAPTER_VERSION = "9.1.3.1";
-    private static final String APPLOVIN_SDK_KEY = "sdk_key";
-    private static final String MOPUB_NETWORK_NAME = "applovin_sdk";
-    private static final String APPLOVIN_PLUGIN_VERSION = "MoPub-3.1.0";
-
-    @NonNull
-    @Override
-    public String getAdapterVersion() {
-        return ADAPTER_VERSION;
-    }
+    private static final String CONFIG_KEY_APPLOVIN_SDK_KEY   = "sdk_key";
+    private static final String MANIFEST_KEY_APPLOVIN_SDK_KEY = "applovin.sdk.key";
 
     @Nullable
-    @Override
-    public String getBiddingToken(@NonNull Context context) {
-
-        Preconditions.checkNotNull(context);
-
-        final AppLovinSdk sdk = AppLovinSdk.getInstance(context);
-        if (sdk == null) {
-            return null;
-        }
-
-        final AppLovinAdService adService = sdk.getAdService();
-        if (adService == null) {
-            return null;
-        }
-
-        return adService.getBidToken();
-    }
+    private static AppLovinSdk sdk;
 
     @NonNull
     @Override
-    public String getMoPubNetworkName() {
+    public String getMoPubNetworkName()
+    {
         return MOPUB_NETWORK_NAME;
     }
 
     @NonNull
     @Override
-    public String getNetworkSdkVersion() {
-        final String sdkVersion = AppLovinSdk.VERSION;
+    public String getNetworkSdkVersion()
+    {
+        return AppLovinSdk.VERSION;
+    }
 
-        if (!TextUtils.isEmpty(sdkVersion)) {
-            return sdkVersion;
-        }
+    @NonNull
+    @Override
+    public String getAdapterVersion()
+    {
+        return ADAPTER_VERSION;
+    }
 
-        final String adapterVersion = getAdapterVersion();
-        return adapterVersion.substring(0, adapterVersion.lastIndexOf('.'));
+    @Nullable
+    @Override
+    public String getBiddingToken(@NonNull Context context)
+    {
+        Preconditions.checkNotNull( context );
+
+        return ( sdk != null ) ? sdk.getAdService().getBidToken() : null;
     }
 
     @Override
-    public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String>
-            configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
+    public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String> configuration, @NonNull OnNetworkInitializationFinishedListener listener)
+    {
+        Preconditions.checkNotNull( context );
+        Preconditions.checkNotNull( listener );
 
-        Preconditions.checkNotNull(context);
-        Preconditions.checkNotNull(listener);
+        // Check if an SDK key is provided in the `configuration` map
+        sdk = getSdkFromConfiguration( configuration, context );
+        if ( sdk != null )
+        {
+            sdk.setPluginVersion( APPLOVIN_PLUGIN_VERSION );
+            sdk.setMediationProvider( AppLovinMediationProvider.MOPUB );
 
-        boolean networkInitializationSucceeded = false;
+            listener.onNetworkInitializationFinished( AppLovinAdapterConfiguration.class,
+                                                      MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS );
+        }
+        else
+        {
+            listener.onNetworkInitializationFinished( AppLovinAdapterConfiguration.class,
+                                                      MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR );
+        }
+    }
 
-        synchronized (AppLovinAdapterConfiguration.class) {
-            try {
-                AppLovinSdk.initializeSdk(context);
+    @Nullable
+    private AppLovinSdk getSdkFromConfiguration(@Nullable Map<String, String> configuration, @NonNull Context context)
+    {
+        // If there is a configuration cached with SDK key already from any of the custom events, use that instead
+        final Map<String, String> cachedConfiguration = getCachedInitializationParameters( context );
+        final Map<String, String> configurationToUse = cachedConfiguration.containsKey( CONFIG_KEY_APPLOVIN_SDK_KEY ) ? cachedConfiguration : configuration;
 
-                final AppLovinSdk sdk;
-
-                if (configuration != null) {
-                    final String sdkKey = configuration.get(APPLOVIN_SDK_KEY);
-
-                    if (!TextUtils.isEmpty(sdkKey)) {
-                        sdk = AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context);
-                    } else {
-                        sdk = AppLovinSdk.getInstance(context);
-                    }
-                } else {
-                    sdk = AppLovinSdk.getInstance(context);
-                }
-
-                if (sdk != null) {
-                    sdk.setPluginVersion(APPLOVIN_PLUGIN_VERSION);
-                    sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
-                }
-
-                networkInitializationSucceeded = true;
-            } catch (Exception e) {
-                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing AppLovin has encountered " +
-                        "an exception.", e);
+        final String key = ( configurationToUse != null ) ? configurationToUse.get( CONFIG_KEY_APPLOVIN_SDK_KEY ) : "";
+        if ( !TextUtils.isEmpty( key ) )
+        {
+            return AppLovinSdk.getInstance( key, new AppLovinSdkSettings( context ), context );
+        }
+        else
+        {
+            final boolean androidManifestContainsValidSdkKey = androidManifestContainsValidSdkKey( context );
+            if ( androidManifestContainsValidSdkKey )
+            {
+                return AppLovinSdk.getInstance( context );
+            }
+            else
+            {
+                return null;
             }
         }
+    }
 
-        if (networkInitializationSucceeded) {
-            listener.onNetworkInitializationFinished(AppLovinAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
-        } else {
-            listener.onNetworkInitializationFinished(AppLovinAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+    private boolean androidManifestContainsValidSdkKey(final Context context)
+    {
+        try
+        {
+            final PackageManager pm = context.getPackageManager();
+            final ApplicationInfo ai = pm.getApplicationInfo( context.getPackageName(), PackageManager.GET_META_DATA );
+
+            final Bundle metaData = ai.metaData;
+            if ( metaData != null )
+            {
+                final String sdkKey = metaData.getString( MANIFEST_KEY_APPLOVIN_SDK_KEY );
+                return !TextUtils.isEmpty( sdkKey );
+            }
         }
+        catch ( PackageManager.NameNotFoundException e )
+        {
+            // This is unlikely to happen: we are querying for our own package
+        }
+
+        return false;
     }
 }
