@@ -3,8 +3,9 @@
      * Addressed some issues and optimized adapter:
          * Allow passing in of SDK key via the initialization `configuration` object as many publishers integrate without SDK key in the `Info.plist`.
          * Add support for using a cached `configuration` Map for initialization.
-         * Do not consider banner ad display failure as ad load failure.
-         * Do not consider users closing rewarded ad early or reward validation failure as an ad load failure.
+         * Do not consider various errors as NO FILLs.
+         * Bumped AppLovin SDK plugin version to "MoPub-9.1.3.2".
+
   * 9.1.3.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `AppLovinAdapterConfiguration` class to: 
