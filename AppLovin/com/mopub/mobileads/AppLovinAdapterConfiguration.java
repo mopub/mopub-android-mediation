@@ -20,7 +20,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
 
-    private static final String ADAPTER_VERSION = "9.1.3.1";
+    private static final String ADAPTER_VERSION = "9.2.1.1";
     private static final String APPLOVIN_SDK_KEY = "sdk_key";
     private static final String MOPUB_NETWORK_NAME = "applovin_sdk";
     private static final String APPLOVIN_PLUGIN_VERSION = "MoPub-3.1.0";

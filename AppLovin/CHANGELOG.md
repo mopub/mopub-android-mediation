@@ -1,4 +1,7 @@
 ## Changelog
+  * 9.2.1.1
+    * This version of the adapters has been certified with AppLovin 9.2.1.
+  
   * 9.1.3.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `AppLovinAdapterConfiguration` class to: 
