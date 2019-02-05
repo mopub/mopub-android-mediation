@@ -21,7 +21,7 @@ public class AppLovinAdapterConfiguration
         extends BaseAdapterConfiguration
 {
     private static final String MOPUB_NETWORK_NAME      = "applovin_sdk";
-    private static final String ADAPTER_VERSION         = "9.1.3.2";
+    private static final String ADAPTER_VERSION         = "9.2.1.0";
     static final         String APPLOVIN_PLUGIN_VERSION = "MoPub-" + ADAPTER_VERSION;
 
     private static final String CONFIG_KEY_APPLOVIN_SDK_KEY   = "sdk_key";
