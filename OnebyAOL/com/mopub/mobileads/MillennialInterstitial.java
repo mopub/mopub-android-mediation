@@ -3,6 +3,7 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.millennialmedia.AppInfo;
 import com.millennialmedia.CreativeInfo;
@@ -15,30 +16,34 @@ import com.millennialmedia.MMSDK;
 import com.millennialmedia.internal.ActivityListenerManager;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.ConsentStatus;
-import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.Map;
 
-import static com.millennialmedia.MMSDK.setConsentData;
-import static com.millennialmedia.MMSDK.setConsentRequired;
-
-/**
- * Compatible with version 6.6 of the Millennial Media SDK.
- */
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.EXPIRED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 final class MillennialInterstitial extends CustomEventInterstitial {
 
-    private static final String TAG = MillennialInterstitial.class.getSimpleName();
     private static final String DCN_KEY = "dcn";
     private static final String APID_KEY = "adUnitID";
+    private static final String ADAPTER_NAME = MillennialInterstitial.class.getSimpleName();
 
     private InterstitialAd millennialInterstitial;
     private Context context;
     private CustomEventInterstitialListener interstitialListener;
+    @NonNull
+    private MillennialAdapterConfiguration mMillennialAdapterConfiguration;
 
     static {
-        MoPubLog.d("Millennial Media Adapter Version: " + MillennialUtils.MEDIATOR_ID);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Media Adapter Version: " + MillennialUtils.MEDIATOR_ID);
     }
 
     private CreativeInfo getCreativeInfo() {
@@ -48,54 +53,67 @@ final class MillennialInterstitial extends CustomEventInterstitial {
         return millennialInterstitial.getCreativeInfo();
     }
 
+    public MillennialInterstitial() {
+        mMillennialAdapterConfiguration = new MillennialAdapterConfiguration();
+    }
+
     @Override
     protected void loadInterstitial(final Context context,
                                     final CustomEventInterstitialListener customEventInterstitialListener, final Map<String, Object> localExtras,
                                     final Map<String, String> serverExtras) {
+
+        setAutomaticImpressionAndClickTracking(false);
+
         interstitialListener = customEventInterstitialListener;
         this.context = context;
-
-        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
-        if (personalInfoManager != null) {
-            try {
-                Boolean gdprApplies = personalInfoManager.gdprApplies();
-
-                // Set if GDPR applies / if consent is required
-                if (gdprApplies != null) {
-                    setConsentRequired(gdprApplies);
-                }
-            } catch (NullPointerException e) {
-                MoPubLog.d("GDPR applicability cannot be determined.", e);
-            }
-
-            // Pass the user consent from the MoPub SDK to One by AOL as per GDPR
-            if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_YES) {
-                setConsentData("mopub", "1");
-            }
-        }
 
         if (context instanceof Activity) {
             try {
                 MMSDK.initialize((Activity) context, ActivityListenerManager.LifecycleState.RESUMED);
+                mMillennialAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
             } catch (IllegalStateException e) {
-                MoPubLog.d("Exception occurred initializing the MM SDK.", e);
-                interstitialListener.onInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Exception occurred initializing the " +
+                        "MM SDK.", e);
+                MoPubLog.log(LOAD_FAILED,
+                        ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
+
+                if (interstitialListener != null) {
+                    interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                }
 
                 return;
             }
         } else if (context instanceof Application) {
             try {
                 MMSDK.initialize((Application) context);
+                mMillennialAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
             } catch (MMException e) {
-                MoPubLog.d("Exception occurred initializing the MM SDK.", e);
-                interstitialListener.onInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Exception occurred initializing the " +
+                        "MM SDK.", e);
+                MoPubLog.log(LOAD_FAILED,
+                        ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
+
+                if (interstitialListener != null) {
+                    interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                }
 
                 return;
             }
         } else {
-            MoPubLog.d("MM SDK must be initialized with an Activity or Application context.");
-            interstitialListener.onInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "MM SDK must be initialized with an Activity or " +
+                    "Application context.");
+            MoPubLog.log(LOAD_FAILED,
+                    ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
+            if (interstitialListener != null) {
+                interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
 
             return;
         }
@@ -103,8 +121,15 @@ final class MillennialInterstitial extends CustomEventInterstitial {
         String apid = serverExtras.get(APID_KEY);
 
         if (MillennialUtils.isEmpty(apid)) {
-            MoPubLog.d("Invalid extras-- Be sure you have an placement ID specified.");
-            interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Invalid extras-- Be sure you have an placement ID specified.");
+            MoPubLog.log(LOAD_FAILED,
+                    ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
+            if (interstitialListener != null) {
+                interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
 
             return;
         }
@@ -123,23 +148,49 @@ final class MillennialInterstitial extends CustomEventInterstitial {
             millennialInterstitial = InterstitialAd.createInstance(apid);
             millennialInterstitial.setListener(new MillennialInterstitialListener());
             millennialInterstitial.load(context, null);
+
+            MoPubLog.log(apid, LOAD_ATTEMPTED, ADAPTER_NAME);
         } catch (MMException e) {
-            MoPubLog.d("Exception occurred while obtaining an interstitial from MM SDK.", e);
-            interstitialListener.onInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, "Exception occurred while obtaining an " +
+                    "interstitial from MM SDK.", e);
+            MoPubLog.log(LOAD_FAILED,
+                    ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
+            if (interstitialListener != null) {
+                interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
         }
     }
 
     @Override
     protected void showInterstitial() {
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+
         if (millennialInterstitial.isReady()) {
             try {
                 millennialInterstitial.show(context);
             } catch (MMException e) {
-                MoPubLog.d("An exception occurred while attempting to show interstitial.", e);
-                interstitialListener.onInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "An exception occurred while attempting " +
+                        "to show interstitial.", e);
+                MoPubLog.log(SHOW_FAILED,
+                        ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
+
+                if (interstitialListener != null) {
+                    interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                }
             }
         } else {
-            MoPubLog.d("showInterstitial called but interstitial is not ready.");
+            MoPubLog.log(SHOW_FAILED,
+                    ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "showInterstitial called but interstitial is not ready.");
+            interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
         }
     }
 
@@ -156,45 +207,58 @@ final class MillennialInterstitial extends CustomEventInterstitial {
         @Override
         public void onAdLeftApplication(InterstitialAd interstitialAd) {
             // onLeaveApplication is an alias to on clicked. We are not required to call this.
-            MoPubLog.d("Millennial Interstitial Ad - Leaving application");
         }
 
         @Override
         public void onClicked(InterstitialAd interstitialAd) {
-            MoPubLog.d("Millennial Interstitial Ad - Ad was clicked");
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    interstitialListener.onInterstitialClicked();
+                    MoPubLog.log(CLICKED, ADAPTER_NAME);
+
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialClicked();
+                    }
                 }
             });
         }
 
         @Override
         public void onClosed(InterstitialAd interstitialAd) {
-            MoPubLog.d("Millennial Interstitial Ad - Ad was closed");
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    interstitialListener.onInterstitialDismissed();
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialDismissed();
+                    }
                 }
             });
         }
 
         @Override
         public void onExpired(InterstitialAd interstitialAd) {
-            MoPubLog.d("Millennial Interstitial Ad - Ad expired");
+            MoPubLog.log(EXPIRED, ADAPTER_NAME);
+
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    interstitialListener.onInterstitialFailed(MoPubErrorCode.NO_FILL);
+                    MoPubLog.log(LOAD_FAILED,
+                            ADAPTER_NAME,
+                            MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            MoPubErrorCode.NETWORK_NO_FILL);
+
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                    }
                 }
             });
         }
 
         @Override
         public void onLoadFailed(InterstitialAd interstitialAd, InterstitialErrorStatus interstitialErrorStatus) {
-            MoPubLog.d("Millennial Interstitial Ad - load failed (" + interstitialErrorStatus.getErrorCode() + "): " +
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Interstitial Ad - load failed (" +
+                    interstitialErrorStatus.getErrorCode() + "): " +
                     interstitialErrorStatus.getDescription());
 
             final MoPubErrorCode moPubErrorCode;
@@ -202,8 +266,13 @@ final class MillennialInterstitial extends CustomEventInterstitial {
             switch (interstitialErrorStatus.getErrorCode()) {
                 case InterstitialErrorStatus.ALREADY_LOADED:
                     // This will generate discrepancies, as requests will NOT be sent to Millennial.
-                    interstitialListener.onInterstitialLoaded();
-                    MoPubLog.d("Millennial Interstitial Ad - Attempted to load ads when ads are already loaded.");
+                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialLoaded();
+                    }
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Interstitial Ad - Attempted to load ads " +
+                            "when ads are already loaded.");
                     return;
                 case InterstitialErrorStatus.EXPIRED:
                 case InterstitialErrorStatus.DISPLAY_FAILED:
@@ -226,49 +295,71 @@ final class MillennialInterstitial extends CustomEventInterstitial {
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    interstitialListener.onInterstitialFailed(moPubErrorCode);
+                    MoPubLog.log(LOAD_FAILED,
+                            ADAPTER_NAME,
+                            moPubErrorCode.getIntCode(),
+                            moPubErrorCode);
+
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialFailed(moPubErrorCode);
+                    }
                 }
             });
         }
 
         @Override
         public void onLoaded(InterstitialAd interstitialAd) {
-            MoPubLog.d("Millennial Interstitial Ad - Ad loaded splendidly");
-
             CreativeInfo creativeInfo = getCreativeInfo();
 
             if ((creativeInfo != null) && MMLog.isDebugEnabled()) {
-                MoPubLog.d("Interstitial Creative Info: " + creativeInfo);
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Interstitial Creative Info: " + creativeInfo);
             }
 
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    interstitialListener.onInterstitialLoaded();
+                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialLoaded();
+                    }
                 }
             });
         }
 
         @Override
         public void onShowFailed(InterstitialAd interstitialAd, InterstitialErrorStatus interstitialErrorStatus) {
-            MoPubLog.d("Millennial Interstitial Ad - Show failed (" + interstitialErrorStatus.getErrorCode() + "): " +
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Millennial Interstitial Ad - Show failed (" +
+                    interstitialErrorStatus.getErrorCode() + "): " +
                     interstitialErrorStatus.getDescription());
 
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    interstitialListener.onInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
+                    MoPubLog.log(LOAD_FAILED,
+                            ADAPTER_NAME,
+                            MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            MoPubErrorCode.NETWORK_NO_FILL);
+
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                    }
                 }
             });
         }
 
         @Override
         public void onShown(InterstitialAd interstitialAd) {
-            MoPubLog.d("Millennial Interstitial Ad - Ad shown");
             MillennialUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    interstitialListener.onInterstitialShown();
+                    MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+
+                    if (interstitialListener != null) {
+                        interstitialListener.onInterstitialShown();
+                        interstitialListener.onInterstitialImpression();
+                    }
                 }
             });
         }

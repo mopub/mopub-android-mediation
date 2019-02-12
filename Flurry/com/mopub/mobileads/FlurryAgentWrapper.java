@@ -1,7 +1,6 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -43,12 +42,6 @@ public final class FlurryAgentWrapper {
         if (!FlurryAgent.isSessionActive()) {
             mAgentBuilder.withListener(flurryAgentListener) // withListener allows nulls
                     .build(context, apiKey);
-
-            // sessions are automatic on ICS+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                return;
-            }
-
             FlurryAgent.onStartSession(context);
         }
     }
@@ -60,11 +53,6 @@ public final class FlurryAgentWrapper {
         }
 
         if (FlurryAgent.isSessionActive()) {
-            // sessions are automatic on ICS+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                return;
-            }
-
             FlurryAgent.onEndSession(context);
         }
     }

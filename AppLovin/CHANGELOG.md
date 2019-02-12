@@ -1,4 +1,48 @@
 ## Changelog
+  * 9.2.1.0
+     * This version of the adapters has been certified with AppLovin 9.2.1.
+     * Addressed some issues and optimized adapter:
+         * Allow passing in of SDK key via the initialization `configuration` object as many publishers integrate without SDK key in the Android Manifest.
+         * Add support for using a cached `configuration` Map for initialization.
+         * Do not consider various errors as NO FILLs.
+         * Bumped AppLovin SDK plugin version to "MoPub-9.2.1.0".
+
+  * 9.1.3.1
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `AppLovinAdapterConfiguration` class to: 
+         * pre-initialize the AppLovin SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+         * return the Advanced Biding token previously returned by `AppLovinAdvancedBidder.java`
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
+
+  * 9.1.3.0
+    * This version of the adapters has been certified with AppLovin 9.1.3.
+
+  * 8.1.4.3
+    * Guard against nullable zone IDs. 
+
+  * 8.1.4.2
+    * Add support for AppLovin to be an Advanced Bidder on the MoPub platform.
+
+  * 8.1.4.1
+    * Roll back the change introduced in v8.1.0.2 that aligned MoPub's banner and interstitial impression tracking to that of AppLovin. The decision was taken to avoid incorrectly overcounting impressions - `adDisplayed()` callback instances are not de-duped.
+
+  * 8.1.4.0
+    * This version of the adapters has been certified with AppLovin 8.1.4.
+
+  * 8.1.0.2
+    * Align MoPub's banner and interstitial impression tracking to that of AppLovin.
+        * `setAutomaticImpressionAndClickTracking` is set to `false`, and AppLovin's `adDisplayed` callback is leveraged to fire MoPub impressions. This change requires MoPub 5.3.0 or higher.
+
+  * 8.1.0.1
+    * Update the zone ID returned in the `getAdNetworkId` API (used to generate server-side rewarded video callback URL) to be non-null, and avoid potential NullPointerExceptions.
+
+  * 8.1.0.0
+    * This version of the adapters has been certified with AppLovin 8.1.0.
+
+  * 8.0.2.0
+    * This version of the adapters has been certified with AppLovin 8.0.2.
+
   * 8.0.1.0
     * This version of the adapters has been certified with AppLovin 8.0.1.
     * General Data Protection Regulation (GDPR) update to support a way for publishers to determine GDPR applicability and to obtain/manage consent from users in European Economic Area, the United Kingdom, or Switzerland to serve personalize ads. Only applicable when integrated with MoPub version 5.0.0 and above.

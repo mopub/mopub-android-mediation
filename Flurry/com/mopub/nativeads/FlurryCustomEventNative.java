@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -14,12 +13,21 @@ import com.flurry.android.ads.FlurryAdNative;
 import com.flurry.android.ads.FlurryAdNativeAsset;
 import com.flurry.android.ads.FlurryAdNativeListener;
 import com.flurry.android.ads.FlurryAdTargeting;
+import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.FlurryAdapterConfiguration;
 import com.mopub.mobileads.FlurryAgentWrapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public final class FlurryCustomEventNative extends CustomEventNative {
 
@@ -35,6 +43,16 @@ public final class FlurryCustomEventNative extends CustomEventNative {
      * Extra image asset for the Flurry native ad branding logo.
      */
     public static final String EXTRA_SEC_BRANDING_LOGO = "flurry_brandingimage";
+    /**
+     * Extra image asset for the Flurry native ad advertiser name.
+     */
+    public static final String EXTRA_SEC_ADVERTISER_NAME = "flurry_advertisername";
+
+    /**
+     * String to store the simple class name for this adapter.
+     */
+    public static final String ADAPTER_NAME = FlurryCustomEventNative.class.getSimpleName();
+
     /**
      * Key for enabling Flurry debug logging. After manually creating a {@link MoPubNative} object,
      * pass in <code>true</code> as a value for this key in the map passed to
@@ -65,12 +83,19 @@ public final class FlurryCustomEventNative extends CustomEventNative {
     private static final String ASSET_SUMMARY = "summary";
     private static final String ASSET_CALL_TO_ACTION = "callToAction";
     private static final String ASSET_VIDEO = "videoUrl";
+    private static final String ASSET_ADVERTISER_NAME = "source";
     private static final double MOPUB_STAR_RATING_SCALE = StaticNativeAd.MAX_STAR_RATING;
 
     private FlurryAgentListener mFlurryAgentListener;
+    @NonNull
+    private FlurryAdapterConfiguration mFlurryAdapterConfiguration;
 
     /* Static reference of the ads to ensure they don't get garbage collected */
     private final static List<FlurryAdNative> sFlurryNativeAds = new ArrayList<>();
+
+    public FlurryCustomEventNative() {
+        mFlurryAdapterConfiguration = new FlurryAdapterConfiguration();
+    }
 
     @Override
     protected void loadNativeAd(@NonNull final Context context,
@@ -96,14 +121,19 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                                 customEventNativeListener);
                     }
                 };
-
+                mFlurryAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
                 FlurryAgentWrapper.getInstance().startSession(context, flurryApiKey,
                         mFlurryAgentListener);
             }
         } else {
             customEventNativeListener.onNativeAdFailed(
-                    NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
-            Log.i(LOG_TAG, "Failed Native AdFetch: Missing required server extras" +
+                    NativeErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    NativeErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed Native AdFetch: Missing required server extras" +
                     " [FLURRY_APIKEY and/or FLURRY_ADSPACE].");
         }
     }
@@ -124,6 +154,8 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         mopubSupportedAd.setText(flurryAdNative.getAsset(ASSET_SUMMARY).getValue());
         mopubSupportedAd.addExtra(EXTRA_SEC_BRANDING_LOGO,
                 flurryAdNative.getAsset(ASSET_SEC_HQ_BRANDING_LOGO).getValue());
+        mopubSupportedAd.addExtra(EXTRA_SEC_ADVERTISER_NAME,
+                flurryAdNative.getAsset(ASSET_ADVERTISER_NAME).getValue());
 
         if (mopubSupportedAd.isAppInstallAd()) {
             // App rating image URL may be null
@@ -155,7 +187,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         }
 
         if (mopubSupportedAd.getImageUrls().isEmpty()) {
-            Log.d(LOG_TAG, "preCacheImages: No images to cache for Flurry Native Ad: " +
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "preCacheImages: No images to cache for Flurry Native Ad: " +
                     flurryAdNative.toString());
             mopubSupportedAd.onNativeAdLoaded();
         } else {
@@ -183,7 +215,8 @@ public final class FlurryCustomEventNative extends CustomEventNative {
     private boolean validateExtras(final Map<String, String> serverExtras) {
         final String flurryApiKey = serverExtras.get(FlurryAgentWrapper.PARAM_API_KEY);
         final String flurryAdSpace = serverExtras.get(FlurryAgentWrapper.PARAM_AD_SPACE_NAME);
-        Log.i(LOG_TAG, "ServerInfo fetched from Mopub " + FlurryAgentWrapper.PARAM_API_KEY + " : "
+
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "ServerInfo fetched from Mopub " + FlurryAgentWrapper.PARAM_API_KEY + " : "
                 + flurryApiKey + " and " + FlurryAgentWrapper.PARAM_AD_SPACE_NAME + " :" +
                 flurryAdSpace);
         return (!TextUtils.isEmpty(flurryApiKey) && !TextUtils.isEmpty(flurryAdSpace));
@@ -213,6 +246,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         sFlurryNativeAds.add(flurryAdNative);
 
         flurryNativeAd.fetchAd();
+        MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     private boolean shouldAllowVideoNativeAds() {
@@ -244,12 +278,16 @@ public final class FlurryCustomEventNative extends CustomEventNative {
             public void onClicked(final FlurryAdNative flurryAdNative) {
                 super.onClicked(flurryAdNative);
                 notifyAdClicked();
+
+                MoPubLog.log(CLICKED, ADAPTER_NAME);
             }
 
             @Override
             public void onImpressionLogged(final FlurryAdNative flurryAdNative) {
                 super.onImpressionLogged(flurryAdNative);
                 notifyAdImpressed();
+
+                MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
             }
 
             @Override
@@ -258,6 +296,10 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                                 final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
                 mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
+
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        NativeErrorCode.NETWORK_NO_FILL);
             }
         };
 
@@ -273,18 +315,22 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         @Override
         public void prepare(@NonNull final View view) {
             mFlurryAdNative.setTrackingView(view);
-            Log.d(LOG_TAG, "prepare(" + mFlurryAdNative.toString() + " " + view.toString() + ")");
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "prepare(" + mFlurryAdNative.toString() + " " +
+                    view.toString() + ")");
         }
 
         @Override
         public void clear(@NonNull final View view) {
             mFlurryAdNative.removeTrackingView();
-            Log.d(LOG_TAG, "clear(" + mFlurryAdNative.toString() + ")");
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "clear(" + mFlurryAdNative.toString() + ")");
         }
 
         @Override
         public void destroy() {
-            Log.d(LOG_TAG, "destroy(" + mFlurryAdNative.toString() + ") started.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "destroy(" + mFlurryAdNative.toString() + ") started.");
+
             mFlurryAdNative.destroy();
 
             FlurryAgentWrapper.getInstance().endSession(mContext);
@@ -296,7 +342,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
         @Override
         public synchronized void fetchAd() {
-            Log.d(LOG_TAG, "Fetching Flurry Native Ad now.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Fetching Flurry Native Ad now.");
             mFlurryAdNative.setListener(mFlurryNativelistener);
             mFlurryAdNative.fetchAd();
         }
@@ -308,13 +354,15 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
             if (mainImageUrl != null) {
                 imageUrls.add(getMainImageUrl());
-                Log.d(LOG_TAG, "Flurry Native Ad main image found.");
+
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Flurry Native Ad main image found.");
             }
 
             final String iconUrl = getIconImageUrl();
             if (iconUrl != null) {
                 imageUrls.add(this.getIconImageUrl());
-                Log.d(LOG_TAG, "Flurry Native Ad icon image found.");
+
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Flurry Native Ad icon image found.");
             }
             return imageUrls;
         }
@@ -336,15 +384,22 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                     new NativeImageHelper.ImageListener() {
                         @Override
                         public void onImagesCached() {
-                            Log.d(LOG_TAG, "preCacheImages: Ad image cached.");
+                            MoPubLog.log(CUSTOM, ADAPTER_NAME, "preCacheImages: Ad image cached.");
                             mCustomEventNativeListener.onNativeAdLoaded(FlurryStaticNativeAd.this);
+
+                            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                         }
 
                         @Override
                         public void onImagesFailedToCache(final NativeErrorCode errorCode) {
                             mCustomEventNativeListener.onNativeAdFailed(errorCode);
-                            Log.d(LOG_TAG, "preCacheImages: Unable to cache Ad image. Error["
-                                    + errorCode.toString() + "]");
+
+                            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                                    errorCode.getIntCode(),
+                                    errorCode);
+
+                            MoPubLog.log(CUSTOM, ADAPTER_NAME, "preCacheImages: Unable to cache Ad image. " +
+                                    "Error[" + errorCode.toString() + "]");
                         }
                     });
         }
@@ -383,6 +438,10 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                                 final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
                 mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
+
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        NativeErrorCode.NETWORK_NO_FILL);
             }
         };
 
@@ -418,18 +477,20 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         @Override
         public void prepare(@NonNull View view) {
             mFlurryAdNative.setTrackingView(view);
-            Log.d(LOG_TAG, "prepare(" + mFlurryAdNative.toString() + " " + view.toString() + ")");
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "prepare(" + mFlurryAdNative.toString() + " " + view.toString() + ")");
         }
 
         @Override
         public void clear(@NonNull View view) {
             mFlurryAdNative.removeTrackingView();
-            Log.d(LOG_TAG, "clear(" + mFlurryAdNative.toString() + ")");
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "clear(" + mFlurryAdNative.toString() + ")");
         }
 
         @Override
         public void destroy() {
-            Log.d(LOG_TAG, "destroy(" + mFlurryAdNative.toString() + ") started.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "destroy(" + mFlurryAdNative.toString() + ") started.");
             mFlurryAdNative.destroy();
 
             FlurryAgentWrapper.getInstance().endSession(mContext);
@@ -441,7 +502,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
         @Override
         public synchronized void fetchAd() {
-            Log.d(LOG_TAG, "Fetching Flurry Native Ad now.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Fetching Flurry Native Ad now.");
             mFlurryAdNative.setListener(mFlurryNativelistener);
             mFlurryAdNative.fetchAd();
         }
@@ -459,16 +520,24 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                     new NativeImageHelper.ImageListener() {
                         @Override
                         public void onImagesCached() {
-                            Log.d(LOG_TAG, "preCacheImages: Ad image cached.");
+                            MoPubLog.log(CUSTOM, ADAPTER_NAME, "preCacheImages: Ad image cached.");
+
                             mCustomEventNativeListener.onNativeAdLoaded(
                                     FlurryVideoEnabledNativeAd.this);
+
+                            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                         }
 
                         @Override
                         public void onImagesFailedToCache(final NativeErrorCode errorCode) {
                             mCustomEventNativeListener.onNativeAdFailed(errorCode);
-                            Log.d(LOG_TAG, "preCacheImages: Unable to cache Ad image. Error["
-                                    + errorCode.toString() + "]");
+
+                            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                                    errorCode.getIntCode(),
+                                    errorCode);
+
+                            MoPubLog.log(CUSTOM, ADAPTER_NAME, "preCacheImages: Unable to cache Ad image. " +
+                                    "Error[" + errorCode.toString() + "]");
                         }
                     });
         }
@@ -481,13 +550,13 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
             if (mainImageUrl != null) {
                 imageUrls.add(getMainImageUrl());
-                Log.d(LOG_TAG, "Flurry Native Ad main image found.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Flurry Native Ad main image found.");
             }
 
             final String iconUrl = getIconImageUrl();
             if (iconUrl != null) {
                 imageUrls.add(this.getIconImageUrl());
-                Log.d(LOG_TAG, "Flurry Native Ad icon image found.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Flurry Native Ad icon image found.");
             }
             return imageUrls;
         }
@@ -595,52 +664,53 @@ public final class FlurryCustomEventNative extends CustomEventNative {
 
         @Override
         public void onFetched(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onFetched: Flurry native ad fetched successfully!");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onFetched: Flurry native ad fetched successfully!");
             mapNativeAd(mBaseNativeAd, flurryAdNative);
             sFlurryNativeAds.remove(flurryAdNative);
         }
 
         @Override
         public void onShowFullscreen(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onShowFullscreen: Flurry native ad in full-screen");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onShowFullscreen: Flurry native ad in full-screen");
         }
 
         @Override
         public void onCloseFullscreen(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onCloseFullscreen: Flurry native ad full-screen closed");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onCloseFullscreen: Flurry native ad full-screen closed");
         }
 
         @Override
         public void onAppExit(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onAppExit: Flurry native ad exited app");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAppExit: Flurry native ad exited app");
         }
 
         @Override
         public void onClicked(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onClicked: Flurry native ad clicked");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onClicked: Flurry native ad clicked");
         }
 
         @Override
         public void onImpressionLogged(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onImpressionLogged: Flurry native ad impression logged");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onImpressionLogged: Flurry native ad impression logged");
         }
 
         @Override
         public void onExpanded(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onExpanded: Flurry native ad expanded");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onExpanded: Flurry native ad expanded");
         }
 
         @Override
         public void onCollapsed(final FlurryAdNative flurryAdNative) {
-            Log.d(LOG_TAG, "onCollapsed: Flurry native ad collapsed");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onCollapsed: Flurry native ad collapsed");
         }
 
         @Override
         public void onError(final FlurryAdNative flurryAdNative,
                             final FlurryAdErrorType adErrorType,
                             final int errorCode) {
-            Log.d(LOG_TAG, String.format("onError: Flurry native ad not available. " +
-                    "Error type: %s. Error code: %s", adErrorType.toString(), errorCode));
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onError: Flurry native ad not available. " +
+                    "Error type: %s. Error code: %s", adErrorType.toString(), errorCode);
             sFlurryNativeAds.remove(flurryAdNative);
         }
     }

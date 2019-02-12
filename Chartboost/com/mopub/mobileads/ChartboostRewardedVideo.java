@@ -13,18 +13,31 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+
 public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
+
+    @NonNull
+    public String mLocation = ChartboostShared.LOCATION_DEFAULT;
+
     @NonNull
     private static final LifecycleListener sLifecycleListener =
             new ChartboostLifecycleListener();
 
     @NonNull
-    private String mLocation = ChartboostShared.LOCATION_DEFAULT;
-    @NonNull
     private final Handler mHandler;
+
+    private static final String ADAPTER_NAME = ChartboostRewardedVideo.class.getSimpleName();
+
+    @NonNull
+    private ChartboostAdapterConfiguration mChartboostAdapterConfiguration;
 
     public ChartboostRewardedVideo() {
         mHandler = new Handler();
+        mChartboostAdapterConfiguration = new ChartboostAdapterConfiguration();
     }
 
     @Override
@@ -66,6 +79,8 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
         if (serverExtras.containsKey(ChartboostShared.LOCATION_KEY)) {
             String location = serverExtras.get(ChartboostShared.LOCATION_KEY);
             mLocation = TextUtils.isEmpty(location) ? mLocation : location;
+
+            mChartboostAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
         }
 
         ChartboostShared.getDelegate().registerRewardedVideoLocation(mLocation);
@@ -79,6 +94,7 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
                     ChartboostShared.getDelegate().didCacheRewardedVideo(mLocation);
                 } else {
                     Chartboost.cacheRewardedVideo(mLocation);
+                    MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
                 }
             }
         });
@@ -105,10 +121,22 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     public void showVideo() {
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+
         if (hasVideoAvailable()) {
             Chartboost.showRewardedVideo(mLocation);
         } else {
-            MoPubLog.d("Attempted to show Chartboost rewarded video before it was available.");
+            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
+                    ChartboostRewardedVideo.class,
+                    getAdNetworkId(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Chartboost rewarded video before it " +
+                    "was available.");
+
+            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
         }
     }
 

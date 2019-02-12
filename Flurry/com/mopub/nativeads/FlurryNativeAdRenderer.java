@@ -39,6 +39,7 @@ public class FlurryNativeAdRenderer implements
     @Override
     public void renderAdView(@NonNull View view,
                              @NonNull FlurryCustomEventNative.FlurryVideoEnabledNativeAd ad) {
+
         FlurryNativeViewHolder flurryNativeViewHolder = mViewHolderMap.get(view);
         if (flurryNativeViewHolder == null) {
             flurryNativeViewHolder = FlurryNativeViewHolder.fromViewBinder(view, mViewBinder);

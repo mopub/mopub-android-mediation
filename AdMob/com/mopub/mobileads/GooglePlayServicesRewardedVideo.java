@@ -7,7 +7,6 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
@@ -19,18 +18,26 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+
 public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo implements
         RewardedVideoAdListener {
-    private static final String TAG = "MoPubToAdMobRewarded";
 
     /**
-     * The current version of the adapter.
+     * String to represent the simple class name to be used in log entries.
      */
-    private static final String ADAPTER_VERSION = "0.1.0";
+    private static final String ADAPTER_NAME = GooglePlayServicesRewardedVideo.class.getSimpleName();
 
     /**
      * Key to obtain AdMob application ID from the server extras provided by MoPub.
@@ -50,7 +57,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     /**
      * Google Mobile Ads rewarded video ad unit ID.
      */
-    private String mAdUnitId;
+    @NonNull
+    private String mAdUnitId = "";
 
     /**
      * The Google Rewarded Video Ad instance.
@@ -63,6 +71,12 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
      * some platforms, e.g. Unity, we implement this workaround.
      */
     private boolean isAdLoaded;
+
+    /**
+     * The AdMob adapter configuration to use to cache network IDs from AdMob
+     */
+    @NonNull
+    private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
 
     /**
      * A {@link LifecycleListener} used to forward the activity lifecycle events from MoPub SDK to
@@ -88,6 +102,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     public GooglePlayServicesRewardedVideo() {
         sIsInitialized = new AtomicBoolean(false);
+        mGooglePlayServicesAdapterConfiguration = new GooglePlayServicesAdapterConfiguration();
     }
 
     @Nullable
@@ -118,7 +133,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
                                             @NonNull Map<String, String> serverExtras)
             throws Exception {
         if (!sIsInitialized.getAndSet(true)) {
-            Log.i(TAG, "Adapter version - " + ADAPTER_VERSION);
 
             if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_APPLICATION_ID))) {
                 MobileAds.initialize(launcherActivity);
@@ -127,12 +141,14 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
             }
 
             if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
-                // Using class name as the network ID for this callback since the ad unit ID is
-                // invalid.
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
+
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
                         GooglePlayServicesRewardedVideo.class,
-                        GooglePlayServicesRewardedVideo.class.getSimpleName(),
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                        getAdNetworkId(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
                 return false;
             }
 
@@ -140,6 +156,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
             mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(launcherActivity);
             mRewardedVideoAd.setRewardedVideoAdListener(GooglePlayServicesRewardedVideo.this);
+
+            mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
             return true;
         }
 
@@ -147,39 +165,54 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     }
 
     @Override
-    protected void loadWithSdkInitialized(@NonNull Activity activity,
+    protected void loadWithSdkInitialized(@NonNull final Activity activity,
                                           @NonNull Map<String, Object> localExtras,
-                                          @NonNull Map<String, String> serverExtras)
+                                          @NonNull final Map<String, String> serverExtras)
             throws Exception {
-        isAdLoaded = false;
-
-        if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
-            // Using class name as the network ID for this callback since the ad unit ID is
-            // invalid.
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
-                    GooglePlayServicesRewardedVideo.class,
-                    GooglePlayServicesRewardedVideo.class.getSimpleName(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            return;
-        }
-        mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
-
-        if (mRewardedVideoAd == null) {
-            mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(activity);
-            mRewardedVideoAd.setRewardedVideoAdListener(GooglePlayServicesRewardedVideo.this);
-        }
 
         /* AdMob's isLoaded() has to be called on the main thread to avoid multithreading crashes
         when mediating on Unity */
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                isAdLoaded = false;
+
+                if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
+                    // Using class name as the network ID for this callback since the ad unit ID is
+                    // invalid.
+                    MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
+                            GooglePlayServicesRewardedVideo.class,
+                            GooglePlayServicesRewardedVideo.class.getSimpleName(),
+                            MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                    return;
+                }
+                mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
+
+                if (mRewardedVideoAd == null) {
+                    mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(activity);
+                    mRewardedVideoAd.setRewardedVideoAdListener(GooglePlayServicesRewardedVideo.this);
+                }
+
                 if (mRewardedVideoAd.isLoaded()) {
                     MoPubRewardedVideoManager
-                            .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, mAdUnitId);
+                            .onRewardedVideoLoadSuccess(GooglePlayServicesRewardedVideo.class, getAdNetworkId());
                 } else {
                     AdRequest.Builder builder = new AdRequest.Builder();
                     builder.setRequestAgent("MoPub");
+
+                    /* Publishers may append a content URL by passing it to the GooglePlayServicesMediationSettings
+                    instance when initializing the MoPub SDK: https://developers.mopub.com/docs/mediation/networks/google/#android */
+                    String contentUrl = GooglePlayServicesMediationSettings.getContentUrl();
+                    if (!TextUtils.isEmpty(contentUrl)) {
+                        builder.setContentUrl(contentUrl);
+                    }
+
+                    /* Publishers may request for test ads by passing test device IDs to the GooglePlayServicesMediationSettings
+                    instance when initializing the MoPub SDK: https://developers.mopub.com/docs/mediation/networks/google/#android */
+                    String testDeviceId = GooglePlayServicesMediationSettings.getTestDeviceId();
+                    if (!TextUtils.isEmpty(testDeviceId)) {
+                        builder.addTestDevice(testDeviceId);
+                    }
 
                     // Consent collected from the MoPub’s consent dialogue should not be used to set up
                     // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
@@ -187,6 +220,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
                     AdRequest adRequest = builder.build();
                     mRewardedVideoAd.loadAd(mAdUnitId, adRequest);
+
+                    MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
                 }
             }
         });
@@ -208,22 +243,31 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     protected void showVideo() {
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+
         if (hasVideoAvailable()) {
             mRewardedVideoAd.show();
         } else {
+            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubErrorCode.NETWORK_NO_FILL);
+
             MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
                     GooglePlayServicesRewardedVideo.class,
-                    mAdUnitId,
-                    getMoPubErrorCode(AdRequest.ERROR_CODE_INTERNAL_ERROR));
+                    getAdNetworkId(),
+                    getMoPubErrorCode(AdRequest.ERROR_CODE_NO_FILL));
         }
     }
 
     @Override
     public void onRewardedVideoAdLoaded() {
+
         MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
                 GooglePlayServicesRewardedVideo.class,
-                mAdUnitId);
+                getAdNetworkId());
         isAdLoaded = true;
+
+        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
     }
 
     @Override
@@ -233,28 +277,33 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     @Override
     public void onRewardedVideoStarted() {
+
         MoPubRewardedVideoManager.onRewardedVideoStarted(
                 GooglePlayServicesRewardedVideo.class,
-                mAdUnitId);
+                getAdNetworkId());
+
+        MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
     }
 
     @Override
     public void onRewardedVideoAdClosed() {
         MoPubRewardedVideoManager.onRewardedVideoClosed(
                 GooglePlayServicesRewardedVideo.class,
-                mAdUnitId);
+                getAdNetworkId());
     }
 
     @Override
     public void onRewardedVideoCompleted() {
-        // Already notifying MoPub of playback completion in onRewarded(). Do nothing.
     }
 
     @Override
     public void onRewarded(RewardItem rewardItem) {
+
+        MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, rewardItem.getAmount(), rewardItem.getType());
+
         MoPubRewardedVideoManager.onRewardedVideoCompleted(
                 GooglePlayServicesRewardedVideo.class,
-                mAdUnitId,
+                getAdNetworkId(),
                 MoPubReward.success(rewardItem.getType(), rewardItem.getAmount()));
     }
 
@@ -262,14 +311,18 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
     public void onRewardedVideoAdLeftApplication() {
         MoPubRewardedVideoManager.onRewardedVideoClicked(
                 GooglePlayServicesRewardedVideo.class,
-                mAdUnitId);
+                getAdNetworkId());
     }
 
     @Override
     public void onRewardedVideoAdFailedToLoad(int error) {
+        MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                getMoPubErrorCode(error).getIntCode(),
+                getMoPubErrorCode(error));
+
         MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
                 GooglePlayServicesRewardedVideo.class,
-                mAdUnitId,
+                getAdNetworkId(),
                 getMoPubErrorCode(error));
     }
 
@@ -303,6 +356,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {
         private static Bundle npaBundle;
+        private static String contentUrl;
+        private static String testDeviceId;
 
         public GooglePlayServicesMediationSettings() {
         }
@@ -311,8 +366,27 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
             npaBundle = bundle;
         }
 
+        public GooglePlayServicesMediationSettings(Bundle bundle, String url) {
+            npaBundle = bundle;
+            contentUrl = url;
+        }
+
+        public GooglePlayServicesMediationSettings(Bundle bundle, String url, String id) {
+            npaBundle = bundle;
+            contentUrl = url;
+            testDeviceId = id;
+        }
+
         public void setNpaBundle(Bundle bundle) {
             npaBundle = bundle;
+        }
+
+        public void setContentUrl(String url) {
+            contentUrl = url;
+        }
+
+        public void setTestDeviceId(String id) {
+            testDeviceId = id;
         }
 
         /* The MoPub Android SDK queries MediationSettings from the rewarded video code
@@ -321,6 +395,14 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
         private static Bundle getNpaBundle() {
             return npaBundle;
+        }
+
+        private static String getContentUrl() {
+            return contentUrl;
+        }
+
+        private static String getTestDeviceId() {
+            return testDeviceId;
         }
     }
 }
