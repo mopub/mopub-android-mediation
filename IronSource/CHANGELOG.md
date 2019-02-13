@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.8.1.0
+    * This version of the adapters has been certified with ironSource 6.8.1.
+    
   * 6.8.0.1.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `IronSourceAdapterConfiguration` class to: 
