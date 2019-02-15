@@ -23,7 +23,7 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String SDK_KEY = "sdkKey";
 
     // Adapter's keys
-    private static final String ADAPTER_VERSION = "12.2.0.1";
+    private static final String ADAPTER_VERSION = "12.2.0.2";
     private static final String BIDDING_TOKEN = "1";
     private static final String MOPUB_NETWORK_NAME = "tapjoy";
 
@@ -71,20 +71,27 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
                     networkInitializationSucceeded = true;
                 } else if (configuration != null) {
                     final String sdkKey = configuration.get(SDK_KEY);
-                    Tapjoy.connect(context, sdkKey, null, new TJConnectListener() {
-                        @Override
-                        public void onConnectSuccess() {
-                            listener.onNetworkInitializationFinished(TapjoyAdapterConfiguration.class,
-                                    MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
-                        }
 
-                        @Override
-                        public void onConnectFailure() {
-                            listener.onNetworkInitializationFinished(TapjoyAdapterConfiguration.class,
-                                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                            MoPubLog.log(CUSTOM, "Initializing Tapjoy has encountered a problem.");
-                        }
-                    });
+                    if (TextUtils.isEmpty(sdkKey)) {
+                        MoPubLog.log(CUSTOM, "Tapjoy's initialization not " +
+                            "started. Ensure Tapjoy's " + SDK_KEY +
+                            "is populated on the MoPub dashboard.");
+                    } else {
+                        Tapjoy.connect(context, sdkKey, null, new TJConnectListener() {
+                            @Override
+                            public void onConnectSuccess() {
+                            	listener.onNetworkInitializationFinished(TapjoyAdapterConfiguration.class,
+                                        MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
+                            }
+
+                            @Override
+                            public void onConnectFailure() {
+                                listener.onNetworkInitializationFinished(TapjoyAdapterConfiguration.class,
+                                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                                MoPubLog.log(CUSTOM, "Initializing Tapjoy has encountered a problem.");
+                            }
+                        });
+                    }
                 }
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE,

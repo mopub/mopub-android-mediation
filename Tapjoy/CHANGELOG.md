@@ -1,4 +1,7 @@
 ## Changelog
+  * 12.2.0.2
+    * Prevent null keys from being passed to Tapjoy connect as it causes a uncaught hard crash in the Tapjoy SDK
+
   * 12.2.0.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `TapjoyAdapterConfiguration` class to: 
