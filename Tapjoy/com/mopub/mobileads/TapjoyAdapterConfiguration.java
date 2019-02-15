@@ -72,11 +72,7 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
                 } else if (configuration != null) {
                     final String sdkKey = configuration.get(SDK_KEY);
 
-                    if (TextUtils.isEmpty(sdkKey)) {
-                        MoPubLog.log(CUSTOM, "Tapjoy's initialization not " +
-                            "started. Ensure Tapjoy's " + SDK_KEY +
-                            "is populated on the MoPub dashboard.");
-                    } else {
+                    if (!TextUtils.isEmpty(sdkKey)) {
                         Tapjoy.connect(context, sdkKey, null, new TJConnectListener() {
                             @Override
                             public void onConnectSuccess() {
@@ -91,6 +87,9 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
                                 MoPubLog.log(CUSTOM, "Initializing Tapjoy has encountered a problem.");
                             }
                         });
+                    } else {
+                        MoPubLog.log(CUSTOM, MOPUB_NETWORK_NAME, "Tapjoy adapter is initialized with empty/null 'sdkKey'. You must call Tapjoy.connect()");
+                        networkInitializationSucceeded = false;
                     }
                 }
             } catch (Exception e) {
