@@ -1,6 +1,6 @@
 ## Changelog
   * 12.2.0.2
-    * Handle null check for Tapjoy SDK key during during Tapjoy SDK pre-initialization.
+    * Handle null check for Tapjoy SDK key during Tapjoy SDK pre-initialization.
 
   * 12.2.0.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
