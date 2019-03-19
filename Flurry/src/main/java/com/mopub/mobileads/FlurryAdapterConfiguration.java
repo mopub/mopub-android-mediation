@@ -16,8 +16,6 @@ import java.util.Map;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
-import com.mopub.mobileads.flurry.BuildConfig;
-
 public class FlurryAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Flurry's keys
@@ -25,8 +23,8 @@ public class FlurryAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
     private static final String ADAPTER_NAME = FlurryAdapterConfiguration.class.getSimpleName();
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String ADAPTER_VERSION = "11.5.0.0";
+    private static final String MOPUB_NETWORK_NAME = "yahoo";
 
     @NonNull
     @Override

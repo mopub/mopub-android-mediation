@@ -9,7 +9,6 @@ import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.vungle.BuildConfig;
 import com.vungle.warren.Vungle;
 
 import java.util.Map;
@@ -23,8 +22,8 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String APP_ID_KEY = "appId";
     // Adapter's keys
     private static final String ADAPTER_NAME = VungleAdapterConfiguration.class.getSimpleName();
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String ADAPTER_VERSION = "6.3.24.1";
+    private static final String MOPUB_NETWORK_NAME = "vungle";
 
     private static VungleRouter sVungleRouter;
 

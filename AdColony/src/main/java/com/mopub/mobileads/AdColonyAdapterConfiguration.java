@@ -13,7 +13,6 @@ import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Json;
-import com.mopub.mobileads.adcolony.BuildConfig;
 
 import java.util.Map;
 
@@ -29,9 +28,9 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
     private static final String ADAPTER_NAME = AdColonyAdapterConfiguration.class.getSimpleName();
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    private static final String ADAPTER_VERSION = "3.3.8.0";
     private static final String BIDDING_TOKEN = "1";
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String MOPUB_NETWORK_NAME = "adcolony";
 
     @NonNull
     @Override

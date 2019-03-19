@@ -12,7 +12,6 @@ import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.ironsource.BuildConfig;
 
 import java.util.Map;
 
@@ -27,9 +26,9 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String IRONSOURCE_ADAPTER_VERSION = "300";
 
     // Adapter's keys
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    private static final String ADAPTER_VERSION = "6.8.2.0";
     private static final String ADAPTER_NAME = IronSourceAdapterConfiguration.class.getSimpleName();
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String MOPUB_NETWORK_NAME = "Ironsource";
 
     @NonNull
     @Override

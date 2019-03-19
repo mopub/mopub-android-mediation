@@ -10,7 +10,6 @@ import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.admob.BuildConfig;
 
 import java.util.Map;
 
@@ -18,9 +17,9 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfiguration {
 
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    private static final String ADAPTER_VERSION = "17.1.2.3";
     private static final String KEY_EXTRA_APPLICATION_ID = "appid";
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String MOPUB_NETWORK_NAME = "admob_native";
 
     @NonNull
     @Override

@@ -12,7 +12,6 @@ import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.chartboost.BuildConfig;
 
 import java.util.Map;
 
@@ -29,8 +28,8 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
     private static final String ADAPTER_NAME = ChartboostAdapterConfiguration.class.getSimpleName();
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String ADAPTER_VERSION = "7.3.1.1";
+    private static final String MOPUB_NETWORK_NAME = "chartboost";
 
     @NonNull
     @Override

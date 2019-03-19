@@ -10,7 +10,6 @@ import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.unityads.BuildConfig;
 import com.unity3d.ads.UnityAds;
 
 import java.util.Map;
@@ -21,8 +20,8 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class UnityAdsAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String ADAPTER_VERSION = "3.0.1.0";
+    private static final String MOPUB_NETWORK_NAME = "unity";
     private static final String ADAPTER_NAME = UnityAdsAdapterConfiguration.class.getSimpleName();
 
     @NonNull
