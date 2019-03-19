@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
-import com.mopub.mobileads.facebookaudiencenetwork.BuildConfig;
 
 public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
 
