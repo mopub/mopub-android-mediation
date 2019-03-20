@@ -167,8 +167,12 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
     @Override
     protected void showInterstitial() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-        tjPlacement.showContent();
+        if (tjPlacement != null) {
+            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+            tjPlacement.showContent();
+        }else {
+            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+        }
     }
 
     // Tapjoy

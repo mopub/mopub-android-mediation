@@ -185,6 +185,9 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected boolean hasVideoAvailable() {
+        if (tjPlacement == null) {
+            return false;
+        }
         return tjPlacement.isContentAvailable();
     }
 
