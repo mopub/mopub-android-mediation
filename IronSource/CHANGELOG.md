@@ -1,4 +1,8 @@
 ## Changelog
+* 6.8.2.1
+    * This version includes adapter library release in AAR format.
+    * Adapter library includes [AndroidManifest dependencies](https://developers.ironsrc.com/ironsource-mobile/android/android-sdk/#step-2) for IronSource.
+
  * 6.8.2.0
     * This version of the adapters has been certified with ironSource 6.8.2.
 

@@ -28,7 +28,7 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
     private static final String ADAPTER_NAME = ChartboostAdapterConfiguration.class.getSimpleName();
-    private static final String ADAPTER_VERSION = "7.3.1.1";
+    private static final String ADAPTER_VERSION = "7.3.1.2";
     private static final String MOPUB_NETWORK_NAME = "chartboost";
 
     @NonNull

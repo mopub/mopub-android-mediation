@@ -1,4 +1,8 @@
 ## Changelog
+ * 7.3.1.2
+    * This version includes adapter library release in AAR format.
+    * Adapter library includes [AndroidManifest dependencies](https://answers.chartboost.com/en-us/child_article/android#androidmanifest) for Chartboost.
+
   * 7.3.1.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `ChartboostAdapterConfiguration` class to: 

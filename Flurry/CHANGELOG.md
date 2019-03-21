@@ -1,4 +1,8 @@
 ## Changelog
+ * 11.5.0.1
+    * This version includes adapter library release in AAR format.
+    * Adapter library includes [AndroidManifest dependencies](https://developer.yahoo.com/flurry/docs/integrateflurry/android-manual/#configure-the-androidmanifest-and-proguard-files) for Flurry.
+
   * 11.5.0.0
     * This version of the adapters has been certified with Flurry 11.5.0.
 

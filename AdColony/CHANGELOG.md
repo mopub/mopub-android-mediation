@@ -1,4 +1,8 @@
 ## Changelog
+  * 3.3.8.1
+    * This version includes adapter library release in AAR format.
+    * Adapter library includes [AndroidManifest dependencies](https://github.com/AdColony/AdColony-Android-SDK-3/wiki/Project-Setup#step-2-edit-manifest) for AdColony.
+
   * 3.3.8.0
     * This version of the adapters has been certified with AdColony 3.3.8.
 

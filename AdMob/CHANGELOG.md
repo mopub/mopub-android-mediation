@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.1.2.4
+    * This version includes adapter library release in AAR format.
+
   * 17.1.2.3
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `GooglePlayServicesAdapterConfiguration` class to: 

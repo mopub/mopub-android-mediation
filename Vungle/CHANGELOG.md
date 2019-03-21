@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.3.24.2
+    * This version includes adapter library release in AAR format.
+
   * 6.3.24.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `VungleAdapterConfiguration` class to: 

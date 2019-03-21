@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.8.3.1
+    * This version includes adapter library release in AAR format.
+
   * 6.8.3.0
     * This version of the adapters has been certified with ONE by AOL 6.8.3.
     

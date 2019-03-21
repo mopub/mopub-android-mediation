@@ -1,10 +1,3 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mopub.mobileads.onebyaol">
-    <application>
-        <activity android:name="com.millennialmedia.android.MMActivity"
-            android:configChanges="keyboardHidden|orientation|keyboard"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
-        <activity android:name="com.millennialmedia.android.VideoPlayer"
-            android:configChanges="keyboardHidden|orientation|keyboard"/>
-    </application>
 </manifest>

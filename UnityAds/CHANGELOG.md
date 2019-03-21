@@ -1,4 +1,7 @@
 ## Changelog
+  * 3.0.1.1
+    * This version includes adapter library release in AAR format.
+
   * 3.0.1.0
     * This version of the adapters has been certified with Unity Ads 3.0.1.
     

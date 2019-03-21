@@ -17,7 +17,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfiguration {
 
-    private static final String ADAPTER_VERSION = "17.1.2.3";
+    private static final String ADAPTER_VERSION = "17.1.2.4";
     private static final String KEY_EXTRA_APPLICATION_ID = "appid";
     private static final String MOPUB_NETWORK_NAME = "admob_native";
 
