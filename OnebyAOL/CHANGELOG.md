@@ -1,6 +1,6 @@
 ## Changelog
   * 6.8.3.1
-    * This version includes adapter library release in AAR format.
+    * OneByAOL Adapter will now be released as an Android Archive (AAR) file that includes manifest file for OneByAOL.
 
   * 6.8.3.0
     * This version of the adapters has been certified with ONE by AOL 6.8.3.

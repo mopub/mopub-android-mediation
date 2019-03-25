@@ -1,6 +1,6 @@
 ## Changelog
   * 17.1.2.4
-    * This version includes adapter library release in AAR format.
+    * AdMob Adapter will now be released as an Android Archive (AAR) file that includes manifest file for AdMob.
 
   * 17.1.2.3
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.

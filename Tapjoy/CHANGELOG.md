@@ -1,7 +1,6 @@
 ## Changelog
   * 12.2.0.3
-    * This version includes adapter library release in AAR format.
-    * Adapter library includes [AndroidManifest dependencies](https://dev.tapjoy.com/sdk-integration/android/getting-started-guide-publishers-android/#toc_add-app-permissions-and-activities) for Tapjoy.
+    * Tapjoy Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [Tapjoy manifest changes](https://dev.tapjoy.com/sdk-integration/android/getting-started-guide-publishers-android/#toc_add-app-permissions-and-activities).
 
   * 12.2.0.2
     * Prevent a null SDK Key from being passed to Tapjoy's initialization call.

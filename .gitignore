@@ -1,6 +1,5 @@
 *.iml
 .gradle
-/gradle/*
 /local.properties
 /.idea
 .DS_Store
@@ -9,13 +8,4 @@ captures/
 .externalNativeBuild
 .gitmodules
 Testing/
-build.gradle
-gradle.properties
-gradlew/
-gradle.bat
-local.properties
-*.gradle
-shared-build.gradle
-*/build.gradle
 */*/libs/
-*/*/src/build.gradle

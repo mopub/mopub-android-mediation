@@ -1,0 +1,7 @@
+project.version = '3.0.1.1'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.unity3d.ads:unity-ads:${sdkVersion}@aar"
+}

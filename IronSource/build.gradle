@@ -1,0 +1,8 @@
+project.version = '6.8.2.1'
+project.ext.networkName = 'Ironsource'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.ironsource.sdk:mediationsdk:${sdkVersion}@jar"
+}
