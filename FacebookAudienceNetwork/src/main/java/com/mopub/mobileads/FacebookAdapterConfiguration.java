@@ -19,8 +19,8 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
 
-    private static final String ADAPTER_VERSION = "5.2.0.1";
-    private static final String MOPUB_NETWORK_NAME = "facebook";
+    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
     private AtomicBoolean networkInitializationSucceeded = new AtomicBoolean(false);
     private AtomicReference<String> tokenReference = new AtomicReference<>(null);
     private AtomicBoolean isComputingToken = new AtomicBoolean(false);

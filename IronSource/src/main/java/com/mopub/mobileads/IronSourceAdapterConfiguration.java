@@ -26,9 +26,9 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String IRONSOURCE_ADAPTER_VERSION = "300";
 
     // Adapter's keys
-    private static final String ADAPTER_VERSION = "6.8.2.1";
+    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String ADAPTER_NAME = IronSourceAdapterConfiguration.class.getSimpleName();
-    private static final String MOPUB_NETWORK_NAME = "Ironsource";
+    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     @NonNull
     @Override

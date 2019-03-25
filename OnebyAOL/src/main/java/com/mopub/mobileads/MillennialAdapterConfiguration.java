@@ -22,8 +22,8 @@ public class MillennialAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
     private static final String ADAPTER_NAME = MillennialAdapterConfiguration.class.getSimpleName();
-    private static final String ADAPTER_VERSION = "6.8.3.1";
-    private static final String MOPUB_NETWORK_NAME = "Millennial";
+    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     @NonNull
     @Override

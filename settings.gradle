@@ -14,7 +14,9 @@ include ':AdColony',
         ':Vungle'
 
 // Test App
-include ':Testing'
+if (file('Testing').exists()) {
+    include ':Testing'
+}
 
 // MoPub SDK
 def mopubSdkDir = file('mopub-android-sdk').exists() &&
