@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.3.24.2
+    * Vungle Adapter will now be released as an Android Archive (AAR) file that includes manifest file for Vungle.
+
   * 6.3.24.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `VungleAdapterConfiguration` class to: 

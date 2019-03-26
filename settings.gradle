@@ -1,0 +1,39 @@
+rootProject.name = 'Mediation'
+
+// Adapters
+include ':AdColony',
+        ':AdMob',
+        ':AppLovin',
+        ':Chartboost',
+        ':FacebookAudienceNetwork',
+        ':Flurry',
+        ':IronSource',
+        ':OnebyAOL',
+        ':Tapjoy',
+        ':UnityAds',
+        ':Vungle'
+
+// Test App
+if (file('Testing').exists()) {
+    include ':Testing'
+}
+
+// MoPub SDK
+def mopubSdkDir = file('mopub-android-sdk').exists() &&
+                  file(".gitmodules").text.contains('[submodule "mopub-android-sdk"]') ?
+        'mopub-android-sdk' : 'mopub-android-sdk'
+def mopubSdkDirValueFrom = 'settings.gradle file'
+
+if (hasProperty('mopubAndroidSdkDir')) {
+    mopubSdkDir = mopubAndroidSdkDir
+    mopubSdkDirValueFrom = 'gradle.properties file (project-level or user-level)'
+}
+
+println "Using MoPub Android SDK dir: " + mopubSdkDir
+println "as defined by: " + mopubSdkDirValueFrom + "\n"
+
+includeBuild (mopubSdkDir)  {
+    dependencySubstitution {
+        substitute module('com.mopub:mopub-sdk') with project(':mopub-sdk')
+    }
+}

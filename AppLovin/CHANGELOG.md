@@ -1,4 +1,7 @@
 ## Changelog
+ * 9.2.1.1
+    * AppLovin Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [AppLovin manifest changes](https://dash.applovin.com/login#androidIntegration).
+
   * 9.2.1.0
      * This version of the adapters has been certified with AppLovin 9.2.1.
      * Addressed some issues and optimized adapter:

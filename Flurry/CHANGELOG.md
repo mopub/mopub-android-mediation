@@ -1,4 +1,10 @@
 ## Changelog
+ * 11.5.0.1
+    * Flurry Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [Flurry manifest changes](https://developer.yahoo.com/flurry/docs/integrateflurry/android-manual/#configure-the-androidmanifest-and-proguard-files).
+
+  * 11.5.0.0
+    * This version of the adapters has been certified with Flurry 11.5.0.
+
   * 11.4.0.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `FlurryAdapterConfiguration` class to: 

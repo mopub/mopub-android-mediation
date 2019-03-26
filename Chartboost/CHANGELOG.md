@@ -1,4 +1,7 @@
 ## Changelog
+ * 7.3.1.2
+    * Chartboost Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [Chartboost manifest changes](https://answers.chartboost.com/en-us/child_article/android#androidmanifest).
+
   * 7.3.1.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `ChartboostAdapterConfiguration` class to: 

@@ -1,0 +1,7 @@
+project.version = '6.3.24.2'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.github.vungle:vungle-android-sdk:${sdkVersion}"
+}
