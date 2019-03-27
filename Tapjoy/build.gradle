@@ -1,0 +1,7 @@
+project.version = '12.2.0.3'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.tapjoy:tapjoy-android-sdk:${sdkVersion}@aar"
+}

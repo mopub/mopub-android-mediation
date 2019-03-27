@@ -1,0 +1,88 @@
+// Common boilerplate gradle code shared by all network subprojects.
+// Each network subproject's build.gradle should start like this:
+//
+//    project.version = 'X.Y.Z.N'
+//
+//    apply from: '../shared-build.gradle'
+//
+// Then go on to mention repositories {}, dependencies {} and any other specific gradle directives
+// needed to build.
+
+project.description = "MoPub Mediation Adapter for " + project.name
+
+
+// Assuming the project version is X.Y.Z.N (eg 3.3.7.1), sets 'sdkVersion' to X.Y.Z (eg 3.3.7).
+// Use this in your build.gradle for the network SDK dependency, as in:
+//    implementation "com.adcolony:sdk:${sdkVersion}"
+
+ext.sdkVersion = project.version.toString().replaceFirst(/.[0-9]+$/, '')
+
+
+// These next two properties have default values specified below, but can be overridden in the
+// build.gradle by setting either or both of them just before the
+// "apply from ../shared-build.gradle" line.
+// Example:
+//     project.version = '1.2.3.4'
+//     project.ext.artifactName = 'myArtifact'
+//     project.ext.networkName = 'myNetwork'
+//
+//     apply from: '../shared-build.gradle'
+//
+
+// "artifactName" is the string that becomes the artifactId in the gradle dependency string
+// for this network (i.e., continuing the above example, pubs would write "com.mopub:myArtifact:someVersion")
+if (!project.ext.has("artifactName")) {
+    project.ext.artifactName = project.name.toLowerCase()
+}
+
+// "networkName" is the string that will be returned by BuildConfig.NETWORK_NAME at runtime.
+if (!project.ext.has("networkName")) {
+    project.ext.networkName = project.ext.artifactName
+}
+
+
+android {
+    defaultConfig {
+        versionName project.version
+
+        // Add a field called NETWORK_NAME to the BuildConfig class, which can be accessed by
+        // the AdapterConfig.java code.
+        buildConfigField("String", "NETWORK_NAME", "\"${project.ext.networkName}\"")
+
+        // Set the .aar filename to mopub-NETWORK-adapters-VERSION-release.aar"
+        project.ext.set("archivesBaseName", "mopub-" + project.ext.artifactName + "-adapters-" + project.version)
+    }
+}
+
+
+// Copy the final (release) .aar file into the top level /libs directory.
+
+task copyAAR(type: Copy) {
+    from('build/outputs/aar') {
+        include '*-release.*'
+        rename '(.*)-release.(.*)', '$1.$2'
+    }
+    into("$rootDir/libs")
+}
+
+task removeAAR(type: Delete) {
+    delete fileTree("$rootDir/libs") {
+        include "mopub-${project.ext.artifactName}-adapters-*.aar"
+    }
+}
+
+afterEvaluate {
+    bundleReleaseAar.finalizedBy copyAAR
+    clean.dependsOn removeAAR
+}
+
+
+// Support for publishing to bintray.
+// See https://github.com/novoda/bintray-release/wiki for documentation.
+publish {
+    groupId = project.group
+    artifactId = project.ext.artifactName
+    publishVersion = project.version
+    uploadName = project.group + "." + artifactId
+    desc = project.description
+}
