@@ -7,6 +7,8 @@ import android.text.TextUtils;
 
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.verizon.ads.Bid;
+import com.verizon.ads.BidRequestListener;
 import com.verizon.ads.CreativeInfo;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.RequestMetadata;
@@ -130,11 +132,51 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         final InterstitialAdFactory interstitialAdFactory = new InterstitialAdFactory(context, placementId,
                 new VerizonInterstitialFactoryListener());
 
-        final RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
-        interstitialAdFactory.setRequestMetaData(requestMetadata);
-        interstitialAdFactory.load(new VerizonInterstitialListener());
+        Bid bid = BidCache.get(placementId);
+
+        if (bid == null) {
+            final RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
+            interstitialAdFactory.setRequestMetaData(requestMetadata);
+
+            interstitialAdFactory.load(new VerizonInterstitialListener());
+        } else {
+            interstitialAdFactory.load(bid, new VerizonInterstitialListener());
+        }
 
         verizonAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+    }
+
+    /**
+     * Call this method to cache a super auction bid for the specified placement ID
+     *
+     * @param context            a non-null Context
+     * @param placementId        a valid placement ID. Cannot be null or empty.
+     * @param requestMetadata    a {@link RequestMetadata} instance for the request or null
+     * @param bidRequestListener an instance of {@link BidRequestListener}. Cannot be null.
+     */
+    public static void requestBid(final Context context, final String placementId, final RequestMetadata requestMetadata,
+                                  final BidRequestListener bidRequestListener) {
+
+        if (bidRequestListener == null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "bidRequestListener parameter cannot be null.");
+
+            return;
+        }
+
+        RequestMetadata.Builder builder = new RequestMetadata.Builder(requestMetadata);
+        RequestMetadata actualRequestMetadata = builder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
+
+        InterstitialAdFactory.requestBid(context, placementId, actualRequestMetadata, new BidRequestListener() {
+            @Override
+            public void onComplete(Bid bid, ErrorInfo errorInfo) {
+
+                if (errorInfo == null) {
+                    BidCache.put(placementId, bid);
+                }
+
+                bidRequestListener.onComplete(bid, errorInfo);
+            }
+        });
     }
 
     @Override

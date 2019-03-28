@@ -10,6 +10,8 @@ import android.widget.FrameLayout.LayoutParams;
 
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.verizon.ads.Bid;
+import com.verizon.ads.BidRequestListener;
 import com.verizon.ads.CreativeInfo;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.RequestMetadata;
@@ -158,12 +160,18 @@ public class VerizonBanner extends CustomEventBanner {
             AdViewController.setShouldHonorServerDimensions(internalView);
             VASAds.setLocationEnabled(MoPub.getLocationAwareness() != MoPub.LocationAwareness.DISABLED);
 
+            Bid bid = BidCache.get(placementId);
             final InlineAdFactory inlineAdFactory = new InlineAdFactory(context, placementId,
                     Collections.singletonList(new AdSize(width, height)), new VerizonInlineAdFactoryListener());
 
-            final RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
-            inlineAdFactory.setRequestMetaData(requestMetadata);
-            inlineAdFactory.load(new VerizonInlineAdListener());
+            if (bid == null) {
+                RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
+                inlineAdFactory.setRequestMetaData(requestMetadata);
+
+                inlineAdFactory.load(new VerizonInlineAdListener());
+            } else {
+                inlineAdFactory.load(bid, new VerizonInlineAdListener());
+            }
 
             verizonAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         } catch (NumberFormatException e) {
@@ -173,6 +181,40 @@ public class VerizonBanner extends CustomEventBanner {
                 bannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
         }
+    }
+
+    /**
+     * Call this method to cache a super auction bid for the specified placement ID
+     *
+     * @param context            a non-null Context
+     * @param placementId        a valid placement ID. Cannot be null or empty.
+     * @param adSizes            a list of acceptable {@link AdSize}s. Cannot be null or empty.
+     * @param requestMetadata    a {@link RequestMetadata} instance for the request or null
+     * @param bidRequestListener an instance of {@link BidRequestListener}. Cannot be null.
+     */
+    public static void requestBid(final Context context, final String placementId, final List<AdSize> adSizes,
+                                  final RequestMetadata requestMetadata, final BidRequestListener bidRequestListener) {
+
+        if (bidRequestListener == null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "bidRequestListener parameter cannot be null.");
+
+            return;
+        }
+
+        RequestMetadata.Builder builder = new RequestMetadata.Builder(requestMetadata);
+        RequestMetadata actualRequestMetadata = builder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
+
+        InlineAdFactory.requestBid(context, placementId, adSizes, actualRequestMetadata, new BidRequestListener() {
+            @Override
+            public void onComplete(Bid bid, ErrorInfo errorInfo) {
+
+                if (errorInfo == null) {
+                    BidCache.put(placementId, bid);
+                }
+
+                bidRequestListener.onComplete(bid, errorInfo);
+            }
+        });
     }
 
     @Override
