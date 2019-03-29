@@ -69,7 +69,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         }
 
         if (!VASAds.isInitialized()) {
-            final String siteId = serverExtras.get(SITE_ID_KEY);
+            final String siteId = serverExtras.get(getSiteIdKey());
 
             if (TextUtils.isEmpty(siteId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
@@ -112,7 +112,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
             }
         }
 
-        final String placementId = serverExtras.get(PLACEMENT_ID_KEY);
+        final String placementId = serverExtras.get(getPlacementIdKey());
 
         if (TextUtils.isEmpty(placementId)) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because placement " +
@@ -218,6 +218,14 @@ public class VerizonInterstitial extends CustomEventInterstitial {
                 }
             }
         });
+    }
+
+    protected String getPlacementIdKey() {
+        return PLACEMENT_ID_KEY;
+    }
+
+    protected String getSiteIdKey() {
+        return SITE_ID_KEY;
     }
 
     class VerizonInterstitialFactoryListener implements InterstitialAdFactory.InterstitialAdFactoryListener {

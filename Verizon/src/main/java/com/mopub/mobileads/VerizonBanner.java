@@ -22,6 +22,7 @@ import com.verizon.ads.inlineplacement.InlineAdFactory;
 import com.verizon.ads.inlineplacement.InlineAdView;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
@@ -72,7 +73,7 @@ public class VerizonBanner extends CustomEventBanner {
         }
 
         if (!VASAds.isInitialized()) {
-            final String siteId = serverExtras.get(SITE_ID_KEY);
+            final String siteId = serverExtras.get(getSiteIdKey());
 
             if (TextUtils.isEmpty(siteId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
@@ -115,9 +116,9 @@ public class VerizonBanner extends CustomEventBanner {
             }
         }
 
-        final String placementId = serverExtras.get(PLACEMENT_ID_KEY);
-        final String widthString = serverExtras.get(WIDTH_KEY);
-        final String heightString = serverExtras.get(HEIGHT_KEY);
+        final String placementId = serverExtras.get(getPlacementIdKey());
+        final String widthString = serverExtras.get(getWidthKey());
+        final String heightString = serverExtras.get(getHeightKey());
 
         if (TextUtils.isEmpty(widthString) || TextUtils.isEmpty(heightString)) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because width " +
@@ -232,6 +233,22 @@ public class VerizonBanner extends CustomEventBanner {
                 }
             }
         });
+    }
+
+    protected String getPlacementIdKey() {
+        return PLACEMENT_ID_KEY;
+    }
+
+    protected String getSiteIdKey() {
+        return SITE_ID_KEY;
+    }
+
+    protected String getWidthKey() {
+        return WIDTH_KEY;
+    }
+
+    protected String getHeightKey() {
+        return HEIGHT_KEY;
     }
 
     class VerizonInlineAdFactoryListener implements InlineAdFactory.InlineAdFactoryListener {
