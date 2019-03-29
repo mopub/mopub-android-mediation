@@ -27,7 +27,7 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static final String ADAPTER_NAME = VerizonAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
-    private static final String SITE_ID = "siteId";
+    private static final String SITE_ID_KEY = "siteId";
 
     @NonNull
     @Override
@@ -74,12 +74,14 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
                 if (VASAds.isInitialized()) {
                     networkInitializationSucceeded = true;
                 } else if (configuration != null && context instanceof Application) {
-                    final String siteId = configuration.get(SITE_ID);
+                    final String siteId = configuration.get(SITE_ID_KEY);
 
                     if (TextUtils.isEmpty(siteId)) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon's initialization not " +
-                                "started. Ensure Verizon's siteId is populated on the MoPub " +
-                                "dashboard. Note that initialization on the first app launch is a no-op.");
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon's initialization skipped" +
+                                " because there is no cached siteId to reuse. You can enter a siteId" +
+                                " on the MoPub dashboard, or pass one directly to the " + ADAPTER_NAME +
+                                " by calling withMediatedNetworkConfiguration()" +
+                                " when initializing MoPub.");
                     } else {
                         VASAds.initialize((Application) context, siteId);
                         networkInitializationSucceeded = true;

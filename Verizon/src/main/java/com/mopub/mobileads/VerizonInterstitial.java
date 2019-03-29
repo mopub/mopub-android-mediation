@@ -49,7 +49,8 @@ public class VerizonInterstitial extends CustomEventInterstitial {
 
     @Override
     protected void loadInterstitial(final Context context,
-                                    final CustomEventInterstitialListener customEventInterstitialListener, final Map<String, Object> localExtras,
+                                    final CustomEventInterstitialListener customEventInterstitialListener,
+                                    final Map<String, Object> localExtras,
                                     final Map<String, String> serverExtras) {
 
         interstitialListener = customEventInterstitialListener;
@@ -58,12 +59,9 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         if (serverExtras == null || serverExtras.isEmpty()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
                     "serverExtras is null or empty");
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-            if (interstitialListener != null) {
-                interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
+            logAndNotifyInterstitialFailed(LOAD_FAILED, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             return;
         }
@@ -74,12 +72,9 @@ public class VerizonInterstitial extends CustomEventInterstitial {
             if (TextUtils.isEmpty(siteId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
                         "siteId is empty");
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-                if (interstitialListener != null) {
-                    interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                }
+                logAndNotifyInterstitialFailed(LOAD_FAILED, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
                 return;
             }
@@ -87,12 +82,9 @@ public class VerizonInterstitial extends CustomEventInterstitial {
             if (!(context instanceof Activity)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
                         "context is not an Activity");
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-                if (interstitialListener != null) {
-                    interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                }
+                logAndNotifyInterstitialFailed(LOAD_FAILED, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
                 return;
             }
@@ -101,12 +93,9 @@ public class VerizonInterstitial extends CustomEventInterstitial {
 
             if (!success) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to initialize the Verizon SDK");
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-                if (interstitialListener != null) {
-                    interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                }
+                logAndNotifyInterstitialFailed(LOAD_FAILED, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
                 return;
             }
@@ -117,12 +106,9 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         if (TextUtils.isEmpty(placementId)) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because placement " +
                     "ID is empty");
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-            if (interstitialListener != null) {
-                interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
+            logAndNotifyInterstitialFailed(LOAD_FAILED, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             return;
         }
@@ -132,7 +118,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         final InterstitialAdFactory interstitialAdFactory = new InterstitialAdFactory(context, placementId,
                 new VerizonInterstitialFactoryListener());
 
-        Bid bid = BidCache.get(placementId);
+        final Bid bid = BidCache.get(placementId);
 
         if (bid == null) {
             final RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
@@ -163,8 +149,8 @@ public class VerizonInterstitial extends CustomEventInterstitial {
             return;
         }
 
-        RequestMetadata.Builder builder = new RequestMetadata.Builder(requestMetadata);
-        RequestMetadata actualRequestMetadata = builder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
+        final RequestMetadata.Builder builder = new RequestMetadata.Builder(requestMetadata);
+        final RequestMetadata actualRequestMetadata = builder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
 
         InterstitialAdFactory.requestBid(context, placementId, actualRequestMetadata, new BidRequestListener() {
             @Override
@@ -182,7 +168,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
     @Override
     protected void showInterstitial() {
 
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME, "Showing Verizon interstitial");
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
 
         VerizonUtils.postOnUiThread(new Runnable() {
 
@@ -193,11 +179,8 @@ public class VerizonInterstitial extends CustomEventInterstitial {
                     return;
                 }
 
-                if (interstitialListener != null) {
-                    interstitialListener.onInterstitialFailed(MoPubErrorCode.INTERNAL_ERROR);
-                }
-                MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.UNSPECIFIED, "Failed to " +
-                        "show Verizon interstitial. It is not ready");
+                logAndNotifyInterstitialFailed(SHOW_FAILED, MoPubErrorCode.INTERNAL_ERROR.getIntCode(),
+                        MoPubErrorCode.INTERNAL_ERROR);
             }
         });
     }
@@ -228,7 +211,17 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         return SITE_ID_KEY;
     }
 
-    class VerizonInterstitialFactoryListener implements InterstitialAdFactory.InterstitialAdFactoryListener {
+    private void logAndNotifyInterstitialFailed(MoPubLog.AdapterLogEvent event, int intCode,
+                                                MoPubErrorCode errorCode) {
+
+        MoPubLog.log(event, ADAPTER_NAME, intCode, errorCode);
+
+        if (interstitialListener != null) {
+            interstitialListener.onInterstitialFailed(errorCode);
+        }
+    }
+
+    private class VerizonInterstitialFactoryListener implements InterstitialAdFactory.InterstitialAdFactoryListener {
         final CustomEventInterstitialListener listener = interstitialListener;
 
         @Override
@@ -271,10 +264,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
                 public void run() {
                     final MoPubErrorCode errorCode = VerizonUtils.convertErrorCodeToMoPub(errorInfo.getErrorCode());
 
-                    if (listener != null) {
-                        listener.onInterstitialFailed(errorCode);
-                    }
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+                    logAndNotifyInterstitialFailed(LOAD_FAILED, errorCode.getIntCode(), errorCode);
                 }
             });
         }
@@ -294,10 +284,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
                 public void run() {
                     final MoPubErrorCode errorCode = VerizonUtils.convertErrorCodeToMoPub(errorInfo.getErrorCode());
 
-                    if (listener != null) {
-                        listener.onInterstitialFailed(errorCode);
-                    }
-                    MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+                    logAndNotifyInterstitialFailed(SHOW_FAILED, errorCode.getIntCode(), errorCode);
                 }
             });
         }

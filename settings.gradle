@@ -11,8 +11,8 @@ include ':AdColony',
         ':OnebyAOL',
         ':Tapjoy',
         ':UnityAds',
-        ':Vungle',
-        ':Verizon'
+        ':Verizon',
+        ':Vungle'
 
 // Test App
 if (file('Testing').exists()) {
@@ -21,7 +21,7 @@ if (file('Testing').exists()) {
 
 // MoPub SDK
 def mopubSdkDir = file('mopub-android-sdk').exists() &&
-                  file(".gitmodules").text.contains('[submodule "mopub-android-sdk"]') ?
+        file(".gitmodules").text.contains('[submodule "mopub-android-sdk"]') ?
         'mopub-android-sdk' : 'mopub-android-sdk'
 def mopubSdkDirValueFrom = 'settings.gradle file'
 
@@ -33,7 +33,7 @@ if (hasProperty('mopubAndroidSdkDir')) {
 println "Using MoPub Android SDK dir: " + mopubSdkDir
 println "as defined by: " + mopubSdkDirValueFrom + "\n"
 
-includeBuild (mopubSdkDir)  {
+includeBuild(mopubSdkDir) {
     dependencySubstitution {
         substitute module('com.mopub:mopub-sdk') with project(':mopub-sdk')
     }
