@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.2.0.0
+    * Update the rewarded ad adapter to use Google's new Rewarded Video API.
+
   * 17.1.2.4
     * AdMob Adapter will now be released as an Android Archive (AAR) file that includes manifest file for AdMob.
 
