@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.8.3.2
+    * Retrofit the adapters to be compatible with the Verizon Ads adapters.
+
   * 6.8.3.1
     * OneByAOL Adapter will now be released as an Android Archive (AAR) file that includes manifest file for OneByAOL.
 

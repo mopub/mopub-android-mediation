@@ -156,7 +156,6 @@ public class VerizonBanner extends CustomEventBanner {
         lp.gravity = Gravity.CENTER_HORIZONTAL;
         internalView.setLayoutParams(lp);
 
-        AdViewController.setShouldHonorServerDimensions(internalView);
         VASAds.setLocationEnabled(MoPub.getLocationAwareness() != MoPub.LocationAwareness.DISABLED);
 
         final Bid bid = BidCache.get(placementId);
@@ -289,11 +288,12 @@ public class VerizonBanner extends CustomEventBanner {
         }
 
         @Override
-        public void onCacheLoaded(final InlineAdFactory inlineAdFactory, final int i, final int i1) {
+        public void onCacheLoaded(final InlineAdFactory inlineAdFactory, final int numRequested,
+                                  final int numReceived) {
         }
 
         @Override
-        public void onCacheUpdated(final InlineAdFactory inlineAdFactory, final int i) {
+        public void onCacheUpdated(final InlineAdFactory inlineAdFactory, final int cacheSize) {
         }
 
         @Override
@@ -396,8 +396,8 @@ public class VerizonBanner extends CustomEventBanner {
         }
 
         @Override
-        public void onEvent(final InlineAdView inlineAdView, final String s, final String s1,
-                            final Map<String, Object> map) {
+        public void onEvent(final InlineAdView inlineAdView, final String source, final String eventId,
+                            final Map<String, Object> arguments) {
         }
     }
 }

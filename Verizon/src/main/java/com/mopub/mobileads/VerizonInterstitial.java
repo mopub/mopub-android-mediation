@@ -246,11 +246,12 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         }
 
         @Override
-        public void onCacheLoaded(final InterstitialAdFactory interstitialAdFactory, final int i, final int i1) {
+        public void onCacheLoaded(final InterstitialAdFactory interstitialAdFactory,
+                                  final int numRequested, final int numReceived) {
         }
 
         @Override
-        public void onCacheUpdated(final InterstitialAdFactory interstitialAdFactory, final int i) {
+        public void onCacheUpdated(final InterstitialAdFactory interstitialAdFactory, final int cacheSize) {
         }
 
         @Override
@@ -342,7 +343,8 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         }
 
         @Override
-        public void onEvent(final InterstitialAd interstitialAd, final String s, final String s1, final Map<String, Object> map) {
+        public void onEvent(final InterstitialAd interstitialAd, final String source,
+                            final String eventId, final Map<String, Object> arguments) {
         }
     }
 }

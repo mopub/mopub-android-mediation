@@ -64,42 +64,12 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     public void initializeNetwork(@NonNull final Context context, @Nullable final Map<String, String> configuration,
                                   @NonNull final OnNetworkInitializationFinishedListener listener) {
 
-        Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
-        boolean networkInitializationSucceeded = false;
-
-        synchronized (VerizonAdapterConfiguration.class) {
-            try {
-                if (VASAds.isInitialized()) {
-                    networkInitializationSucceeded = true;
-                } else if (configuration != null && context instanceof Application) {
-                    final String siteId = configuration.get(SITE_ID_KEY);
-
-                    if (TextUtils.isEmpty(siteId)) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon's initialization skipped" +
-                                " because there is no cached siteId to reuse. You can enter a siteId" +
-                                " on the MoPub dashboard, or pass one directly to the " + ADAPTER_NAME +
-                                " by calling withMediatedNetworkConfiguration()" +
-                                " when initializing MoPub.");
-                    } else {
-                        VASAds.initialize((Application) context, siteId);
-                        networkInitializationSucceeded = true;
-                    }
-                }
-            } catch (Exception e) {
-                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Verizon has encountered " +
-                        "an exception.", e);
-            }
-        }
-
-        if (networkInitializationSucceeded) {
-            listener.onNetworkInitializationFinished(VerizonAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
-        } else {
-            listener.onNetworkInitializationFinished(VerizonAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-        }
+        // Due to a limitation in the Verizon Ads SDK with tracking the Activity lifecycle, adapters
+        // will skip initializing the SDK directly.
+        listener.onNetworkInitializationFinished(VerizonAdapterConfiguration.class,
+                MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
 
         final MoPubLog.LogLevel mopubLogLevel = MoPubLog.getLogLevel();
 
