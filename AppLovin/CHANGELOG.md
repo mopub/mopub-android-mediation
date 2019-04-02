@@ -1,6 +1,11 @@
 ## Changelog
- * 9.2.1.1
-    * AppLovin Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [AppLovin manifest changes](https://dash.applovin.com/login#androidIntegration).
+ * 9.4.0.0
+    * This version of the adapters has been certified with AppLovin 9.4.0.
+    * Pass MoPub's log level to AppLovin. To adjust AppLovin's log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
+    * Drop AppLovin's `<activity>` tags from the AndroidManifest since the AppLovin SDK AAR already bundles them.
+
+  * 9.2.1.1
+     * AppLovin Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [AppLovin manifest changes](https://dash.applovin.com/login#androidIntegration).
 
   * 9.2.1.0
      * This version of the adapters has been certified with AppLovin 9.2.1.

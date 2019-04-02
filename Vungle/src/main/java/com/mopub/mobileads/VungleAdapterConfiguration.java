@@ -9,6 +9,7 @@ import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.vungle.BuildConfig;
 import com.vungle.warren.Vungle;
 
 import java.util.Map;

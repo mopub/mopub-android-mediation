@@ -95,7 +95,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Fetching Flurry ad, ad unit name:" + mAdSpaceName);
         mInterstitial = new FlurryAdInterstitial(mContext, mAdSpaceName);
-        mInterstitial.setListener(new FlurryMopubInterstitialListener());
+        mInterstitial.setListener(new FlurryMoPubInterstitialListener());
         mInterstitial.fetchAd();
 
         MoPubLog.log(mAdSpaceName, LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -143,7 +143,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
         final String flurryApiKey = serverExtras.get(FlurryAgentWrapper.PARAM_API_KEY);
         final String flurryAdSpace = serverExtras.get(FlurryAgentWrapper.PARAM_AD_SPACE_NAME);
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "ServerInfo fetched from Mopub " +
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "ServerInfo fetched from MoPub " +
                 FlurryAgentWrapper.PARAM_API_KEY + " : " + flurryApiKey + " and " +
                 FlurryAgentWrapper.PARAM_AD_SPACE_NAME + " :" + flurryAdSpace);
 
@@ -151,7 +151,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
     }
 
     // FlurryAdListener
-    private class FlurryMopubInterstitialListener implements FlurryAdInterstitialListener {
+    private class FlurryMoPubInterstitialListener implements FlurryAdInterstitialListener {
 
         @Override
         public void onFetched(FlurryAdInterstitial adInterstitial) {

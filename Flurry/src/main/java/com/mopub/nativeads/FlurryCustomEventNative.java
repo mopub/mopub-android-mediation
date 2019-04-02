@@ -138,7 +138,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         }
     }
 
-    private static synchronized void mapNativeAd(@NonNull final FlurryBaseNativeAd mopubSupportedAd,
+    synchronized private static void mapNativeAd(@NonNull final FlurryBaseNativeAd mopubSupportedAd,
                                                  @NonNull final FlurryAdNative flurryAdNative) {
         FlurryAdNativeAsset coverImageAsset = flurryAdNative.getAsset(ASSET_SEC_HQ_IMAGE);
         FlurryAdNativeAsset iconImageAsset = flurryAdNative.getAsset(ASSET_SEC_IMAGE);
@@ -655,8 +655,8 @@ public final class FlurryCustomEventNative extends CustomEventNative {
     }
 
     static abstract class FlurryBaseAdListener implements FlurryAdNativeListener {
-        private final @NonNull
-        FlurryBaseNativeAd mBaseNativeAd;
+        @NonNull
+        private final FlurryBaseNativeAd mBaseNativeAd;
 
         FlurryBaseAdListener(@NonNull FlurryBaseNativeAd baseNativeAd) {
             mBaseNativeAd = baseNativeAd;

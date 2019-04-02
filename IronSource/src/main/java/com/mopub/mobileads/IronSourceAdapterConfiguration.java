@@ -8,10 +8,12 @@ import android.text.TextUtils;
 
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
+import com.ironsource.sdk.utils.Logger;
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.ironsource.BuildConfig;
 
 import java.util.Map;
 
@@ -105,6 +107,15 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
         } else {
             listener.onNetworkInitializationFinished(IronSourceAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        }
+
+        MoPubLog.LogLevel logLevel = MoPubLog.getLogLevel();
+        boolean loggingDisabled = logLevel == MoPubLog.LogLevel.NONE;
+
+        if (loggingDisabled) {
+            Logger.enableLogging(0);
+        } else {
+            Logger.enableLogging(1);
         }
     }
 }

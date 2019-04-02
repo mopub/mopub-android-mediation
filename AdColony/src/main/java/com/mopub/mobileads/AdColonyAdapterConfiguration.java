@@ -13,6 +13,7 @@ import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Json;
+import com.mopub.mobileads.adcolony.BuildConfig;
 
 import java.util.Map;
 

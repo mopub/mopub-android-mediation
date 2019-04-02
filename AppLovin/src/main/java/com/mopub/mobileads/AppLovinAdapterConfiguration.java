@@ -14,6 +14,8 @@ import com.applovin.sdk.AppLovinSdkSettings;
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
+import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.applovin.BuildConfig;
 
 import java.util.Map;
 
@@ -65,6 +67,11 @@ public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
         if (sdk != null) {
             sdk.setPluginVersion(APPLOVIN_PLUGIN_VERSION);
             sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
+
+            MoPubLog.LogLevel logLevel = MoPubLog.getLogLevel();
+            boolean verboseLoggingEnabled = logLevel == MoPubLog.LogLevel.DEBUG;
+
+            sdk.getSettings().setVerboseLogging(verboseLoggingEnabled);
 
             listener.onNetworkInitializationFinished(AppLovinAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);

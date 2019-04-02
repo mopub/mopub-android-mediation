@@ -7,11 +7,13 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.chartboost.sdk.Chartboost;
+import com.chartboost.sdk.Libraries.CBLogging;
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.chartboost.BuildConfig;
 
 import java.util.Map;
 
@@ -113,6 +115,22 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
         } else {
             listener.onNetworkInitializationFinished(ChartboostAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        }
+
+        MoPubLog.LogLevel mopubLogLevel = MoPubLog.getLogLevel();
+        CBLogging.Level chartboostLogLevel = getChartboostLogLevel(mopubLogLevel);
+
+        Chartboost.setLoggingLevel(chartboostLogLevel);
+    }
+
+    private CBLogging.Level getChartboostLogLevel(MoPubLog.LogLevel level) {
+        switch (level) {
+            case INFO:
+                return CBLogging.Level.INTEGRATION;
+            case DEBUG:
+                return CBLogging.Level.ALL;
+            default:
+                return CBLogging.Level.NONE;
         }
     }
 }

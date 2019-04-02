@@ -10,6 +10,7 @@ import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.unityads.BuildConfig;
 import com.unity3d.ads.UnityAds;
 
 import java.util.Map;
@@ -87,5 +88,9 @@ public class UnityAdsAdapterConfiguration extends BaseAdapterConfiguration {
             listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
+
+        MoPubLog.LogLevel logLevel = MoPubLog.getLogLevel();
+        boolean debugModeEnabled = logLevel == MoPubLog.LogLevel.DEBUG;
+        UnityAds.setDebugMode(debugModeEnabled);
     }
 }

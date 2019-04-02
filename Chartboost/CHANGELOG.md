@@ -1,5 +1,8 @@
 ## Changelog
- * 7.3.1.2
+  * 7.3.1.3
+    * Pass MoPub's log level to Chartboost. To adjust Chartboost's log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
+
+  * 7.3.1.2
     * Chartboost Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [Chartboost manifest changes](https://answers.chartboost.com/en-us/child_article/android#androidmanifest).
 
   * 7.3.1.1

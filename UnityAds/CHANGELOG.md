@@ -1,4 +1,7 @@
 ## Changelog
+  * 3.0.1.2
+    * Pass MoPub's log level to Unity Ads. To adjust Unity Ads' log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
+
   * 3.0.1.1
     * UnityAds Adapter will now be released as an Android Archive (AAR) file that includes manifest file for UnityAds.
 
