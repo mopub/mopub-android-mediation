@@ -132,7 +132,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected void loadWithSdkInitialized(@NonNull final Activity activity,
-                                          @NonNull Map<String, Object> localExtras,
+                                          @NonNull final Map<String, Object> localExtras,
                                           @NonNull final Map<String, String> serverExtras)
             throws Exception {
 
@@ -180,6 +180,24 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
                 // to set up Google's personalization preference.
                 // Publishers should work with Google to be GDPR-compliant.
                 forwardNpaIfSet(builder);
+
+                // Publishers may want to indicate that their content is child-directed and
+                // forward this information to Google.
+                Boolean isTFCD = GooglePlayServicesMediationSettings.isTaggedForChildDirectedTreatment();
+                if (isTFCD != null) {
+                    builder.tagForChildDirectedTreatment(isTFCD);
+                }
+
+                // Publishers may want to mark your their requests to receive treatment for users
+                // in the European Economic Area (EEA) under the age of consent.
+                Boolean isTFUA = GooglePlayServicesMediationSettings.isTaggedForUnderAgeOfConsent();
+                if (isTFUA != null) {
+                    if (isTFUA) {
+                        builder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+                    } else {
+                        builder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                    }
+                }
 
                 AdRequest adRequest = builder.build();
                 mRewardedAd.loadAd(adRequest, mRewardedAdLoadCallback);
@@ -348,6 +366,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         private static Bundle npaBundle;
         private static String contentUrl;
         private static String testDeviceId;
+        private static Boolean taggedForChildDirectedTreatment = null;
+        private static Boolean taggedForUnderAgeOfConsent = null;
 
         public GooglePlayServicesMediationSettings() {
         }
@@ -367,6 +387,16 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
             testDeviceId = id;
         }
 
+        public GooglePlayServicesMediationSettings(Bundle bundle,
+                                                   String url,
+                                                   String id,
+                                                   Boolean tagForChildDirectedTreatment) {
+            npaBundle = bundle;
+            contentUrl = url;
+            testDeviceId = id;
+            taggedForChildDirectedTreatment = tagForChildDirectedTreatment;
+        }
+
         public void setNpaBundle(Bundle bundle) {
             npaBundle = bundle;
         }
@@ -377,6 +407,14 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         public void setTestDeviceId(String id) {
             testDeviceId = id;
+        }
+
+        public void setTaggedForChildDirectedTreatment(boolean flag) {
+            taggedForChildDirectedTreatment = flag;
+        }
+
+        public void setTaggedForUnderAgeOfConsent(boolean flag) {
+            taggedForUnderAgeOfConsent = flag;
         }
 
         /* The MoPub Android SDK queries MediationSettings from the rewarded video code
@@ -393,6 +431,14 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         private static String getTestDeviceId() {
             return testDeviceId;
+        }
+
+        private static Boolean isTaggedForChildDirectedTreatment() {
+            return taggedForChildDirectedTreatment;
+        }
+
+        private static Boolean isTaggedForUnderAgeOfConsent() {
+            return taggedForUnderAgeOfConsent;
         }
     }
 }

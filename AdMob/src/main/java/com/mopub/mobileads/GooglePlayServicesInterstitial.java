@@ -29,6 +29,8 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     private static final String ADAPTER_NAME = GooglePlayServicesInterstitial.class.getSimpleName();
     private static final String CONTENT_URL_KEY = "contentUrl";
     private static final String TEST_DEVICES_KEY = "testDevices";
+    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
 
     @NonNull
     private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
@@ -93,6 +95,29 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         // Consent collected from the MoPub’s consent dialogue should not be used to set up
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
+
+        // Publishers may want to indicate that their content is child-directed and forward this
+        // information to Google.
+        if (localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY) != null) {
+            String childDirected = localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY).toString();
+            if (!TextUtils.isEmpty(childDirected)) {
+                builder.tagForChildDirectedTreatment(Boolean.parseBoolean(childDirected));
+            }
+        }
+
+        // Publishers may want to mark your their requests to receive treatment for users in the
+        // European Economic Area (EEA) under the age of consent.
+        if (localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY) != null) {
+            String underAgeOfConsent = localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY).toString();
+            if (!TextUtils.isEmpty(underAgeOfConsent)) {
+                boolean flag = Boolean.parseBoolean(underAgeOfConsent);
+                if (flag) {
+                    builder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+                } else {
+                    builder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                }
+            }
+        }
 
         AdRequest adRequest = builder.build();
 

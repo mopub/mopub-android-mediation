@@ -75,6 +75,17 @@ public class GooglePlayServicesNative extends CustomEventNative {
     private static final String TEST_DEVICES_KEY = "testDevices";
 
     /**
+     * Key to set and obtain the flag whether the application's content is child-directed.
+     */
+    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+
+    /**
+     * Key to set and obtain the flag to mark ad requests to Google to receive treatment for
+     * users in the European Economic Area (EEA) under the age of consent.
+     */
+    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
+
+    /**
      * Flag to determine whether or not the adapter has been initialized.
      */
     private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
@@ -450,6 +461,29 @@ public class GooglePlayServicesNative extends CustomEventNative {
             // Consent collected from the MoPub’s consent dialogue should not be used to set up
             // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
             forwardNpaIfSet(requestBuilder);
+
+            // Publishers may want to indicate that their content is child-directed and forward this
+            // information to Google.
+            if (localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY) != null) {
+                String childDirected = localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY).toString();
+                if (!TextUtils.isEmpty(childDirected)) {
+                    requestBuilder.tagForChildDirectedTreatment(Boolean.parseBoolean(childDirected));
+                }
+            }
+
+            // Publishers may want to mark your their requests to receive treatment for users in the
+            // European Economic Area (EEA) under the age of consent.
+            if (localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY) != null) {
+                String underAgeOfConsent = localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY).toString();
+                if (!TextUtils.isEmpty(underAgeOfConsent)) {
+                    boolean flag = Boolean.parseBoolean(underAgeOfConsent);
+                    if (flag) {
+                        requestBuilder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+                    } else {
+                        requestBuilder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                    }
+                }
+            }
 
             AdRequest adRequest = requestBuilder.build();
             adLoader.loadAd(adRequest);
