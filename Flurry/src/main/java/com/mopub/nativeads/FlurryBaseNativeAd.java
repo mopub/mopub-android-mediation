@@ -38,7 +38,6 @@ public interface FlurryBaseNativeAd {
     @Nullable
     Map<String, Object> getExtras();
 
-
     void setTitle(@Nullable final String title);
 
     void setText(@Nullable final String text);

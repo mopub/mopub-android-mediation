@@ -20,9 +20,9 @@ if (file('Testing').exists()) {
 }
 
 // MoPub SDK
-def mopubSdkDir = file('mopub-android-sdk').exists() &&
-        file(".gitmodules").text.contains('[submodule "mopub-android-sdk"]') ?
-        'mopub-android-sdk' : 'mopub-android-sdk'
+def mopubSdkDir = file('mopub-android').exists() &&
+                  file(".gitmodules").text.contains('[submodule "mopub-android"]') ?
+        'mopub-android' : 'mopub-android-sdk'
 def mopubSdkDirValueFrom = 'settings.gradle file'
 
 if (hasProperty('mopubAndroidSdkDir')) {
