@@ -1,35 +1,34 @@
 package com.mopub.mobileads;
 
-import com.mopub.common.logging.MoPubLog;
-
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
-
 @SuppressWarnings("unused")
 public class MillennialBanner extends VerizonBanner {
 
     private static final String ADAPTER_NAME = MillennialBanner.class.getSimpleName();
+    private static final String PLACEMENT_ID_KEY = "adUnitID";
+    private static final String SITE_ID_KEY = "dcn";
+    private static final String WIDTH_KEY = "adWidth";
+    private static final String HEIGHT_KEY = "adHeight";
 
     public MillennialBanner() {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon Adapter Version: " + VerizonAdapterConfiguration.MEDIATOR_ID);
     }
 
     @Override
     protected String getPlacementIdKey() {
-        return "adUnitID";
+        return PLACEMENT_ID_KEY;
     }
 
     @Override
     protected String getSiteIdKey() {
-        return "dcn";
+        return SITE_ID_KEY;
     }
 
     @Override
     protected String getWidthKey() {
-        return "adWidth";
+        return WIDTH_KEY;
     }
 
     @Override
     protected String getHeightKey() {
-        return "adHeight";
+        return HEIGHT_KEY;
     }
 }

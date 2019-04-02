@@ -9,6 +9,7 @@ import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 
 import com.mopub.common.MoPub;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.verizon.ads.Bid;
 import com.verizon.ads.BidRequestListener;
@@ -32,6 +33,9 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
+import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
+import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
+import static com.mopub.mobileads.VerizonUtils.convertErrorInfoToMoPub;
 
 public class VerizonBanner extends CustomEventBanner {
 
@@ -67,9 +71,7 @@ public class VerizonBanner extends CustomEventBanner {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
                     "serverExtras is null or empty");
 
-            logAndNotifyBannerFailed(LOAD_FAILED,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
 
             return;
         }
@@ -81,9 +83,7 @@ public class VerizonBanner extends CustomEventBanner {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
                         "siteId is empty");
 
-                logAndNotifyBannerFailed(LOAD_FAILED,
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
 
                 return;
             }
@@ -92,9 +92,7 @@ public class VerizonBanner extends CustomEventBanner {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
                         "context is not an Activity");
 
-                logAndNotifyBannerFailed(LOAD_FAILED,
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
 
                 return;
             }
@@ -104,9 +102,7 @@ public class VerizonBanner extends CustomEventBanner {
             if (!success) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to initialize the Verizon SDK");
 
-                logAndNotifyBannerFailed(LOAD_FAILED,
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
 
                 return;
             }
@@ -122,9 +118,7 @@ public class VerizonBanner extends CustomEventBanner {
                     "Ad request to Verizon failed because either the placement ID, or width, or " +
                             "height is empty/null");
 
-            logAndNotifyBannerFailed(LOAD_FAILED,
-                    MoPubErrorCode.INTERNAL_ERROR.getIntCode(),
-                    MoPubErrorCode.INTERNAL_ERROR);
+            logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR);
 
             return;
         }
@@ -135,17 +129,16 @@ public class VerizonBanner extends CustomEventBanner {
         } catch (NumberFormatException e) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE, "Failed to parse ad's width and/or height.", e);
 
-            logAndNotifyBannerFailed(LOAD_FAILED, MoPubErrorCode.INTERNAL_ERROR.getIntCode(),
-                    MoPubErrorCode.INTERNAL_ERROR);
+            logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR);
+
+            return;
         }
 
-        if (adWidth < 0 || adHeight < 0) {
+        if (adWidth <= 0 || adHeight <= 0) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME,
-                    "Ad request to Verizon failed because the width or height is less than 0");
+                    "Ad request to Verizon failed because the width or height is not greater than 0");
 
-            logAndNotifyBannerFailed(LOAD_FAILED,
-                    MoPubErrorCode.INTERNAL_ERROR.getIntCode(),
-                    MoPubErrorCode.INTERNAL_ERROR);
+            logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR);
 
             return;
         }
@@ -193,11 +186,15 @@ public class VerizonBanner extends CustomEventBanner {
                                   final RequestMetadata requestMetadata,
                                   final BidRequestListener bidRequestListener) {
 
-        if (bidRequestListener == null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "bidRequestListener parameter cannot be null.");
-
-            return;
-        }
+        // Fail fast here on null. The Verizon Ads SDK checks for empty downstream.
+        Preconditions.checkNotNull(context, "Super auction bid skipped because the " +
+                "context is null");
+        Preconditions.checkNotNull(placementId, "Super auction bid skipped because the " +
+                "placement ID is null");
+        Preconditions.checkNotNull(adSizes, "Super auction bid skipped because the " +
+                "adSizes list is null");
+        Preconditions.checkNotNull(bidRequestListener, "Super auction bid skipped " +
+                "because the bidRequestListener is null");
 
         final RequestMetadata.Builder builder = new RequestMetadata.Builder(requestMetadata);
         final RequestMetadata actualRequestMetadata = builder
@@ -252,10 +249,10 @@ public class VerizonBanner extends CustomEventBanner {
         return HEIGHT_KEY;
     }
 
-    private void logAndNotifyBannerFailed(MoPubLog.AdapterLogEvent event, int intCode,
-                                          MoPubErrorCode errorCode) {
+    private void logAndNotifyBannerFailed(final MoPubLog.AdapterLogEvent event,
+                                          final MoPubErrorCode errorCode) {
 
-        MoPubLog.log(event, ADAPTER_NAME, intCode, errorCode);
+        MoPubLog.log(event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 
         if (bannerListener != null) {
             bannerListener.onBannerFailed(errorCode);
@@ -299,15 +296,13 @@ public class VerizonBanner extends CustomEventBanner {
         @Override
         public void onError(final InlineAdFactory inlineAdFactory, final ErrorInfo errorInfo) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to load Verizon banner due to error: "
-                    + errorInfo);
+                    + errorInfo.toString());
 
             VerizonUtils.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
-                    final MoPubErrorCode errorCode = VerizonUtils.convertErrorCodeToMoPub(errorInfo.getErrorCode());
-
-                    logAndNotifyBannerFailed(LOAD_FAILED, errorCode.getIntCode(), errorCode);
+                    logAndNotifyBannerFailed(LOAD_FAILED, convertErrorInfoToMoPub(errorInfo));
                 }
             });
         }
@@ -319,15 +314,13 @@ public class VerizonBanner extends CustomEventBanner {
         @Override
         public void onError(final InlineAdView inlineAdView, final ErrorInfo errorInfo) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to show Verizon banner due to error: "
-                    + errorInfo);
+                    + errorInfo.toString());
 
             VerizonUtils.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
-                    final MoPubErrorCode errorCode = VerizonUtils.convertErrorCodeToMoPub(errorInfo.getErrorCode());
-
-                    logAndNotifyBannerFailed(SHOW_FAILED, errorCode.getIntCode(), errorCode);
+                    logAndNotifyBannerFailed(SHOW_FAILED, convertErrorInfoToMoPub(errorInfo));
                 }
             });
         }

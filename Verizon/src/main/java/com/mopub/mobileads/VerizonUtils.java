@@ -3,6 +3,8 @@ package com.mopub.mobileads;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.verizon.ads.ErrorInfo;
+
 import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_FAILED;
 import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_TIMED_OUT;
 import static com.verizon.ads.VASAds.ERROR_NO_FILL;
@@ -15,8 +17,12 @@ public final class VerizonUtils {
         handler.post(runnable);
     }
 
-    static MoPubErrorCode convertErrorCodeToMoPub(final int vasErrorCode) {
-        switch (vasErrorCode) {
+    static MoPubErrorCode convertErrorInfoToMoPub(final ErrorInfo errorInfo) {
+        if (errorInfo == null) {
+            return MoPubErrorCode.UNSPECIFIED;
+        }
+
+        switch (errorInfo.getErrorCode()) {
             case ERROR_NO_FILL:
                 return MoPubErrorCode.NETWORK_NO_FILL;
             case ERROR_AD_REQUEST_TIMED_OUT:

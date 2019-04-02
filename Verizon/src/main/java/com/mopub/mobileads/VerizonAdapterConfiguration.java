@@ -1,6 +1,5 @@
 package com.mopub.mobileads;
 
-import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,17 +16,12 @@ import com.verizon.ads.VASAds;
 
 import java.util.Map;
 
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
-
 public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
 
     public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     public static final String MEDIATOR_ID = "MoPubVAS-" + ADAPTER_VERSION;
 
-    private static final String ADAPTER_NAME = VerizonAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
-    private static final String SITE_ID_KEY = "siteId";
 
     @NonNull
     @Override
