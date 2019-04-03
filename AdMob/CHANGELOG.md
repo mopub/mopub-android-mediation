@@ -1,6 +1,9 @@
 ## Changelog
   * 17.2.0.0
-    * Update the rewarded ad adapter to use Google's new Rewarded Video API.
+    * Update the rewarded ad adapter to use AdMob's new Rewarded Video API
+    * Added two extras to support additional targeting options:
+         * `tagForChildDirectedTreatment` to indicate that the application's content is child-directed.
+         * `tagForUnderAgeOfConsent` to indicate that ad requests is to receive treatment for users in the European Economic Area (EEA) under the age of consent.
 
   * 17.1.2.4
     * AdMob Adapter will now be released as an Android Archive (AAR) file that includes manifest file for AdMob.

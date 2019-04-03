@@ -14,6 +14,9 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
@@ -28,9 +31,9 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     private static final String AD_UNIT_ID_KEY = "adUnitID";
     private static final String ADAPTER_NAME = GooglePlayServicesInterstitial.class.getSimpleName();
     private static final String CONTENT_URL_KEY = "contentUrl";
-    private static final String TEST_DEVICES_KEY = "testDevices";
     private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
     private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
+    private static final String TEST_DEVICES_KEY = "testDevices";
 
     @NonNull
     private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
@@ -99,23 +102,18 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
         if (localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY) != null) {
-            String childDirected = localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY).toString();
-            if (!TextUtils.isEmpty(childDirected)) {
-                builder.tagForChildDirectedTreatment(Boolean.parseBoolean(childDirected));
-            }
+            boolean childDirected = (boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+            builder.tagForChildDirectedTreatment(childDirected);
         }
 
-        // Publishers may want to mark your their requests to receive treatment for users in the
+        // Publishers may want to mark their requests to receive treatment for users in the
         // European Economic Area (EEA) under the age of consent.
         if (localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY) != null) {
-            String underAgeOfConsent = localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY).toString();
-            if (!TextUtils.isEmpty(underAgeOfConsent)) {
-                boolean flag = Boolean.parseBoolean(underAgeOfConsent);
-                if (flag) {
-                    builder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
-                } else {
-                    builder.setTagForUnderAgeOfConsent(AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
-                }
+            boolean underAgeOfConsent = (boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+            if (underAgeOfConsent) {
+                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+            } else {
+                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
             }
         }
 
