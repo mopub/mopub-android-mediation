@@ -186,7 +186,6 @@ public class VerizonBanner extends CustomEventBanner {
                                   final RequestMetadata requestMetadata,
                                   final BidRequestListener bidRequestListener) {
 
-        // Fail fast here on null. The Verizon Ads SDK checks for empty downstream.
         Preconditions.checkNotNull(context, "Super auction bid skipped because the " +
                 "context is null");
         Preconditions.checkNotNull(placementId, "Super auction bid skipped because the " +
@@ -195,6 +194,20 @@ public class VerizonBanner extends CustomEventBanner {
                 "adSizes list is null");
         Preconditions.checkNotNull(bidRequestListener, "Super auction bid skipped " +
                 "because the bidRequestListener is null");
+
+        if (TextUtils.isEmpty(placementId)) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Super auction bid skipped because the " +
+                    "placement ID is empty");
+
+            return;
+        }
+
+        if (adSizes.isEmpty()) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Super auction bid skipped because the " +
+                    "adSizes list is empty");
+
+            return;
+        }
 
         final RequestMetadata.Builder builder = new RequestMetadata.Builder(requestMetadata);
         final RequestMetadata actualRequestMetadata = builder

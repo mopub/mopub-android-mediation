@@ -142,13 +142,19 @@ public class VerizonInterstitial extends CustomEventInterstitial {
     public static void requestBid(final Context context, final String placementId, final RequestMetadata requestMetadata,
                                   final BidRequestListener bidRequestListener) {
 
-        // Fail fast here on null. The Verizon Ads SDK checks for empty downstream.
         Preconditions.checkNotNull(context, "Super auction bid skipped because context " +
                 "is null");
         Preconditions.checkNotNull(placementId, "Super auction bid skipped because the " +
                 "placement ID is null");
         Preconditions.checkNotNull(bidRequestListener, "Super auction bid skipped because " +
                 "the bidRequestListener is null");
+
+        if (TextUtils.isEmpty(placementId)) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Super auction bid skipped because the " +
+                    "placement ID is empty");
+
+            return;
+        }
 
         final RequestMetadata.Builder builder = new RequestMetadata.Builder(requestMetadata);
         final RequestMetadata actualRequestMetadata = builder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
