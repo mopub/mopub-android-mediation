@@ -57,10 +57,9 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     private static final String KEY_CONTENT_URL = "contentUrl";
 
     /**
-     * Key to set and obtain the bundle whether the user does not consent to receive personalized
-     * ads.
+     * Key to set and obtain the flag whether the user consents to receive personalized ads.
      */
-    private static final String NPA_BUNDLE_KEY = "npaBundle";
+    private static final String NPA_KEY = "npa";
 
     /**
      * Key to set and obtain the flag whether the application's content is child-directed.
@@ -86,13 +85,17 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     /**
      * Google Mobile Ads rewarded video ad unit ID.
      */
-    @NonNull
     private String mAdUnitId = "";
 
     /**
      * The Google Rewarded Video Ad instance.
      */
     private RewardedAd mRewardedAd;
+
+    /**
+     * Flag to determine whether or not the Google Rewarded Video Ad instance has loaded.
+     */
+    private boolean mIsLoaded;
 
     /**
      * A Weak reference of the activity used to show the Google Rewarded Video Ad
@@ -143,7 +146,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
                 MobileAds.initialize(launcherActivity, serverExtras.get(KEY_EXTRA_APPLICATION_ID));
             }
 
-            if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
+            mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
+            if (TextUtils.isEmpty(mAdUnitId)) {
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
                         MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                         MoPubErrorCode.NETWORK_NO_FILL);
@@ -154,7 +158,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
                         MoPubErrorCode.NETWORK_NO_FILL);
                 return false;
             }
-            mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
 
             mGooglePlayServicesAdapterConfiguration
                     .setCachedInitializationParameters(launcherActivity, serverExtras);
@@ -170,14 +173,18 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
                                           @NonNull final Map<String, String> serverExtras)
             throws Exception {
 
-        if (TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_UNIT_ID))) {
+        mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
+        if (TextUtils.isEmpty(mAdUnitId)) {
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
                     GooglePlayServicesRewardedVideo.class,
                     GooglePlayServicesRewardedVideo.class.getSimpleName(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             return;
         }
-        mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
 
         mWeakActivity = new WeakReference<>(activity);
         mRewardedAd = new RewardedAd(activity, mAdUnitId);
@@ -210,7 +217,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         // forward this information to Google.
         Boolean isTFCD = GooglePlayServicesMediationSettings.isTaggedForChildDirectedTreatment();
         if (isTFCD != null) {
-            builder.tagForChildDirectedTreatment(isTFCD.booleanValue());
+            builder.tagForChildDirectedTreatment(isTFCD);
         }
 
         // Publishers may want to mark their requests to receive treatment for users
@@ -233,16 +240,16 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     private void forwardNpaIfSet(AdRequest.Builder builder) {
         // Only forward the "npa" bundle if it is explicitly set.
         // Otherwise, don't attach it with the ad request.
-        if (GooglePlayServicesMediationSettings.getNpaBundle() != null &&
-                !GooglePlayServicesMediationSettings.getNpaBundle().isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class,
-                    GooglePlayServicesMediationSettings.getNpaBundle());
+        if (!TextUtils.isEmpty(GooglePlayServicesMediationSettings.getNpaValue())) {
+            Bundle npaBundle = new Bundle();
+            npaBundle.putString("npa", GooglePlayServicesMediationSettings.getNpaValue());
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
     }
 
     @Override
     protected boolean hasVideoAvailable() {
-        return mRewardedAd != null && mRewardedAd.isLoaded();
+        return mRewardedAd != null && mIsLoaded;
     }
 
     @Override
@@ -266,6 +273,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     private RewardedAdLoadCallback mRewardedAdLoadCallback = new RewardedAdLoadCallback() {
         @Override
         public void onRewardedAdLoaded() {
+            mIsLoaded = true;
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
@@ -335,24 +343,17 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
      * error code.
      */
     private MoPubErrorCode getMoPubRequestErrorCode(int error) {
-        MoPubErrorCode errorCode;
         switch (error) {
             case AdRequest.ERROR_CODE_INTERNAL_ERROR:
-                errorCode = MoPubErrorCode.INTERNAL_ERROR;
-                break;
+                return MoPubErrorCode.INTERNAL_ERROR;
             case AdRequest.ERROR_CODE_INVALID_REQUEST:
-                errorCode = MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
-                break;
+                return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
             case AdRequest.ERROR_CODE_NETWORK_ERROR:
-                errorCode = MoPubErrorCode.NO_CONNECTION;
-                break;
+                return MoPubErrorCode.NO_CONNECTION;
             case AdRequest.ERROR_CODE_NO_FILL:
-                errorCode = MoPubErrorCode.NO_FILL;
-                break;
-            default:
-                errorCode = MoPubErrorCode.UNSPECIFIED;
+                return MoPubErrorCode.NO_FILL;
         }
-        return errorCode;
+        return MoPubErrorCode.UNSPECIFIED;
     }
 
     /**
@@ -364,35 +365,25 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
      * error code thrown when showing Rewarded Video Ads.
      */
     private MoPubErrorCode getMoPubShowErrorCode(int error) {
-        MoPubErrorCode errorCode;
         switch (error) {
             case RewardedAdCallback.ERROR_CODE_AD_REUSED:
-                errorCode = MoPubErrorCode.INTERNAL_ERROR;
-                break;
+                return MoPubErrorCode.INTERNAL_ERROR;
             case RewardedAdCallback.ERROR_CODE_APP_NOT_FOREGROUND:
-                errorCode = MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
-                break;
+                return MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
             case RewardedAdCallback.ERROR_CODE_INTERNAL_ERROR:
-                errorCode = MoPubErrorCode.INTERNAL_ERROR;
-                break;
+                return MoPubErrorCode.INTERNAL_ERROR;
             case RewardedAdCallback.ERROR_CODE_NOT_READY:
-                errorCode = MoPubErrorCode.WARMUP;
-                break;
-            default:
-                errorCode = MoPubErrorCode.UNSPECIFIED;
+                return MoPubErrorCode.WARMUP;
         }
-        return errorCode;
+        return MoPubErrorCode.UNSPECIFIED;
     }
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {
-        private static Bundle npaBundle;
+        private static String npaValue;
         private static String contentUrl;
         private static String testDeviceId;
-        private static Boolean taggedForChildDirectedTreatment = null;
-        private static Boolean taggedForUnderAgeOfConsent = null;
-
-        public GooglePlayServicesMediationSettings() {
-        }
+        private static Boolean taggedForChildDirectedTreatment;
+        private static Boolean taggedForUnderAgeOfConsent;
 
         public GooglePlayServicesMediationSettings(@NonNull Bundle bundle) {
             if (bundle.containsKey(KEY_CONTENT_URL)) {
@@ -403,8 +394,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
                 testDeviceId = bundle.getString(TEST_DEVICES_KEY);
             }
 
-            if (bundle.containsKey(NPA_BUNDLE_KEY)) {
-                npaBundle = bundle.getBundle(NPA_BUNDLE_KEY);
+            if (bundle.containsKey(NPA_KEY)) {
+                npaValue = bundle.getString(NPA_KEY);
             }
 
             if (bundle.containsKey(TAG_FOR_CHILD_DIRECTED_KEY)) {
@@ -416,8 +407,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
             }
         }
 
-        public void setNpaBundle(Bundle bundle) {
-            npaBundle = bundle;
+        public void setNpaValue(String npa) {
+            npaValue = npa;
         }
 
         public void setContentUrl(String url) {
@@ -440,8 +431,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
         available to publishers importing the modularized SDK(s) based on select ad formats.
         This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
-        private static Bundle getNpaBundle() {
-            return npaBundle;
+        private static String getNpaValue() {
+            return npaValue;
         }
 
         private static String getContentUrl() {

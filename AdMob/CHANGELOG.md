@@ -1,9 +1,14 @@
 ## Changelog
   * 17.2.0.0
-    * Update the rewarded ad adapter to use AdMob's new Rewarded Video API
-    * Added two extras to support additional targeting options:
+    * This version of the adapters has been certified with AdMob 17.2.0.
+    * Update the rewarded ad adapter to use AdMob's new Rewarded Video API. For more details, check AdMob's [Rewarded Ads - New APIs guide](https://developers.google.com/admob/android/rewarded-ads).
+    * The following mediation settings are now available, with two new additions:
+         * `testDeviceId` to be used as a test device when making an ad request to AdMob.
+         * `contentUrl` to be used as keyword targeting for applications that monetize content matching a webpage.
+         * `npa` to indicate that ad requests should be personalized or not.
          * `tagForChildDirectedTreatment` to indicate that the application's content is child-directed.
          * `tagForUnderAgeOfConsent` to indicate that ad requests is to receive treatment for users in the European Economic Area (EEA) under the age of consent.
+    * Mediation settings are now passed in a single `Bundle` object instead of using constructors to pass data separately.
 
   * 17.1.2.4
     * AdMob Adapter will now be released as an Android Archive (AAR) file that includes manifest file for AdMob.

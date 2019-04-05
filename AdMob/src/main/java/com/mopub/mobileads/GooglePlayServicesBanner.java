@@ -112,15 +112,15 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
-        if (localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY) != null) {
-            boolean childDirected = (boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+        Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+        if (childDirected != null) {
             builder.tagForChildDirectedTreatment(childDirected);
         }
 
         // Publishers may want to mark their requests to receive treatment for users in the
         // European Economic Area (EEA) under the age of consent.
-        if (localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY) != null) {
-            boolean underAgeOfConsent = (boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+        Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+        if (underAgeOfConsent != null) {
             if (underAgeOfConsent) {
                 builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
             } else {
@@ -157,9 +157,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     private void forwardNpaIfSet(AdRequest.Builder builder) {
 
         // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        if (GooglePlayServicesMediationSettings.getNpaBundle() != null &&
-                !GooglePlayServicesMediationSettings.getNpaBundle().isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, GooglePlayServicesMediationSettings.getNpaBundle());
+        if (!TextUtils.isEmpty(GooglePlayServicesMediationSettings.getNpaValue())) {
+            Bundle npaBundle = new Bundle();
+            npaBundle.putString("npa", GooglePlayServicesMediationSettings.getNpaValue());
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
     }
 
@@ -264,25 +265,25 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     }
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {
-        private static Bundle npaBundle;
+        private static String npaValue;
 
         public GooglePlayServicesMediationSettings() {
         }
 
-        public GooglePlayServicesMediationSettings(Bundle bundle) {
-            npaBundle = bundle;
+        public GooglePlayServicesMediationSettings(String npa) {
+            npaValue = npa;
         }
 
-        public void setNpaBundle(Bundle bundle) {
-            npaBundle = bundle;
+        public void setNpaValue(String value) {
+            npaValue = value;
         }
 
         /* The MoPub Android SDK queries MediationSettings from the rewarded video code
         (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
         available to publishers importing the modularized SDK(s) based on select ad formats.
         This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
-        private static Bundle getNpaBundle() {
-            return npaBundle;
+        private static String getNpaValue() {
+            return npaValue;
         }
     }
 
