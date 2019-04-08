@@ -138,10 +138,9 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     private void forwardNpaIfSet(AdRequest.Builder builder) {
 
         // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        if (!TextUtils.isEmpty(GooglePlayServicesMediationSettings.getNpaValue())) {
-            Bundle npaBundle = new Bundle();
-            npaBundle.putString("npa", GooglePlayServicesMediationSettings.getNpaValue());
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
+        if (GooglePlayServicesMediationSettings.getNpaBundle() != null &&
+                !GooglePlayServicesMediationSettings.getNpaBundle().isEmpty()) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, GooglePlayServicesMediationSettings.getNpaBundle());
         }
     }
 
@@ -251,25 +250,25 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     }
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {
-        private static String npaValue;
+        private static Bundle npaBundle;
 
         public GooglePlayServicesMediationSettings() {
         }
 
-        public GooglePlayServicesMediationSettings(String npa) {
-            npaValue = npa;
+        public GooglePlayServicesMediationSettings(Bundle bundle) {
+            npaBundle = bundle;
         }
 
-        public void setNpaValue(String value) {
-            npaValue = value;
+        public void setNpaBundle(Bundle bundle) {
+            npaBundle = bundle;
         }
 
         /* The MoPub Android SDK queries MediationSettings from the rewarded video code
         (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
         available to publishers importing the modularized SDK(s) based on select ad formats.
         This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
-        private static String getNpaValue() {
-            return npaValue;
+        private static Bundle getNpaBundle() {
+            return npaBundle;
         }
     }
 
