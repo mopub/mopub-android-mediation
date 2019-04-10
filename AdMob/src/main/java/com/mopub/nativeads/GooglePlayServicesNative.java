@@ -446,19 +446,17 @@ public class GooglePlayServicesNative extends CustomEventNative {
             requestBuilder.setRequestAgent("MoPub");
 
             // Publishers may append a content URL by passing it to the MoPubNative.setLocalExtras() call.
-            if (localExtras.get(KEY_CONTENT_URL) != null) {
-                String contentUrl = localExtras.get(KEY_CONTENT_URL).toString();
-                if (!TextUtils.isEmpty(contentUrl)) {
-                    requestBuilder.setContentUrl(contentUrl);
-                }
+            String contentUrl = (String) localExtras.get(KEY_CONTENT_URL);
+
+            if (!TextUtils.isEmpty(contentUrl)) {
+                requestBuilder.setContentUrl(contentUrl);
             }
 
             // Publishers may request for test ads by passing test device IDs to the MoPubNative.setLocalExtras() call.
-            if (localExtras.get(TEST_DEVICES_KEY) != null) {
-                String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
-                if (!TextUtils.isEmpty(testDeviceId)) {
-                    requestBuilder.addTestDevice(testDeviceId);
-                }
+            String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+
+            if (!TextUtils.isEmpty(testDeviceId)) {
+                requestBuilder.addTestDevice(testDeviceId);
             }
 
             // Consent collected from the MoPub’s consent dialogue should not be used to set up
@@ -468,6 +466,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
             // Publishers may want to indicate that their content is child-directed and forward this
             // information to Google.
             Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+
             if (childDirected != null) {
                 requestBuilder.tagForChildDirectedTreatment(childDirected);
             }
@@ -475,6 +474,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
             // Publishers may want to mark their requests to receive treatment for users in the
             // European Economic Area (EEA) under the age of consent.
             Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+
             if (underAgeOfConsent != null) {
                 if (underAgeOfConsent) {
                     requestBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
@@ -648,7 +648,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
             npaBundle = bundle;
         }
 
-        public void setNpaValue(Bundle bundle) {
+        public void setNpaBundle(Bundle bundle) {
             npaBundle = bundle;
         }
 

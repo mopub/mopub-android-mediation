@@ -91,19 +91,17 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubView.setLocalExtras() call.
-        if (localExtras.get(CONTENT_URL_KEY) != null) {
-            String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
-            if (!TextUtils.isEmpty(contentUrl)) {
-                builder.setContentUrl(contentUrl);
-            }
+        String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
+
+        if (!TextUtils.isEmpty(contentUrl)) {
+            builder.setContentUrl(contentUrl);
         }
 
         // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
-        if (localExtras.get(TEST_DEVICES_KEY) != null) {
-            String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
-            if (!TextUtils.isEmpty(testDeviceId)) {
-                builder.addTestDevice(testDeviceId);
-            }
+        String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+
+        if (!TextUtils.isEmpty(testDeviceId)) {
+            builder.addTestDevice(testDeviceId);
         }
 
         // Consent collected from the MoPub’s consent dialogue should not be used to set up
@@ -113,6 +111,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
         Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+
         if (childDirected != null) {
             builder.tagForChildDirectedTreatment(childDirected);
         }
@@ -120,6 +119,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         // Publishers may want to mark their requests to receive treatment for users in the
         // European Economic Area (EEA) under the age of consent.
         Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+
         if (underAgeOfConsent != null) {
             if (underAgeOfConsent) {
                 builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
@@ -273,8 +273,8 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             npaBundle = bundle;
         }
 
-        public void setNpaBundle(Bundle value) {
-            npaBundle = value;
+        public void setNpaBundle(Bundle bundle) {
+            npaBundle = bundle;
         }
 
         /* The MoPub Android SDK queries MediationSettings from the rewarded video code

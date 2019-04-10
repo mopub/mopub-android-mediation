@@ -196,6 +196,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         // GooglePlayServicesMediationSettings instance when initializing the MoPub SDK:
         // https://developers.mopub.com/docs/mediation/networks/google/#android
         String contentUrl = GooglePlayServicesMediationSettings.getContentUrl();
+
         if (!TextUtils.isEmpty(contentUrl)) {
             builder.setContentUrl(contentUrl);
         }
@@ -204,6 +205,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         // GooglePlayServicesMediationSettings instance when initializing the MoPub SDK:
         // https://developers.mopub.com/docs/mediation/networks/google/#android
         String testDeviceId = GooglePlayServicesMediationSettings.getTestDeviceId();
+
         if (!TextUtils.isEmpty(testDeviceId)) {
             builder.addTestDevice(testDeviceId);
         }
@@ -216,6 +218,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         // Publishers may want to indicate that their content is child-directed and
         // forward this information to Google.
         Boolean isTFCD = GooglePlayServicesMediationSettings.isTaggedForChildDirectedTreatment();
+
         if (isTFCD != null) {
             builder.tagForChildDirectedTreatment(isTFCD);
         }
@@ -223,6 +226,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         // Publishers may want to mark their requests to receive treatment for users
         // in the European Economic Area (EEA) under the age of consent.
         Boolean isTFUA = GooglePlayServicesMediationSettings.isTaggedForUnderAgeOfConsent();
+
         if (isTFUA != null) {
             if (isTFUA) {
                 builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
