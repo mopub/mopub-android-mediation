@@ -1,0 +1,100 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.0'
+        classpath 'com.novoda:bintray-release:0.9'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.10.1'
+}
+
+
+// Parts of the subproject build instructions that are totally generic go here.
+// (Any parts that depend on values set in the subproject's build.gradle go in shared-build.gradle
+// instead.)
+
+subprojects {
+    project.group = 'com.mopub.mobileads'
+
+    repositories {
+        google()
+        jcenter()
+        // Some network SDKs are found in the following additional repositories:
+        maven { url "https://adcolony.bintray.com/AdColony" }
+        maven { url 'https://dl.bintray.com/ironsource-mobile/android-sdk'}
+        maven { url 'https://jitpack.io' }  // Vungle
+        maven { url 'https://tapjoy.bintray.com/maven' }
+    }
+
+    if (project.name == 'Testing')
+        apply plugin: 'com.android.application'
+    else
+        apply plugin: 'com.android.library'
+
+    android {
+        // Keep these SDK versions (compile, min, target) in sync with mopub-sdk/shared-build.gradle
+        compileSdkVersion 28
+
+        defaultConfig {
+            minSdkVersion 16
+            targetSdkVersion 28
+        }
+
+        buildTypes {
+            release { minifyEnabled false }
+            debug { minifyEnabled false }
+        }
+
+        lintOptions {
+            abortOnError false
+        }
+    }
+
+    dependencies {
+        implementation ('com.mopub:mopub-sdk') {
+            transitive = true
+
+            // Do not include viewability code -- pub must opt in explicitly in their own .gradle file
+            exclude module: 'libAvid-mopub'
+            exclude module: 'moat-mobile-app-kit'
+        }
+    }
+
+    // Adapters only, please.
+    if (project.name != 'Testing') {
+        // Support for publishing to bintray.
+        // See https://github.com/novoda/bintray-release/wiki for documentation.
+        apply plugin: 'com.novoda.bintray-release'
+
+        publish {
+            repoName = 'mopub-android-mediation'
+            userOrg = 'mopub'
+            website = 'https://github.com/mopub/mopub-android-mediation'
+
+            // dryRun is enabled by default to prevent accidental publication.  It can be overridden on
+            // the command line like this:
+            //    ./gradlew AdColony:bintrayUpload -Pbintray.dryrun=false
+            dryRun = project.hasProperty('bintray.dryrun') ? project.getProperty('bintray.dryrun') : true
+
+            // Gradle chokes on an empty string if you actually try to execute the publish tasks, even in a dry
+            // run situation.  So to enable dry runs, use "foo" and "bar" as fake values (when dryRun is true).
+            bintrayUser = project.hasProperty('bintray.user') ? project.getProperty('bintray.user') : dryRun ? 'foo' : ''
+            bintrayKey = project.hasProperty('bintray.apikey') ? project.getProperty('bintray.apikey') : dryRun ? 'bar' : ''
+
+            // The rest of the options are in shared-build.gradle.
+        }
+    }
+}
+

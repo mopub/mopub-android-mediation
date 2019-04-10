@@ -1,4 +1,21 @@
 ## Changelog
+  * 17.1.2.4
+    * AdMob Adapter will now be released as an Android Archive (AAR) file that includes manifest file for AdMob.
+
+  * 17.1.2.3
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `GooglePlayServicesAdapterConfiguration` class to: 
+         * pre-initialize the AdMob SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
+
+  * 17.1.2.2
+    * Allow publishers to pass test device IDs to the adapters (via localExtras) to get test ads from AdMob.
+    * Guard against a NullPointerException for rewarded video.
+
+  * 17.1.2.1
+    * Add support for publishers to pass a content URL to AdMob's ad request via the localExtras (if set). For more information on content mapping for apps, see https://support.google.com/admob/answer/6270563?hl=en.
+
   * 17.1.2.0
     * This version of the adapters has been certified with AdMob 17.1.2.
 
