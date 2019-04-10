@@ -1,0 +1,8 @@
+project.version = '3.3.8.1'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.adcolony:sdk:${sdkVersion}"
+}
+

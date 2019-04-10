@@ -1,0 +1,8 @@
+project.version = '1.0.2.0'
+project.ext.networkName = 'Verizon'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.verizon.ads:android-vas-standard-edition:${sdkVersion}"
+}
