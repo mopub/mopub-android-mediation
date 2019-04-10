@@ -10,6 +10,7 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.ironsource.sdk.utils.Logger;
 import com.mopub.common.BaseAdapterConfiguration;
+import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -25,12 +26,13 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
     // ironSource's keys
     private static final String APPLICATION_KEY = "applicationKey";
     private static final String MEDIATION_TYPE = "mopub";
-    private static final String IRONSOURCE_ADAPTER_VERSION = "300";
+    private static final String IRONSOURCE_ADAPTER_VERSION = "310";
 
     // Adapter's keys
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String ADAPTER_NAME = IronSourceAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String MOPUB_SDK_VERSION = MoPub.SDK_VERSION;
 
     @NonNull
     @Override
@@ -48,6 +50,11 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
     @Override
     public String getMoPubNetworkName() {
         return MOPUB_NETWORK_NAME;
+    }
+
+
+    private String getMopubSdkVersion(){
+        return MOPUB_SDK_VERSION.replace(".", "");
     }
 
     @NonNull
@@ -83,11 +90,8 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
                                 " started. Ensure ironSource's " + APPLICATION_KEY +
                                 " is populated on the MoPub dashboard.");
                     } else {
-                        IronSource.setMediationType(MEDIATION_TYPE + IRONSOURCE_ADAPTER_VERSION);
-                        IronSource.initISDemandOnly((Activity) context, appKey,
-                                IronSource.AD_UNIT.REWARDED_VIDEO);
-                        IronSource.initISDemandOnly((Activity) context, appKey,
-                                IronSource.AD_UNIT.INTERSTITIAL);
+                        IronSource.setMediationType(MEDIATION_TYPE + IRONSOURCE_ADAPTER_VERSION + "SDK" + getMopubSdkVersion());
+                        IronSource.initISDemandOnly((Activity)context, appKey, IronSource.AD_UNIT.REWARDED_VIDEO,IronSource.AD_UNIT.INTERSTITIAL);
 
                         networkInitializationSucceeded = true;
                     }
