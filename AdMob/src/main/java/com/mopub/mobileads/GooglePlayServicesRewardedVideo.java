@@ -86,41 +86,11 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo im
         @Override
         public void onPause(@NonNull Activity activity) {
             super.onPause(activity);
-			
-			final Activity tmpActivity = activity;
-			
-            if (mRewardedVideoAd != null) {
-				//	Run on main UI thread
-				if (Looper.myLooper() != Looper.getMainLooper()) {
-					activity.runOnUiThread(new Runnable() {
-						@Override public void run() {
-							mRewardedVideoAd.pause(tmpActivity);
-						}
-					});
-				} else {
-					mRewardedVideoAd.pause(activity);
-				}
-			}
 		}
 
         @Override
         public void onResume(@NonNull Activity activity) {
             super.onResume(activity);
-			
-			final Activity tmpActivity = activity;
-			
-            if (mRewardedVideoAd != null) {
-				//	Run on main UI thread
-				if(Looper.myLooper() != Looper.getMainLooper()) {
-					activity.runOnUiThread(new Runnable() {
-						@Override public void run() {
-							mRewardedVideoAd.resume(tmpActivity);
-						}
-					});
-				} else {
-					mRewardedVideoAd.resume(activity);
-				}
-			}
 		}
     };
 
