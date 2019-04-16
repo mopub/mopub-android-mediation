@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.BidderTokenProvider;
 import com.mopub.common.BaseAdapterConfiguration;
+import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -64,7 +65,9 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
 
         synchronized (FacebookAdapterConfiguration.class) {
             try {
-                AudienceNetworkAds.initialize(context);
+                AudienceNetworkAds.buildInitSettings(context)
+                    .withMediationService("MOPUB_" + MoPub.SDK_VERSION + ":" +ADAPTER_VERSION)
+                    .initialize();
                 refreshBidderToken(context);
                 networkInitializationSucceeded.set(true);
             } catch (Exception e) {

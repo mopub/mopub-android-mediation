@@ -8,12 +8,10 @@ import android.text.TextUtils;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
-import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
 import com.facebook.ads.AudienceNetworkAds;
 import com.mopub.common.DataKeys;
-import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 
@@ -93,7 +91,6 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
             }
             return;
         }
-        AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
         mFacebookBanner = new AdView(context, placementId, adSize);
         mFacebookBanner.setAdListener(this);
