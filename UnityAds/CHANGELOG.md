@@ -1,4 +1,7 @@
 ## Changelog
+  * 3.0.1.3
+    * Make `placementId` not static in `UnityRewardedVideo` to fix missing callbacks for multiple rewarded video ad requests.
+
   * 3.0.1.2
     * Pass MoPub's log level to Unity Ads. To adjust Unity Ads' log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
 
