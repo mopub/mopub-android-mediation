@@ -1,4 +1,24 @@
 ## Changelog
+  * 12.2.0.3
+    * Tapjoy Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [Tapjoy manifest changes](https://dev.tapjoy.com/sdk-integration/android/getting-started-guide-publishers-android/#toc_add-app-permissions-and-activities).
+
+  * 12.2.0.2
+    * Prevent a null SDK Key from being passed to Tapjoy's initialization call.
+
+  * 12.2.0.1
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `TapjoyAdapterConfiguration` class to: 
+         * pre-initialize the Tapjoy SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+         * return the Advanced Biding token previously returned by `TapjoyAdvancedBidder.java`
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
+
+  * 12.2.0.0
+    * This version of the adapters has been certified with Tapjoy 12.2.0.
+    
+  * 12.1.0.1
+    * Pass the signal from `MoPub.canCollectPersonalInformation()` as a consent status to Tapjoy for consistency with the other mediated adapters.
+
   * 12.1.0.0
     * This version of the adapters has been certified with Tapjoy 12.1.0.
 

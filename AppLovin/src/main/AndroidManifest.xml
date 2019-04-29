@@ -1,0 +1,4 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mopub.mobileads.applovin">
+    <!-- AppLovin's SDK is packaged as an AAR and includes its own Android Manifest file -->
+</manifest>

@@ -1,0 +1,9 @@
+project.version = '11.5.0.1'
+project.ext.networkName = 'yahoo'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.flurry.android:ads:${sdkVersion}@aar"
+    implementation "com.flurry.android:analytics:${sdkVersion}@aar"
+}

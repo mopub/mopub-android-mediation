@@ -1,4 +1,22 @@
 ## Changelog
+ * 5.2.0.1
+    * Facebook Audience Network Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [FAN manifest changes](https://developers.facebook.com/docs/audience-network/android-interstitial/).
+
+  * 5.2.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.2.0. 
+    * Add `FacebookTemplateRenderer.java` to render native ads using [predefined layouts from Facebook Audience Network](https://developers.facebook.com/docs/audience-network/android/nativeadtemplate). You won't need to bind to your XML layouts/views; instead of creating a new `FacebookAdRenderer`, simply create a new `FacebookTemplateRenderer` and pass in a new `NativeAdViewAttributes()`.
+    * Replace `AdChoiceView` with `AdOptionsView`.
+
+  * 5.1.0.2
+    * Fix an ANR when getting the bidding token by calling Facebook's `BidderTokenProvider.getBidderToken()` from a background thread.
+
+  * 5.1.0.1
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `FacebookAdapterConfiguration` class to: 
+         * pre-initialize the Facebook Audience Network SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+         * return the Advanced Biding token previously returned by `FacebookAdvancedBidder.java`
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
 
   * 5.1.0.0
     * This version of the adapters has been certified with Facebook Audience Network 5.1.0
