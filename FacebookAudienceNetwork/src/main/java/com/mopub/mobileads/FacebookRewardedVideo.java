@@ -8,13 +8,11 @@ import android.text.TextUtils;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
-import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
-import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
@@ -110,8 +108,6 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
                 MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                 return;
             }
-
-            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
             final String adm = serverExtras.get(DataKeys.ADM_KEY);
             if (!TextUtils.isEmpty(adm)) {

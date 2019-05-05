@@ -1,4 +1,7 @@
 ## Changelog
+  * 12.2.1.1
+    * Refactor the `MediationSettings` implementation to maintain consistency with the MoPub Unity SDK.
+
   * 12.2.1.0
     * This version of adapters has been certified with Tapjoy 12.2.1.
     * Check if the Tapjoy placement instance is `null` before accessing it in the `TapjoyRewardedVideo` and `TapjoyInterstitial` adapters.

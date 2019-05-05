@@ -93,6 +93,17 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
             mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
+        // Check to see if app ID parameter is present. If not AdColony will not return an ad.
+        // So there's no need to make a request. If so, must fail and log the flow.
+        if (TextUtils.isEmpty(appId) || TextUtils.equals(appId, DEFAULT_APP_ID)) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AppId parameter cannot be empty. " +
+                    "Please make sure you enter correct AppId on the MoPub Dashboard " +
+                    "for AdColony.");
+
+            customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            return;
+        }
+
         AdColonyAppOptions mAdColonyAppOptions = null;
         if (!TextUtils.isEmpty(clientOptions)) {
             mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(clientOptions);

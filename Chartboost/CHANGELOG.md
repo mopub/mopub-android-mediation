@@ -1,4 +1,7 @@
 ## Changelog
+  * 7.3.1.4
+    * Refactor the `MediationSettings` implementation to maintain consistency with the MoPub Unity SDK.
+
   * 7.3.1.3
     * Pass MoPub's log level to Chartboost. To adjust Chartboost's log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
 

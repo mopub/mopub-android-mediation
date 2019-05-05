@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
@@ -68,6 +71,17 @@ public class GooglePlayServicesNative extends CustomEventNative {
      * Key to set and obtain the content URL to be passed with AdMob's ad request.
      */
     private static final String KEY_CONTENT_URL = "contentUrl";
+
+    /**
+     * Key to set and obtain the flag whether the application's content is child-directed.
+     */
+    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+
+    /**
+     * Key to set and obtain the flag to mark ad requests to Google to receive treatment for
+     * users in the European Economic Area (EEA) under the age of consent.
+     */
+    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
 
     /**
      * Key to set and obtain the test device ID String to be passed with AdMob's ad request.
@@ -432,31 +446,48 @@ public class GooglePlayServicesNative extends CustomEventNative {
             requestBuilder.setRequestAgent("MoPub");
 
             // Publishers may append a content URL by passing it to the MoPubNative.setLocalExtras() call.
-            if (localExtras.get(KEY_CONTENT_URL) != null) {
-                String contentUrl = localExtras.get(KEY_CONTENT_URL).toString();
-                if (!TextUtils.isEmpty(contentUrl)) {
-                    requestBuilder.setContentUrl(contentUrl);
-                }
+            String contentUrl = (String) localExtras.get(KEY_CONTENT_URL);
+
+            if (!TextUtils.isEmpty(contentUrl)) {
+                requestBuilder.setContentUrl(contentUrl);
             }
 
             // Publishers may request for test ads by passing test device IDs to the MoPubNative.setLocalExtras() call.
-            if (localExtras.get(TEST_DEVICES_KEY) != null) {
-                String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
-                if (!TextUtils.isEmpty(testDeviceId)) {
-                    requestBuilder.addTestDevice(testDeviceId);
-                }
+            String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+
+            if (!TextUtils.isEmpty(testDeviceId)) {
+                requestBuilder.addTestDevice(testDeviceId);
             }
 
             // Consent collected from the MoPub’s consent dialogue should not be used to set up
             // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
             forwardNpaIfSet(requestBuilder);
 
+            // Publishers may want to indicate that their content is child-directed and forward this
+            // information to Google.
+            Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+
+            if (childDirected != null) {
+                requestBuilder.tagForChildDirectedTreatment(childDirected);
+            }
+
+            // Publishers may want to mark their requests to receive treatment for users in the
+            // European Economic Area (EEA) under the age of consent.
+            Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+
+            if (underAgeOfConsent != null) {
+                if (underAgeOfConsent) {
+                    requestBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+                } else {
+                    requestBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                }
+            }
+
             AdRequest adRequest = requestBuilder.build();
             adLoader.loadAd(adRequest);
 
             MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
         }
-
 
         private void forwardNpaIfSet(AdRequest.Builder builder) {
 
@@ -521,7 +552,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
                     && unifiedNativeAd.getIcon() != null
                     && unifiedNativeAd.getCallToAction() != null);
         }
-
 
         @Override
         public void prepare(@NonNull View view) {

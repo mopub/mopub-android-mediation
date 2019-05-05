@@ -1,4 +1,10 @@
 ## Changelog
+ * 9.5.4.0
+    * This version of the adapters has been certified with AppLovin 9.5.4.
+
+ * 9.4.2.0
+    * This version of the adapters has been certified with AppLovin 9.4.2.
+
  * 9.4.0.0
     * This version of the adapters has been certified with AppLovin 9.4.0.
     * Pass MoPub's log level to AppLovin. To adjust AppLovin's log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).

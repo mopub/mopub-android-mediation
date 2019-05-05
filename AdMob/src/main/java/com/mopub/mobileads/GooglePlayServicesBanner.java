@@ -15,6 +15,9 @@ import com.mopub.common.util.Views;
 
 import java.util.Map;
 
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+
 import static com.google.android.gms.ads.AdSize.BANNER;
 import static com.google.android.gms.ads.AdSize.FULL_BANNER;
 import static com.google.android.gms.ads.AdSize.LEADERBOARD;
@@ -36,6 +39,8 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     private static final String AD_HEIGHT_KEY = "adHeight";
     private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
     private static final String CONTENT_URL_KEY = "contentUrl";
+    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
     private static final String TEST_DEVICES_KEY = "testDevices";
 
     private CustomEventBannerListener mBannerListener;
@@ -86,24 +91,42 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubView.setLocalExtras() call.
-        if (localExtras.get(CONTENT_URL_KEY) != null) {
-            String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
-            if (!TextUtils.isEmpty(contentUrl)) {
-                builder.setContentUrl(contentUrl);
-            }
+        String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
+
+        if (!TextUtils.isEmpty(contentUrl)) {
+            builder.setContentUrl(contentUrl);
         }
 
         // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
-        if (localExtras.get(TEST_DEVICES_KEY) != null) {
-            String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
-            if (!TextUtils.isEmpty(testDeviceId)) {
-                builder.addTestDevice(testDeviceId);
-            }
+        String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+
+        if (!TextUtils.isEmpty(testDeviceId)) {
+            builder.addTestDevice(testDeviceId);
         }
 
         // Consent collected from the MoPub’s consent dialogue should not be used to set up
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
+
+        // Publishers may want to indicate that their content is child-directed and forward this
+        // information to Google.
+        Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+
+        if (childDirected != null) {
+            builder.tagForChildDirectedTreatment(childDirected);
+        }
+
+        // Publishers may want to mark their requests to receive treatment for users in the
+        // European Economic Area (EEA) under the age of consent.
+        Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+
+        if (underAgeOfConsent != null) {
+            if (underAgeOfConsent) {
+                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+            } else {
+                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+            }
+        }
 
         AdRequest adRequest = builder.build();
 

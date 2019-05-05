@@ -7,10 +7,11 @@ import android.support.annotation.Nullable;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.BidderTokenProvider;
 import com.mopub.common.BaseAdapterConfiguration;
+import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.facebook.BuildConfig;
+import com.mopub.mobileads.facebookaudiencenetwork.BuildConfig;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,6 +23,7 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+
     private AtomicBoolean networkInitializationSucceeded = new AtomicBoolean(false);
     private AtomicReference<String> tokenReference = new AtomicReference<>(null);
     private AtomicBoolean isComputingToken = new AtomicBoolean(false);
@@ -64,7 +66,9 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
 
         synchronized (FacebookAdapterConfiguration.class) {
             try {
-                AudienceNetworkAds.initialize(context);
+                AudienceNetworkAds.buildInitSettings(context)
+                        .withMediationService("MOPUB_" + MoPub.SDK_VERSION + ":" + ADAPTER_VERSION)
+                        .initialize();
                 refreshBidderToken(context);
                 networkInitializationSucceeded.set(true);
             } catch (Exception e) {

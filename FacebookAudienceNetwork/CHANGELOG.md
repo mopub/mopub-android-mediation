@@ -1,4 +1,10 @@
 ## Changelog
+ * 5.3.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.3.0.
+
+ * 5.2.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.2.1.
+
  * 5.2.0.1
     * Facebook Audience Network Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [FAN manifest changes](https://developers.facebook.com/docs/audience-network/android-interstitial/).
 

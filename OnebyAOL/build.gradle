@@ -1,8 +1,9 @@
-project.version = '6.8.3.1'
+project.version = '6.8.3.2'
 project.ext.networkName = 'Millenial'
 
 apply from: '../shared-build.gradle'
 
 dependencies {
     compileOnly files('libs/android-ad-sdk.aar')
+    compile project(path: ':Verizon')
 }

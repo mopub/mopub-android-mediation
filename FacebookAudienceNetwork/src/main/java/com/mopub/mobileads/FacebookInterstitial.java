@@ -7,12 +7,10 @@ import android.text.TextUtils;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
-import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
 import com.mopub.common.DataKeys;
-import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
@@ -89,8 +87,6 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
             }
             return;
         }
-
-        AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
         mFacebookInterstitial = new InterstitialAd(context, placementId);
         mFacebookInterstitial.setAdListener(this);
