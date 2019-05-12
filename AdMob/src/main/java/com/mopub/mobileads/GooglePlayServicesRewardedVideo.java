@@ -57,11 +57,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     private static final String KEY_CONTENT_URL = "contentUrl";
 
     /**
-     * Key to set and obtain the flag whether the user consents to receive personalized ads.
-     */
-    private static final String NPA_KEY = "npa";
-
-    /**
      * Key to set and obtain the flag whether the application's content is child-directed.
      */
     private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
@@ -244,9 +239,9 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     private void forwardNpaIfSet(AdRequest.Builder builder) {
         // Only forward the "npa" bundle if it is explicitly set.
         // Otherwise, don't attach it with the ad request.
-        if (!TextUtils.isEmpty(GooglePlayServicesMediationSettings.getNpaValue())) {
-            Bundle npaBundle = new Bundle();
-            npaBundle.putString("npa", GooglePlayServicesMediationSettings.getNpaValue());
+        Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
+
+        if (npaBundle != null && !npaBundle.isEmpty()) {
             builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
     }
@@ -383,7 +378,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     }
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {
-        private static String npaValue;
         private static String contentUrl;
         private static String testDeviceId;
         private static Boolean taggedForChildDirectedTreatment;
@@ -401,10 +395,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
                 testDeviceId = bundle.getString(TEST_DEVICES_KEY);
             }
 
-            if (bundle.containsKey(NPA_KEY)) {
-                npaValue = bundle.getString(NPA_KEY);
-            }
-
             if (bundle.containsKey(TAG_FOR_CHILD_DIRECTED_KEY)) {
                 taggedForChildDirectedTreatment = bundle.getBoolean(TAG_FOR_CHILD_DIRECTED_KEY);
             }
@@ -412,10 +402,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
             if (bundle.containsKey(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY)) {
                 taggedForUnderAgeOfConsent = bundle.getBoolean(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
             }
-        }
-
-        public void setNpaValue(String npa) {
-            npaValue = npa;
         }
 
         public void setContentUrl(String url) {
@@ -432,14 +418,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         public void setTaggedForUnderAgeOfConsent(boolean flag) {
             taggedForUnderAgeOfConsent = flag;
-        }
-
-        /* The MoPub Android SDK queries MediationSettings from the rewarded video code
-        (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
-        available to publishers importing the modularized SDK(s) based on select ad formats.
-        This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
-        private static String getNpaValue() {
-            return npaValue;
         }
 
         private static String getContentUrl() {

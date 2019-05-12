@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.2.0.2
+    * Move the `npa` from `MediationSettings` to `NetworkConfiguration`. [Click here](https://developers.mopub.com/publishers/mediation/networks/google/#instructions-for-passing-users-ad-preference-to-admob) for updated usage instructions.
+
   * 17.2.0.1
     * Refactor the `MediationSettings` implementation to maintain consistency with the MoPub Unity SDK.
 

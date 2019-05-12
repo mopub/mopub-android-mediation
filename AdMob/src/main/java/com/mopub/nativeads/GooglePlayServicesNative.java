@@ -492,9 +492,10 @@ public class GooglePlayServicesNative extends CustomEventNative {
         private void forwardNpaIfSet(AdRequest.Builder builder) {
 
             // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-            if (GooglePlayServicesMediationSettings.getNpaBundle() != null &&
-                    !GooglePlayServicesMediationSettings.getNpaBundle().isEmpty()) {
-                builder.addNetworkExtrasBundle(AdMobAdapter.class, GooglePlayServicesMediationSettings.getNpaBundle());
+            Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
+
+            if (npaBundle != null && !npaBundle.isEmpty()) {
+                builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
             }
         }
 
@@ -635,29 +636,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
             if (unifiedNativeAd.getPrice() != null) {
                 setPrice(unifiedNativeAd.getPrice());
             }
-        }
-    }
-
-    public static final class GooglePlayServicesMediationSettings implements MediationSettings {
-        private static Bundle npaBundle;
-
-        public GooglePlayServicesMediationSettings() {
-        }
-
-        public GooglePlayServicesMediationSettings(Bundle bundle) {
-            npaBundle = bundle;
-        }
-
-        public void setNpaBundle(Bundle bundle) {
-            npaBundle = bundle;
-        }
-
-        /* The MoPub Android SDK queries MediationSettings from the rewarded video code
-        (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
-        available to publishers importing the modularized SDK(s) based on select ad formats.
-        This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
-        private static Bundle getNpaBundle() {
-            return npaBundle;
         }
     }
 }

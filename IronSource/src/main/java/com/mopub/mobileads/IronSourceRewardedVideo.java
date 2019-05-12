@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
@@ -38,21 +37,14 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
     private static final String APPLICATION_KEY = "applicationKey";
     private static final String INSTANCE_ID_KEY = "instanceId";
     private static final String MEDIATION_TYPE = "mopub";
-    private static final String ADAPTER_VERSION = "310";
     private static final String ADAPTER_NAME = IronSourceRewardedVideo.class.getSimpleName();
-    private static final String DEFAULT_INSTANCE_ID = "0";
-    private static final String MOPUB_SDK_VERSION = MoPub.SDK_VERSION;
 
     // This is the instance id used inside ironSource SDK
     @NonNull
-    private String mInstanceId = DEFAULT_INSTANCE_ID;
+    private String mInstanceId = IronSourceAdapterConfiguration.DEFAULT_INSTANCE_ID;
 
     @NonNull
     private IronSourceAdapterConfiguration mIronSourceAdapterConfiguration;
-
-    private String getMopubSdkVersion(){
-        return MOPUB_SDK_VERSION.replaceAll("[^A-Za-z0-9]", "");
-    }
 
     /**
      * Mopub API
@@ -104,6 +96,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
             if(serverExtras == null) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "serverExtras is null. Make sure you have entered ironSource's application and instance keys on the MoPub dashboard");
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, mInstanceId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
                 return false;
             }
 
@@ -111,6 +104,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource didn't perform initRewardedVideo- null or empty appkey");
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, mInstanceId,
                         MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
                 return false;
             }
             if (!TextUtils.isEmpty(serverExtras.get(INSTANCE_ID_KEY))) {
@@ -120,9 +114,10 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
             applicationKey = serverExtras.get(APPLICATION_KEY);
 
             IronSource.setISDemandOnlyRewardedVideoListener(this);
-            IronSource.setMediationType(MEDIATION_TYPE + ADAPTER_VERSION + "SDK" + getMopubSdkVersion());
+            IronSource.setMediationType(MEDIATION_TYPE + IronSourceAdapterConfiguration.IRONSOURCE_ADAPTER_VERSION + "SDK" + IronSourceAdapterConfiguration.getMoPubSdkVersion());
             IronSource.initISDemandOnly(launcherActivity, applicationKey, IronSource.AD_UNIT.REWARDED_VIDEO);
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource initialization succeeded for RewardedVideo" + " (current instance: " + mInstanceId + " )");
+
             return true;
         } catch (Exception e) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE, e);
@@ -165,6 +160,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
      **/
     private MoPubErrorCode getMoPubErrorMessage(IronSourceError ironSourceError) {
         if (ironSourceError == null) {
+
             return MoPubErrorCode.INTERNAL_ERROR;
         }
 
@@ -248,7 +244,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video loaded successfully for " + "instance " + instanceId + " (current instance: " + mInstanceId + " )");
         MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
-        MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(IronSourceRewardedVideo.class,instanceId);
+        MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(IronSourceRewardedVideo.class, instanceId);
     }
 
     //Invoked when the video ad load failed.

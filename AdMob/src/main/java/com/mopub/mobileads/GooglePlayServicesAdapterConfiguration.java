@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -20,7 +21,10 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String KEY_EXTRA_APPLICATION_ID = "appid";
+    private static final String KEY_NPA = "npa";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+
+    private static Bundle npaBundle;
 
     @NonNull
     @Override
@@ -62,10 +66,18 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
 
         synchronized (GooglePlayServicesAdapterConfiguration.class) {
             try {
-                if (configuration == null || TextUtils.isEmpty(configuration.get(KEY_EXTRA_APPLICATION_ID))) {
-                    MobileAds.initialize(context);
+                if (configuration != null && !configuration.isEmpty()) {
+                    String appId = configuration.get(KEY_EXTRA_APPLICATION_ID);
+
+                    if (!TextUtils.isEmpty(appId)) {
+                        MobileAds.initialize(context, configuration.get(KEY_EXTRA_APPLICATION_ID));
+                    }
+
+                    String npaValue = configuration.get(KEY_NPA);
+
+                    setNpaBundle(npaValue);
                 } else {
-                    MobileAds.initialize(context, configuration.get(KEY_EXTRA_APPLICATION_ID));
+                    MobileAds.initialize(context);
                 }
 
                 networkInitializationSucceeded = true;
@@ -82,5 +94,14 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
             listener.onNetworkInitializationFinished(GooglePlayServicesAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
+    }
+
+    public static Bundle getNpaBundle() {
+        return npaBundle;
+    }
+
+    private static void setNpaBundle(String npaValue) {
+        npaBundle = new Bundle();
+        npaBundle.putString(KEY_NPA, npaValue);
     }
 }
