@@ -39,6 +39,8 @@ public class VungleInterstitial extends CustomEventInterstitial {
     private static final String SOUND_ENABLED_KEY = "vungleSoundEnabled";
     private static final String FLEX_VIEW_CLOSE_TIME_KEY = "vungleFlexViewCloseTimeInSec";
     private static final String ORDINAL_VIEW_COUNT_KEY = "vungleOrdinalViewCount";
+    private static final String AUTO_ROTATE_ENABLED = "vungleAutoRotateEnabled";
+
 
     private static VungleRouter sVungleRouter;
     private final Handler mHandler;
@@ -117,6 +119,9 @@ public class VungleInterstitial extends CustomEventInterstitial {
             Object ordinalViewCount = localExtras.get(ORDINAL_VIEW_COUNT_KEY);
             if (ordinalViewCount instanceof Integer)
                 mAdConfig.setOrdinal((Integer) ordinalViewCount);
+            Object autoRotateEnabled = localExtras.get(AUTO_ROTATE_ENABLED);
+            if (autoRotateEnabled instanceof Boolean)
+                mAdConfig.setAutoRotate((Boolean) autoRotateEnabled);
         }
 
         sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
