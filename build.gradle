@@ -15,7 +15,6 @@ buildscript {
     }
 }
 
-
 // Parts of the subproject build instructions that are totally generic go here.
 // (Any parts that depend on values set in the subproject's build.gradle go in shared-build.gradle
 // instead.)
