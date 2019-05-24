@@ -9,11 +9,11 @@ import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_FAILED;
 import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_TIMED_OUT;
 import static com.verizon.ads.VASAds.ERROR_NO_FILL;
 
-public final class VerizonUtils {
+final class VerizonUtils {
 
     private static final Handler handler = new Handler(Looper.getMainLooper());
 
-    public static void postOnUiThread(final Runnable runnable) {
+    static void postOnUiThread(final Runnable runnable) {
         handler.post(runnable);
     }
 

@@ -97,7 +97,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
             UnityAds.show((Activity) mContext, mPlacementId);
         } else {
-            // lets unity ads know when ads fail to show
+            // lets Unity Ads know when ads fail to show
             MediationMetaData metadata = new MediationMetaData(mContext);
             metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
             metadata.commit();

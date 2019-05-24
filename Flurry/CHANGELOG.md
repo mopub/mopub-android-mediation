@@ -1,4 +1,7 @@
 ## Changelog
+ * 11.6.0.1
+    * Allow `null` FlurryAgentListener in FlurryAgentWrapper to start Flurry agent.
+
  * 11.6.0.0
     * This version of adapters has been certified with Flurry 11.6.0.
     

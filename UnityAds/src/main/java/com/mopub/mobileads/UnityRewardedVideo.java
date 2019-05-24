@@ -124,7 +124,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo implements IUni
 
             UnityAds.show((Activity) mLauncherActivity, mPlacementId);
         } else {
-            // lets unity ads know when ads fail to show
+            // lets Unity Ads know when ads fail to show
             MediationMetaData metadata = new MediationMetaData(mLauncherActivity);
             metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
             metadata.commit();
