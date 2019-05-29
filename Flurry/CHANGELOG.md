@@ -1,4 +1,7 @@
 ## Changelog
+ * 11.6.0.2
+    * Add a call to `setTargeting()` for Flurry native ads. Currently supported is the ability to enable test mode via `localExtras`.
+
  * 11.6.0.1
     * Allow `null` FlurryAgentListener in FlurryAgentWrapper to start Flurry agent.
 
