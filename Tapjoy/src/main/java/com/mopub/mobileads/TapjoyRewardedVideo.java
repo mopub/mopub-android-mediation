@@ -23,6 +23,7 @@ import com.tapjoy.TapjoyLog;
 
 import org.json.JSONException;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
@@ -273,6 +274,12 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         public void onContentDismiss(TJPlacement placement) {
             Tapjoy.setVideoListener(null);
             MoPubRewardedVideoManager.onRewardedVideoClosed(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
+        }
+
+        @Override
+        public void onClick(TJPlacement placement) {
+            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubRewardedVideoManager.onRewardedVideoClicked(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
         }
 
         @Override
