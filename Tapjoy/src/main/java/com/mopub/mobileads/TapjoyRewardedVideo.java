@@ -17,6 +17,7 @@ import com.tapjoy.TJConnectListener;
 import com.tapjoy.TJError;
 import com.tapjoy.TJPlacement;
 import com.tapjoy.TJPlacementListener;
+import com.tapjoy.TJPlacementVideoListener;
 import com.tapjoy.TJVideoListener;
 import com.tapjoy.Tapjoy;
 import com.tapjoy.TapjoyLog;
@@ -169,7 +170,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to parse auction data.");
                 }
             }
-
+            tjPlacement.setVideoListener(sTapjoyListener);
             tjPlacement.requestContent();
             MoPubLog.log(placementName, LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
@@ -242,7 +243,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         }
     }
 
-    private static class TapjoyRewardedVideoListener implements TJPlacementListener, CustomEventRewardedVideoListener, TJVideoListener {
+    private static class TapjoyRewardedVideoListener implements TJPlacementListener, CustomEventRewardedVideoListener, TJPlacementVideoListener {
         @Override
         public void onRequestSuccess(TJPlacement placement) {
             if (!placement.isContentAvailable()) {
@@ -265,14 +266,12 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onContentShow(TJPlacement placement) {
-            Tapjoy.setVideoListener(this);
             MoPubRewardedVideoManager.onRewardedVideoStarted(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
             MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
         public void onContentDismiss(TJPlacement placement) {
-            Tapjoy.setVideoListener(null);
             MoPubRewardedVideoManager.onRewardedVideoClosed(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
         }
 
@@ -293,19 +292,21 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         }
 
         @Override
-        public void onVideoStart() {
+        public void onVideoStart(TJPlacement tjPlacement) {
 
         }
 
         @Override
-        public void onVideoError(int statusCode) {
+        public void onVideoError(TJPlacement tjPlacement, String s) {
+
         }
 
         @Override
-        public void onVideoComplete() {
+        public void onVideoComplete(TJPlacement tjPlacement) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video completed");
             MoPubRewardedVideoManager.onRewardedVideoCompleted(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT, MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.NO_REWARD_AMOUNT));
             MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, MoPubReward.NO_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
+
         }
     }
 
