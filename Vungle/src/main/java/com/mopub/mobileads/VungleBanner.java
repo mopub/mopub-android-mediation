@@ -1,6 +1,7 @@
  package com.mopub.mobileads;
 
  import android.content.Context;
+ import android.graphics.Color;
  import android.os.Handler;
  import android.os.Looper;
  import androidx.annotation.Keep;
@@ -243,6 +244,7 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
+<<<<<<< HEAD
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
                 mHandler.post(new Runnable() {
@@ -250,11 +252,23 @@
                     @Override
                     public void run() {
                         if (wasCallToActionClicked && mCustomEventBannerListener != null) {
+=======
+
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (wasCallToActionClicked) {
+>>>>>>> ec958e8... copy 6.4.x code from mopub-adapter-android
                             mCustomEventBannerListener.onBannerClicked();
                             MoPubLog.log(CLICKED, ADAPTER_NAME);
                         }
                     }
                 });
+<<<<<<< HEAD
+=======
+                sVungleRouter.removeRouterListener(mPlacementId);
+                mVungleRouterListener = null;
+>>>>>>> ec958e8... copy 6.4.x code from mopub-adapter-android
             }
         }
 
@@ -325,6 +339,9 @@
                                     }
                                 };
 
+                                //Fix for Unity Player that can't render a view with a state changed from INVISIBLE to VISIBLE.
+                                //TODO: Remove once it's fixed in MoPub Unity plugin.
+                                layout.setBackgroundColor(Color.TRANSPARENT);
                                 boolean isLoadSuccess = false;
                                 if (AdSize.isBannerAdSize(adConfig.getAdSize())) {
                                     vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig.getAdSize());
