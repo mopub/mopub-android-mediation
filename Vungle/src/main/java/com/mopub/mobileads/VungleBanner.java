@@ -1,11 +1,18 @@
  package com.mopub.mobileads;
 
  import android.content.Context;
+<<<<<<< HEAD
  import android.graphics.Color;
  import android.os.Handler;
  import android.os.Looper;
  import androidx.annotation.Keep;
  import androidx.annotation.NonNull;
+=======
+ import android.os.Handler;
+ import android.os.Looper;
+ import android.support.annotation.Keep;
+ import android.support.annotation.NonNull;
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
  import android.text.TextUtils;
  import android.view.View;
  import android.widget.RelativeLayout;
@@ -13,7 +20,10 @@
  import com.mopub.common.logging.MoPubLog;
  import com.mopub.common.util.Views;
  import com.vungle.warren.AdConfig;
+<<<<<<< HEAD
  import com.vungle.warren.AdConfig.AdSize;
+=======
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
  import com.vungle.warren.VungleNativeAd;
 
  import java.util.Map;
@@ -24,10 +34,13 @@
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+<<<<<<< HEAD
  import static com.vungle.warren.AdConfig.AdSize.BANNER;
  import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
  import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
  import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
+=======
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
 
  @Keep
  public class VungleBanner extends CustomEventBanner {
@@ -42,6 +55,10 @@
     private static final String KEY_AD_HEIGHT = "com_mopub_ad_height";
     private static final String KEY_AD_WIDTH = "com_mopub_ad_width";
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
     private CustomEventBannerListener mCustomEventBannerListener;
     private final Handler mHandler;
     private String mAppId;
@@ -49,13 +66,21 @@
     private VungleBannerRouterListener mVungleRouterListener;
     private static VungleRouter sVungleRouter;
     private boolean mIsPlaying;
+<<<<<<< HEAD
     private com.vungle.warren.VungleBanner vungleBannerAd;
     private VungleNativeAd vungleMrecAd;
+=======
+    private VungleNativeAd vungleBannerAd;
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
     private Context mContext;
     @NonNull
     private VungleAdapterConfiguration mVungleAdapterConfiguration;
     private AtomicBoolean pendingRequestBanner = new AtomicBoolean(false);
+<<<<<<< HEAD
     private AdConfig adConfig = new AdConfig();
+=======
+     private AdConfig adConfig = new AdConfig();
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
 
      public VungleBanner() {
         this.mHandler = new Handler(Looper.getMainLooper());
@@ -69,8 +94,11 @@
         mCustomEventBannerListener = customEventBannerListener;
         pendingRequestBanner.set(true);
 
+<<<<<<< HEAD
         setAutomaticImpressionAndClickTracking(false);
 
+=======
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
         if (context == null) {
             mHandler.post(new Runnable() {
                 @Override
@@ -108,6 +136,7 @@
             mVungleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
+<<<<<<< HEAD
         AdSize vungleAdSize = getVungleAdSize(localExtras);
         if (vungleAdSize == null) {
             mHandler.post(new Runnable() {
@@ -175,6 +204,33 @@
             adSizeType = BANNER_LEADERBOARD;
         }
 
+=======
+        adConfig.setAdSize(getVungleAdSize(localExtras));
+
+        //currently we only support MREC for banners. This will require to be reworked once we add other sizes
+        if(adConfig.getAdSize() != AdConfig.AdSize.VUNGLE_MREC) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,  "Unsupported Ad size, only MREC supported:  Placement ID:" + mPlacementId);
+                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
+            });
+        } else {
+            sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+            MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
+        }
+    }
+
+    private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
+        AdConfig.AdSize adSizeType = AdConfig.AdSize.VUNGLE_DEFAULT;
+        int adWidthInDp = localExtras.containsKey(KEY_AD_WIDTH) ? (int)localExtras.get(KEY_AD_WIDTH) : 0;
+        int adHeightInDp = localExtras.containsKey(KEY_AD_HEIGHT) ? (int)localExtras.get(KEY_AD_HEIGHT) : 0;
+
+        if(adWidthInDp == 300 && adHeightInDp == 250) {
+            adSizeType = AdConfig.AdSize.VUNGLE_MREC;
+        }
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
         return adSizeType;
     }
 
@@ -184,6 +240,7 @@
         pendingRequestBanner.set(false);
 
         if (vungleBannerAd != null) {
+<<<<<<< HEAD
             Views.removeFromParent(vungleBannerAd);
             vungleBannerAd.destroyAd();
             vungleBannerAd = null;
@@ -191,12 +248,19 @@
             Views.removeFromParent(vungleMrecAd.renderNativeView());
             vungleMrecAd.finishDisplayingAd();
             vungleMrecAd = null;
+=======
+            Views.removeFromParent(vungleBannerAd.renderNativeView());
+            vungleBannerAd.finishDisplayingAd();
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
         }
 
         if (sVungleRouter != null) {
             sVungleRouter.removeRouterListener(mPlacementId);
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
         mVungleRouterListener = null;
     }
 
@@ -205,7 +269,10 @@
 
         if (serverExtras.containsKey(APP_ID_KEY)) {
             mAppId = serverExtras.get(APP_ID_KEY);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
             if (TextUtils.isEmpty(mAppId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "App ID is empty.");
 
@@ -245,6 +312,7 @@
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
 <<<<<<< HEAD
+<<<<<<< HEAD
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
                 mHandler.post(new Runnable() {
@@ -253,22 +321,32 @@
                     public void run() {
                         if (wasCallToActionClicked && mCustomEventBannerListener != null) {
 =======
+=======
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
 
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (wasCallToActionClicked) {
+<<<<<<< HEAD
 >>>>>>> ec958e8... copy 6.4.x code from mopub-adapter-android
+=======
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
                             mCustomEventBannerListener.onBannerClicked();
                             MoPubLog.log(CLICKED, ADAPTER_NAME);
                         }
                     }
                 });
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
 >>>>>>> ec958e8... copy 6.4.x code from mopub-adapter-android
+=======
+                sVungleRouter.removeRouterListener(mPlacementId);
+                mVungleRouterListener = null;
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
             }
         }
 
@@ -277,6 +355,7 @@
             MoPubLog.log(CUSTOM, ADAPTER_NAME,"onAdStart placement id"+ placementReferenceId);
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
+<<<<<<< HEAD
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression. Placement id" + placementReferenceId);
                 mHandler.post(new Runnable() {
 
@@ -294,6 +373,11 @@
                 } else if (VUNGLE_MREC == adConfig.getAdSize()) {
                     sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
                 }
+=======
+
+                //et's load it again to mimic auto-cache
+                sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
             }
         }
 
@@ -326,13 +410,19 @@
                             public void run() {
                                 if (!pendingRequestBanner.getAndSet(false))
                                     return;
+<<<<<<< HEAD
 
+=======
+                                
+                                boolean isSuccess = false;
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
                                 final RelativeLayout layout = new RelativeLayout(mContext) {
                                     @Override
                                     protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
                                         super.onVisibilityChanged(changedView, visibility);
                                         if (vungleBannerAd != null) {
                                             vungleBannerAd.setAdVisibility(visibility == VISIBLE);
+<<<<<<< HEAD
                                         } else if (vungleMrecAd != null) {
                                             vungleMrecAd.setAdVisibility(visibility == VISIBLE);
                                         }
@@ -364,6 +454,22 @@
                                     mCustomEventBannerListener.onBannerLoaded(layout);
                                     MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                                 } else {
+=======
+                                        }
+                                    }
+                                };
+                                vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig);
+                                if(vungleBannerAd != null) {
+                                    final View adView = vungleBannerAd.renderNativeView();
+                                    if (adView != null) {
+                                        isSuccess = true;
+                                        layout.addView(adView);
+                                        mCustomEventBannerListener.onBannerLoaded(layout);
+                                        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                                    }
+                                }
+                                if(!isSuccess) {
+>>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
                                     mHandler.post(new Runnable() {
                                         @Override
                                         public void run() {
