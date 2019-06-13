@@ -26,7 +26,6 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String BIDDING_TOKEN = "1";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     @NonNull
@@ -39,7 +38,7 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
     @Override
     public String getBiddingToken(@NonNull Context context) {
         Preconditions.checkNotNull(context);
-        return BIDDING_TOKEN;
+        return Tapjoy.getUserToken();
     }
 
     @NonNull
