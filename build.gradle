@@ -35,6 +35,7 @@ subprojects {
         maven { url "https://adcolony.bintray.com/AdColony" }
         maven { url 'https://dl.bintray.com/ironsource-mobile/android-sdk'}
         maven { url 'https://jitpack.io' }  // Vungle
+        maven { url 'https://vungle.bintray.com/vungle-android-beta' } //Vungle
         maven { url 'https://tapjoy.bintray.com/maven' }
     }
 
