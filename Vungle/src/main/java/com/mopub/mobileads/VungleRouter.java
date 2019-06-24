@@ -16,7 +16,6 @@ import com.vungle.warren.Plugin;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleApiClient;
 import com.vungle.warren.VungleBanner;
-import com.vungle.warren.VungleNativeAd;
 import com.vungle.warren.VungleSettings;
 import com.vungle.warren.error.VungleException;
 
