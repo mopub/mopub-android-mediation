@@ -15,8 +15,10 @@ import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Plugin;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleApiClient;
+import com.vungle.warren.VungleBanner;
 import com.vungle.warren.VungleNativeAd;
 import com.vungle.warren.VungleSettings;
+import com.vungle.warren.error.VungleException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,7 +90,7 @@ public class VungleRouter {
             }
 
             @Override
-            public void onError(Throwable throwable) {
+            public void onError(VungleException throwable) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initialization failed.", throwable);
 
                 sInitState = SDKInitState.NOTINITIALIZED;
@@ -124,7 +126,7 @@ public class VungleRouter {
         return Vungle.isInitialized();
     }
 
-    public void loadAdForPlacement(String placementId, VungleRouterListener routerListener) {
+    public void loadAdForPlacement(String placementId, AdConfig adConfig, VungleRouterListener routerListener) {
         switch (sInitState) {
             case NOTINITIALIZED:
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadAdForPlacement is called before " +
@@ -138,7 +140,7 @@ public class VungleRouter {
             case INITIALIZED:
                 if (isValidPlacement(placementId)) {
                     addRouterListener(placementId, routerListener);
-                    Vungle.loadAd(placementId, loadAdCallback);
+                    Vungle.loadAd(placementId, adConfig, loadAdCallback);
                 } else {
                     routerListener.onUnableToPlayAd(placementId, "Invalid/Inactive Placement Id");
                 }
@@ -167,8 +169,8 @@ public class VungleRouter {
         }
     }
 
-    public VungleNativeAd getVungleBannerAd(String placementId, AdConfig adConfig) {
-        return Vungle.getNativeAd(placementId, adConfig, playAdCallback);
+    public VungleBanner getVungleBannerAd(String placementId, @NonNull AdConfig adConfig) {
+        return Vungle.getBanner(placementId, adConfig.getAdSize(), playAdCallback);
     }
 
     /**
@@ -229,7 +231,7 @@ public class VungleRouter {
         }
 
         @Override
-        public void onError(String id, Throwable error) {
+        public void onError(String id, VungleException error) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE, "onUnableToPlayAd - Placement ID: " + id, error);
 
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
@@ -249,7 +251,7 @@ public class VungleRouter {
         }
 
         @Override
-        public void onError(String id, Throwable cause) {
+        public void onError(String id, VungleException cause) {
             onAdAvailabilityUpdate(id, false);
         }
 

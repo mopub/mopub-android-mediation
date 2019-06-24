@@ -38,3 +38,9 @@ includeBuild(mopubSdkDir) {
         substitute module('com.mopub:mopub-sdk') with project(':mopub-sdk')
     }
 }
+
+//Vungle SDK
+if (file('../vungle-android-sdk').exists()) {
+    includeFlat 'vungle-android-sdk'
+    include ':vungle-android-sdk:publisher-sdk-android'
+}

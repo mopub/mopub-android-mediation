@@ -125,7 +125,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
                 mAdConfig.setAutoRotate((Boolean) autoRotateEnabled);
         }
 
-        sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+        sVungleRouter.loadAdForPlacement(mPlacementId, mAdConfig, mVungleRouterListener);
         MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 

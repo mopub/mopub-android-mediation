@@ -15,5 +15,6 @@ buildscript {
 }
 
 dependencies {
-    implementation "vungle-android-beta:publisher-sdk-android:${sdkVersion}"
+//    implementation "vungle-android-beta:publisher-sdk-android:${sdkVersion}"
+    implementation project(':vungle-android-sdk:publisher-sdk-android')
 }
