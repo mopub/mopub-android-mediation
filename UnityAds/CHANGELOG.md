@@ -1,4 +1,8 @@
 ## Changelog
+  * 3.1.0.0
+    * This version of the adapters has been certified with Unity Ads 3.1.0.
+    * Add load API functionality via metadata API to prevent rewarded and interstitial placements from loading in UnityAds until `load` is called.
+
   * 3.0.3.0
     * This version of the adapters has been certified with Unity Ads 3.0.3.
 

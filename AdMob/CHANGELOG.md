@@ -1,4 +1,7 @@
 ## Changelog
+  * 17.2.1.0
+    * This version of the adapters has been certified with AdMob 17.2.1.
+
   * 17.2.0.2
     * Move the `npa` from `MediationSettings` to `NetworkConfiguration`. [Click here](https://developers.mopub.com/publishers/mediation/networks/google/#instructions-for-passing-users-ad-preference-to-admob) for updated usage instructions.
 

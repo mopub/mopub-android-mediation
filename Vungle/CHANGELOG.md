@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.3.24.3
+    * Enable passing config option for Vungle auto rotate setting.
+
   * 6.3.24.2
     * Vungle Adapter will now be released as an Android Archive (AAR) file that includes manifest file for Vungle.
 
