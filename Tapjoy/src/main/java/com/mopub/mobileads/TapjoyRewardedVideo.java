@@ -293,11 +293,15 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onVideoStart(TJPlacement tjPlacement) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video started for placement " +
+                    tjPlacement + ".");
 
         }
 
         @Override
-        public void onVideoError(TJPlacement tjPlacement, String s) {
+        public void onVideoError(TJPlacement tjPlacement, String message) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video failed for placement " +
+                    tjPlacement + "with error" + message);
 
         }
 

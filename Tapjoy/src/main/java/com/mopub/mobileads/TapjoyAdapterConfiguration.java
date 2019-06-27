@@ -39,7 +39,8 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
     @Override
     public String getBiddingToken(@NonNull Context context) {
         Preconditions.checkNotNull(context);
-        return BIDDING_TOKEN;
+        String token = Tapjoy.getUserToken();
+        return (!TextUtils.isEmpty(token) ? token : BIDDING_TOKEN);
     }
 
     @NonNull
