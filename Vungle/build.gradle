@@ -1,19 +1,13 @@
-project.version = '6.4.10.0'
+project.version = '6.4.11.0'
 
 apply from: '../shared-build.gradle'
 
-buildscript {
-    repositories {
-        mavenCentral() // or jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
-    }
-}
+def sdkSrcDependency = hasProperty("SdkSrcDependency") ? "$SdkSrcDependency".toBoolean() : false
 
 dependencies {
-    implementation "vungle-android-beta:publisher-sdk-android:${sdkVersion}"
+    if (sdkSrcDependency) {
+        implementation project(':vungle-android-sdk:publisher-sdk-android')
+    } else {
+        implementation "vungle-android-beta:publisher-sdk-android:${sdkVersion}"
+    }
 }
