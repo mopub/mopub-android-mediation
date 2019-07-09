@@ -207,6 +207,10 @@
             MoPubLog.log(CUSTOM, ADAPTER_NAME,"onAdStart placement id"+ placementReferenceId);
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression.");
+                if (mCustomEventBannerListener != null) {
+                    mCustomEventBannerListener.onBannerImpression();
+                }
 
                 //et's load it again to mimic auto-cache
                 sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
