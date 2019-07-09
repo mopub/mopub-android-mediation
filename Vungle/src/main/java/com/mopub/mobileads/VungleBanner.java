@@ -207,7 +207,7 @@
             MoPubLog.log(CUSTOM, ADAPTER_NAME,"onAdStart placement id"+ placementReferenceId);
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression. Placement id" + placementReferenceId);
                 if (mCustomEventBannerListener != null) {
                     mCustomEventBannerListener.onBannerImpression();
                 }
@@ -246,7 +246,7 @@
                             public void run() {
                                 if (!pendingRequestBanner.getAndSet(false))
                                     return;
-                                
+
                                 boolean isSuccess = false;
                                 final RelativeLayout layout = new RelativeLayout(mContext) {
                                     @Override
