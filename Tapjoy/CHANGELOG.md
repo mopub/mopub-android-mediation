@@ -1,4 +1,23 @@
 ## Changelog
+  * 12.3.1.0
+    * This version of adapters has been certified with Tapjoy 12.3.1.
+    * Add `didClick` callback support for interstitial and rewarded video ad clicks.
+    * Fix `getBiddingToken` API to return token string when available and return `1` otherwise.
+
+  * 12.2.1.1
+    * Refactor the `MediationSettings` implementation to maintain consistency with the MoPub Unity SDK.
+
+  * 12.2.1.0
+    * This version of adapters has been certified with Tapjoy 12.2.1.
+    * Check if the Tapjoy placement instance is `null` before accessing it in the `TapjoyRewardedVideo` and `TapjoyInterstitial` adapters.
+    * Pass MoPub's log level to Tapjoy. To adjust Tapjoy's log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
+
+  * 12.2.0.3
+    * Tapjoy Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [Tapjoy manifest changes](https://dev.tapjoy.com/sdk-integration/android/getting-started-guide-publishers-android/#toc_add-app-permissions-and-activities).
+
+  * 12.2.0.2
+    * Prevent a null SDK Key from being passed to Tapjoy's initialization call.
+
   * 12.2.0.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `TapjoyAdapterConfiguration` class to: 

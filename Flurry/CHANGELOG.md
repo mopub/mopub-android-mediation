@@ -1,4 +1,19 @@
 ## Changelog
+ * 11.6.0.2
+    * Add a call to `setTargeting()` for Flurry native ads. Currently supported is the ability to enable test mode via `localExtras`.
+
+ * 11.6.0.1
+    * Allow `null` FlurryAgentListener in FlurryAgentWrapper to start Flurry agent.
+
+ * 11.6.0.0
+    * This version of adapters has been certified with Flurry 11.6.0.
+    
+ * 11.5.0.1
+    * Flurry Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [Flurry manifest changes](https://developer.yahoo.com/flurry/docs/integrateflurry/android-manual/#configure-the-androidmanifest-and-proguard-files).
+
+  * 11.5.0.0
+    * This version of the adapters has been certified with Flurry 11.5.0.
+
   * 11.4.0.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `FlurryAdapterConfiguration` class to: 

@@ -1,4 +1,13 @@
 ## Changelog
+  * 6.8.3.2
+    * Retrofit the adapters to be compatible with the Verizon Ads adapters.
+
+  * 6.8.3.1
+    * OneByAOL Adapter will now be released as an Android Archive (AAR) file that includes manifest file for OneByAOL.
+
+  * 6.8.3.0
+    * This version of the adapters has been certified with ONE by AOL 6.8.3.
+    
   * 6.8.2.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `MillennialAdapterConfiguration` class to: 

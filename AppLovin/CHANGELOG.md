@@ -1,4 +1,38 @@
 ## Changelog
+ * 9.7.2.0
+    * This version of the adapters has been certified with AppLovin 9.7.2.
+
+ * 9.7.1.0
+    * This version of the adapters has been certified with AppLovin 9.7.1.
+
+ * 9.6.2.0
+    * This version of the adapters has been certified with AppLovin 9.6.2.
+
+ * 9.6.0.0
+    * This version of the adapters has been certified with AppLovin 9.6.0.
+
+ * 9.5.4.0
+    * This version of the adapters has been certified with AppLovin 9.5.4.
+
+ * 9.4.2.0
+    * This version of the adapters has been certified with AppLovin 9.4.2.
+
+ * 9.4.0.0
+    * This version of the adapters has been certified with AppLovin 9.4.0.
+    * Pass MoPub's log level to AppLovin. To adjust AppLovin's log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
+    * Drop AppLovin's `<activity>` tags from the AndroidManifest since the AppLovin SDK AAR already bundles them.
+
+  * 9.2.1.1
+     * AppLovin Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [AppLovin manifest changes](https://dash.applovin.com/login#androidIntegration).
+
+  * 9.2.1.0
+     * This version of the adapters has been certified with AppLovin 9.2.1.
+     * Addressed some issues and optimized adapter:
+         * Allow passing in of SDK key via the initialization `configuration` object as many publishers integrate without SDK key in the Android Manifest.
+         * Add support for using a cached `configuration` Map for initialization.
+         * Do not consider various errors as NO FILLs.
+         * Bumped AppLovin SDK plugin version to "MoPub-9.2.1.0".
+
   * 9.1.3.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `AppLovinAdapterConfiguration` class to: 

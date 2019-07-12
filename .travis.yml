@@ -1,0 +1,18 @@
+ language: node_js
+node_js:
+- "8.16.0"
+cache: npm
+git:
+ submodules: false
+before_install:
+  - git submodule add https://${GITHUB_KEY}@github.com/mopub/android-mediation.git
+  - git submodule init
+  - npm i -g grunt-cli
+  - npm i firebase-tools@3.17.2 -g
+script:
+  - chmod 777 ./android-mediation/scripts/android_release_automate.sh
+  - ./android-mediation/scripts/android_release_automate.sh
+# branch whitelist
+branches:
+  only:
+  - master

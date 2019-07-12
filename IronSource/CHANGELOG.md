@@ -1,4 +1,28 @@
 ## Changelog
+ * 6.8.5.0
+     * This version of the adapters has been certified with ironSource 6.8.5.
+
+ * 6.8.4.0
+    * This version of the adapters has been certified with ironSource 6.8.4.
+    * Revised adapter code to comply with ironSource 6.8.4.
+    * Remove `placementName`, ironSource SDK 6.8.4 no longer uses it.
+    * Ad load will fail gracefully if the unique `instanceIds` are not used during concurrent ad requests for rewarded video.
+    
+ * 6.8.3.0
+    * This version of the adapters has been certified with ironSource 6.8.3.
+
+ * 6.8.2.2
+    * Pass MoPub's log level to ironSource. To adjust ironSource's log level via MoPub's log settings, reference [this page](https://developers.mopub.com/publishers/android/test/#enable-logging).
+
+* 6.8.2.1
+    * IronSource Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [IronSource manifest changes](https://developers.ironsrc.com/ironsource-mobile/android/android-sdk/#step-2).
+
+ * 6.8.2.0
+    * This version of the adapters has been certified with ironSource 6.8.2.
+
+  * 6.8.1.0
+    * This version of the adapters has been certified with ironSource 6.8.1.
+    
   * 6.8.0.1.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
     * Add the `IronSourceAdapterConfiguration` class to: 
