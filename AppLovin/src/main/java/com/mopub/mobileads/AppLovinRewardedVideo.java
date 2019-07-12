@@ -122,7 +122,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         }
 
         // Create incentivized ad based off of zone
-        incentivizedInterstitial = createIncentivizedInterstitialAd(zoneId, activity, sdk);
+        incentivizedInterstitial = createIncentivizedInterstitialAd(zoneId, sdk);
 
         // Use token API
         if (hasAdMarkup) {
@@ -357,7 +357,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         return sdk;
     }
 
-    private static AppLovinIncentivizedInterstitial createIncentivizedInterstitialAd(final String zoneId, final Activity activity, final AppLovinSdk sdk) {
+    private static AppLovinIncentivizedInterstitial createIncentivizedInterstitialAd(final String zoneId, final AppLovinSdk sdk) {
         final AppLovinIncentivizedInterstitial incent;
 
         // Check if incentivized ad for zone already exists
@@ -366,7 +366,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         } else {
             // If this is a default or token Zone, create the incentivized ad normally
             if (DEFAULT_ZONE.equals(zoneId) || DEFAULT_TOKEN_ZONE.equals(zoneId)) {
-                incent = AppLovinIncentivizedInterstitial.create(activity);
+                incent = AppLovinIncentivizedInterstitial.create(sdk);
             }
             // Otherwise, use the Zones API
             else {
