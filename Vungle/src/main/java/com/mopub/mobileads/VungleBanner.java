@@ -12,7 +12,6 @@
  import com.mopub.common.logging.MoPubLog;
  import com.mopub.common.util.Views;
  import com.vungle.warren.AdConfig;
- import com.vungle.warren.VungleNativeAd;
 
  import java.util.Map;
  import java.util.concurrent.atomic.AtomicBoolean;
@@ -141,7 +140,7 @@
 
         if (vungleBannerAd != null) {
             Views.removeFromParent(vungleBannerAd);
-            vungleBannerAd.finishBanner();
+            vungleBannerAd.destroyAd();
         }
 
         if (sVungleRouter != null) {
