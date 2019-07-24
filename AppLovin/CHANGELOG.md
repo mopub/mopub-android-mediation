@@ -1,4 +1,7 @@
 ## Changelog
+ * 9.7.2.0
+    * This version of the adapters has been certified with AppLovin 9.7.2.
+
  * 9.7.1.0
     * This version of the adapters has been certified with AppLovin 9.7.1.
 

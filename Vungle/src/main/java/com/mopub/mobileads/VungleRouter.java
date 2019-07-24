@@ -8,6 +8,8 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -80,12 +82,28 @@ public class VungleRouter {
                 clearWaitingList();
 
                 // Pass the user consent from the MoPub SDK to Vungle as per GDPR
-                boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+                PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
-                // (New) Pass consentMessageVersion per Vungle 6.3.17:
-                // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
-                Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN :
-                        Vungle.Consent.OPTED_OUT, "");
+                boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+                boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
+
+                if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
+                    if (shouldAllowLegitimateInterest) {
+                        if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
+                                || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT
+                                || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.POTENTIAL_WHITELIST) {
+                            Vungle.updateConsentStatus(Vungle.Consent.OPTED_OUT, "");
+                        } else {
+                            Vungle.updateConsentStatus(Vungle.Consent.OPTED_IN, "");
+                        }
+                    } else {
+                        // Pass consentMessageVersion per Vungle 6.3.17:
+                        // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
+                        Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN :
+                                Vungle.Consent.OPTED_OUT, "");
+                    }
+                }
+
             }
 
             @Override
