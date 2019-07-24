@@ -11,8 +11,8 @@ import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.verizon.BuildConfig;
+import com.verizon.ads.Configuration;
 import com.verizon.ads.Logger;
-import com.verizon.ads.SDKInfo;
 import com.verizon.ads.VASAds;
 import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.utils.ThreadUtils;
@@ -48,10 +48,12 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     @NonNull
     @Override
     public String getNetworkSdkVersion() {
-        final SDKInfo sdkInfo = VASAds.getSDKInfo();
 
-        if (sdkInfo != null) {
-            return sdkInfo.version;
+        final String editionVersion = Configuration.getString("com.verizon.ads",
+                "editionVersion", null);
+
+        if (!TextUtils.isEmpty(editionVersion)) {
+            return editionVersion;
         }
 
         final String adapterVersion = getAdapterVersion();

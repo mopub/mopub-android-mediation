@@ -1,4 +1,10 @@
 ## Changelog
+  * 6.3.24.4
+    * Allow supported mediated networks and publishers to opt-in to process a user’s personal data based on legitimate interest basis. More details [here](https://developers.mopub.com/docs/publisher/gdpr-guide/#legitimate-interest-support).
+
+  * 6.3.24.3
+    * Enable passing config option for Vungle auto rotate setting.
+
   * 6.3.24.2
     * Vungle Adapter will now be released as an Android Archive (AAR) file that includes manifest file for Vungle.
 

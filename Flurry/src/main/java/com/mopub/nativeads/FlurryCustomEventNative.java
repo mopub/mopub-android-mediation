@@ -231,6 +231,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                 localExtras.get(LOCAL_EXTRA_TEST_MODE) instanceof Boolean) {
             final FlurryAdTargeting targeting = new FlurryAdTargeting();
             targeting.setEnableTestAds((Boolean) localExtras.get(LOCAL_EXTRA_TEST_MODE));
+            flurryAdNative.setTargeting(targeting);
         }
 
         final FlurryBaseNativeAd flurryNativeAd;

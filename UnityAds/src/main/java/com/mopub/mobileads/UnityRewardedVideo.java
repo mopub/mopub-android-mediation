@@ -10,8 +10,10 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.metadata.MediationMetaData;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -35,6 +37,8 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo implements IUni
     @Nullable
     private Activity mLauncherActivity;
 
+    private int impressionOrdinal;
+    private int missedImpressionOrdinal;
 
     @Override
     @NonNull
@@ -84,6 +88,13 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo implements IUni
 
         UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
 
+        // Metadata load API will load placements when called
+        String uuid = UUID.randomUUID().toString();
+        MediationMetaData metadata = new MediationMetaData(activity);
+        metadata.setCategory("load");
+        metadata.set(uuid, mPlacementId);
+        metadata.commit();
+
         if (hasVideoAvailable()) {
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, mPlacementId);
 
@@ -106,9 +117,17 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo implements IUni
     public void showVideo() {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
 
-        if (hasVideoAvailable()) {
-            UnityAds.show(mLauncherActivity, mPlacementId);
+        if (UnityAds.isReady(mPlacementId) && mLauncherActivity != null) {
+            MediationMetaData metadata = new MediationMetaData(mLauncherActivity);
+            metadata.setOrdinal(++impressionOrdinal);
+            metadata.commit();
+
+            UnityAds.show((Activity) mLauncherActivity, mPlacementId);
         } else {
+            // lets Unity Ads know when ads fail to show
+            MediationMetaData metadata = new MediationMetaData(mLauncherActivity);
+            metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
+            metadata.commit();
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Unity rewarded video before it was " +
                     "available.");
 
