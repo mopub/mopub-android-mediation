@@ -122,7 +122,7 @@
         int adWidthInDp = localExtras.containsKey(KEY_AD_WIDTH) ? (int)localExtras.get(KEY_AD_WIDTH) : 0;
         int adHeightInDp = localExtras.containsKey(KEY_AD_HEIGHT) ? (int)localExtras.get(KEY_AD_HEIGHT) : 0;
 
-        if(adWidthInDp == 300 && adHeightInDp == 250) {
+        if(adWidthInDp >= 300 && adHeightInDp >= 250) {
             adSizeType = AdConfig.AdSize.VUNGLE_MREC;
         }
         return adSizeType;
