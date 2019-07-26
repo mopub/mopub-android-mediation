@@ -38,8 +38,8 @@ public class UnityRouter {
         UnityBanners.setBannerListener(bannerRouter);
 
 
-        bool testMode = false;
-        bool enablePerPlacementLoad = true;
+        boolean testMode = false;
+        boolean enablePerPlacementLoad = true;
         UnityAds.initialize(launcherActivity, gameId, interstitialRouter, testMode, enablePerPlacementLoad);
         return true;
     }

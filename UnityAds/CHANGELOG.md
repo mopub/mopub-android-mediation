@@ -1,4 +1,8 @@
 ## Changelog
+  * 3.2.0.0
+    * This version of the adapters has been certified with Unity Ads 3.0.3.
+    * **Note**:`UnityAdsBanner` refresh do not allow ads to show up in banner view and the behavior is not consistent. 
+
   * 3.1.0.0
     * This version of the adapters has been certified with Unity Ads 3.1.0.
     * Add load API functionality via metadata API to prevent rewarded and interstitial placements from loading in UnityAds until `load` is called.
