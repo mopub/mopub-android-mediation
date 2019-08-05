@@ -244,8 +244,7 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
-<<<<<<< HEAD
-<<<<<<< HEAD
+
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
                 mHandler.post(new Runnable() {
@@ -253,33 +252,21 @@
                     @Override
                     public void run() {
                         if (wasCallToActionClicked && mCustomEventBannerListener != null) {
-=======
-=======
->>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (wasCallToActionClicked) {
 
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (wasCallToActionClicked) {
-<<<<<<< HEAD
->>>>>>> ec958e8... copy 6.4.x code from mopub-adapter-android
-=======
->>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
-                            mCustomEventBannerListener.onBannerClicked();
-                            MoPubLog.log(CLICKED, ADAPTER_NAME);
+                                        mCustomEventBannerListener.onBannerClicked();
+                                        MoPubLog.log(CLICKED, ADAPTER_NAME);
+                                    }
+                                }
+                            });
+                            sVungleRouter.removeRouterListener(mPlacementId);
+                            mVungleRouterListener = null;
                         }
                     }
                 });
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-                sVungleRouter.removeRouterListener(mPlacementId);
-                mVungleRouterListener = null;
->>>>>>> ec958e8... copy 6.4.x code from mopub-adapter-android
-=======
-                sVungleRouter.removeRouterListener(mPlacementId);
-                mVungleRouterListener = null;
->>>>>>> 65b4382... copy 6.4.x code from mopub-adapter-android
             }
         }
 
