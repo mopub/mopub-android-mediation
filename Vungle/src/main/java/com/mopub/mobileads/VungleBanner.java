@@ -48,7 +48,7 @@
     @NonNull
     private VungleAdapterConfiguration mVungleAdapterConfiguration;
     private AtomicBoolean pendingRequestBanner = new AtomicBoolean(false);
-     private AdConfig adConfig = new AdConfig();
+    private AdConfig.AdSize mAdSize;
 
      public VungleBanner() {
         this.mHandler = new Handler(Looper.getMainLooper());
@@ -99,19 +99,21 @@
             mVungleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
-        AdConfig.AdSize adSize = getVungleAdSize(localExtras);
-        adConfig.setAdSize(adSize);
+        mAdSize = getVungleAdSize(localExtras);
 
-        if(adSize == AdConfig.AdSize.VUNGLE_DEFAULT) {
+        if(mAdSize == AdConfig.AdSize.VUNGLE_DEFAULT) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,  "Unsupported Ad size:  Placement ID:" + mPlacementId);
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,  "Unsupported Banner Ad size:  Placement ID:" + mPlacementId);
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             });
+        } else if (sVungleRouter.isBannerAdPlayable(mPlacementId, mAdSize)) {
+            mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
+            MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
         } else {
-            sVungleRouter.loadAdForPlacement(mPlacementId, adConfig, mVungleRouterListener);
+            sVungleRouter.loadBannerAdForPlacement(mPlacementId, mAdSize, mVungleRouterListener);
             MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         }
     }
@@ -218,7 +220,7 @@
                 }
 
                 //et's load it again to mimic auto-cache
-                sVungleRouter.loadAdForPlacement(mPlacementId, adConfig, mVungleRouterListener);
+                sVungleRouter.loadBannerAdForPlacement(mPlacementId, mAdSize, mVungleRouterListener);
             }
         }
 
@@ -261,15 +263,12 @@
                                         }
                                     }
                                 };
-                                vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig);
+                                vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, mAdSize);
                                 if(vungleBannerAd != null) {
-                                    final View adView = vungleBannerAd;
-                                    if (adView != null) {
-                                        isSuccess = true;
-                                        layout.addView(adView);
-                                        mCustomEventBannerListener.onBannerLoaded(layout);
-                                        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-                                    }
+                                    isSuccess = true;
+                                    layout.addView(vungleBannerAd);
+                                    mCustomEventBannerListener.onBannerLoaded(layout);
+                                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                                 }
                                 if(!isSuccess) {
                                     mHandler.post(new Runnable() {
