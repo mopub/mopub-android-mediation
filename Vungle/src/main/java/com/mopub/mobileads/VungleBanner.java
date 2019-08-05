@@ -113,7 +113,7 @@
             mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
             MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
         } else {
-            sVungleRouter.loadBannerAdForPlacement(mPlacementId, mAdSize, mVungleRouterListener);
+            sVungleRouter.loadBannerAd(mPlacementId, mAdSize, mVungleRouterListener);
             MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         }
     }
@@ -220,7 +220,7 @@
                 }
 
                 //et's load it again to mimic auto-cache
-                sVungleRouter.loadBannerAdForPlacement(mPlacementId, mAdSize, mVungleRouterListener);
+                sVungleRouter.loadBannerAd(mPlacementId, mAdSize, mVungleRouterListener);
             }
         }
 
@@ -253,6 +253,7 @@
                             public void run() {
                                 if (!pendingRequestBanner.getAndSet(false))
                                     return;
+
                                 boolean isSuccess = false;
                                 final RelativeLayout layout = new RelativeLayout(mContext) {
                                     @Override

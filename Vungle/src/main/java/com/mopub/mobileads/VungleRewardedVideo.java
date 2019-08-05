@@ -127,7 +127,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
         if (sVungleRouter.isVungleInitialized()) {
             if (sVungleRouter.isValidPlacement(mPlacementId)) {
-                sVungleRouter.loadAdForPlacement(mPlacementId, null, mVungleRewardedRouterListener);
+                sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRewardedRouterListener);
             } else {
                 MoPubLog.log(CUSTOM, "Invalid or Inactive Placement ID: " + mPlacementId);
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Invalid or Inactive Placement ID: " + mPlacementId);
