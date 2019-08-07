@@ -100,7 +100,22 @@
             mVungleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
-        adConfig.setAdSize(getVungleAdSize(localExtras));
+        AdConfig.AdSize vungleAdSize = getVungleAdSize(localExtras);
+        if (vungleAdSize != null) {
+            adConfig.setAdSize(vungleAdSize);
+        } else {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                            MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            "Banner size is not valid.");
+                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                }
+            });
+
+            return;
+        }
 
         //currently we only support MREC for banners. This will require to be reworked once we add other sizes
         if(adConfig.getAdSize() != AdConfig.AdSize.VUNGLE_MREC) {
@@ -118,14 +133,13 @@
     }
 
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
-        AdConfig.AdSize adSizeType = AdConfig.AdSize.VUNGLE_DEFAULT;
         int adWidthInDp = localExtras.containsKey(KEY_AD_WIDTH) ? (int)localExtras.get(KEY_AD_WIDTH) : 0;
         int adHeightInDp = localExtras.containsKey(KEY_AD_HEIGHT) ? (int)localExtras.get(KEY_AD_HEIGHT) : 0;
-
-        if(adWidthInDp >= 300 && adHeightInDp >= 250) {
-            adSizeType = AdConfig.AdSize.VUNGLE_MREC;
+        if((adWidthInDp == 300 && adHeightInDp == 250) || (adWidthInDp == 336 && adHeightInDp == 280)) {
+            return AdConfig.AdSize.VUNGLE_MREC;
+        } else {
+            return null;
         }
-        return adSizeType;
     }
 
     @Override
@@ -187,16 +201,6 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
-
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (wasCallToActionClicked) {
-                            mCustomEventBannerListener.onBannerClicked();
-                            MoPubLog.log(CLICKED, ADAPTER_NAME);
-                        }
-                    }
-                });
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
             }
