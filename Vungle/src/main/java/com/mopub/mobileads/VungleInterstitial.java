@@ -38,7 +38,6 @@ public class VungleInterstitial extends CustomEventInterstitial {
      * These keys can be used with MoPubInterstitial.setLocalExtras()
      * to pass additional parameters to the SDK.
      */
-
     public static final String SOUND_ENABLED_KEY = "vungleSoundEnabled";
     public static final String FLEX_VIEW_CLOSE_TIME_KEY = "vungleFlexViewCloseTimeInSec";
     public static final String ORDINAL_VIEW_COUNT_KEY = "vungleOrdinalViewCount";

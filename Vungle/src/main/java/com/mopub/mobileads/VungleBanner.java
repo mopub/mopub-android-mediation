@@ -16,7 +16,6 @@
  import java.util.Map;
  import java.util.concurrent.atomic.AtomicBoolean;
 
- import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
@@ -34,7 +33,6 @@
     private static final String PLACEMENT_IDS_KEY = "pids";
     private static final String KEY_AD_HEIGHT = "com_mopub_ad_height";
     private static final String KEY_AD_WIDTH = "com_mopub_ad_width";
-
 
     private CustomEventBannerListener mCustomEventBannerListener;
     private final Handler mHandler;
@@ -100,12 +98,26 @@
         }
 
         mAdSize = getVungleAdSize(localExtras);
-
-        if(mAdSize == AdConfig.AdSize.VUNGLE_DEFAULT) {
+        if (mAdSize == null) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,  "Unsupported Banner Ad size:  Placement ID:" + mPlacementId);
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                            MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            "Banner size is not valid.");
+                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                }
+            });
+
+            return;
+        }
+
+        if(mAdSize != AdConfig.AdSize.VUNGLE_MREC && mAdSize != AdConfig.AdSize.BANNER_SHORT
+           && mAdSize != AdConfig.AdSize.BANNER && mAdSize != AdConfig.AdSize.BANNER_LEADERBOARD) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,  "Unsupported Banner/MREC Ad size:  Placement ID:" + mPlacementId);
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             });
@@ -119,11 +131,11 @@
     }
 
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
-        AdConfig.AdSize adSizeType = AdConfig.AdSize.VUNGLE_DEFAULT;
+        AdConfig.AdSize adSizeType = null;
         int adWidthInDp = localExtras.containsKey(KEY_AD_WIDTH) ? (int)localExtras.get(KEY_AD_WIDTH) : 0;
         int adHeightInDp = localExtras.containsKey(KEY_AD_HEIGHT) ? (int)localExtras.get(KEY_AD_HEIGHT) : 0;
 
-        if(adWidthInDp == 300 && adHeightInDp == 250) {
+        if((adWidthInDp == 300 && adHeightInDp == 250) || (adWidthInDp == 336 && adHeightInDp == 280)) {
             adSizeType = AdConfig.AdSize.VUNGLE_MREC;
         } else if (adWidthInDp == 300 && adHeightInDp == 50) {
             adSizeType = AdConfig.AdSize.BANNER_SHORT;
@@ -132,6 +144,7 @@
         } else if (adWidthInDp == 728 && adHeightInDp == 90) {
             adSizeType = AdConfig.AdSize.BANNER_LEADERBOARD;
         }
+
         return adSizeType;
     }
 
@@ -194,16 +207,6 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
-
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (wasCallToActionClicked) {
-                            mCustomEventBannerListener.onBannerClicked();
-                            MoPubLog.log(CLICKED, ADAPTER_NAME);
-                        }
-                    }
-                });
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
             }
