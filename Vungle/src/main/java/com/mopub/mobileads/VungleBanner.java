@@ -244,7 +244,7 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
-<<<<<<< HEAD
+
 
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
@@ -268,10 +268,6 @@
                         }
                     }
                 });
-=======
-                sVungleRouter.removeRouterListener(mPlacementId);
-                mVungleRouterListener = null;
->>>>>>> 86c92ef... remove click tracking logic, and specify size checking only for two specific sizes with a fail case
             }
         }
 
