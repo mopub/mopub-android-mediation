@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.4.11.0
+    * This version of adapters has been certified with Vungle 6.4.11.
+    * Added support for banner ad.
+
   * 6.3.24.4
     * Allow supported mediated networks and publishers to opt-in to process a user’s personal data based on legitimate interest basis. More details [here](https://developers.mopub.com/docs/publisher/gdpr-guide/#legitimate-interest-support).
 

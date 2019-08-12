@@ -23,10 +23,11 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String APP_ID_KEY = "appId";
     // Adapter's keys
     private static final String ADAPTER_NAME = VungleAdapterConfiguration.class.getSimpleName();
-    public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     private static VungleRouter sVungleRouter;
+
+    public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
 
     public VungleAdapterConfiguration() {
         sVungleRouter = VungleRouter.getInstance();
@@ -107,7 +108,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
         long minSpaceInit;
         try {
             minSpaceInit = Long.parseLong(configuration.get("VNG_MIN_SPACE_INIT"));
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             //51 mb
             minSpaceInit = 51 << 20;
         }
@@ -119,6 +120,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
             //50 mb
             minSpaceLoadAd = 50 << 20;
         }
+
         boolean isAndroidIdOpted = Boolean.parseBoolean(configuration.get("VNG_DEVICE_ID_OPT_OUT"));
 
         //Apply settings.

@@ -135,6 +135,7 @@
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
         int adWidthInDp = localExtras.containsKey(KEY_AD_WIDTH) ? (int)localExtras.get(KEY_AD_WIDTH) : 0;
         int adHeightInDp = localExtras.containsKey(KEY_AD_HEIGHT) ? (int)localExtras.get(KEY_AD_HEIGHT) : 0;
+
         if((adWidthInDp == 300 && adHeightInDp == 250) || (adWidthInDp == 336 && adHeightInDp == 280)) {
             return AdConfig.AdSize.VUNGLE_MREC;
         } else {
@@ -155,6 +156,7 @@
         if (sVungleRouter != null) {
             sVungleRouter.removeRouterListener(mPlacementId);
         }
+
         mVungleRouterListener = null;
     }
 
@@ -163,6 +165,7 @@
 
         if (serverExtras.containsKey(APP_ID_KEY)) {
             mAppId = serverExtras.get(APP_ID_KEY);
+
             if (TextUtils.isEmpty(mAppId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "App ID is empty.");
 
@@ -216,7 +219,7 @@
                     mCustomEventBannerListener.onBannerImpression();
                 }
 
-                //et's load it again to mimic auto-cache
+                //Let's load it again to mimic auto-cache
                 sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
             }
         }
