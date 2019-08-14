@@ -231,13 +231,13 @@ public class VerizonInterstitial extends CustomEventInterstitial {
 
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
-            final CreativeInfo creativeInfo = verizonInterstitialAd == null ? null : verizonInterstitialAd.getCreativeInfo();
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
-
             VerizonUtils.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
+                    final CreativeInfo creativeInfo = verizonInterstitialAd == null ? null : verizonInterstitialAd.getCreativeInfo();
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
+
                     if (listener != null) {
                         listener.onInterstitialLoaded();
                     }

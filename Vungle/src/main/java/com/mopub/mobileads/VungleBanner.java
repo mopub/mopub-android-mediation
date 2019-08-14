@@ -161,6 +161,7 @@
         if (sVungleRouter != null) {
             sVungleRouter.removeRouterListener(mPlacementId);
         }
+
         mVungleRouterListener = null;
     }
 
@@ -169,6 +170,7 @@
 
         if (serverExtras.containsKey(APP_ID_KEY)) {
             mAppId = serverExtras.get(APP_ID_KEY);
+
             if (TextUtils.isEmpty(mAppId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "App ID is empty.");
 

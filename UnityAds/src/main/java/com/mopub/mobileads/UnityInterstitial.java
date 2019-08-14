@@ -48,12 +48,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
         mContext = context;
         loadRequested = true;
 
-        // Metadata load API will load placements when called
-        String uuid = UUID.randomUUID().toString();
-        MediationMetaData metadata = new MediationMetaData(context);
-        metadata.setCategory("load");
-        metadata.set(uuid, mPlacementId);
-        metadata.commit();
+        UnityAds.load(mPlacementId);
 
         mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
@@ -106,8 +101,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Unity interstitial video before it was " +
-                    "available.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Unity interstitial video before it was available.");
         }
     }
 

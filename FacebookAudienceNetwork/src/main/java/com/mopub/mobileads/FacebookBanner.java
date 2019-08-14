@@ -69,10 +69,8 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
             return;
         }
 
-        int width;
         int height;
         if (localExtrasAreValid(localExtras)) {
-            width = (Integer) localExtras.get(DataKeys.AD_WIDTH);
             height = (Integer) localExtras.get(DataKeys.AD_HEIGHT);
         } else {
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
@@ -82,15 +80,7 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
             return;
         }
 
-        AdSize adSize = calculateAdSize(width, height);
-        if (adSize == null) {
-
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-            if (mBannerListener != null) {
-                mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-            }
-            return;
-        }
+        AdSize adSize = calculateAdSize(height);
 
         mFacebookBanner = new AdView(context, placementId, adSize);
         mFacebookBanner.setAdListener(this);
@@ -175,16 +165,14 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
     }
 
     @Nullable
-    private AdSize calculateAdSize(int width, int height) {
-        // Use the smallest AdSize that will properly contain the adView
-        if (height <= AdSize.BANNER_HEIGHT_50.getHeight()) {
-            return AdSize.BANNER_HEIGHT_50;
-        } else if (height <= AdSize.BANNER_HEIGHT_90.getHeight()) {
+    private AdSize calculateAdSize(int height) {
+        if (height >= AdSize.BANNER_HEIGHT_90.getHeight()) {
             return AdSize.BANNER_HEIGHT_90;
-        } else if (height <= AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
+        } else if (height >= AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
             return AdSize.RECTANGLE_HEIGHT_250;
         } else {
-            return null;
+            // Default to standard banner size
+            return AdSize.BANNER_HEIGHT_50;
         }
     }
 }

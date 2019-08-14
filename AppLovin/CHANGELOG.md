@@ -1,4 +1,13 @@
 ## Changelog
+ * 9.8.0.0
+    * This version of the adapters has been certified with AppLovin 9.8.0.
+
+ * 9.7.2.2
+    * Fix banner size passing as part of ad format unification.
+
+ * 9.7.2.1
+    * Persist the AppLovin SDK Key from cached AdapterConfiguration so other AppLovin adapter classes can read it. 
+
  * 9.7.2.0
     * This version of the adapters has been certified with AppLovin 9.7.2.
 

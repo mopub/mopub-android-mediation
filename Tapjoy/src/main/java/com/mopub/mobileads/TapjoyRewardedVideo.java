@@ -336,7 +336,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
             this.sdkKey = sdkKey;
         }
 
-        public void setConnectFlags(@Nullable Map connectFlags) {
+        public void setConnectFlags(@Nullable Map<String, Object> connectFlags) {
             this.connectFlags = connectFlags;
         }
 

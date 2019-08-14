@@ -1,4 +1,7 @@
 ## Changelog
+  * 12.3.1.1
+    * Fix `MediationSettings` for Tapjoy to follow POJO to maintain compatibility with MoPub Unity SDK.
+
   * 12.3.1.0
     * This version of adapters has been certified with Tapjoy 12.3.1.
     * Add `didClick` callback support for interstitial and rewarded video ad clicks.

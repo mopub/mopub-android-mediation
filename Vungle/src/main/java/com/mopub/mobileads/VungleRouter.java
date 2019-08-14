@@ -8,7 +8,6 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
-
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 
@@ -35,6 +34,8 @@ public class VungleRouter {
     private static final String ADAPTER_NAME = VungleRouter.class.getSimpleName();
 
     private static VungleRouter instance = new VungleRouter();
+    private InitCallback initCallback;
+
 
 
     private enum SDKInitState {

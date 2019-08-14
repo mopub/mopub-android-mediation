@@ -1,4 +1,8 @@
 ## Changelog
+  * 3.2.0.0
+    * This version of the adapters has been certified with Unity Ads 3.2.0.
+    * **Note**:On MoPub adunit refresh, Unity Banners may not render correctly and this issue will be fixed in the upcoming Unity SDK versions. This behavior is inconsistent and there is no suggested workaround at the moment 
+
   * 3.1.0.0
     * This version of the adapters has been certified with Unity Ads 3.1.0.
     * Add load API functionality via metadata API to prevent rewarded and interstitial placements from loading in UnityAds until `load` is called.
