@@ -95,7 +95,7 @@ public class VerizonBanner extends CustomEventBanner {
                 application = ((Activity) context).getApplication();
             }
 
-            if (application == null || !StandardEdition.initialize(application, siteId)) {
+            if (!StandardEdition.initialize(application, siteId)) {
 
                 logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
             }
@@ -285,15 +285,17 @@ public class VerizonBanner extends CustomEventBanner {
         public void onLoaded(final InlineAdFactory inlineAdFactory, final InlineAdView inlineAdView) {
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
-            final CreativeInfo creativeInfo = verizonInlineAd == null ? null : verizonInlineAd.getCreativeInfo();
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
+            verizonInlineAd = inlineAdView;
 
             VerizonUtils.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
+                    final CreativeInfo creativeInfo = verizonInlineAd == null ? null : verizonInlineAd.getCreativeInfo();
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
+
                     if (internalView != null) {
-                        internalView.addView(inlineAdView);
+                        internalView.addView(verizonInlineAd);
                     }
 
                     if (listener != null) {

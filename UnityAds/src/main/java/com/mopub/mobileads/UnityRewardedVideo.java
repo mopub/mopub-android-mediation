@@ -88,12 +88,7 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo implements IUni
 
         UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
 
-        // Metadata load API will load placements when called
-        String uuid = UUID.randomUUID().toString();
-        MediationMetaData metadata = new MediationMetaData(activity);
-        metadata.setCategory("load");
-        metadata.set(uuid, mPlacementId);
-        metadata.commit();
+        UnityAds.load(mPlacementId);
 
         if (hasVideoAvailable()) {
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, mPlacementId);
