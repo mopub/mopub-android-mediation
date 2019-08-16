@@ -175,10 +175,11 @@
         if (vungleBannerAd != null) {
             Views.removeFromParent(vungleBannerAd);
             vungleBannerAd.destroyAd();
-        }
-        if (vungleMrecAd != null) {
+            vungleBannerAd = null;
+        } else if (vungleMrecAd != null) {
             Views.removeFromParent(vungleMrecAd.renderNativeView());
             vungleMrecAd.finishDisplayingAd();
+            vungleMrecAd = null;
         }
 
         if (sVungleRouter != null) {
