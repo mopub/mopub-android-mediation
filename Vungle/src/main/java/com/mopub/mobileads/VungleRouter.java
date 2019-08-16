@@ -12,6 +12,7 @@ import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 
 import com.vungle.warren.AdConfig;
+import com.vungle.warren.AdConfig.AdSize;
 import com.vungle.warren.Banners;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -20,6 +21,7 @@ import com.vungle.warren.Plugin;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleApiClient;
 import com.vungle.warren.VungleBanner;
+import com.vungle.warren.VungleNativeAd;
 import com.vungle.warren.VungleSettings;
 import com.vungle.warren.error.VungleException;
 
@@ -34,9 +36,6 @@ public class VungleRouter {
     private static final String ADAPTER_NAME = VungleRouter.class.getSimpleName();
 
     private static VungleRouter instance = new VungleRouter();
-    private InitCallback initCallback;
-
-
 
     private enum SDKInitState {
         NOTINITIALIZED,
@@ -153,8 +152,7 @@ public class VungleRouter {
     void loadAdForPlacement(String placementId, VungleRouterListener routerListener) {
         switch (sInitState) {
             case NOTINITIALIZED:
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadAdForPlacement is called before " +
-                        "initialization starts. This is not an expect case.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadAdForPlacement is called before the adapter initialization.");
                 break;
 
             case INITIALIZING:
@@ -172,11 +170,10 @@ public class VungleRouter {
         }
     }
 
-    void loadBannerAd(String placementId, AdConfig.AdSize adSize, VungleRouterListener routerListener) {
+    void loadBannerAd(@NonNull String placementId, @NonNull AdSize adSize, @NonNull VungleRouterListener routerListener) {
         switch (sInitState) {
             case NOTINITIALIZED:
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBannerAdForPlacement is called before " +
-                        "initialization starts. This is not an expect case.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBannerAdForPlacement is called before the adapter initialization.");
                 break;
 
             case INITIALIZING:
@@ -206,7 +203,7 @@ public class VungleRouter {
         return Vungle.canPlayAd(placementId);
     }
 
-    boolean isBannerAdPlayable(String placementId, AdConfig.AdSize adSize) {
+    boolean isBannerAdPlayable(@NonNull String placementId, @NonNull AdSize adSize) {
         return Banners.canPlayAd(placementId, adSize);
     }
 
@@ -219,7 +216,11 @@ public class VungleRouter {
         }
     }
 
-    VungleBanner getVungleBannerAd(String placementId, @NonNull AdConfig.AdSize adSize) {
+    VungleNativeAd getVungleMrecAd(String placementId, AdConfig adConfig) {
+        return Vungle.getNativeAd(placementId, adConfig, playAdCallback);
+    }
+
+    VungleBanner getVungleBannerAd(@NonNull String placementId, @NonNull AdSize adSize) {
         return Banners.getBanner(placementId, adSize, playAdCallback);
     }
 
