@@ -56,11 +56,6 @@
         <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID"
                    android:value="ca-app-pub-3940256099942544~3347511713" />
 
-        <!-- AppLovin -->
-        <!-- Note: This is a unique SDK Key from AppLovin. Get yours from the AppLovin UI -->
-        <meta-data android:name="applovin.sdk.key"
-                   android:value="g9p0buIGwmV205uzWu93fLFLsxAwz_ve9hflay_UiVXiaQf5Iq8yAOI0JTwHSqxcVaL4XLZEs5yQVcWpRelb21" />
-
     </application>
 
 </manifest>
