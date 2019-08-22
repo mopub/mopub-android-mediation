@@ -23,11 +23,10 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String APP_ID_KEY = "appId";
     // Adapter's keys
     private static final String ADAPTER_NAME = VungleAdapterConfiguration.class.getSimpleName();
+    static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     private static VungleRouter sVungleRouter;
-
-    public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
 
     public VungleAdapterConfiguration() {
         sVungleRouter = VungleRouter.getInstance();
