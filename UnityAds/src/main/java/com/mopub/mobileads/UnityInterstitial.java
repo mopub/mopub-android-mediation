@@ -7,8 +7,10 @@ import android.support.annotation.NonNull;
 import com.mopub.common.logging.MoPubLog;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.metadata.MediationMetaData;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -26,6 +28,8 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
     private Context mContext;
     private String mPlacementId = "video";
     private boolean loadRequested = false;
+    private int impressionOrdinal;
+    private int missedImpressionOrdinal;
     @NonNull
     private UnityAdsAdapterConfiguration mUnityAdsAdapterConfiguration;
 
@@ -43,6 +47,8 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mContext = context;
         loadRequested = true;
+
+        UnityAds.load(mPlacementId);
 
         mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
@@ -80,14 +86,22 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (UnityAds.isReady(mPlacementId) && mContext != null) {
+            MediationMetaData metadata = new MediationMetaData(mContext);
+            metadata.setOrdinal(++impressionOrdinal);
+            metadata.commit();
+
             UnityAds.show((Activity) mContext, mPlacementId);
         } else {
+            // lets Unity Ads know when ads fail to show
+            MediationMetaData metadata = new MediationMetaData(mContext);
+            metadata.setMissedImpressionOrdinal(++missedImpressionOrdinal);
+            metadata.commit();
+
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Unity interstitial video before it was " +
-                    "available.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Unity interstitial video before it was available.");
         }
     }
 

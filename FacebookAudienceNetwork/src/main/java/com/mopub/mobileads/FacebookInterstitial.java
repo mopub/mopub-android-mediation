@@ -7,12 +7,10 @@ import android.text.TextUtils;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
-import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.InterstitialAd;
-import com.facebook.ads.InterstitialAdListener;
+import com.facebook.ads.InterstitialAdExtendedListener;
 import com.mopub.common.DataKeys;
-import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
@@ -28,7 +26,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
 
-public class FacebookInterstitial extends CustomEventInterstitial implements InterstitialAdListener {
+public class FacebookInterstitial extends CustomEventInterstitial implements InterstitialAdExtendedListener {
     private static final int ONE_HOURS_MILLIS = 60 * 60 * 1000;
     private static final String PLACEMENT_ID_KEY = "placement_id";
     private InterstitialAd mFacebookInterstitial;
@@ -89,8 +87,6 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
             }
             return;
         }
-
-        AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
         mFacebookInterstitial = new InterstitialAd(context, placementId);
         mFacebookInterstitial.setAdListener(this);
@@ -193,6 +189,28 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
         if (mInterstitialListener != null) {
             mInterstitialListener.onInterstitialDismissed();
         }
+    }
+
+    @Override
+    public void onInterstitialActivityDestroyed() {
+        if (mInterstitialListener != null) {
+            mInterstitialListener.onInterstitialDismissed();
+        }
+    }
+
+    @Override
+    public void onRewardedAdCompleted() {
+        //no-op
+    }
+
+    @Override
+    public void onRewardedAdServerSucceeded() {
+        //no-op
+    }
+
+    @Override
+    public void onRewardedAdServerFailed() {
+        //no-op
     }
 
     private boolean extrasAreValid(final Map<String, String> serverExtras) {

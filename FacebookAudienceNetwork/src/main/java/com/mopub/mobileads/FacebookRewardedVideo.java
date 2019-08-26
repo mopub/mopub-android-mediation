@@ -8,13 +8,11 @@ import android.text.TextUtils;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
-import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.RewardedVideoAd;
-import com.facebook.ads.RewardedVideoAdListener;
+import com.facebook.ads.RewardedVideoAdExtendedListener;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
-import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
@@ -32,7 +30,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
 
-public class FacebookRewardedVideo extends CustomEventRewardedVideo implements RewardedVideoAdListener {
+public class FacebookRewardedVideo extends CustomEventRewardedVideo implements RewardedVideoAdExtendedListener {
 
     private static final int ONE_HOURS_MILLIS = 60 * 60 * 1000;
     private static final String ADAPTER_NAME = FacebookRewardedVideo.class.getSimpleName();
@@ -110,8 +108,6 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
                 MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                 return;
             }
-
-            AdSettings.setMediationService("MOPUB_" + MoPub.SDK_VERSION);
 
             final String adm = serverExtras.get(DataKeys.ADM_KEY);
             if (!TextUtils.isEmpty(adm)) {
@@ -196,6 +192,11 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
         MoPubRewardedVideoManager.onRewardedVideoLoadFailure(FacebookRewardedVideo.class, mPlacementId, mapErrorCode(adError.getErrorCode()));
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Loading/Playing Facebook Rewarded Video creative encountered an error: " + mapErrorCode(adError.getErrorCode()).toString());
         MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, mapErrorCode(adError.getErrorCode()), mapErrorCode(adError.getErrorCode()).toString());
+    }
+
+    @Override
+    public void onRewardedVideoActivityDestroyed() {
+        MoPubRewardedVideoManager.onRewardedVideoClosed(FacebookRewardedVideo.class, mPlacementId);
     }
 
     @NonNull

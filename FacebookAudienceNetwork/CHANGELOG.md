@@ -1,4 +1,26 @@
 ## Changelog
+ * 5.5.0.1
+    * Support additional interstitial and rewarded video callbacks from the `InterstitialAdExtendedListener` interface.
+
+ * 5.5.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.5.0.
+    * Bidder token generation doesn't depend on Facebook SDK initialization.
+
+ * 5.4.1.1
+    * Fix banner size passing as part of 5.8.0+ MoPub SDK release changes.
+
+ * 5.4.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.4.1.
+
+ * 5.4.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.4.0.
+
+ * 5.3.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.3.1.
+
+ * 5.3.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.3.0.
+
  * 5.2.1.0
     * This version of the adapters has been certified with Facebook Audience Network 5.2.1.
 

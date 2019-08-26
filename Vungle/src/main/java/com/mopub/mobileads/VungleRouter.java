@@ -8,13 +8,17 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
-
+import com.mopub.common.privacy.ConsentStatus;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
+import com.vungle.warren.Plugin;
 import com.vungle.warren.Vungle;
-import com.vungle.warren.network.VungleApiClient;
+import com.vungle.warren.VungleApiClient;
+import com.vungle.warren.VungleNativeAd;
+import com.vungle.warren.VungleSettings;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,11 +28,11 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class VungleRouter {
 
-    // Version of the adapter, intended for Vungle internal use.
-    private static final String VERSION = "6.3.24";
     private static final String ADAPTER_NAME = VungleRouter.class.getSimpleName();
 
     private static VungleRouter instance = new VungleRouter();
+    private InitCallback initCallback;
+
 
     private enum SDKInitState {
         NOTINITIALIZED,
@@ -53,8 +57,8 @@ public class VungleRouter {
     };
 
     private VungleRouter() {
-        VungleApiClient.addWrapperInfo(VungleApiClient.WrapperFramework.mopub,
-                VERSION.replace('.', '_'));
+        Plugin.addWrapperInfo(VungleApiClient.WrapperFramework.mopub,
+                VungleAdapterConfiguration.ADAPTER_VERSION.replace('.', '_'));
     }
 
     public static VungleRouter getInstance() {
@@ -65,9 +69,9 @@ public class VungleRouter {
         return sLifecycleListener;
     }
 
-    public void initVungle(Context context, String vungleAppId) {
+    public void initVungle(final Context context, final String vungleAppId) {
 
-        Vungle.init(vungleAppId, context.getApplicationContext(), new InitCallback() {
+        initCallback = new InitCallback() {
             @Override
             public void onSuccess() {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "SDK is initialized successfully.");
@@ -77,12 +81,28 @@ public class VungleRouter {
                 clearWaitingList();
 
                 // Pass the user consent from the MoPub SDK to Vungle as per GDPR
-                boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+                PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
-                // (New) Pass consentMessageVersion per Vungle 6.3.17:
-                // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
-                Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN :
-                        Vungle.Consent.OPTED_OUT, "");
+                boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
+                boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
+
+                if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
+                    if (shouldAllowLegitimateInterest) {
+                        if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
+                                || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT
+                                || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.POTENTIAL_WHITELIST) {
+                            Vungle.updateConsentStatus(Vungle.Consent.OPTED_OUT, "");
+                        } else {
+                            Vungle.updateConsentStatus(Vungle.Consent.OPTED_IN, "");
+                        }
+                    } else {
+                        // Pass consentMessageVersion per Vungle 6.3.17:
+                        // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
+                        Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN :
+                                Vungle.Consent.OPTED_OUT, "");
+                    }
+                }
+
             }
 
             @Override
@@ -94,9 +114,13 @@ public class VungleRouter {
 
             @Override
             public void onAutoCacheAdAvailable(String placementId) {
-                // not used
+                //no-op
             }
-        });
+        };
+
+        VungleSettings vungleSettings = VungleNetworkSettings.getVungleSettings();
+        VungleSettings settings = (vungleSettings != null) ? vungleSettings : new VungleSettings.Builder().build();
+        Vungle.init(vungleAppId, context.getApplicationContext(), initCallback, settings);
 
         sInitState = SDKInitState.INITIALIZING;
     }
@@ -159,6 +183,10 @@ public class VungleRouter {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "There should not be this case. playAdForPlacement is called " +
                     "before an ad is loaded for Placement ID: " + placementId);
         }
+    }
+
+    public VungleNativeAd getVungleBannerAd(String placementId, AdConfig adConfig) {
+        return Vungle.getNativeAd(placementId, adConfig, playAdCallback);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -11,6 +12,7 @@ import android.widget.FrameLayout.LayoutParams;
 import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.verizon.ads.ActivityStateManager;
 import com.verizon.ads.Bid;
 import com.verizon.ads.BidRequestListener;
 import com.verizon.ads.CreativeInfo;
@@ -43,8 +45,10 @@ public class VerizonBanner extends CustomEventBanner {
 
     private static final String PLACEMENT_ID_KEY = "placementId";
     private static final String SITE_ID_KEY = "siteId";
-    private static final String HEIGHT_KEY = "height";
-    private static final String WIDTH_KEY = "width";
+    private static final String HEIGHT_KEY = "com_mopub_ad_height";
+    private static final String WIDTH_KEY = "com_mopub_ad_width";
+    private static final String HEIGHT_LEGACY_KEY = "adHeight";
+    private static final String WIDTH_LEGACY_KEY = "adWidth";
 
     private InlineAdView verizonInlineAd;
     private CustomEventBannerListener bannerListener;
@@ -76,31 +80,60 @@ public class VerizonBanner extends CustomEventBanner {
             return;
         }
 
+        // Cache serverExtras so siteId can be used to initalizate VAS early at next launch
+        verizonAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+
+        String siteId = serverExtras.get(getSiteIdKey());
+        String placementId = serverExtras.get(getPlacementIdKey());
+
         if (!VASAds.isInitialized()) {
-            final String siteId = serverExtras.get(getSiteIdKey());
+            Application application = null;
 
-            if (TextUtils.isEmpty(siteId)) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
-                        "siteId is empty");
-
-                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
-
-                return;
+            if (context instanceof Application) {
+                application = (Application) context;
+            } else if (context instanceof Activity) {
+                application = ((Activity) context).getApplication();
             }
 
-            if (!(context instanceof Activity)) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
-                        "context is not an Activity");
+            if (!StandardEdition.initialize(application, siteId)) {
 
                 logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
-
-                return;
             }
+        }
 
-            final boolean success = StandardEdition.initializeWithActivity((Activity) context, siteId);
+        // The current activity must be set as resumed so VAS can track ad visibility
+        ActivityStateManager activityStateManager = VASAds.getActivityStateManager();
+        if (activityStateManager != null && context instanceof Activity) {
+            activityStateManager.setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
+        }
 
-            if (!success) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to initialize the Verizon SDK");
+        if (localExtras == null || localExtras.isEmpty()) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "localExtras is null. Unable to extract banner " +
+                    "sizes from localExtras.  Will attempt to extract from serverExtras");
+        } else {
+            if (localExtras.get(getWidthKey()) != null) {
+                adWidth = (int) localExtras.get(getWidthKey());
+            }
+            if (localExtras.get(getHeightKey()) != null) {
+                adHeight = (int) localExtras.get(getHeightKey());
+            }
+        }
+
+        if (adHeight <= 0 || adWidth <= 0) {
+            // Fall back to serverExtras for legacy custom event integrations
+            final String widthString = serverExtras.get(WIDTH_LEGACY_KEY);
+            final String heightString = serverExtras.get(HEIGHT_LEGACY_KEY);
+
+            try {
+                if (widthString != null) {
+                    adWidth = Integer.parseInt(widthString);
+                }
+                if (heightString != null) {
+                    adHeight = Integer.parseInt(heightString);
+                }
+            } catch (NumberFormatException e) {
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Unable to parse banner sizes from " +
+                        "serverExtras.", e);
 
                 logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
 
@@ -108,35 +141,10 @@ public class VerizonBanner extends CustomEventBanner {
             }
         }
 
-        final String placementId = serverExtras.get(getPlacementIdKey());
-        final String widthString = serverExtras.get(getWidthKey());
-        final String heightString = serverExtras.get(getHeightKey());
-
-        if (TextUtils.isEmpty(placementId) || TextUtils.isEmpty(widthString)
-                || TextUtils.isEmpty(heightString)) {
+        if (TextUtils.isEmpty(placementId) || adWidth <= 0 || adHeight <= 0) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME,
-                    "Ad request to Verizon failed because either the placement ID, or width, or " +
-                            "height is empty/null");
-
-            logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR);
-
-            return;
-        }
-
-        try {
-            adWidth = Integer.parseInt(widthString);
-            adHeight = Integer.parseInt(heightString);
-        } catch (NumberFormatException e) {
-            MoPubLog.log(CUSTOM_WITH_THROWABLE, "Failed to parse ad's width and/or height.", e);
-
-            logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR);
-
-            return;
-        }
-
-        if (adWidth <= 0 || adHeight <= 0) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME,
-                    "Ad request to Verizon failed because the width or height is not greater than 0");
+                    "Ad request to Verizon failed because either the placement ID is empty, or width " +
+                            "and/or height is <= 0");
 
             logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR);
 
@@ -167,8 +175,6 @@ public class VerizonBanner extends CustomEventBanner {
         } else {
             inlineAdFactory.load(bid, new VerizonInlineAdListener());
         }
-
-        verizonAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
     }
 
 
@@ -279,15 +285,17 @@ public class VerizonBanner extends CustomEventBanner {
         public void onLoaded(final InlineAdFactory inlineAdFactory, final InlineAdView inlineAdView) {
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
-            final CreativeInfo creativeInfo = verizonInlineAd == null ? null : verizonInlineAd.getCreativeInfo();
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
+            verizonInlineAd = inlineAdView;
 
             VerizonUtils.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
+                    final CreativeInfo creativeInfo = verizonInlineAd == null ? null : verizonInlineAd.getCreativeInfo();
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
+
                     if (internalView != null) {
-                        internalView.addView(inlineAdView);
+                        internalView.addView(verizonInlineAd);
                     }
 
                     if (listener != null) {

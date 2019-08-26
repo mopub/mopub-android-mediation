@@ -189,15 +189,22 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
 
     public static final class ChartboostMediationSettings implements MediationSettings {
         @NonNull
-        private final String mCustomId;
+        private String customId = "";
+
+        public ChartboostMediationSettings() {
+        }
 
         public ChartboostMediationSettings(@NonNull final String customId) {
-            mCustomId = customId;
+            this.customId = customId;
+        }
+
+        public void setCustomId(@NonNull String customId) {
+            this.customId = customId;
         }
 
         @NonNull
         public String getCustomId() {
-            return mCustomId;
+            return customId;
         }
     }
 }

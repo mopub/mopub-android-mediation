@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -27,6 +28,8 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 /**
  * A custom event for showing Vungle rewarded videos.
  */
+
+@Keep
 public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
     /*
@@ -226,6 +229,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         adConfig.setMuted(!mediationSettings.isSoundEnabled);
         adConfig.setFlexViewCloseTime(mediationSettings.flexViewCloseTimeInSec);
         adConfig.setOrdinal(mediationSettings.ordinalViewCount);
+        adConfig.setAutoRotate(mediationSettings.autoRotateEnabled);
     }
 
     /*
@@ -337,6 +341,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         private final boolean isSoundEnabled;
         private final int flexViewCloseTimeInSec;
         private final int ordinalViewCount;
+        private final boolean autoRotateEnabled;
 
         public static class Builder {
             @Nullable
@@ -352,6 +357,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
             private boolean isSoundEnabled = true;
             private int flexViewCloseTimeInSec = 0;
             private int ordinalViewCount = 0;
+            private boolean autoRotateEnabled = false;
 
             public Builder withUserId(@NonNull final String userId) {
                 this.userId = userId;
@@ -393,6 +399,11 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
                 return this;
             }
 
+            public Builder withAutoRotate(boolean autoRotateEnabled) {
+                this.autoRotateEnabled = autoRotateEnabled;
+                return this;
+            }
+
             public VungleMediationSettings build() {
                 return new VungleMediationSettings(this);
             }
@@ -407,6 +418,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
             this.isSoundEnabled = builder.isSoundEnabled;
             this.flexViewCloseTimeInSec = builder.flexViewCloseTimeInSec;
             this.ordinalViewCount = builder.ordinalViewCount;
+            this.autoRotateEnabled = builder.autoRotateEnabled;
         }
     }
 }

@@ -14,6 +14,9 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
@@ -28,6 +31,8 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     private static final String AD_UNIT_ID_KEY = "adUnitID";
     private static final String ADAPTER_NAME = GooglePlayServicesInterstitial.class.getSimpleName();
     private static final String CONTENT_URL_KEY = "contentUrl";
+    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
     private static final String TEST_DEVICES_KEY = "testDevices";
 
     @NonNull
@@ -75,24 +80,42 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubInterstitial.setLocalExtras() call.
-        if (localExtras.get(CONTENT_URL_KEY) != null) {
-            String contentUrl = localExtras.get(CONTENT_URL_KEY).toString();
-            if (!TextUtils.isEmpty(contentUrl)) {
-                builder.setContentUrl(contentUrl);
-            }
+        String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
+
+        if (!TextUtils.isEmpty(contentUrl)) {
+            builder.setContentUrl(contentUrl);
         }
 
         // Publishers may request for test ads by passing test device IDs to the MoPubInterstitial.setLocalExtras() call.
-        if (localExtras.get(TEST_DEVICES_KEY) != null) {
-            String testDeviceId = localExtras.get(TEST_DEVICES_KEY).toString();
-            if (!TextUtils.isEmpty(testDeviceId)) {
-                builder.addTestDevice(testDeviceId);
-            }
+        String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+
+        if (!TextUtils.isEmpty(testDeviceId)) {
+            builder.addTestDevice(testDeviceId);
         }
 
         // Consent collected from the MoPub’s consent dialogue should not be used to set up
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
+
+        // Publishers may want to indicate that their content is child-directed and forward this
+        // information to Google.
+        Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+
+        if (childDirected != null) {
+            builder.tagForChildDirectedTreatment(childDirected);
+        }
+
+        // Publishers may want to mark their requests to receive treatment for users in the
+        // European Economic Area (EEA) under the age of consent.
+        Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+
+        if (underAgeOfConsent != null) {
+            if (underAgeOfConsent) {
+                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+            } else {
+                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+            }
+        }
 
         AdRequest adRequest = builder.build();
 
@@ -115,9 +138,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     private void forwardNpaIfSet(AdRequest.Builder builder) {
 
         // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        if (GooglePlayServicesMediationSettings.getNpaBundle() != null &&
-                !GooglePlayServicesMediationSettings.getNpaBundle().isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, GooglePlayServicesMediationSettings.getNpaBundle());
+        Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
+
+        if (npaBundle != null && !npaBundle.isEmpty()) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
     }
 
@@ -224,34 +248,5 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             }
             return errorCode;
         }
-    }
-
-    public static final class GooglePlayServicesMediationSettings implements MediationSettings {
-        private static Bundle npaBundle;
-
-        public GooglePlayServicesMediationSettings() {
-        }
-
-        public GooglePlayServicesMediationSettings(Bundle bundle) {
-            npaBundle = bundle;
-        }
-
-        public void setNpaBundle(Bundle bundle) {
-            npaBundle = bundle;
-        }
-
-        /* The MoPub Android SDK queries MediationSettings from the rewarded video code
-        (MoPubRewardedVideoManager.getGlobalMediationSettings). That API might not always be
-        available to publishers importing the modularized SDK(s) based on select ad formats.
-        This is a workaround to statically get the "npa" Bundle passed to us via the constructor. */
-        private static Bundle getNpaBundle() {
-            return npaBundle;
-        }
-    }
-
-    @Deprecated
-        // for testing
-    InterstitialAd getGoogleInterstitialAd() {
-        return mGoogleInterstitialAd;
     }
 }

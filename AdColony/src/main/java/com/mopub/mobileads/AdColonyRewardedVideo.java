@@ -168,6 +168,20 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             String adColonyAppId = serverExtras.get(APP_ID_KEY);
             String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
 
+            // Check to see if app ID parameter is present. If not AdColony will not return an ad.
+            // So there's no need to make a request. If so, must fail and log the flow.
+            if (TextUtils.isEmpty(adColonyAppId) || TextUtils.equals(adColonyAppId, DEFAULT_APP_ID)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AppId parameter cannot be empty. " +
+                        "Please make sure you enter correct AppId on the MoPub Dashboard " +
+                        "for AdColony.");
+
+                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
+                        AdColonyRewardedVideo.class,
+                        mZoneId,
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                return;
+            }
+
             // Pass the user consent from the MoPub SDK to AdColony as per GDPR
             PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
 
@@ -300,13 +314,13 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     private boolean getConfirmationDialogFromSettings() {
         final AdColonyInstanceMediationSettings settings =
                 MoPubRewardedVideoManager.getInstanceMediationSettings(AdColonyInstanceMediationSettings.class, mAdUnitId);
-        return settings != null && settings.withConfirmationDialog();
+        return settings != null && settings.isWithConfirmationDialog();
     }
 
     private boolean getResultsDialogFromSettings() {
         final AdColonyInstanceMediationSettings settings =
                 MoPubRewardedVideoManager.getInstanceMediationSettings(AdColonyInstanceMediationSettings.class, mAdUnitId);
-        return settings != null && settings.withResultsDialog();
+        return settings != null && settings.isWithResultsDialog();
     }
 
     private void scheduleOnVideoReady() {
@@ -423,34 +437,52 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     public static final class AdColonyGlobalMediationSettings implements MediationSettings {
         @Nullable
-        private final String mUserId;
+        private String userId;
 
         public AdColonyGlobalMediationSettings(@Nullable String userId) {
-            mUserId = userId;
+            this.userId = userId;
+        }
+
+        public AdColonyGlobalMediationSettings() {
+        }
+
+        public void setUserId(String userId) {
+            this.userId = userId;
         }
 
         @Nullable
         public String getUserId() {
-            return mUserId;
+            return userId;
         }
     }
 
     public static final class AdColonyInstanceMediationSettings implements MediationSettings {
-        private final boolean mWithConfirmationDialog;
-        private final boolean mWithResultsDialog;
+        private boolean withConfirmationDialog;
+        private boolean withResultsDialog;
 
         public AdColonyInstanceMediationSettings(
                 boolean withConfirmationDialog, boolean withResultsDialog) {
-            mWithConfirmationDialog = withConfirmationDialog;
-            mWithResultsDialog = withResultsDialog;
+            this.withConfirmationDialog = withConfirmationDialog;
+            this.withResultsDialog = withResultsDialog;
         }
 
-        public boolean withConfirmationDialog() {
-            return mWithConfirmationDialog;
+        public AdColonyInstanceMediationSettings() {
         }
 
-        public boolean withResultsDialog() {
-            return mWithResultsDialog;
+        public void setWithConfirmationDialog(boolean withConfirmationDialog) {
+            this.withConfirmationDialog = withConfirmationDialog;
+        }
+
+        public void setWithResultsDialog(boolean withResultsDialog) {
+            this.withResultsDialog = withResultsDialog;
+        }
+
+        public boolean isWithConfirmationDialog() {
+            return withConfirmationDialog;
+        }
+
+        public boolean isWithResultsDialog() {
+            return withResultsDialog;
         }
     }
 }

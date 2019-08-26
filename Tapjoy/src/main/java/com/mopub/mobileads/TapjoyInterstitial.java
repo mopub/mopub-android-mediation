@@ -26,6 +26,7 @@ import com.tapjoy.TJPlacementListener;
 import com.tapjoy.Tapjoy;
 import com.tapjoy.TapjoyLog;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
@@ -232,6 +233,12 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
     @Override
     public void onContentReady(TJPlacement placement) {
+    }
+
+    @Override
+    public void onClick(TJPlacement placement) {
+        MoPubLog.log(CLICKED, ADAPTER_NAME);
+        mInterstitialListener.onInterstitialClicked();
     }
 
     @Override

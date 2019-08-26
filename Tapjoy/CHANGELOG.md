@@ -1,4 +1,15 @@
 ## Changelog
+  * 12.3.1.1
+    * Fix `MediationSettings` for Tapjoy to follow POJO to maintain compatibility with MoPub Unity SDK.
+
+  * 12.3.1.0
+    * This version of adapters has been certified with Tapjoy 12.3.1.
+    * Add `didClick` callback support for interstitial and rewarded video ad clicks.
+    * Fix `getBiddingToken` API to return token string when available and return `1` otherwise.
+
+  * 12.2.1.1
+    * Refactor the `MediationSettings` implementation to maintain consistency with the MoPub Unity SDK.
+
   * 12.2.1.0
     * This version of adapters has been certified with Tapjoy 12.2.1.
     * Check if the Tapjoy placement instance is `null` before accessing it in the `TapjoyRewardedVideo` and `TapjoyInterstitial` adapters.
