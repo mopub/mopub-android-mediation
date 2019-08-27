@@ -12,6 +12,7 @@ import com.adcolony.sdk.AdColonyAdView;
 import com.adcolony.sdk.AdColonyAdViewListener;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyZone;
+import com.mopub.common.DataKeys;
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
@@ -51,8 +52,7 @@ public class AdColonyBanner extends CustomEventBanner {
     public static final String APP_ID_KEY = "appId";
     public static final String ALL_ZONE_IDS_KEY = "allZoneIds";
     public static final String ZONE_ID_KEY = "zoneId";
-    private static final String AD_WIDTH_KEY = "ad_width";
-    private static final String AD_HEIGHT_KEY = "ad_height";
+
     public static final String ADAPTER_NAME = AdColonyBanner.class.getSimpleName();
 
     private CustomEventBannerListener mCustomEventBannerListener;
@@ -67,15 +67,16 @@ public class AdColonyBanner extends CustomEventBanner {
 
     private AdColonyAdView mAdColonyAdView;
 
-    public AdColonyBanner()
-    {
+    public AdColonyBanner() {
         mHandler = new Handler();
         mAdColonyAdapterConfiguration = new AdColonyAdapterConfiguration();
     }
 
     @Override
-    protected void loadBanner(Context context, CustomEventBannerListener customEventBannerListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
-
+    protected void loadBanner(@NonNull Context context,
+                              @NonNull CustomEventBannerListener customEventBannerListener,
+                              @NonNull Map<String, Object> localExtras,
+                              @NonNull Map<String, String> serverExtras) {
         if (!(context instanceof Activity)) {
             customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
@@ -177,13 +178,10 @@ public class AdColonyBanner extends CustomEventBanner {
         return !AdColony.getSDKVersion().isEmpty();
     }
 
-    private AdColonyAdViewListener getAdColonyBannerListener()
-    {
-        if(mAdColonyBannerListener != null)
-        {
+    private AdColonyAdViewListener getAdColonyBannerListener() {
+        if(mAdColonyBannerListener != null) {
             return mAdColonyBannerListener;
-        }else
-        {
+        } else {
             return new AdColonyAdViewListener() {
                 @Override
                 public void onRequestFilled(final AdColonyAdView adColonyAdView) {
@@ -196,7 +194,6 @@ public class AdColonyBanner extends CustomEventBanner {
                         }
                     });
                 }
-
                 @Override
                 public void onRequestNotFilled(AdColonyZone zone) {
                     super.onRequestNotFilled(zone);
@@ -209,27 +206,23 @@ public class AdColonyBanner extends CustomEventBanner {
                         }
                     });
                 }
-
                 @Override
                 public void onClicked(AdColonyAdView ad) {
                     super.onClicked(ad);
                     mCustomEventBannerListener.onBannerClicked();
                     MoPubLog.log(CLICKED, ADAPTER_NAME);
                 }
-
                 @Override
                 public void onLeftApplication(AdColonyAdView ad) {
                     super.onLeftApplication(ad);
                     mCustomEventBannerListener.onLeaveApplication();
                     MoPubLog.log(WILL_LEAVE_APPLICATION, ADAPTER_NAME);
                 }
-
                 @Override
                 public void onOpened(AdColonyAdView ad) {
                     super.onOpened(ad);
                     mCustomEventBannerListener.onBannerExpanded();
                 }
-
                 @Override
                 public void onClosed(AdColonyAdView ad) {
                     super.onClosed(ad);
@@ -247,8 +240,7 @@ public class AdColonyBanner extends CustomEventBanner {
                 && extras.containsKey(ZONE_ID_KEY);
     }
 
-    private AdColonyAdSize getAdSizeFromLocalExtras(Map<String, Object> localExtras)
-    {
+    private AdColonyAdSize getAdSizeFromLocalExtras(Map<String, Object> localExtras) {
         AdColonyAdSize adSize =  AdColonyAdSize.BANNER;
 
         if (localExtras == null || localExtras.isEmpty()) {
@@ -257,20 +249,10 @@ public class AdColonyBanner extends CustomEventBanner {
         }
 
         try {
-            final int width = (Integer) localExtras.get(AD_WIDTH_KEY);
-            final int height = (Integer) localExtras.get(AD_HEIGHT_KEY);
-
-            if (width > 0 && height > 0) {
-                if (width >= 160 && height >= 600) {
-                    adSize = AdColonyAdSize.SKYSCRAPER;
-                } else if (width >= 728 && height >= 90) {
-                    adSize = AdColonyAdSize.LEADERBOARD;
-                } else if (width >= 300 && height >= 250) {
-                    adSize = AdColonyAdSize.MEDIUM_RECTANGLE;
-                } else if (width >= 320 && height >= 50) {
-                    adSize = AdColonyAdSize.MEDIUM_RECTANGLE;
-                }
-            } else {
+            final int width = (Integer) localExtras.get(DataKeys.AD_WIDTH);
+            final int height = (Integer) localExtras.get(DataKeys.AD_HEIGHT);
+            adSize = new AdColonyAdSize(width,height);
+            if(adSize == null) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Invalid width (" + width + ") and height " +
                         "(" + height + ") provided. Setting Default AdSize.");
             }
