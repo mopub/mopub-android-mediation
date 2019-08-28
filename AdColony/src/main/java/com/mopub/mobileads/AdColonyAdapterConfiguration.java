@@ -9,9 +9,12 @@ import android.text.TextUtils;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
 import com.mopub.common.BaseAdapterConfiguration;
+import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 import com.mopub.mobileads.adcolony.BuildConfig;
 
@@ -21,11 +24,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
 public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
-
-    // AdColony's keys
-    private static final String CLIENT_OPTIONS_KEY = "clientOptions";
-    private static final String APP_ID_KEY = "appId";
-    private static final String ALL_ZONE_IDS_KEY = "allZoneIds";
 
     // Adapter's keys
     private static final String ADAPTER_NAME = AdColonyAdapterConfiguration.class.getSimpleName();
@@ -79,23 +77,23 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
                 if (isAdColonyConfigured()) {
                     networkInitializationSucceeded = true;
                 } else if (configuration != null) {
-                    final String adColonyClientOptions = configuration.get(CLIENT_OPTIONS_KEY);
-                    final String adColonyAppId = configuration.get(APP_ID_KEY);
+                    final String adColonyClientOptions = configuration.get(AdColonyUtils.CLIENT_OPTIONS_KEY);
+                    final String adColonyAppId = configuration.get(AdColonyUtils.APP_ID_KEY);
                     final String[] adColonyAllZoneIds = extractAllZoneIds(configuration);
 
-                    if (TextUtils.isEmpty(adColonyClientOptions) || TextUtils.isEmpty(adColonyAppId)
+                    if (TextUtils.isEmpty(adColonyAppId)
                             || adColonyAllZoneIds.length == 0) {
                         MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColony's initialization not " +
                                 "started. Ensure AdColony's appId, zoneId, and/or clientOptions " +
                                 "are populated on the MoPub dashboard. Note that initialization " +
                                 "on the first app launch is a no-op.");
                     } else {
-                        final AdColonyAppOptions adColonyAppOptions =
-                                AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+                        AdColonyAppOptions adColonyAppOptions = AdColonyUtils.getAdColonyAppOptions(adColonyClientOptions);
 
                         AdColony.configure((Application) context.getApplicationContext(),
                                 adColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
                         networkInitializationSucceeded = true;
+                        AdColonyUtils.previousAdColonyAllZoneIds = adColonyAllZoneIds;
                     }
                 }
             } catch (Exception e) {
@@ -121,7 +119,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     private static String[] extractAllZoneIds(@NonNull final Map<String, String> serverExtras) {
         Preconditions.checkNotNull(serverExtras);
 
-        String[] result = Json.jsonArrayToStringArray(serverExtras.get(ALL_ZONE_IDS_KEY));
+        String[] result = Json.jsonArrayToStringArray(serverExtras.get(AdColonyUtils.ALL_ZONE_IDS_KEY));
 
         // AdColony requires at least one valid String in the allZoneIds array.
         if (result.length == 0) {

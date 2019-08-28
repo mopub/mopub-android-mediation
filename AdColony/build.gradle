@@ -1,9 +1,8 @@
-project.version = '3.3.11.0'
+project.version = '4.0.0.0'
 
 apply from: '../shared-build.gradle'
 
 dependencies {
-    implementation fileTree(dir: '../libs', include: ['*.jar'])
-//    implementation "com.adcolony:sdk:${sdkVersion}"
+    implementation "com.adcolony:sdk:${sdkVersion}"
 }
 
