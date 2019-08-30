@@ -43,7 +43,6 @@ public class AdColonyUtils {
 
     protected static boolean extrasAreValid(Map<String, String> extras) {
         return extras != null
-                && extras.containsKey(CLIENT_OPTIONS_KEY)
                 && extras.containsKey(APP_ID_KEY)
                 && extras.containsKey(ALL_ZONE_IDS_KEY)
                 && extras.containsKey(ZONE_ID_KEY);

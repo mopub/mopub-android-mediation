@@ -120,6 +120,10 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             // Set up serverExtras
             if (AdColonyUtils.extrasAreValid(serverExtras)) {
                 adColonyClientOptions = serverExtras.get(AdColonyUtils.CLIENT_OPTIONS_KEY);
+                if(adColonyClientOptions == null)
+                {
+                    adColonyClientOptions = "";
+                }
                 adColonyAppId = serverExtras.get(AdColonyUtils.APP_ID_KEY);
                 adColonyAllZoneIds = AdColonyUtils.extractAllZoneIds(serverExtras);
                 mAdColonyClientOptions = adColonyClientOptions;
