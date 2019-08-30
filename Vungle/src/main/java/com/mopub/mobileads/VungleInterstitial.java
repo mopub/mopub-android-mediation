@@ -69,6 +69,8 @@ public class VungleInterstitial extends CustomEventInterstitial {
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mIsPlaying = false;
 
+        setAutomaticImpressionAndClickTracking(false);
+
         if (context == null) {
             mHandler.post(new Runnable() {
                 @Override
@@ -230,7 +232,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mCustomEventInterstitialListener.onInterstitialShown();
+                        mCustomEventInterstitialListener.onInterstitialImpression();
 
                         MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
                     }
