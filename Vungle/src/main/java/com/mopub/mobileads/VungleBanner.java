@@ -63,6 +63,8 @@
         mCustomEventBannerListener = customEventBannerListener;
         pendingRequestBanner.set(true);
 
+        setAutomaticImpressionAndClickTracking(false);
+
         if (context == null) {
             mHandler.post(new Runnable() {
                 @Override
@@ -206,6 +208,10 @@
                 mIsPlaying = false;
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
+                if (wasCallToActionClicked && mCustomEventBannerListener != null) {
+                    mCustomEventBannerListener.onBannerClicked();
+                    MoPubLog.log(CLICKED, ADAPTER_NAME);
+                }
             }
         }
 
