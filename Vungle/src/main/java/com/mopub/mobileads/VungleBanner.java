@@ -208,10 +208,16 @@
                 mIsPlaying = false;
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
-                if (wasCallToActionClicked && mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerClicked();
-                    MoPubLog.log(CLICKED, ADAPTER_NAME);
-                }
+                mHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (wasCallToActionClicked && mCustomEventBannerListener != null) {
+                            mCustomEventBannerListener.onBannerClicked();
+                            MoPubLog.log(CLICKED, ADAPTER_NAME);
+                        }
+                    }
+                });
             }
         }
 
@@ -221,9 +227,15 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression. Placement id" + placementReferenceId);
-                if (mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerImpression();
-                }
+                mHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (mCustomEventBannerListener != null) {
+                            mCustomEventBannerListener.onBannerImpression();
+                        }
+                    }
+                });
 
                 //Let's load it again to mimic auto-cache
                 sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
