@@ -71,6 +71,10 @@ public class AdColonyBanner extends CustomEventBanner {
         adSize = getAdSizeFromLocalExtras(localExtras);
         if (AdColonyUtils.extrasAreValid(serverExtras)) {
             clientOptions = serverExtras.get(AdColonyUtils.CLIENT_OPTIONS_KEY);
+            if(clientOptions == null)
+            {
+                clientOptions = "";
+            }
             appId = serverExtras.get(AdColonyUtils.APP_ID_KEY);
             allZoneIds = AdColonyUtils.extractAllZoneIds(serverExtras);
             zoneId = serverExtras.get(AdColonyUtils.ZONE_ID_KEY);
