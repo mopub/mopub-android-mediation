@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.4.11.1
+    * Added manual click tracking to `VungleBanner` based of Vungle's definition of a click.
+    * Add manual impression tracking for `VungleInterstitial`.
+
   * 6.4.11.0
     * This version of adapters has been certified with Vungle 6.4.11.
     * Added support for banner ad.
