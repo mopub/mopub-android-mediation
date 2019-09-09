@@ -1,4 +1,7 @@
 ## Changelog
+  * 7.5.0.0
+    * This version of the adapters has been certified with Chartboost 7.5.0.
+
   * 7.3.1.4
     * Refactor the `MediationSettings` implementation to maintain consistency with the MoPub Unity SDK.
 

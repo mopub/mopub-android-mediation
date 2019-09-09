@@ -254,7 +254,7 @@ public class AppLovinBanner extends CustomEventBanner {
                 if (width >= 728 && height >= 90) {
                     adSize = AppLovinAdSize.LEADER;
                 } else if (width >= 300 && height >= 250) {
-                 // Size can contain an AppLovin medium rectangle
+                    // Size can contain an AppLovin medium rectangle
                     adSize = AppLovinAdSize.MREC;
                 }
             } else {

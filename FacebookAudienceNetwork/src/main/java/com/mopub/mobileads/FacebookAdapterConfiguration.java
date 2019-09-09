@@ -24,7 +24,6 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
-    private AtomicBoolean networkInitializationSucceeded = new AtomicBoolean(false);
     private AtomicReference<String> tokenReference = new AtomicReference<>(null);
     private AtomicBoolean isComputingToken = new AtomicBoolean(false);
 
@@ -40,7 +39,7 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
         Preconditions.checkNotNull(context);
 
         refreshBidderToken(context);
-        return networkInitializationSucceeded.get() ? tokenReference.get() : null;
+        return tokenReference.get();
     }
 
     @NonNull
@@ -66,24 +65,19 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
 
         synchronized (FacebookAdapterConfiguration.class) {
             try {
+                tokenReference.set(BidderTokenProvider.getBidderToken(context));
                 AudienceNetworkAds.buildInitSettings(context)
                         .withMediationService("MOPUB_" + MoPub.SDK_VERSION + ":" + ADAPTER_VERSION)
                         .initialize();
-                refreshBidderToken(context);
-                networkInitializationSucceeded.set(true);
-            } catch (Exception e) {
-                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Facebook Audience Network" +
-                        " has encountered an exception.", e);
+            } catch (Throwable t) {
+                MoPubLog.log(
+                        CUSTOM_WITH_THROWABLE,
+                        "Initializing Facebook Audience Network" + " has encountered an exception.",
+                        t);
             }
         }
-
-        if (networkInitializationSucceeded.get()) {
-            listener.onNetworkInitializationFinished(this.getClass(),
-                    MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
-        } else {
-            listener.onNetworkInitializationFinished(this.getClass(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-        }
+        listener.onNetworkInitializationFinished(this.getClass(),
+                MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
     }
 
     private void refreshBidderToken(final Context context) {
@@ -91,7 +85,10 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    tokenReference.set(BidderTokenProvider.getBidderToken(context));
+                    String token = BidderTokenProvider.getBidderToken(context);
+                    if (token != null) {
+                        tokenReference.set(token);
+                    }
                     isComputingToken.set(false);
                 }
             }).start();

@@ -1,4 +1,4 @@
-project.version = '11.6.0.2'
+project.version = '11.7.1.0'
 project.ext.networkName = 'yahoo'
 
 apply from: '../shared-build.gradle'

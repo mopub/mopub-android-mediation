@@ -1,4 +1,7 @@
 ## Changelog
+ * 11.7.1.0
+    * This version of adapters has been certified with Flurry 11.7.1.
+
  * 11.6.0.2
     * Add a call to `setTargeting()` for Flurry native ads. Currently supported is the ability to enable test mode via `localExtras`.
 

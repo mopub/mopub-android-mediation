@@ -69,6 +69,8 @@ public class VungleInterstitial extends CustomEventInterstitial {
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mIsPlaying = false;
 
+        setAutomaticImpressionAndClickTracking(false);
+
         if (context == null) {
             mHandler.post(new Runnable() {
                 @Override
@@ -140,11 +142,17 @@ public class VungleInterstitial extends CustomEventInterstitial {
         } else {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "SDK tried to show a Vungle interstitial ad before it " +
                     "finished loading. Please try again.");
-            mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            mHandler.post(new Runnable() {
 
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                @Override
+                public void run() {
+                    mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
+                    MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+                            MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            MoPubErrorCode.NETWORK_NO_FILL);
+                }
+            });
         }
     }
 
@@ -230,7 +238,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mCustomEventInterstitialListener.onInterstitialShown();
+                        mCustomEventInterstitialListener.onInterstitialImpression();
 
                         MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
                     }
