@@ -18,6 +18,7 @@
  import java.util.Map;
  import java.util.concurrent.atomic.AtomicBoolean;
 
+ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
