@@ -1,4 +1,7 @@
 ## Changelog
+  * 3.2.0.1
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
   * 3.2.0.0
     * This version of the adapters has been certified with Unity Ads 3.2.0.
     * **Note**:On MoPub adunit refresh, Unity Banners may not render correctly and this issue will be fixed in the upcoming Unity SDK versions. This behavior is inconsistent and there is no suggested workaround at the moment 

@@ -2,8 +2,9 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
@@ -104,7 +105,8 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     @Override
     protected void showInterstitial() {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-        if (mFacebookInterstitial != null && mFacebookInterstitial.isAdLoaded()) {
+        if (mFacebookInterstitial != null && mFacebookInterstitial.isAdLoaded() &&
+                !mFacebookInterstitial.isAdInvalidated()) {
             mFacebookInterstitial.show();
             cancelExpirationTimer();
         } else {

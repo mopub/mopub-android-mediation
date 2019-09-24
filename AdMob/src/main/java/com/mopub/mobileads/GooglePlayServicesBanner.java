@@ -9,20 +9,24 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
-import com.mopub.common.MediationSettings;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
+import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 
 import java.util.Map;
 
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
-
 import static com.google.android.gms.ads.AdSize.BANNER;
 import static com.google.android.gms.ads.AdSize.FULL_BANNER;
 import static com.google.android.gms.ads.AdSize.LEADERBOARD;
 import static com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE;
-
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
@@ -35,8 +39,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
      * These keys are intended for MoPub internal use. Do not modify.
      */
     private static final String AD_UNIT_ID_KEY = "adUnitID";
-    private static final String AD_WIDTH_KEY = "adWidth";
-    private static final String AD_HEIGHT_KEY = "adHeight";
     private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
     private static final String CONTENT_URL_KEY = "contentUrl";
     private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
@@ -54,14 +56,15 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             final Map<String, String> serverExtras) {
         mBannerListener = customEventBannerListener;
 
-        final int adWidth;
-        final int adHeight;
+        final Integer adWidth;
+        final Integer adHeight;
 
         String adUnitId = "";
-        if (extrasAreValid(serverExtras)) {
+
+        if (localExtras != null && !localExtras.isEmpty()) {
             adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
-            adWidth = Integer.parseInt(serverExtras.get(AD_WIDTH_KEY));
-            adHeight = Integer.parseInt(serverExtras.get(AD_HEIGHT_KEY));
+            adWidth = (Integer) localExtras.get(DataKeys.AD_WIDTH);
+            adHeight = (Integer) localExtras.get(DataKeys.AD_HEIGHT);
         } else {
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
@@ -75,8 +78,13 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         mGoogleAdView.setAdListener(new AdViewListener());
         mGoogleAdView.setAdUnitId(adUnitId);
 
-        final AdSize adSize = calculateAdSize(adWidth, adHeight);
-        if (adSize == null) {
+        final AdSize adSize = (adWidth == null || adHeight == null)
+                ? null
+                : calculateAdSize(adWidth, adHeight);
+
+        if (adSize != null) {
+            mGoogleAdView.setAdSize(adSize);
+        } else {
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
@@ -84,8 +92,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
             return;
         }
-
-        mGoogleAdView.setAdSize(adSize);
 
         AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
@@ -108,12 +114,20 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
 
+        RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
         Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
 
         if (childDirected != null) {
-            builder.tagForChildDirectedTreatment(childDirected);
+            if (childDirected) {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE);
+            } else {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE);
+            }
+        } else {
+            requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED);
         }
 
         // Publishers may want to mark their requests to receive treatment for users in the
@@ -122,11 +136,16 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         if (underAgeOfConsent != null) {
             if (underAgeOfConsent) {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
             } else {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
             }
+        } else {
+            requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED);
         }
+
+        RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
+        MobileAds.setRequestConfiguration(requestConfiguration);
 
         AdRequest adRequest = builder.build();
 
@@ -162,17 +181,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         if (npaBundle != null && !npaBundle.isEmpty()) {
             builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
-    }
-
-    private boolean extrasAreValid(Map<String, String> serverExtras) {
-        try {
-            Integer.parseInt(serverExtras.get(AD_WIDTH_KEY));
-            Integer.parseInt(serverExtras.get(AD_HEIGHT_KEY));
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return serverExtras.containsKey(AD_UNIT_ID_KEY);
     }
 
     private AdSize calculateAdSize(int width, int height) {

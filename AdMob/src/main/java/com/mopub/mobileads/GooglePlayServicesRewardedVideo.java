@@ -2,13 +2,15 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdCallback;
@@ -22,9 +24,12 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
-
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.DID_DISAPPEAR;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
@@ -210,12 +215,20 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         // Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
 
+        RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may want to indicate that their content is child-directed and
         // forward this information to Google.
         Boolean isTFCD = GooglePlayServicesMediationSettings.isTaggedForChildDirectedTreatment();
 
         if (isTFCD != null) {
-            builder.tagForChildDirectedTreatment(isTFCD);
+            if (isTFCD) {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE);
+            } else {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE);
+            }
+        } else {
+            requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED);
         }
 
         // Publishers may want to mark their requests to receive treatment for users
@@ -224,11 +237,16 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         if (isTFUA != null) {
             if (isTFUA) {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
             } else {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
             }
+        } else {
+            requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED);
         }
+
+        RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
+        MobileAds.setRequestConfiguration(requestConfiguration);
 
         AdRequest adRequest = builder.build();
         mRewardedAd.loadAd(adRequest, mRewardedAdLoadCallback);

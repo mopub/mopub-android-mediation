@@ -1,4 +1,16 @@
 ## Changelog
+ * 5.5.0.5
+    * Remove native video handling code and associated comments. Publishers can enable/disable video on the Facebook Audience Network dashboard.
+
+ * 5.5.0.4
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
+ * 5.5.0.3
+    * Throw a playback error (instead of load failure) when a rewarded video has expired.
+
+ * 5.5.0.2
+    * Check if the Facebook ad (interstitial / rewarded video) has been invalidated before showing.
+
  * 5.5.0.1
     * Support additional interstitial and rewarded video callbacks from the `InterstitialAdExtendedListener` interface.
 
