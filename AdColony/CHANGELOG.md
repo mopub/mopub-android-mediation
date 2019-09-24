@@ -1,4 +1,9 @@
 ## Changelog
+
+  * 4.1.0.0
+      * Verified compatibility with AdColony SDK version 4.1.0.
+      * Added support for banners.
+
   * 3.3.11.0
       * This version of the adapters has been certified with AdColony 3.3.11.
 
