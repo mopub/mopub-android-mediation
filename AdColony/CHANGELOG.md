@@ -1,4 +1,9 @@
 ## Changelog
+
+  * 4.1.0.0
+      * Verified compatibility with AdColony SDK version 4.1.0.
+      * Added support for banners.
+
   * 3.3.11.1
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
 

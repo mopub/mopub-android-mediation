@@ -23,6 +23,7 @@ public class AdColonyUtils {
      * Please see AdColony's documentation for more information:
      * https://github.com/AdColony/AdColony-Android-SDK-3
      */
+    protected static final String ADAPTER_VERSION = "4.1.0";
     protected static final String DEFAULT_CLIENT_OPTIONS = "version=YOUR_APP_VERSION_HERE,store:google";
     protected static final String DEFAULT_APP_ID = "YOUR_AD_COLONY_APP_ID_HERE";
     protected static final String[] DEFAULT_ALL_ZONE_IDS = {"ZONE_ID_1", "ZONE_ID_2", "..."};
@@ -87,6 +88,8 @@ public class AdColonyUtils {
 
         adColonyAppOptions = adColonyAppOptions == null ? new AdColonyAppOptions() :
                 adColonyAppOptions;
+
+        adColonyAppOptions.setMediationNetwork("MoPub", ADAPTER_VERSION);
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
             if (shouldAllowLegitimateInterest) {
