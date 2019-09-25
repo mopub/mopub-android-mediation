@@ -167,10 +167,10 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
 
     @Nullable
     private AdSize calculateAdSize(int height) {
-        if (height >= AdSize.BANNER_HEIGHT_90.getHeight()) {
-            return AdSize.BANNER_HEIGHT_90;
-        } else if (height >= AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
+        if (height >= AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
             return AdSize.RECTANGLE_HEIGHT_250;
+        } else if (height >= AdSize.BANNER_HEIGHT_90.getHeight()) {
+            return AdSize.BANNER_HEIGHT_90;
         } else {
             // Default to standard banner size
             return AdSize.BANNER_HEIGHT_50;
