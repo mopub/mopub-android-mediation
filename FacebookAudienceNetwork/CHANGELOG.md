@@ -1,4 +1,7 @@
 ## Changelog
+ * 5.5.0.6
+    * Fix banner size checks so 250 doesn't always get treated as 90.
+
  * 5.5.0.5
     * Remove native video handling code and associated comments. Publishers can enable/disable video on the Facebook Audience Network dashboard.
 
