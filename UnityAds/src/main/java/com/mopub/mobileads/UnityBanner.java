@@ -6,14 +6,9 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 import com.mopub.common.logging.MoPubLog;
-import com.unity3d.ads.UnityAds;
-//import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
-import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
-//import com.unity3d.services.banners.IUnityBannerListener;
-//import com.unity3d.services.banners.UnityBanners;
 
 import java.util.Map;
 
@@ -34,7 +29,7 @@ public class UnityBanner extends CustomEventBanner {
 
     private String placementId = "banner";
     private CustomEventBannerListener customEventBannerListener;
-    private BannerView bannerView;
+    private BannerView mBannerView;
     private BannerView.IListener bannerViewListener;
     @NonNull
     private UnityAdsAdapterConfiguration mUnityAdsAdapterConfiguration;
@@ -65,13 +60,13 @@ public class UnityBanner extends CustomEventBanner {
             UnityBannerSize bannerSize = new UnityBannerSize((int)localExtras.get(AD_WIDTH), (int)localExtras.get(AD_HEIGHT));
             //todo: validate bannersize
 
-            if(bannerView != null) {
-                bannerView.destroy();
-                bannerView = null;
+            if(mBannerView != null) {
+                mBannerView.destroy();
+                mBannerView = null;
             }
-            bannerView = new BannerView((Activity)context, placementId, bannerSize);
-            bannerView.setListener(bannerViewListener);
-            bannerView.load();
+            mBannerView = new BannerView((Activity)context, placementId, bannerSize);
+            mBannerView.setListener(bannerViewListener);
+            mBannerView.load();
 
             MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
 
@@ -89,10 +84,10 @@ public class UnityBanner extends CustomEventBanner {
 
     @Override
     protected void onInvalidate() {
-        if (bannerView != null) {
-            bannerView.destroy();
+        if (mBannerView != null) {
+            mBannerView.destroy();
         }
-        bannerView = null;
+        mBannerView = null;
         customEventBannerListener = null;
     }
 
@@ -107,7 +102,7 @@ public class UnityBanner extends CustomEventBanner {
 
                 if (customEventBannerListener != null) {
                     customEventBannerListener.onBannerLoaded(bannerView);
-                    self.bannerView = bannerView;
+                    self.mBannerView = bannerView;
                 }
             }
 
