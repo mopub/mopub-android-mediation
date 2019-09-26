@@ -3,8 +3,8 @@
  import android.content.Context;
  import android.os.Handler;
  import android.os.Looper;
- import android.support.annotation.Keep;
- import android.support.annotation.NonNull;
+ import androidx.annotation.Keep;
+ import androidx.annotation.NonNull;
  import android.text.TextUtils;
  import android.view.View;
  import android.widget.RelativeLayout;
@@ -62,6 +62,8 @@
         this.mContext = context;
         mCustomEventBannerListener = customEventBannerListener;
         pendingRequestBanner.set(true);
+
+        setAutomaticImpressionAndClickTracking(false);
 
         if (context == null) {
             mHandler.post(new Runnable() {
@@ -206,6 +208,16 @@
                 mIsPlaying = false;
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
+                mHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (wasCallToActionClicked && mCustomEventBannerListener != null) {
+                            mCustomEventBannerListener.onBannerClicked();
+                            MoPubLog.log(CLICKED, ADAPTER_NAME);
+                        }
+                    }
+                });
             }
         }
 
@@ -215,9 +227,15 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression. Placement id" + placementReferenceId);
-                if (mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerImpression();
-                }
+                mHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (mCustomEventBannerListener != null) {
+                            mCustomEventBannerListener.onBannerImpression();
+                        }
+                    }
+                });
 
                 //Let's load it again to mimic auto-cache
                 sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);

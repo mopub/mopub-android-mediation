@@ -1,4 +1,7 @@
 ## Changelog
+ * 11.7.1.1
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
  * 11.7.1.0
     * This version of adapters has been certified with Flurry 11.7.1.
 

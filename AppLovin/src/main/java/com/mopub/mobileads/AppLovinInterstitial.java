@@ -4,8 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;

@@ -1,9 +1,10 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
@@ -18,25 +19,24 @@ import com.tapjoy.TJError;
 import com.tapjoy.TJPlacement;
 import com.tapjoy.TJPlacementListener;
 import com.tapjoy.TJPlacementVideoListener;
-import com.tapjoy.TJVideoListener;
 import com.tapjoy.Tapjoy;
 import com.tapjoy.TapjoyLog;
 
 import org.json.JSONException;
 
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
-
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 
 public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
     private static final String TJC_MOPUB_NETWORK_CONSTANT = "mopub";

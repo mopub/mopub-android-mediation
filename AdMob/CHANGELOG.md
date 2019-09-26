@@ -1,4 +1,14 @@
 ## Changelog
+  * 18.2.0.1
+    * Read banner ad size from `localExtras` instead of `serverExtras`. To ensure an optimal ad experience, publishers should use the MoPub 5.8.0+ SDK and unified banner ad units. If you are using a pre-5.8.0 MoPub SDK or unable to pass the safe area in the 5.8.0 MoPub SDK, check your ad unit setup in the Advanced Options section on the MoPub UI (more info at https://developers.mopub.com/publishers/ui/apps/manage-ad-units/#create-an-ad-unit).
+
+  * 18.2.0.0
+    * This version of the adapters has been certified with AdMob 18.2.0.
+    * Use `RequestConfiguration` in place of `AdRequest.Builder` to pass targeting data to Google. 
+
+  * 17.2.1.1
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
   * 17.2.1.0
     * This version of the adapters has been certified with AdMob 17.2.1.
 

@@ -1,4 +1,10 @@
 ## Changelog
+ * 9.9.1.0
+    * This version of the adapters has been certified with AppLovin 9.9.1.
+
+ * 9.8.4.1
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
  * 9.8.4.0
     * This version of the adapters has been certified with AppLovin 9.8.4.
 

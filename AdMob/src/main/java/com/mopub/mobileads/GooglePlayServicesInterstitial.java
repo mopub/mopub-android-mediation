@@ -2,21 +2,26 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
-import com.mopub.common.MediationSettings;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
-
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
@@ -97,12 +102,20 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
 
+        RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
         Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
 
         if (childDirected != null) {
-            builder.tagForChildDirectedTreatment(childDirected);
+            if (childDirected) {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE);
+            } else {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE);
+            }
+        } else {
+            requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED);
         }
 
         // Publishers may want to mark their requests to receive treatment for users in the
@@ -111,11 +124,16 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         if (underAgeOfConsent != null) {
             if (underAgeOfConsent) {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
             } else {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
             }
+        } else {
+            requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED);
         }
+
+        RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
+        MobileAds.setRequestConfiguration(requestConfiguration);
 
         AdRequest adRequest = builder.build();
 

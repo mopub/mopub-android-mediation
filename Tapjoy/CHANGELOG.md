@@ -1,4 +1,10 @@
 ## Changelog
+  * 12.3.3.0
+    * This version of adapters has been certified with Tapjoy 12.3.3.
+
+  * 12.3.1.2
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
   * 12.3.1.1
     * Fix `MediationSettings` for Tapjoy to follow POJO to maintain compatibility with MoPub Unity SDK.
 

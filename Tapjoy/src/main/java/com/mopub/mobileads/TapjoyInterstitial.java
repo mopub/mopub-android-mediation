@@ -11,8 +11,9 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
@@ -26,19 +27,19 @@ import com.tapjoy.TJPlacementListener;
 import com.tapjoy.Tapjoy;
 import com.tapjoy.TapjoyLog;
 
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
-
 import org.json.JSONException;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class TapjoyInterstitial extends CustomEventInterstitial implements TJPlacementListener {
     private static final String TAG = TapjoyInterstitial.class.getSimpleName();

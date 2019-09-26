@@ -3,7 +3,7 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.mopub.common.MoPub;
