@@ -183,16 +183,16 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         }
     }
 
-    private AdSize calculateAdSize(int width, int height) {
-        // Use the smallest AdSize that will properly contain the adView
-        if (width <= BANNER.getWidth() && height <= BANNER.getHeight()) {
-            return BANNER;
-        } else if (width <= MEDIUM_RECTANGLE.getWidth() && height <= MEDIUM_RECTANGLE.getHeight()) {
+    private static AdSize calculateAdSize(int width, int height) {
+        // Use the largest AdSize that fits into MoPubView
+        if (height >= MEDIUM_RECTANGLE.getHeight() && width >= MEDIUM_RECTANGLE.getWidth()) {
             return MEDIUM_RECTANGLE;
-        } else if (width <= FULL_BANNER.getWidth() && height <= FULL_BANNER.getHeight()) {
-            return FULL_BANNER;
-        } else if (width <= LEADERBOARD.getWidth() && height <= LEADERBOARD.getHeight()) {
+        } else if (height >= LEADERBOARD.getHeight() && width >= LEADERBOARD.getWidth()) {
             return LEADERBOARD;
+        } else if (height >= FULL_BANNER.getHeight() && width >= FULL_BANNER.getWidth()) {
+            return FULL_BANNER;
+        } else if (height >= BANNER.getHeight() && width >= BANNER.getWidth()) {
+            return BANNER;
         } else {
             return null;
         }
