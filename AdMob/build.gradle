@@ -1,4 +1,4 @@
-project.version = '18.2.0.2'
+project.version = '18.2.0.3'
 project.ext.networkName = 'admob_native'
 
 apply from: '../shared-build.gradle'

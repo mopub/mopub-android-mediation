@@ -1,4 +1,7 @@
 ## Changelog
+  * 18.2.0.3
+    * Map banner ad sizes starting from largest height x width.
+
   * 18.2.0.2
     * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for GooglePlayServicesRewardedVideo.java.
 
