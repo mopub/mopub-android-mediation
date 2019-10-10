@@ -12,6 +12,7 @@
  import com.mopub.common.logging.MoPubLog;
  import com.mopub.common.util.Views;
  import com.vungle.warren.AdConfig;
+ import com.vungle.warren.AdConfig.AdSize;
  import com.vungle.warren.VungleNativeAd;
 
  import java.util.Map;
@@ -22,6 +23,10 @@
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
  import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+ import static com.vungle.warren.AdConfig.AdSize.BANNER;
+ import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
+ import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
+ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
 
  @Keep
  public class VungleBanner extends CustomEventBanner {
@@ -36,7 +41,6 @@
     private static final String KEY_AD_HEIGHT = "com_mopub_ad_height";
     private static final String KEY_AD_WIDTH = "com_mopub_ad_width";
 
-
     private CustomEventBannerListener mCustomEventBannerListener;
     private final Handler mHandler;
     private String mAppId;
@@ -44,12 +48,13 @@
     private VungleBannerRouterListener mVungleRouterListener;
     private static VungleRouter sVungleRouter;
     private boolean mIsPlaying;
-    private VungleNativeAd vungleBannerAd;
+    private com.vungle.warren.VungleBanner vungleBannerAd;
+    private VungleNativeAd vungleMrecAd;
     private Context mContext;
     @NonNull
     private VungleAdapterConfiguration mVungleAdapterConfiguration;
     private AtomicBoolean pendingRequestBanner = new AtomicBoolean(false);
-     private AdConfig adConfig = new AdConfig();
+    private AdConfig adConfig = new AdConfig();
 
      public VungleBanner() {
         this.mHandler = new Handler(Looper.getMainLooper());
@@ -102,10 +107,8 @@
             mVungleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
-        AdConfig.AdSize vungleAdSize = getVungleAdSize(localExtras);
-        if (vungleAdSize != null) {
-            adConfig.setAdSize(vungleAdSize);
-        } else {
+        AdSize vungleAdSize = getVungleAdSize(localExtras);
+        if (vungleAdSize == null) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -119,30 +122,52 @@
             return;
         }
 
-        //currently we only support MREC for banners. This will require to be reworked once we add other sizes
-        if(adConfig.getAdSize() != AdConfig.AdSize.VUNGLE_MREC) {
+        adConfig.setAdSize(vungleAdSize);
+
+        if (AdSize.isBannerAdSize(vungleAdSize)) {
+            if (sVungleRouter.isBannerAdPlayable(mPlacementId, vungleAdSize)) {
+                mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
+                MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
+            } else {
+                sVungleRouter.loadBannerAd(mPlacementId, vungleAdSize, mVungleRouterListener);
+                MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
+            }
+        } else if (VUNGLE_MREC == vungleAdSize) {
+            if (sVungleRouter.isAdPlayableForPlacement(mPlacementId)) {
+                mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
+                MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
+            } else {
+                sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+                MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
+            }
+        } else {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,  "Unsupported Ad size, only MREC supported:  Placement ID:" + mPlacementId);
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, "Unsupported Banner/MREC Ad size:  Placement ID:" + mPlacementId);
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             });
-        } else {
-            sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
-            MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         }
     }
 
-    private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
+    private AdSize getVungleAdSize(Map<String, Object> localExtras) {
+        AdSize adSizeType = null;
         int adWidthInDp = localExtras.containsKey(KEY_AD_WIDTH) ? (int)localExtras.get(KEY_AD_WIDTH) : 0;
         int adHeightInDp = localExtras.containsKey(KEY_AD_HEIGHT) ? (int)localExtras.get(KEY_AD_HEIGHT) : 0;
 
-        if((adWidthInDp == 300 && adHeightInDp == 250) || (adWidthInDp == 336 && adHeightInDp == 280)) {
-            return AdConfig.AdSize.VUNGLE_MREC;
-        } else {
-            return null;
+        if((adWidthInDp == VUNGLE_MREC.getWidth() && adHeightInDp == VUNGLE_MREC.getHeight())
+                || (adWidthInDp == 336 && adHeightInDp == 280)) {
+            adSizeType = VUNGLE_MREC;
+        } else if (adWidthInDp == BANNER_SHORT.getWidth() && adHeightInDp == BANNER_SHORT.getHeight()) {
+            adSizeType = BANNER_SHORT;
+        } else if (adWidthInDp == BANNER.getWidth() && adHeightInDp == BANNER.getHeight()) {
+            adSizeType = BANNER;
+        } else if (adWidthInDp == BANNER_LEADERBOARD.getWidth() && adHeightInDp == BANNER_LEADERBOARD.getHeight()) {
+            adSizeType = BANNER_LEADERBOARD;
         }
+
+        return adSizeType;
     }
 
     @Override
@@ -151,8 +176,13 @@
         pendingRequestBanner.set(false);
 
         if (vungleBannerAd != null) {
-            Views.removeFromParent(vungleBannerAd.renderNativeView());
-            vungleBannerAd.finishDisplayingAd();
+            Views.removeFromParent(vungleBannerAd);
+            vungleBannerAd.destroyAd();
+            vungleBannerAd = null;
+        } else if (vungleMrecAd != null) {
+            Views.removeFromParent(vungleMrecAd.renderNativeView());
+            vungleMrecAd.finishDisplayingAd();
+            vungleMrecAd = null;
         }
 
         if (sVungleRouter != null) {
@@ -238,7 +268,11 @@
                 });
 
                 //Let's load it again to mimic auto-cache
-                sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+                if (AdSize.isBannerAdSize(adConfig.getAdSize())) {
+                    sVungleRouter.loadBannerAd(mPlacementId, adConfig.getAdSize(), mVungleRouterListener);
+                } else if (VUNGLE_MREC == adConfig.getAdSize()) {
+                    sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+                }
             }
         }
 
@@ -272,27 +306,40 @@
                                 if (!pendingRequestBanner.getAndSet(false))
                                     return;
 
-                                boolean isSuccess = false;
                                 final RelativeLayout layout = new RelativeLayout(mContext) {
                                     @Override
                                     protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
                                         super.onVisibilityChanged(changedView, visibility);
                                         if (vungleBannerAd != null) {
                                             vungleBannerAd.setAdVisibility(visibility == VISIBLE);
+                                        } else if (vungleMrecAd != null) {
+                                            vungleMrecAd.setAdVisibility(visibility == VISIBLE);
                                         }
                                     }
                                 };
-                                vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig);
-                                if(vungleBannerAd != null) {
-                                    final View adView = vungleBannerAd.renderNativeView();
-                                    if (adView != null) {
-                                        isSuccess = true;
-                                        layout.addView(adView);
-                                        mCustomEventBannerListener.onBannerLoaded(layout);
-                                        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+
+                                boolean isLoadSuccess = false;
+                                if (AdSize.isBannerAdSize(adConfig.getAdSize())) {
+                                    vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig.getAdSize());
+                                    if (vungleBannerAd != null) {
+                                        isLoadSuccess = true;
+                                        layout.addView(vungleBannerAd);
+                                    }
+                                } else if (VUNGLE_MREC == adConfig.getAdSize()) {
+                                    vungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, adConfig);
+                                    if (vungleMrecAd != null) {
+                                        View adView = vungleMrecAd.renderNativeView();
+                                        if (adView != null) {
+                                            isLoadSuccess = true;
+                                            layout.addView(adView);
+                                        }
                                     }
                                 }
-                                if(!isSuccess) {
+
+                                if (isLoadSuccess) {
+                                    mCustomEventBannerListener.onBannerLoaded(layout);
+                                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                                } else {
                                     mHandler.post(new Runnable() {
                                         @Override
                                         public void run() {
