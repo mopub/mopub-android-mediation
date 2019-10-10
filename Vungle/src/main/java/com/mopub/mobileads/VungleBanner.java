@@ -326,6 +326,7 @@
                                         layout.addView(vungleBannerAd);
                                     }
                                 } else if (VUNGLE_MREC == adConfig.getAdSize()) {
+                                    adConfig.setMuted(true);
                                     vungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, adConfig);
                                     if (vungleMrecAd != null) {
                                         View adView = vungleMrecAd.renderNativeView();
