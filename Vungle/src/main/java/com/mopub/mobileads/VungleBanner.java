@@ -124,6 +124,13 @@
 
         adConfig.setAdSize(vungleAdSize);
 
+        Object isSoundEnabled = localExtras.get(VungleInterstitial.SOUND_ENABLED_KEY);
+        if (isSoundEnabled instanceof Boolean) {
+            adConfig.setMuted(!(Boolean) isSoundEnabled);
+        } else {
+            adConfig.setMuted(true); // start muted by default
+        }
+
         if (AdSize.isBannerAdSize(vungleAdSize)) {
             if (sVungleRouter.isBannerAdPlayable(mPlacementId, vungleAdSize)) {
                 mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
@@ -326,7 +333,6 @@
                                         layout.addView(vungleBannerAd);
                                     }
                                 } else if (VUNGLE_MREC == adConfig.getAdSize()) {
-                                    adConfig.setMuted(true);
                                     vungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, adConfig);
                                     if (vungleMrecAd != null) {
                                         View adView = vungleMrecAd.renderNativeView();
