@@ -85,7 +85,21 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Initializing AppLovin rewarded video...");
 
         if (!initialized) {
-            sdk = retrieveSdk(serverExtras, activity);
+            sdk = retrieveSdk(activity);
+
+            if (sdk == null) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AppLovinSdk instance is null likely because " +
+                        "no AppLovin SDK key is available. Failing ad request.");
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(AppLovinRewardedVideo.this.
+                        getClass(), getAdNetworkId(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+                return false;
+            }
+
             sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
             sdk.setPluginVersion(AppLovinAdapterConfiguration.APPLOVIN_PLUGIN_VERSION);
 
@@ -344,18 +358,21 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     }
 
     /**
-     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server parameters, or Android Manifest.
+     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key. This check prioritizes
+     * the SDK Key in the AndroidManifest, and only uses the one passed in to the AdapterConfiguration
+     * if the former is not available.
      */
-    private static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
-        final String sdkKey = AppLovinAdapterConfiguration.getSdkKey();
-        final AppLovinSdk sdk;
+    private static AppLovinSdk retrieveSdk(final Context context) {
 
-        if (!TextUtils.isEmpty(sdkKey)) {
-            sdk = AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context);
+        if (!AppLovinAdapterConfiguration.androidManifestContainsValidSdkKey(context)) {
+            final String sdkKey = AppLovinAdapterConfiguration.getSdkKey();
+
+            return !TextUtils.isEmpty(sdkKey)
+                    ? AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context)
+                    : null;
         } else {
-            sdk = AppLovinSdk.getInstance(context);
+            return AppLovinSdk.getInstance(context);
         }
-        return sdk;
     }
 
     private static AppLovinIncentivizedInterstitial createIncentivizedInterstitialAd(final String zoneId, final AppLovinSdk sdk) {
