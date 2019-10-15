@@ -113,22 +113,26 @@ public class VungleInterstitial extends CustomEventInterstitial {
 
         if (localExtras != null) {
             mAdConfig = new AdConfig();
-            Object isSoundEnabled = localExtras.get(SOUND_ENABLED_KEY);
-            if (isSoundEnabled instanceof Boolean)
-                mAdConfig.setMuted(!(Boolean) isSoundEnabled);
-            Object flexViewCloseTimeInSec = localExtras.get(FLEX_VIEW_CLOSE_TIME_KEY);
-            if (flexViewCloseTimeInSec instanceof Integer)
-                mAdConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
-            Object ordinalViewCount = localExtras.get(ORDINAL_VIEW_COUNT_KEY);
-            if (ordinalViewCount instanceof Integer)
-                mAdConfig.setOrdinal((Integer) ordinalViewCount);
-            Object adOrientation = localExtras.get(AD_ORIENTATION_KEY);
-            if (adOrientation instanceof Integer)
-                mAdConfig.setAdOrientation((Integer)adOrientation);
+            adConfigWithLocalExtras(mAdConfig, localExtras);
         }
 
         sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
         MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
+    }
+
+    static void adConfigWithLocalExtras(AdConfig adConfig, Map<String, Object> localExtras) {
+        Object isSoundEnabled = localExtras.get(SOUND_ENABLED_KEY);
+        if (isSoundEnabled instanceof Boolean)
+            adConfig.setMuted(!(Boolean) isSoundEnabled);
+        Object flexViewCloseTimeInSec = localExtras.get(FLEX_VIEW_CLOSE_TIME_KEY);
+        if (flexViewCloseTimeInSec instanceof Integer)
+            adConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
+        Object ordinalViewCount = localExtras.get(ORDINAL_VIEW_COUNT_KEY);
+        if (ordinalViewCount instanceof Integer)
+            adConfig.setOrdinal((Integer) ordinalViewCount);
+        Object adOrientation = localExtras.get(AD_ORIENTATION_KEY);
+        if (adOrientation instanceof Integer)
+            adConfig.setAdOrientation((Integer) adOrientation);
     }
 
     @Override

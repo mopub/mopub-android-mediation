@@ -124,10 +124,8 @@
 
         adConfig.setAdSize(vungleAdSize);
 
-        Object isSoundEnabled = localExtras.get(VungleInterstitial.SOUND_ENABLED_KEY);
-        if (isSoundEnabled instanceof Boolean) {
-            adConfig.setMuted(!(Boolean) isSoundEnabled);
-        } else {
+        VungleInterstitial.adConfigWithLocalExtras(adConfig, localExtras);
+        if (!localExtras.containsKey(VungleInterstitial.SOUND_ENABLED_KEY)) {
             adConfig.setMuted(true); // start muted by default
         }
 
