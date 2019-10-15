@@ -8,8 +8,10 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdView;
 import com.facebook.ads.NativeAdViewAttributes;
+import com.facebook.ads.NativeBannerAdView;
 import com.mopub.common.Preconditions;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -33,12 +35,12 @@ public class FacebookTemplateRenderer implements MoPubAdRenderer<FacebookNative.
     public void renderAdView(@NonNull View parentView, @NonNull FacebookNative.FacebookNativeAd ad) {
         Preconditions.checkNotNull(parentView);
         Preconditions.checkNotNull(ad);
-
-        final View adView = NativeAdView.render(parentView.getContext(), ad.getFacebookNativeAd(),
+        if(ad.getFacebookNativeAd() instanceof NativeAd){
+            View adView = NativeAdView.render(parentView.getContext(), (NativeAd) ad.getFacebookNativeAd(),
                 mTemplateAttributes);
-
-        FrameLayout.LayoutParams adViewParams = new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-        ((FrameLayout) parentView).addView(adView, adViewParams);
+            FrameLayout.LayoutParams adViewParams = new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+            ((FrameLayout) parentView).addView(adView, adViewParams);
+        }
     }
 
     @Override

@@ -7,13 +7,16 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.Nullable;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
 import com.facebook.ads.AdIconView;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdListener;
+import com.facebook.ads.NativeBannerAd;
 import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -34,6 +37,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class FacebookNative extends CustomEventNative {
     private static final String PLACEMENT_ID_KEY = "placement_id";
+    private static final String  NATIVE_BANNER = "native_banner";
     private static final String ADAPTER_NAME = FacebookNative.class.getSimpleName();
     private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
     @NonNull
@@ -54,8 +58,10 @@ public class FacebookNative extends CustomEventNative {
             AudienceNetworkAds.initialize(context);
         }
         final String placementId;
+        final boolean isNativeBanner;
         if (extrasAreValid(serverExtras)) {
             placementId = serverExtras.get(PLACEMENT_ID_KEY);
+            isNativeBanner = Boolean.parseBoolean(serverExtras.get(NATIVE_BANNER));
             mFacebookAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         } else {
             customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
@@ -65,30 +71,51 @@ public class FacebookNative extends CustomEventNative {
 
         final String bid = serverExtras.get(DataKeys.ADM_KEY);
 
-        final FacebookNativeAd facebookNativeAd =
+        if(isNativeBanner){
+            final FacebookNativeAd facebookNativeBannerAd =
                 new FacebookNativeAd(context,
-                        new NativeAd(context, placementId), customEventNativeListener, bid);
-        facebookNativeAd.loadAd();
+                    new NativeBannerAd(context, placementId), customEventNativeListener, bid);
+            facebookNativeBannerAd.loadAd();
+        } else {
+            final FacebookNativeAd facebookNativeAd =
+                new FacebookNativeAd(context,
+                    new NativeAd(context, placementId), customEventNativeListener, bid);
+            facebookNativeAd.loadAd();
+        }
     }
 
     private boolean extrasAreValid(final Map<String, String> serverExtras) {
         final String placementId = serverExtras.get(PLACEMENT_ID_KEY);
-        return (placementId != null && placementId.length() > 0);
+        final String isNativeBanner = serverExtras.get(NATIVE_BANNER);
+        return (isNativeBanner!=null && placementId != null && placementId.length() > 0);
     }
 
-    private static void registerChildViewsForInteraction(final View view, final NativeAd nativeAd,
-                                                         final MediaView mediaView, final AdIconView adIconView) {
-        if (nativeAd == null) {
-            return;
-        }
+  private static void registerChildViewsForInteraction(
+      final View view,
+      final NativeAdBase nativeAdUnit,
+      @Nullable final MediaView mediaView,
+      final AdIconView adIconView) {
+    if (nativeAdUnit == null) {
+      return;
+    }
 
-        final List<View> clickableViews = new ArrayList<>();
-        assembleChildViewsWithLimit(view, clickableViews, 10);
+    final List<View> clickableViews = new ArrayList<>();
+    assembleChildViewsWithLimit(view, clickableViews, 10);
 
-        if (clickableViews.size() == 1) {
-            nativeAd.registerViewForInteraction(view, mediaView, adIconView);
-        } else {
-            nativeAd.registerViewForInteraction(view, mediaView, adIconView, clickableViews);
+    if (nativeAdUnit instanceof NativeAd && mediaView != null) {
+            NativeAd nativeAd = (NativeAd) nativeAdUnit;
+            if (clickableViews.size() == 1) {
+                nativeAd.registerViewForInteraction(view, mediaView, adIconView);
+                } else {
+                nativeAd.registerViewForInteraction(view, mediaView, adIconView, clickableViews);
+            }
+        } else if (nativeAdUnit instanceof NativeBannerAd) {
+            NativeBannerAd nativeBannerAd = (NativeBannerAd) nativeAdUnit;
+            if (clickableViews.size() == 1) {
+                nativeBannerAd.registerViewForInteraction(view, adIconView);
+            } else {
+                nativeBannerAd.registerViewForInteraction(view, adIconView, clickableViews);
+            }
         }
     }
 
@@ -120,7 +147,7 @@ public class FacebookNative extends CustomEventNative {
         private static final String SOCIAL_CONTEXT_FOR_AD = "socialContextForAd";
 
         private final Context mContext;
-        private final NativeAd mNativeAd;
+        private final NativeAdBase mNativeAd;
         private final CustomEventNativeListener mCustomEventNativeListener;
 
         private final Map<String, Object> mExtras;
@@ -128,7 +155,7 @@ public class FacebookNative extends CustomEventNative {
         private final String mBid;
 
         FacebookNativeAd(final Context context,
-                         final NativeAd nativeAd,
+                         final NativeAdBase nativeAd,
                          final CustomEventNativeListener customEventNativeListener,
                          final String bid) {
             mContext = context.getApplicationContext();
@@ -139,12 +166,18 @@ public class FacebookNative extends CustomEventNative {
         }
 
         void loadAd() {
-            mNativeAd.setAdListener(this);
             if (!TextUtils.isEmpty(mBid)) {
-                mNativeAd.loadAdFromBid(mBid);
+                mNativeAd.loadAd(
+                    mNativeAd.buildLoadAdConfig()
+                        .withBid(mBid)
+                        .withAdListener(this)
+                        .build());
                 MoPubLog.log(mBid, LOAD_ATTEMPTED, ADAPTER_NAME);
             } else {
-                mNativeAd.loadAd();
+                mNativeAd.loadAd(
+                    mNativeAd.buildLoadAdConfig()
+                        .withAdListener(this)
+                        .build());
                 MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
             }
         }
@@ -175,6 +208,17 @@ public class FacebookNative extends CustomEventNative {
          */
         final public String getCallToAction() {
             return mNativeAd.getAdCallToAction();
+        }
+
+        /**
+         * Returns the Sponsored Label associated with this ad.
+         */
+        final public @Nullable String getSponsoredName() {
+            if(mNativeAd instanceof NativeBannerAd){
+                return mNativeAd.getSponsoredTranslation();
+            } else {
+                return null;
+            }
         }
 
         /**
@@ -251,7 +295,7 @@ public class FacebookNative extends CustomEventNative {
          * Given a particular String key, return the associated Object value from the ad's extras map.
          * See {@link StaticNativeAd#getExtras()} for more information.
          */
-        final public Object getExtra(final String key) {
+        final public @Nullable Object getExtra(final String key) {
             if (!Preconditions.NoThrow.checkNotNull(key, "getExtra key is not allowed to be null")) {
                 return null;
             }
@@ -275,7 +319,7 @@ public class FacebookNative extends CustomEventNative {
             mExtras.put(key, value);
         }
 
-        void registerChildViewsForInteraction(final View view, final MediaView mediaView,
+        void registerChildViewsForInteraction(final View view, @Nullable final MediaView mediaView,
                                               final AdIconView adIconView) {
             FacebookNative.registerChildViewsForInteraction(view, mNativeAd, mediaView, adIconView);
         }
@@ -284,8 +328,9 @@ public class FacebookNative extends CustomEventNative {
         public void onMediaDownloaded(final Ad ad) {
         }
 
-        NativeAd getFacebookNativeAd() {
+        NativeAdBase getFacebookNativeAd(){
             return mNativeAd;
+
         }
     }
 }

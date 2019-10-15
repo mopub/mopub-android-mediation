@@ -90,14 +90,20 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
         }
 
         mFacebookInterstitial = new InterstitialAd(context, placementId);
-        mFacebookInterstitial.setAdListener(this);
 
         final String adm = serverExtras.get(DataKeys.ADM_KEY);
         if (!TextUtils.isEmpty(adm)) {
-            mFacebookInterstitial.loadAdFromBid(adm);
+            mFacebookInterstitial.loadAd(
+                mFacebookInterstitial.buildLoadAdConfig()
+                    .withAdListener(this)
+                    .withBid(adm)
+                    .build());
             MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
-            mFacebookInterstitial.loadAd();
+            mFacebookInterstitial.loadAd(
+                mFacebookInterstitial.buildLoadAdConfig()
+                    .withAdListener(this)
+                    .build());
             MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         }
     }
