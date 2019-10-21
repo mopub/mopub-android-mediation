@@ -1,13 +1,13 @@
  package com.mopub.mobileads;
 
  import android.content.Context;
+ import android.graphics.Color;
  import android.os.Handler;
  import android.os.Looper;
  import androidx.annotation.Keep;
  import androidx.annotation.NonNull;
  import android.text.TextUtils;
  import android.view.View;
- import android.view.ViewGroup;
  import android.widget.RelativeLayout;
 
  import com.mopub.common.logging.MoPubLog;
@@ -283,11 +283,13 @@
                                         }
                                     }
                                 };
+                                //Fix for Unity Player that can't render a view with a state changed from INVISIBLE to VISIBLE.
+                                //TODO: Remove once it's fixed in MoPub Unity plugin.
+                                layout.setBackgroundColor(Color.TRANSPARENT);
                                 vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig);
                                 if(vungleBannerAd != null) {
                                     final View adView = vungleBannerAd.renderNativeView();
                                     if (adView != null) {
-                                        applyFixes(adView);
                                         isSuccess = true;
                                         layout.addView(adView);
                                         mCustomEventBannerListener.onBannerLoaded(layout);
@@ -321,25 +323,6 @@
                     }
                 }
             }
-        }
-    }
-
-    private void applyFixes(final View adView) {
-        //Fix for Unity Player that can't render a view with a state changed from INVISIBLE to VISIBLE.
-        //TODO: Remove once it's fixed on the Vungle SDK side.
-        if (adView instanceof ViewGroup) {
-            ((ViewGroup) adView).addView(new View(mContext) {
-                private int oldState = adView.getVisibility();
-
-                @Override
-                protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
-                    super.onVisibilityChanged(changedView, visibility);
-                    if (INVISIBLE == oldState) {
-                        adView.requestLayout();
-                    }
-                    oldState = visibility;
-                }
-            });
         }
     }
 }
