@@ -1,4 +1,9 @@
 ## Changelog
+  * 3.3.0.0
+    * This version of the adapters has been certified with Unity Ads 3.3.0.
+    * Update the banner adapter to use new load API.
+    * Fix refresh logic for banner ads to render correctly.
+    
   * 3.2.0.2
     * Fire a playback error callback when the rewarded video is unable to show.
 

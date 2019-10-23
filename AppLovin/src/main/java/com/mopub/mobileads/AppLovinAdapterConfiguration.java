@@ -113,7 +113,7 @@ public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
         return sdkKey;
     }
 
-    private boolean androidManifestContainsValidSdkKey(final Context context) {
+    static boolean androidManifestContainsValidSdkKey(final Context context) {
         try {
             final PackageManager pm = context.getPackageManager();
             final ApplicationInfo ai = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
