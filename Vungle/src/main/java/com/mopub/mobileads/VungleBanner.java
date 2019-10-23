@@ -124,8 +124,8 @@
 
         adConfig.setAdSize(vungleAdSize);
 
-        VungleInterstitial.adConfigWithLocalExtras(adConfig, localExtras);
-        if (!localExtras.containsKey(VungleInterstitial.SOUND_ENABLED_KEY)) {
+        VungleExtrasBuilder.adConfigWithLocalExtras(adConfig, localExtras);
+        if (VungleExtrasBuilder.isStartMutedNotConfigured(localExtras)) {
             adConfig.setMuted(true); // start muted by default
         }
 
