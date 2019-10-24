@@ -87,9 +87,8 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
 
         final String adm = serverExtras.get(DataKeys.ADM_KEY);
         if (!TextUtils.isEmpty(adm)) {
-            mFacebookBanner.loadAdFromBid(adm);
-            mFacebookBanner.loadAd(
-                  mFacebookBanner.buildLoadAdConfig()
+           mFacebookBanner.loadAd(
+              mFacebookBanner.buildLoadAdConfig()
                   .withAdListener(this)
                   .withBid(adm)
                   .build());

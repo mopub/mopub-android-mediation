@@ -87,7 +87,7 @@ public class FacebookNative extends CustomEventNative {
     private boolean extrasAreValid(final Map<String, String> serverExtras) {
         final String placementId = serverExtras.get(PLACEMENT_ID_KEY);
         final String isNativeBanner = serverExtras.get(NATIVE_BANNER);
-        return (isNativeBanner!=null && placementId != null && placementId.length() > 0);
+        return (isNativeBanner !=null && !TextUtils.isEmpty(placementId));
     }
 
   private static void registerChildViewsForInteraction(
@@ -95,6 +95,7 @@ public class FacebookNative extends CustomEventNative {
       final NativeAdBase nativeAdUnit,
       @Nullable final MediaView mediaView,
       final AdIconView adIconView) {
+
     if (nativeAdUnit == null) {
       return;
     }
