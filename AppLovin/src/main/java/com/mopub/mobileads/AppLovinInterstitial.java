@@ -100,6 +100,21 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
         this.context = context;
 
         sdk = retrieveSdk(context);
+
+        if (sdk == null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AppLovinSdk instance is null likely because " +
+                    "no AppLovin SDK key is available. Failing ad request.");
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+            if (listener != null) {
+                listener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
+
+            return;
+        }
+
         sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
         sdk.setPluginVersion(AppLovinAdapterConfiguration.APPLOVIN_PLUGIN_VERSION);
 
@@ -318,18 +333,21 @@ public class AppLovinInterstitial extends CustomEventInterstitial implements App
     }
 
     /**
-     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server parameters, or Android Manifest.
+     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key. This check prioritizes
+     * the SDK Key in the AndroidManifest, and only uses the one passed in to the AdapterConfiguration
+     * if the former is not available.
      */
     private static AppLovinSdk retrieveSdk(final Context context) {
-        final String sdkKey = AppLovinAdapterConfiguration.getSdkKey();
-        final AppLovinSdk sdk;
 
-        if (!TextUtils.isEmpty(sdkKey)) {
-            sdk = AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context);
+        if (!AppLovinAdapterConfiguration.androidManifestContainsValidSdkKey(context)) {
+            final String sdkKey = AppLovinAdapterConfiguration.getSdkKey();
+
+            return !TextUtils.isEmpty(sdkKey)
+                    ? AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context)
+                    : null;
         } else {
-            sdk = AppLovinSdk.getInstance(context);
+            return AppLovinSdk.getInstance(context);
         }
-        return sdk;
     }
 
     /**
