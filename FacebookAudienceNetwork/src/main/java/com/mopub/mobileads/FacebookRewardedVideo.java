@@ -110,17 +110,22 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
             }
 
             final String adm = serverExtras.get(DataKeys.ADM_KEY);
+
+            RewardedVideoAd.RewardedVideoAdLoadConfigBuilder
+                rewardedVideoAdLoadConfigBuilder =
+                    mRewardedVideoAd
+                        .buildLoadAdConfig()
+                        .withAdListener(this);
+
             if (!TextUtils.isEmpty(adm)) {
                 mRewardedVideoAd.loadAd(
-                    mRewardedVideoAd.buildLoadAdConfig()
-                        .withAdListener(this)
+                    rewardedVideoAdLoadConfigBuilder
                         .withBid(adm)
                         .build());
                 MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
             } else {
                 mRewardedVideoAd.loadAd(
-                    mRewardedVideoAd.buildLoadAdConfig()
-                        .withAdListener(this)
+                    rewardedVideoAdLoadConfigBuilder
                         .build());
                 MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
             }

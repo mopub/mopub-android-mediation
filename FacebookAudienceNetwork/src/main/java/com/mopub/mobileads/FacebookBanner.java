@@ -85,18 +85,21 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
 
         mFacebookBanner = new AdView(context, placementId, adSize);
 
+        AdView.AdViewLoadConfigBuilder
+            bannerConfigBuilder =
+            mFacebookBanner.buildLoadAdConfig()
+                           .withAdListener(this);
+
         final String adm = serverExtras.get(DataKeys.ADM_KEY);
         if (!TextUtils.isEmpty(adm)) {
            mFacebookBanner.loadAd(
-              mFacebookBanner.buildLoadAdConfig()
-                  .withAdListener(this)
+               bannerConfigBuilder
                   .withBid(adm)
                   .build());
             MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
           mFacebookBanner.loadAd(
-              mFacebookBanner.buildLoadAdConfig()
-                  .withAdListener(this)
+               bannerConfigBuilder
                   .build());
             MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         }

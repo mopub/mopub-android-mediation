@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.facebook.ads.AdIconView;
 import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAdBase;
@@ -123,7 +124,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         @Nullable
         private MediaView mediaView;
         @Nullable
-        private MediaView adIconView;
+        private AdIconView adIconView;
         @Nullable
         private TextView advertiserNameView;
         @Nullable
@@ -179,7 +180,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         }
 
         @Nullable
-        public MediaView getAdIconView() {
+        public AdIconView getAdIconView() {
             return adIconView;
         }
 

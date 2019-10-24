@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdIconView;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
@@ -166,17 +167,21 @@ public class FacebookNative extends CustomEventNative {
         }
 
         void loadAd() {
+            NativeAdBase.NativeAdLoadConfigBuilder
+                nativeAdLoadConfigBuilder =
+                        mNativeAd
+                            .buildLoadAdConfig()
+                            .withAdListener(this);
+
             if (!TextUtils.isEmpty(mBid)) {
                 mNativeAd.loadAd(
-                    mNativeAd.buildLoadAdConfig()
+                    nativeAdLoadConfigBuilder
                         .withBid(mBid)
-                        .withAdListener(this)
                         .build());
                 MoPubLog.log(mBid, LOAD_ATTEMPTED, ADAPTER_NAME);
             } else {
                 mNativeAd.loadAd(
-                    mNativeAd.buildLoadAdConfig()
-                        .withAdListener(this)
+                    nativeAdLoadConfigBuilder
                         .build());
                 MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
             }
