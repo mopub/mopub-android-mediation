@@ -232,23 +232,45 @@
 
         @Override
         public void onAdEnd(@NonNull String placementReferenceId, boolean wasSuccessfulView, final boolean wasCallToActionClicked) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd placement id"+ placementReferenceId);
-            if (mPlacementId.equals(placementReferenceId)) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
+            //Deprecated event
+        }
+
+        @Override
+        public void onAdEnd(String id) {
+            if (mPlacementId.equals(id)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);
                 mIsPlaying = false;
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
+            }
+        }
+
+        @Override
+        public void onAdClick(String id) {
+            if (mPlacementId.equals(id)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdClick - Placement ID: " + id);
                 mHandler.post(new Runnable() {
 
                     @Override
                     public void run() {
-                        if (wasCallToActionClicked && mCustomEventBannerListener != null) {
+                        if (mCustomEventBannerListener != null) {
                             mCustomEventBannerListener.onBannerClicked();
                             MoPubLog.log(CLICKED, ADAPTER_NAME);
                         }
                     }
                 });
             }
+        }
+
+        @Override
+        public void onAdRewarded(String id) {
+            //nothing to do
+        }
+
+        @Override
+        public void onAdLeftApplication(String id) {
+            //Nothing to do. If we call mCustomEventBannerListener.onLeaveApplication() it will cause
+            // onBannerClicked() event be called twice.
         }
 
         @Override

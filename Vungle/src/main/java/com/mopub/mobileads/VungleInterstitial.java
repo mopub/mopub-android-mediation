@@ -205,27 +205,48 @@ public class VungleInterstitial extends CustomEventInterstitial {
     private class VungleInterstitialRouterListener implements VungleRouterListener {
         @Override
         public void onAdEnd(@NonNull String placementReferenceId, final boolean wasSuccessfulView, final boolean wasCallToActionClicked) {
+            //Deprecated event
+        }
 
-            if (mPlacementId.equals(placementReferenceId)) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId +
-                        ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: "
-                        + wasCallToActionClicked);
-
+        @Override
+        public void onAdEnd(String id) {
+            if (mPlacementId.equals(id)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);
                 mIsPlaying = false;
-
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (wasCallToActionClicked) {
-                            mCustomEventInterstitialListener.onInterstitialClicked();
-
-                            MoPubLog.log(CLICKED, ADAPTER_NAME);
-                        }
                         mCustomEventInterstitialListener.onInterstitialDismissed();
                     }
                 });
                 sVungleRouter.removeRouterListener(mPlacementId);
             }
+        }
+
+        @Override
+        public void onAdClick(String id) {
+            if (mPlacementId.equals(id)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdClick - Placement ID: " + id);
+                mIsPlaying = false;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCustomEventInterstitialListener.onInterstitialClicked();
+                        MoPubLog.log(CLICKED, ADAPTER_NAME);
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onAdRewarded(String id) {
+            //nothing to do
+        }
+
+        @Override
+        public void onAdLeftApplication(String id) {
+            //Nothing to do. If we call mCustomEventInterstitialListener.onLeaveApplication() it will cause
+            // onInterstitialClicked() event be called twice.
         }
 
         @Override

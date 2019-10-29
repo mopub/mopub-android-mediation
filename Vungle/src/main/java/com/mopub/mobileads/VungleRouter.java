@@ -257,13 +257,53 @@ public class VungleRouter {
     private final PlayAdCallback playAdCallback = new PlayAdCallback() {
         @Override
         public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);
+            //Deprecated event
+        }
 
+        @Override
+        public void onAdEnd(String id) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
             if (targetListener != null) {
-                targetListener.onAdEnd(id, completed, isCTAClicked);
+                targetListener.onAdEnd(id);
             } else {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - VungleRouterListener is not found for " +
+                        "Placement ID: " + id);
+            }
+        }
+
+        @Override
+        public void onAdClick(String id) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdClick - Placement ID: " + id);
+            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            if (targetListener != null) {
+                targetListener.onAdClick(id);
+            } else {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdClick - VungleRouterListener is not found for " +
+                        "Placement ID: " + id);
+            }
+        }
+
+        @Override
+        public void onAdRewarded(String id) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdRewarded - Placement ID: " + id);
+            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            if (targetListener != null) {
+                targetListener.onAdRewarded(id);
+            } else {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdRewarded - VungleRouterListener is not found for " +
+                        "Placement ID: " + id);
+            }
+        }
+
+        @Override
+        public void onAdLeftApplication(String id) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdLeftApplication - Placement ID: " + id);
+            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            if (targetListener != null) {
+                targetListener.onAdLeftApplication(id);
+            } else {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdLeftApplication - VungleRouterListener is not found for " +
                         "Placement ID: " + id);
             }
         }
