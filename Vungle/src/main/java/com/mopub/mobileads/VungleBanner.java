@@ -124,8 +124,10 @@
 
         adConfig.setAdSize(vungleAdSize);
 
-        VungleExtrasBuilder.adConfigWithLocalExtras(adConfig, localExtras);
-        if (VungleExtrasBuilder.isStartMutedNotConfigured(localExtras)) {
+        sVungleRouter.addRouterListener(mPlacementId, mVungleRouterListener);
+
+        VungleMediationConfiguration.adConfigWithLocalExtras(adConfig, localExtras);
+        if (VungleMediationConfiguration.isStartMutedNotConfigured(localExtras)) {
             adConfig.setMuted(true); // start muted by default
         }
 
