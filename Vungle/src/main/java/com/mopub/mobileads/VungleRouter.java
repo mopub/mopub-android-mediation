@@ -191,11 +191,18 @@ public class VungleRouter {
         }
     }
 
-    private void addRouterListener(String placementId, VungleRouterListener routerListener) {
+    void addRouterListener(String placementId, VungleRouterListener routerListener) {
+        if (sVungleRouterListeners.containsKey(placementId) &&
+                sVungleRouterListeners.get(placementId) == routerListener) {
+            return;
+        }
         sVungleRouterListeners.put(placementId, routerListener);
     }
 
     void removeRouterListener(String placementId) {
+        if (!sVungleRouterListeners.containsKey(placementId)) {
+            return;
+        }
         sVungleRouterListeners.remove(placementId);
     }
 
