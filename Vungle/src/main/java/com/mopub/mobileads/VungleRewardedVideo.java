@@ -24,6 +24,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 
 /**
  * A custom event for showing Vungle rewarded videos.
@@ -293,11 +294,11 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
                         placementReferenceId + ", reason: " + reason);
 
                 mIsPlaying = false;
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VungleRewardedVideo.class,
-                        mPlacementId, MoPubErrorCode.NETWORK_NO_FILL);
+                MoPubRewardedVideoManager.onRewardedVideoPlaybackError(VungleRewardedVideo.class,
+                        mPlacementId, MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
-                MoPubLog.log(LOAD_FAILED, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        MoPubErrorCode.NETWORK_NO_FILL);
+                MoPubLog.log(SHOW_FAILED, MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                        MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
         }
 
