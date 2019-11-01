@@ -27,7 +27,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
     private CustomEventInterstitialListener mCustomEventInterstitialListener;
     private Context mContext;
     private String mPlacementId = "video";
-    private boolean loadRequested = false;
+   // private boolean loadRequested = false;
     private int impressionOrdinal;
     private int missedImpressionOrdinal;
     @NonNull
@@ -46,7 +46,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
         mPlacementId = UnityRouter.placementIdForServerExtras(serverExtras, mPlacementId);
         mCustomEventInterstitialListener = customEventInterstitialListener;
         mContext = context;
-        loadRequested = true;
+       // loadRequested = true;
 
         UnityAds.load(mPlacementId);
 
@@ -56,19 +56,19 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
         UnityRouter.getInterstitialRouter().setCurrentPlacementId(mPlacementId);
         initializeUnityAdsSdk(serverExtras);
 
-        if (UnityAds.isReady(mPlacementId)) {
-            mCustomEventInterstitialListener.onInterstitialLoaded();
-            loadRequested = false;
-
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-        } else if (UnityAds.getPlacementState(mPlacementId) == UnityAds.PlacementState.NO_FILL) {
-            mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
-            UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
-
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-        }
+//        if (UnityAds.isReady(mPlacementId)) {
+//            mCustomEventInterstitialListener.onInterstitialLoaded();
+//            loadRequested = false;
+//
+//            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+//        } else if (UnityAds.getPlacementState(mPlacementId) == UnityAds.PlacementState.NO_FILL) {
+//            mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+//            UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+//
+//            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+//                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+//                    MoPubErrorCode.NETWORK_NO_FILL);
+//        }
     }
 
     private void initializeUnityAdsSdk(Map<String, String> serverExtras) {
@@ -113,9 +113,9 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
     @Override
     public void onUnityAdsReady(String placementId) {
-        if (loadRequested && mCustomEventInterstitialListener != null) {
+        if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialLoaded();
-            loadRequested = false;
+            //loadRequested = false;
 
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
         }
