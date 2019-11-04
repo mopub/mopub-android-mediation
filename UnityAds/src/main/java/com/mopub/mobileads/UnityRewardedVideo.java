@@ -89,18 +89,6 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo implements IUni
         UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
 
         UnityAds.load(mPlacementId);
-
-        if (hasVideoAvailable()) {
-            MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, mPlacementId);
-
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-        } else if (UnityAds.getPlacementState(mPlacementId) == UnityAds.PlacementState.NO_FILL) {
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, mPlacementId, MoPubErrorCode.NETWORK_NO_FILL);
-            UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-        }
     }
 
     @Override
