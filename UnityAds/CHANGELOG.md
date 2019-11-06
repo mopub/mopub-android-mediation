@@ -1,4 +1,8 @@
 ## Changelog
+  * 3.3.0.1
+    * Update adapter to handle Unity Ads load behaviors seamlessly for fullscreen ads.
+    * Remove deprecated `UnityBannerCallbackRouter` class.
+
   * 3.3.0.0
     * This version of the adapters has been certified with Unity Ads 3.3.0.
     * Update the banner adapter to use new load API.
