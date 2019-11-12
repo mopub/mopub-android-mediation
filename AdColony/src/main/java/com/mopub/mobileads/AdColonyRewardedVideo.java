@@ -2,7 +2,6 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.os.Handler;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,14 +18,10 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
-import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.ConsentStatus;
-import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -44,7 +39,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
-    public static final String ADAPTER_NAME = AdColonyRewardedVideo.class.getSimpleName();
+    private static final String ADAPTER_NAME = AdColonyRewardedVideo.class.getSimpleName();
 
     private static boolean sInitialized = false;
     private static LifecycleListener sLifecycleListener = new BaseLifecycleListener();
@@ -54,7 +49,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     private AdColonyInterstitial mAd;
     @NonNull
-    private String mZoneId = AdColonyUtils.DEFAULT_ZONE_ID;
+    private String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
     private AdColonyListener mAdColonyListener;
     private AdColonyAdOptions mAdColonyAdOptions = new AdColonyAdOptions();
     private String mAdColonyClientOptions = "";
@@ -113,28 +108,41 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                 return false;
             }
 
-            String adColonyClientOptions = AdColonyUtils.DEFAULT_CLIENT_OPTIONS;
-            String adColonyAppId = AdColonyUtils.DEFAULT_APP_ID;
-            String[] adColonyAllZoneIds = AdColonyUtils.DEFAULT_ALL_ZONE_IDS;
+            String clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+            if (clientOptions == null)
+                clientOptions = "";
 
-            // Set up serverExtras
-            if (AdColonyUtils.extrasAreValid(serverExtras)) {
-                adColonyClientOptions = serverExtras.get(AdColonyUtils.CLIENT_OPTIONS_KEY);
-                if(adColonyClientOptions == null)
-                {
-                    adColonyClientOptions = "";
-                }
-                adColonyAppId = serverExtras.get(AdColonyUtils.APP_ID_KEY);
-                adColonyAllZoneIds = AdColonyUtils.extractAllZoneIds(serverExtras);
-                mAdColonyClientOptions = adColonyClientOptions;
+            final String appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
+
+            String[] allZoneIds;
+            String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+            if (allZoneIdsString != null) {
+                allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
+            } else {
+                allZoneIds = null;
             }
 
-            if(mAdColonyAppOptions == null)
-            {
-                mAdColonyAppOptions = AdColonyUtils.getAdColonyAppOptions(adColonyClientOptions);
+            if (appId == null) {
+                abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.APP_ID_KEY);
+                return false;
             }
 
-            AdColonyUtils.checkAndConfigureAdColony(launcherActivity, adColonyClientOptions, adColonyAppId, adColonyAllZoneIds);
+            if (allZoneIds == null || allZoneIds.length == 0) {
+                abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY);
+                return false;
+            }
+
+            mAdColonyClientOptions = clientOptions;
+            if (mAdColonyAppOptions == null) {
+                mAdColonyAppOptions = AdColonyAdapterConfiguration.getAdColonyAppOptionsAndSetConsent(clientOptions);
+            }
+
+            AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(
+                    launcherActivity,
+                    clientOptions,
+                    appId,
+                    allZoneIds
+            );
 
             sInitialized = true;
             return true;
@@ -146,38 +154,54 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                                           @NonNull final Map<String, Object> localExtras,
                                           @NonNull final Map<String, String> serverExtras) throws Exception {
 
-        if (AdColonyUtils.extrasAreValid(serverExtras)) {
-            mAdColonyAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
-            mZoneId = serverExtras.get(AdColonyUtils.ZONE_ID_KEY);
-            String adColonyClientOptions = AdColonyUtils.DEFAULT_CLIENT_OPTIONS;
-            String adColonyAppId = serverExtras.get(AdColonyUtils.APP_ID_KEY);
-            String[] adColonyAllZoneIds = AdColonyUtils.extractAllZoneIds(serverExtras);
-            mAdColonyClientOptions = adColonyClientOptions;
+        mAdColonyAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
 
-            // Check to see if app ID parameter is present. If not AdColony will not return an ad.
-            // So there's no need to make a request. If so, must fail and log the flow.
-            if (TextUtils.isEmpty(adColonyAppId) || TextUtils.equals(adColonyAppId, AdColonyUtils.DEFAULT_APP_ID)) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AppId parameter cannot be empty. " +
-                        "Please make sure you enter correct AppId on the MoPub Dashboard " +
-                        "for AdColony.");
+        String clientOptions;
+        String appId;
+        String zoneId;
+        String[] allZoneIds;
 
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
-                        AdColonyRewardedVideo.class,
-                        mZoneId,
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                return;
-            }
+        // Set optional parameters
+        clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+        if (clientOptions == null)
+            clientOptions = "";
 
-            if(mAdColonyAppOptions == null)
-            {
-                mAdColonyAppOptions = AdColonyUtils.getAdColonyAppOptions(adColonyClientOptions);
-            }
+        // Set mandatory parameters
+        appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
+        zoneId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY, serverExtras);
 
-            AdColonyUtils.checkAndConfigureAdColony(activity, adColonyClientOptions, adColonyAppId, adColonyAllZoneIds);
-
-            setUpGlobalSettings();
-
+        String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+        if (allZoneIdsString != null) {
+            allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
+        } else {
+            allZoneIds = null;
         }
+
+        // Check if mandatory parameters are valid, abort otherwise
+        if (appId == null) {
+            abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.APP_ID_KEY);
+            return;
+        }
+
+        if (zoneId == null || allZoneIds == null || allZoneIds.length == 0) {
+            abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY);
+            return;
+        }
+
+        mZoneId = zoneId;
+        mAdColonyClientOptions = clientOptions;
+        if (mAdColonyAppOptions == null) {
+            mAdColonyAppOptions = AdColonyAdapterConfiguration.getAdColonyAppOptionsAndSetConsent(clientOptions);
+        }
+
+        AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(
+                activity,
+                clientOptions,
+                appId,
+                allZoneIds
+        );
+
+        setUpGlobalSettings();
 
         Object adUnitObject = localExtras.get(DataKeys.AD_UNIT_ID_KEY);
         if (adUnitObject instanceof String) {
@@ -191,6 +215,14 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         AdColony.requestInterstitial(mZoneId, mAdColonyListener, mAdColonyAdOptions);
         scheduleOnVideoReady();
         MoPubLog.log(mZoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
+    }
+
+    private void abortRequestForIncorrectParameter(String parameterName) {
+        AdColonyAdapterConfiguration.logAndFail("rewarded video request", parameterName);
+        MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
+                AdColonyRewardedVideo.class,
+                mZoneId,
+                MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
     }
 
     private void setUpAdOptions() {
@@ -224,7 +256,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
             if (globalMediationSettings.getUserId() != null) {
                 if(mAdColonyAppOptions == null)
                 {
-                    mAdColonyAppOptions = AdColonyUtils.getAdColonyAppOptions(mAdColonyClientOptions);
+                    mAdColonyAppOptions = AdColonyAdapterConfiguration.getAdColonyAppOptionsAndSetConsent(mAdColonyClientOptions);
                     AdColony.setAppOptions(mAdColonyAppOptions);
                 }
                 mAdColonyAppOptions.setUserID(globalMediationSettings.getUserId());

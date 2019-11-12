@@ -3,22 +3,16 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.adcolony.sdk.AdColony;
-import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
-import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.ConsentStatus;
-import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
@@ -32,7 +26,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class AdColonyInterstitial extends CustomEventInterstitial {
 
-    public static final String ADAPTER_NAME = AdColonyInterstitial.class.getSimpleName();
+    private static final String ADAPTER_NAME = AdColonyInterstitial.class.getSimpleName();
 
     private CustomEventInterstitialListener mCustomEventInterstitialListener;
     private AdColonyInterstitialListener mAdColonyInterstitialListener;
@@ -53,49 +47,52 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
                                     @Nullable Map<String, Object> localExtras,
                                     @NonNull Map<String, String> serverExtras) {
         if (!(context instanceof Activity)) {
-            customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             return;
         }
 
-        String clientOptions = AdColonyUtils.DEFAULT_CLIENT_OPTIONS;
-        String appId = AdColonyUtils.DEFAULT_APP_ID;
-        String[] allZoneIds = AdColonyUtils.DEFAULT_ALL_ZONE_IDS;
-        String zoneId = AdColonyUtils.DEFAULT_ZONE_ID;
+        String clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+        if (clientOptions == null)
+            clientOptions = "";
 
         mCustomEventInterstitialListener = customEventInterstitialListener;
 
-        if (AdColonyUtils.extrasAreValid(serverExtras)) {
-            clientOptions = serverExtras.get(AdColonyUtils.CLIENT_OPTIONS_KEY);
-            if(clientOptions == null)
-            {
-                clientOptions = "";
-            }
-            appId = serverExtras.get(AdColonyUtils.APP_ID_KEY);
-            allZoneIds = AdColonyUtils.extractAllZoneIds(serverExtras);
-            zoneId = serverExtras.get(AdColonyUtils.ZONE_ID_KEY);
-            mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+
+        // Set mandatory parameters
+        final String appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
+        final String zoneId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY, serverExtras);
+
+        String[] allZoneIds;
+        String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+        if (allZoneIdsString != null) {
+            allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
+        } else {
+            allZoneIds = null;
         }
 
-        // Check to see if app ID parameter is present. If not AdColony will not return an ad.
-        // So there's no need to make a request. If so, must fail and log the flow.
-        if (TextUtils.isEmpty(appId) || TextUtils.equals(appId, AdColonyUtils.DEFAULT_APP_ID)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AppId parameter cannot be empty. " +
-                    "Please make sure you enter correct AppId on the MoPub Dashboard " +
-                    "for AdColony.");
-
-            customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        // Check if mandatory parameters are valid, abort otherwise
+        if (appId == null) {
+            abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.APP_ID_KEY);
             return;
         }
 
+        if (zoneId == null || allZoneIds == null || allZoneIds.length == 0) {
+            abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY);
+            return;
+        }
+
+        mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         mAdColonyInterstitialListener = getAdColonyInterstitialListener();
 
-        AdColonyUtils.checkAndConfigureAdColony(context, clientOptions, appId, allZoneIds);
+        AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(context, clientOptions, appId, allZoneIds);
+        AdColony.requestInterstitial(zoneId, mAdColonyInterstitialListener);
+        MoPubLog.log(zoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
+    }
 
-        if (!TextUtils.isEmpty(zoneId)) {
-            AdColony.requestInterstitial(zoneId, mAdColonyInterstitialListener);
-            MoPubLog.log(zoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
-        }
+    private void abortRequestForIncorrectParameter(String parameterName) {
+        AdColonyAdapterConfiguration.logAndFail("interstitial request", parameterName);
+        mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
     }
 
     @Override
@@ -118,10 +115,10 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
     @Override
     protected void onInvalidate() {
         if (mAdColonyInterstitial != null) {
-            mAdColonyInterstitialListener = null;
             mAdColonyInterstitial.destroy();
             mAdColonyInterstitial = null;
         }
+        mAdColonyInterstitialListener = null;
     }
 
     private AdColonyInterstitialListener getAdColonyInterstitialListener() {

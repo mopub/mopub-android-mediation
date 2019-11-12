@@ -1,8 +1,14 @@
 ## Changelog
 
+  * 4.1.0.1
+    * Add support for banners which was introduced on AdColony 4.1.0.
+    * Move AdColony parameters to the `AdColonyAdapterConfiguration`.
+
   * 4.1.0.0
-      * Verified compatibility with AdColony SDK version 4.1.0.
-      * Added support for banners.
+    * This version of the adapters has been certified with AdColony 4.1.0.
+
+  * 3.3.11.2
+    * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for AdColonyRewardedVideo.java.
 
   * 3.3.11.1
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
