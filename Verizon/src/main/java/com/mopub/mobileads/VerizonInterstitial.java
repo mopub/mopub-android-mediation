@@ -20,6 +20,7 @@ import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
@@ -116,8 +117,18 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         final Bid bid = BidCache.get(placementId);
 
         if (bid == null) {
-            final RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
-            interstitialAdFactory.setRequestMetaData(requestMetadata);
+            final RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder(VASAds.getRequestMetadata());
+            requestMetadataBuilder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID);
+
+            String adContent = serverExtras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY);
+            if (!TextUtils.isEmpty(adContent)) {
+                HashMap<String, Object> placementData = new HashMap<>();
+                placementData.put(VerizonAdapterConfiguration.REQUEST_METADATA_AD_CONTENT_KEY, adContent);
+                placementData.put("overrideWaterfallProvider", "waterfallprovider/sideloading");
+                requestMetadataBuilder.setPlacementData(placementData);
+            }
+
+            interstitialAdFactory.setRequestMetaData(requestMetadataBuilder.build());
 
             interstitialAdFactory.load(new VerizonInterstitialListener());
         } else {

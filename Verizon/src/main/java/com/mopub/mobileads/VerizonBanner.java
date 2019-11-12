@@ -25,6 +25,7 @@ import com.verizon.ads.inlineplacement.InlineAdFactory;
 import com.verizon.ads.inlineplacement.InlineAdView;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -165,11 +166,18 @@ public class VerizonBanner extends CustomEventBanner {
                 new VerizonInlineAdFactoryListener());
 
         if (bid == null) {
-            final RequestMetadata requestMetadata = new RequestMetadata.Builder()
-                    .setMediator(VerizonAdapterConfiguration.MEDIATOR_ID)
-                    .build();
+            final RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder(VASAds.getRequestMetadata());
+            requestMetadataBuilder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID);
 
-            inlineAdFactory.setRequestMetaData(requestMetadata);
+            String adContent = serverExtras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY);
+            if (!TextUtils.isEmpty(adContent)) {
+                Map<String, Object> placementData = new HashMap<>();
+                placementData.put(VerizonAdapterConfiguration.REQUEST_METADATA_AD_CONTENT_KEY, adContent);
+                placementData.put("overrideWaterfallProvider", "waterfallprovider/sideloading");
+                requestMetadataBuilder.setPlacementData(placementData);
+            }
+
+            inlineAdFactory.setRequestMetaData(requestMetadataBuilder.build());
 
             inlineAdFactory.load(new VerizonInlineAdListener());
         } else {

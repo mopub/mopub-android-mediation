@@ -131,6 +131,19 @@ public class VerizonNative extends CustomEventNative {
             return;
         }
 
+        if (!TextUtils.isEmpty(serverExtras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY))) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME,
+                "Advanced Bidding for native placements is not supported at this time. ServerExtras key `" +
+                    VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY + "` should have no value.");
+
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+            customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
+
+            return;
+        }
+
         VASAds.setLocationEnabled(MoPub.getLocationAwareness() != MoPub.LocationAwareness.DISABLED);
 
         NativeAdFactory nativeAdFactory = new NativeAdFactory(context, placementId, adTypes,

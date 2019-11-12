@@ -1,4 +1,7 @@
 ## Changelog
+  * 1.2.1.1
+    * Add support for Advanced Bidding on inline and interstitial.
+
   * 1.2.1.0
     * This version of the adapters has been certified with Verizon 1.2.1.
     * Remove all permissions except INTERNET in the adapter's AndroidManifest (to be in parity with the [Verizon SDK](https://sdk.verizonmedia.com/standard-edition/releasenotes-android.html)).
