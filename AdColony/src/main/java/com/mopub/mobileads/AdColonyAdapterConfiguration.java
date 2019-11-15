@@ -41,8 +41,6 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     protected static final String ZONE_ID_KEY = "zoneId";
 
     // AdColony Default values
-    protected static final String CONSENT_GIVEN = "explicit_consent_given";
-    protected static final String CONSENT_RESPONSE = "consent_response";
     protected static final String DEFAULT_ZONE_ID = "YOUR_CURRENT_ZONE_ID";
 
     protected static String[] previousAdColonyAllZoneIds;
@@ -159,18 +157,18 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
         adColonyAppOptions.setMediationNetwork("MoPub", ADAPTER_VERSION);
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
+            adColonyAppOptions.setGDPRRequired(true);
             if (shouldAllowLegitimateInterest) {
                 if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
                         || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
-                    adColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                            .setOption(CONSENT_RESPONSE, false);
+                    adColonyAppOptions.setGDPRConsentString("0");
                 } else {
-                    adColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                            .setOption(CONSENT_RESPONSE, true);
+                    adColonyAppOptions.setGDPRConsentString("1");
                 }
-            } else {
-                adColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                        .setOption(CONSENT_RESPONSE, canCollectPersonalInfo);
+            } else if (canCollectPersonalInfo) {
+                adColonyAppOptions.setGDPRConsentString("1");
+            }else {
+                adColonyAppOptions.setGDPRConsentString("0");
             }
         }
         return adColonyAppOptions;
