@@ -227,7 +227,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         }
         sVungleRouter.setIncentivizedFields(userId, mediationSettings.title, mediationSettings.body,
                 mediationSettings.keepWatchingButtonText, mediationSettings.closeButtonText);
-        adConfig.setMuted(!mediationSettings.isSoundEnabled);
+        adConfig.setMuted(mediationSettings.isStartMuted);
         adConfig.setFlexViewCloseTime(mediationSettings.flexViewCloseTimeInSec);
         adConfig.setOrdinal(mediationSettings.ordinalViewCount);
         adConfig.setAdOrientation(mediationSettings.adOrientation);
@@ -346,7 +346,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         private final String closeButtonText;
         @Nullable
         private final String keepWatchingButtonText;
-        private final boolean isSoundEnabled;
+        private final boolean isStartMuted;
         private final int flexViewCloseTimeInSec;
         private final int ordinalViewCount;
         private final int adOrientation;
@@ -362,7 +362,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
             private String closeButtonText;
             @Nullable
             private String keepWatchingButtonText;
-            private boolean isSoundEnabled = true;
+            private boolean isStartMuted = false;
             private int flexViewCloseTimeInSec = 0;
             private int ordinalViewCount = 0;
             private int adOrientation = AdConfig.AUTO_ROTATE;
@@ -392,8 +392,13 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
                 return this;
             }
 
+            @Deprecated
             public Builder withSoundEnabled(boolean isSoundEnabled) {
-                this.isSoundEnabled = isSoundEnabled;
+                return withStartMuted(!isSoundEnabled);
+            }
+
+            public Builder withStartMuted(boolean isStartMuted) {
+                this.isStartMuted = isStartMuted;
                 return this;
             }
 
@@ -423,7 +428,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
             this.body = builder.body;
             this.closeButtonText = builder.closeButtonText;
             this.keepWatchingButtonText = builder.keepWatchingButtonText;
-            this.isSoundEnabled = builder.isSoundEnabled;
+            this.isStartMuted = builder.isStartMuted;
             this.flexViewCloseTimeInSec = builder.flexViewCloseTimeInSec;
             this.ordinalViewCount = builder.ordinalViewCount;
             this.adOrientation = builder.adOrientation;
