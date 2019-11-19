@@ -81,18 +81,18 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         mGoogleInterstitialAd.setAdListener(new InterstitialAdListener());
         mGoogleInterstitialAd.setAdUnitId(adUnitId);
 
-        AdRequest.Builder builder = new AdRequest.Builder();
+        final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubInterstitial.setLocalExtras() call.
-        String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
+        final String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
 
         if (!TextUtils.isEmpty(contentUrl)) {
             builder.setContentUrl(contentUrl);
         }
 
         // Publishers may request for test ads by passing test device IDs to the MoPubInterstitial.setLocalExtras() call.
-        String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+        final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
 
         if (!TextUtils.isEmpty(testDeviceId)) {
             builder.addTestDevice(testDeviceId);
@@ -102,11 +102,11 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
 
-        RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
-        Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+        final Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
 
         if (childDirected != null) {
             if (childDirected) {
@@ -120,7 +120,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         // Publishers may want to mark their requests to receive treatment for users in the
         // European Economic Area (EEA) under the age of consent.
-        Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+        final Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
 
         if (underAgeOfConsent != null) {
             if (underAgeOfConsent) {
@@ -132,10 +132,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED);
         }
 
-        RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
+        final RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
         MobileAds.setRequestConfiguration(requestConfiguration);
 
-        AdRequest adRequest = builder.build();
+        final AdRequest adRequest = builder.build();
 
         try {
             mGoogleInterstitialAd.loadAd(adRequest);
@@ -156,7 +156,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     private void forwardNpaIfSet(AdRequest.Builder builder) {
 
         // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
+        final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
 
         if (npaBundle != null && !npaBundle.isEmpty()) {
             builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);

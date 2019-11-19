@@ -2,8 +2,10 @@ package com.mopub.mobileads;
 
 import android.app.Application;
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import android.text.TextUtils;
 
 import com.mopub.common.BaseAdapterConfiguration;
@@ -52,8 +54,11 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
         final String editionVersion = Configuration.getString("com.verizon.ads",
                 "editionVersion", null);
 
-        if (!TextUtils.isEmpty(editionVersion)) {
-            return editionVersion;
+        final String editionName = Configuration.getString("com.verizon.ads",
+                "editionName", null);
+
+        if (!TextUtils.isEmpty(editionVersion) && !TextUtils.isEmpty(editionName)) {
+            return editionName + "-" + editionVersion;
         }
 
         final String adapterVersion = getAdapterVersion();

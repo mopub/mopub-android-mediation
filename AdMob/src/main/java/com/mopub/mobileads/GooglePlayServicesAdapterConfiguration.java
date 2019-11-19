@@ -101,8 +101,11 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         return npaBundle;
     }
 
-    private static void setNpaBundle(String npaValue) {
+    public static void setNpaBundle(String npaValue) {
         npaBundle = new Bundle();
-        npaBundle.putString(KEY_NPA, npaValue);
+
+        if (!TextUtils.isEmpty((npaValue))) {
+            npaBundle.putString(KEY_NPA, npaValue);
+        }
     }
 }
