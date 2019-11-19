@@ -167,7 +167,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
                 }
             } else if (canCollectPersonalInfo) {
                 adColonyAppOptions.setGDPRConsentString("1");
-            }else {
+            } else {
                 adColonyAppOptions.setGDPRConsentString("0");
             }
         }
@@ -198,6 +198,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
 
         if (!isAdColonyConfigured()) {
             configureAdColony(context, mAdColonyAppOptions, appId, allZoneIds);
+            previousAdColonyAllZoneIds = allZoneIds;
         } else if (shouldAdColonyReconfigure(previousAdColonyAllZoneIds, allZoneIds)) {
             configureAdColony(context, mAdColonyAppOptions, appId, allZoneIds);
             previousAdColonyAllZoneIds = allZoneIds;
