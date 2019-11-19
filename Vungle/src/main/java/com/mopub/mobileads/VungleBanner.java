@@ -233,11 +233,6 @@
     private class VungleBannerRouterListener implements VungleRouterListener {
 
         @Override
-        public void onAdEnd(@NonNull String placementReferenceId, boolean wasSuccessfulView, final boolean wasCallToActionClicked) {
-            //Deprecated event
-        }
-
-        @Override
         public void onAdEnd(String id) {
             if (mPlacementId.equals(id)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);

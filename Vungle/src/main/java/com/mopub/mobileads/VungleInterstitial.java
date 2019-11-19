@@ -203,10 +203,6 @@ public class VungleInterstitial extends CustomEventInterstitial {
      * VungleRouterListener
      */
     private class VungleInterstitialRouterListener implements VungleRouterListener {
-        @Override
-        public void onAdEnd(@NonNull String placementReferenceId, final boolean wasSuccessfulView, final boolean wasCallToActionClicked) {
-            //Deprecated event
-        }
 
         @Override
         public void onAdEnd(String id) {
