@@ -1,11 +1,12 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.facebook.ads.NativeAdView;
 import com.facebook.ads.NativeAdViewAttributes;
@@ -13,7 +14,7 @@ import com.mopub.common.Preconditions;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-public class FacebookTemplateRenderer implements MoPubAdRenderer<FacebookNative.FacebookVideoEnabledNativeAd> {
+public class FacebookTemplateRenderer implements MoPubAdRenderer<FacebookNative.FacebookNativeAd> {
 
     @Nullable
     private NativeAdViewAttributes mTemplateAttributes;
@@ -29,7 +30,7 @@ public class FacebookTemplateRenderer implements MoPubAdRenderer<FacebookNative.
     }
 
     @Override
-    public void renderAdView(@NonNull View parentView, @NonNull FacebookNative.FacebookVideoEnabledNativeAd ad) {
+    public void renderAdView(@NonNull View parentView, @NonNull FacebookNative.FacebookNativeAd ad) {
         Preconditions.checkNotNull(parentView);
         Preconditions.checkNotNull(ad);
 
@@ -43,6 +44,6 @@ public class FacebookTemplateRenderer implements MoPubAdRenderer<FacebookNative.
     @Override
     public boolean supports(@NonNull BaseNativeAd nativeAd) {
         Preconditions.checkNotNull(nativeAd);
-        return nativeAd instanceof FacebookNative.FacebookVideoEnabledNativeAd;
+        return nativeAd instanceof FacebookNative.FacebookNativeAd;
     }
 }

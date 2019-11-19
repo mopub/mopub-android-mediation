@@ -2,8 +2,9 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.chartboost.sdk.Chartboost;
 import com.mopub.common.DataKeys;

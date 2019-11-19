@@ -1,8 +1,8 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.BaseAdapterConfiguration;
@@ -115,7 +115,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
         long minSpaceLoadAd;
         try {
             minSpaceLoadAd = Long.parseLong(configuration.get("VNG_MIN_SPACE_LOAD_AD"));
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             //50 mb
             minSpaceLoadAd = 50 << 20;
         }

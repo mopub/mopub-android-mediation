@@ -2,8 +2,9 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
@@ -147,10 +148,10 @@ public class FacebookInterstitial extends CustomEventInterstitial implements Int
     public void onError(final Ad ad, final AdError error) {
         cancelExpirationTimer();
         if (mInterstitialListener != null) {
-            if (error == AdError.NO_FILL) {
+            if (error.getErrorCode() == AdError.NO_FILL.getErrorCode()) {
                 mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-            } else if (error == AdError.INTERNAL_ERROR) {
+            } else if (error.getErrorCode() == AdError.INTERNAL_ERROR.getErrorCode()) {
                 mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(), MoPubErrorCode.NETWORK_INVALID_STATE);
             } else {

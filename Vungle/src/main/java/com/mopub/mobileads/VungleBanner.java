@@ -3,8 +3,8 @@
  import android.content.Context;
  import android.os.Handler;
  import android.os.Looper;
- import android.support.annotation.Keep;
- import android.support.annotation.NonNull;
+ import androidx.annotation.Keep;
+ import androidx.annotation.NonNull;
  import android.text.TextUtils;
  import android.view.View;
  import android.widget.RelativeLayout;

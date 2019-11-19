@@ -1,6 +1,9 @@
 ## Changelog
+  * 3.3.11.1
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
   * 3.3.11.0
-      * This version of the adapters has been certified with AdColony 3.3.11.
+    * This version of the adapters has been certified with AdColony 3.3.11.
 
   * 3.3.10.0
     * This version of the adapters has been certified with AdColony 3.3.10.
