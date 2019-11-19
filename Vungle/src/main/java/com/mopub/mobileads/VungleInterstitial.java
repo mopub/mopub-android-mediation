@@ -38,9 +38,13 @@ public class VungleInterstitial extends CustomEventInterstitial {
      * These keys can be used with MoPubInterstitial.setLocalExtras()
      * to pass additional parameters to the SDK.
      */
+    @Deprecated
     public static final String SOUND_ENABLED_KEY = "vungleSoundEnabled";
+    @Deprecated
     public static final String FLEX_VIEW_CLOSE_TIME_KEY = "vungleFlexViewCloseTimeInSec";
+    @Deprecated
     public static final String ORDINAL_VIEW_COUNT_KEY = "vungleOrdinalViewCount";
+    @Deprecated
     public static final String AD_ORIENTATION_KEY = "vungleAdOrientation";
 
     private static VungleRouter sVungleRouter;
@@ -113,18 +117,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
 
         if (localExtras != null) {
             mAdConfig = new AdConfig();
-            Object isSoundEnabled = localExtras.get(SOUND_ENABLED_KEY);
-            if (isSoundEnabled instanceof Boolean)
-                mAdConfig.setMuted(!(Boolean) isSoundEnabled);
-            Object flexViewCloseTimeInSec = localExtras.get(FLEX_VIEW_CLOSE_TIME_KEY);
-            if (flexViewCloseTimeInSec instanceof Integer)
-                mAdConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
-            Object ordinalViewCount = localExtras.get(ORDINAL_VIEW_COUNT_KEY);
-            if (ordinalViewCount instanceof Integer)
-                mAdConfig.setOrdinal((Integer) ordinalViewCount);
-            Object adOrientation = localExtras.get(AD_ORIENTATION_KEY);
-            if (adOrientation instanceof Integer)
-                mAdConfig.setAdOrientation((Integer)adOrientation);
+            VungleExtrasBuilder.adConfigWithLocalExtras(mAdConfig, localExtras);
         }
 
         sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
