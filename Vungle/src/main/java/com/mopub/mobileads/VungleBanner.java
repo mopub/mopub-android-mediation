@@ -1,6 +1,7 @@
  package com.mopub.mobileads;
 
  import android.content.Context;
+ import android.graphics.Color;
  import android.os.Handler;
  import android.os.Looper;
  import androidx.annotation.Keep;
@@ -282,6 +283,9 @@
                                         }
                                     }
                                 };
+                                //Fix for Unity Player that can't render a view with a state changed from INVISIBLE to VISIBLE.
+                                //TODO: Remove once it's fixed in MoPub Unity plugin.
+                                layout.setBackgroundColor(Color.TRANSPARENT);
                                 vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig);
                                 if(vungleBannerAd != null) {
                                     final View adView = vungleBannerAd.renderNativeView();
