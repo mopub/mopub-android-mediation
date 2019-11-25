@@ -19,8 +19,10 @@ import java.util.Map;
 
 import static com.google.android.gms.ads.AdSize.BANNER;
 import static com.google.android.gms.ads.AdSize.FULL_BANNER;
+import static com.google.android.gms.ads.AdSize.LARGE_BANNER;
 import static com.google.android.gms.ads.AdSize.LEADERBOARD;
 import static com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE;
+import static com.google.android.gms.ads.AdSize.WIDE_SKYSCRAPER;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED;
@@ -93,18 +95,18 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             return;
         }
 
-        AdRequest.Builder builder = new AdRequest.Builder();
+        final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubView.setLocalExtras() call.
-        String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
+        final String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
 
         if (!TextUtils.isEmpty(contentUrl)) {
             builder.setContentUrl(contentUrl);
         }
 
         // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
-        String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+        final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
 
         if (!TextUtils.isEmpty(testDeviceId)) {
             builder.addTestDevice(testDeviceId);
@@ -114,11 +116,11 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
 
-        RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
-        Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+        final Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
 
         if (childDirected != null) {
             if (childDirected) {
@@ -132,7 +134,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         // Publishers may want to mark their requests to receive treatment for users in the
         // European Economic Area (EEA) under the age of consent.
-        Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+        final Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
 
         if (underAgeOfConsent != null) {
             if (underAgeOfConsent) {
@@ -144,10 +146,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED);
         }
 
-        RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
+        final RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
         MobileAds.setRequestConfiguration(requestConfiguration);
 
-        AdRequest adRequest = builder.build();
+        final AdRequest adRequest = builder.build();
 
         try {
             mGoogleAdView.loadAd(adRequest);
@@ -176,23 +178,27 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     private void forwardNpaIfSet(AdRequest.Builder builder) {
 
         // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
+        final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
 
         if (npaBundle != null && !npaBundle.isEmpty()) {
             builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
     }
 
-    private AdSize calculateAdSize(int width, int height) {
-        // Use the smallest AdSize that will properly contain the adView
-        if (width <= BANNER.getWidth() && height <= BANNER.getHeight()) {
-            return BANNER;
-        } else if (width <= MEDIUM_RECTANGLE.getWidth() && height <= MEDIUM_RECTANGLE.getHeight()) {
+    private static AdSize calculateAdSize(int width, int height) {
+        // Use the largest AdSize that fits into MoPubView
+        if (height >= WIDE_SKYSCRAPER.getHeight() && width >= WIDE_SKYSCRAPER.getWidth()) {
+            return WIDE_SKYSCRAPER;
+        } else if (height >= MEDIUM_RECTANGLE.getHeight() && width >= MEDIUM_RECTANGLE.getWidth()) {
             return MEDIUM_RECTANGLE;
-        } else if (width <= FULL_BANNER.getWidth() && height <= FULL_BANNER.getHeight()) {
-            return FULL_BANNER;
-        } else if (width <= LEADERBOARD.getWidth() && height <= LEADERBOARD.getHeight()) {
+        } else if (height >= LARGE_BANNER.getHeight() && width >= LARGE_BANNER.getWidth()) {
+            return LARGE_BANNER;
+        } else if (height >= LEADERBOARD.getHeight() && width >= LEADERBOARD.getWidth()) {
             return LEADERBOARD;
+        } else if (height >= FULL_BANNER.getHeight() && width >= FULL_BANNER.getWidth()) {
+            return FULL_BANNER;
+        } else if (height >= BANNER.getHeight() && width >= BANNER.getWidth()) {
+            return BANNER;
         } else {
             return null;
         }

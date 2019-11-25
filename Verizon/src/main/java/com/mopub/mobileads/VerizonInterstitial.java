@@ -3,8 +3,9 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
@@ -20,6 +21,7 @@ import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
@@ -33,7 +35,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
-import static com.mopub.mobileads.VerizonUtils.convertErrorInfoToMoPub;
+import static com.mopub.mobileads.VerizonAdapterConfiguration.convertErrorInfoToMoPub;
 
 public class VerizonInterstitial extends CustomEventInterstitial {
 
@@ -116,9 +118,21 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         final Bid bid = BidCache.get(placementId);
 
         if (bid == null) {
-            final RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator(VerizonAdapterConfiguration.MEDIATOR_ID).build();
-            interstitialAdFactory.setRequestMetaData(requestMetadata);
+            final RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder(VASAds.getRequestMetadata());
+            requestMetadataBuilder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID);
 
+            final String adContent = serverExtras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY);
+
+            if (!TextUtils.isEmpty(adContent)) {
+                final Map<String, Object> placementData = new HashMap<>();
+
+                placementData.put(VerizonAdapterConfiguration.REQUEST_METADATA_AD_CONTENT_KEY, adContent);
+                placementData.put("overrideWaterfallProvider", "waterfallprovider/sideloading");
+
+                requestMetadataBuilder.setPlacementData(placementData);
+            }
+
+            interstitialAdFactory.setRequestMetaData(requestMetadataBuilder.build());
             interstitialAdFactory.load(new VerizonInterstitialListener());
         } else {
             interstitialAdFactory.load(bid, new VerizonInterstitialListener());
@@ -171,7 +185,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
 
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
 
-        VerizonUtils.postOnUiThread(new Runnable() {
+        VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
             @Override
             public void run() {
@@ -188,7 +202,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
     @Override
     protected void onInvalidate() {
 
-        VerizonUtils.postOnUiThread(new Runnable() {
+        VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
             @Override
             public void run() {
@@ -231,7 +245,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
 
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -259,7 +273,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
 
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to load Verizon interstitial due to " +
                     "error: " + errorInfo.toString());
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -277,7 +291,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
 
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show Verizon interstitial due to " +
                     "error: " + errorInfo.toString());
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -290,7 +304,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         public void onShown(final InterstitialAd interstitialAd) {
 
             MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -305,7 +319,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         public void onClosed(final InterstitialAd interstitialAd) {
 
             MoPubLog.log(DID_DISAPPEAR, ADAPTER_NAME);
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -320,7 +334,7 @@ public class VerizonInterstitial extends CustomEventInterstitial {
         public void onClicked(final InterstitialAd interstitialAd) {
 
             MoPubLog.log(CLICKED, ADAPTER_NAME);
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {

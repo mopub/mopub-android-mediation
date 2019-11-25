@@ -32,6 +32,7 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
     private final Handler mHandler;
 
     private static final String ADAPTER_NAME = ChartboostRewardedVideo.class.getSimpleName();
+    private static final String CUSTOM_ID_KEY = "customId";
 
     @NonNull
     private ChartboostAdapterConfiguration mChartboostAdapterConfiguration;
@@ -85,7 +86,7 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
         }
 
         ChartboostShared.getDelegate().registerRewardedVideoLocation(mLocation);
-        setUpMediationSettingsForRequest((String) localExtras.get(DataKeys.AD_UNIT_ID_KEY));
+        setUpMediationSettingsForRequest((String) localExtras.get(DataKeys.AD_UNIT_ID_KEY), localExtras);
 
         // We do this to ensure that the custom event manager has a chance to get the listener
         // and ad unit ID before any delegate callbacks are made.
@@ -101,14 +102,21 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
         });
     }
 
-    private void setUpMediationSettingsForRequest(String moPubId) {
+    private void setUpMediationSettingsForRequest(String moPubId, Map<String, Object> localExtras) {
         final ChartboostMediationSettings globalSettings =
                 MoPubRewardedVideoManager.getGlobalMediationSettings(ChartboostMediationSettings.class);
         final ChartboostMediationSettings instanceSettings =
                 MoPubRewardedVideoManager.getInstanceMediationSettings(ChartboostMediationSettings.class, moPubId);
 
-        // Instance settings override global settings.
-        if (instanceSettings != null) {
+        final Object customIdObject = localExtras.get(CUSTOM_ID_KEY);
+
+        if (customIdObject instanceof String) {
+            String customId = (String) customIdObject;
+
+            if (!TextUtils.isEmpty(customId)) {
+                Chartboost.setCustomId(customId);
+            }
+        } else if (instanceSettings != null) {
             Chartboost.setCustomId(instanceSettings.getCustomId());
         } else if (globalSettings != null) {
             Chartboost.setCustomId(globalSettings.getCustomId());

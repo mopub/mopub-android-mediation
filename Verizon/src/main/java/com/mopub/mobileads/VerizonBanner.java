@@ -3,11 +3,12 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+
+import androidx.annotation.NonNull;
 
 import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
@@ -25,6 +26,7 @@ import com.verizon.ads.inlineplacement.InlineAdFactory;
 import com.verizon.ads.inlineplacement.InlineAdView;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +39,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
-import static com.mopub.mobileads.VerizonUtils.convertErrorInfoToMoPub;
+import static com.mopub.mobileads.VerizonAdapterConfiguration.convertErrorInfoToMoPub;
 
 public class VerizonBanner extends CustomEventBanner {
 
@@ -165,18 +167,26 @@ public class VerizonBanner extends CustomEventBanner {
                 new VerizonInlineAdFactoryListener());
 
         if (bid == null) {
-            final RequestMetadata requestMetadata = new RequestMetadata.Builder()
-                    .setMediator(VerizonAdapterConfiguration.MEDIATOR_ID)
-                    .build();
+            final RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder(VASAds.getRequestMetadata());
+            requestMetadataBuilder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID);
 
-            inlineAdFactory.setRequestMetaData(requestMetadata);
+            final String adContent = serverExtras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY);
 
+            if (!TextUtils.isEmpty(adContent)) {
+                final Map<String, Object> placementData = new HashMap<>();
+
+                placementData.put(VerizonAdapterConfiguration.REQUEST_METADATA_AD_CONTENT_KEY, adContent);
+                placementData.put("overrideWaterfallProvider", "waterfallprovider/sideloading");
+
+                requestMetadataBuilder.setPlacementData(placementData);
+            }
+
+            inlineAdFactory.setRequestMetaData(requestMetadataBuilder.build());
             inlineAdFactory.load(new VerizonInlineAdListener());
         } else {
             inlineAdFactory.load(bid, new VerizonInlineAdListener());
         }
     }
-
 
     /**
      * Call this method to cache a super auction bid for the specified placement ID
@@ -237,7 +247,7 @@ public class VerizonBanner extends CustomEventBanner {
 
     @Override
     protected void onInvalidate() {
-        VerizonUtils.postOnUiThread(new Runnable() {
+        VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
             @Override
             public void run() {
@@ -287,7 +297,7 @@ public class VerizonBanner extends CustomEventBanner {
 
             verizonInlineAd = inlineAdView;
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -319,7 +329,7 @@ public class VerizonBanner extends CustomEventBanner {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to load Verizon banner due to error: "
                     + errorInfo.toString());
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -337,7 +347,7 @@ public class VerizonBanner extends CustomEventBanner {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to show Verizon banner due to error: "
                     + errorInfo.toString());
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -357,7 +367,7 @@ public class VerizonBanner extends CustomEventBanner {
         public void onExpanded(final InlineAdView inlineAdView) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon banner expanded");
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -372,7 +382,7 @@ public class VerizonBanner extends CustomEventBanner {
         public void onCollapsed(final InlineAdView inlineAdView) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon banner collapsed");
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
@@ -387,7 +397,7 @@ public class VerizonBanner extends CustomEventBanner {
         public void onClicked(final InlineAdView inlineAdView) {
             MoPubLog.log(CLICKED, ADAPTER_NAME);
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {

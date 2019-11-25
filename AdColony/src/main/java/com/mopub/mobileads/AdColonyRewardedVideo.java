@@ -2,7 +2,6 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.os.Handler;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,14 +18,10 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
-import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.ConsentStatus;
-import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.Json;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -43,45 +38,27 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
-    /*
-     * We recommend passing the AdColony client options, app ID, all zone IDs, and current zone ID
-     * in the serverExtras Map by specifying Custom Event Data in MoPub's web interface.
-     *
-     * Please see AdColony's documentation for more information:
-     * https://github.com/AdColony/AdColony-Android-SDK-3
-     */
-    private static final String DEFAULT_CLIENT_OPTIONS = "version=YOUR_APP_VERSION_HERE,store:google";
-    private static final String DEFAULT_APP_ID = "YOUR_AD_COLONY_APP_ID_HERE";
-    private static final String[] DEFAULT_ALL_ZONE_IDS = {"ZONE_ID_1", "ZONE_ID_2", "..."};
-    private static final String DEFAULT_ZONE_ID = "YOUR_CURRENT_ZONE_ID";
-    private static final String CONSENT_RESPONSE = "consent_response";
-    private static final String CONSENT_GIVEN = "explicit_consent_given";
 
-    /*
-     * These keys are intended for MoPub internal use. Do not modify.
-     */
-    public static final String CLIENT_OPTIONS_KEY = "clientOptions";
-    public static final String APP_ID_KEY = "appId";
-    public static final String ALL_ZONE_IDS_KEY = "allZoneIds";
-    public static final String ZONE_ID_KEY = "zoneId";
-    public static final String ADAPTER_NAME = AdColonyRewardedVideo.class.getSimpleName();
+    private static final String ADAPTER_NAME = AdColonyRewardedVideo.class.getSimpleName();
 
     private static boolean sInitialized = false;
     private static LifecycleListener sLifecycleListener = new BaseLifecycleListener();
-    private static String[] previousAdColonyAllZoneIds;
+
     @NonNull
     private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
 
     private AdColonyInterstitial mAd;
     @NonNull
-    private String mZoneId = DEFAULT_ZONE_ID;
+    private String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
     private AdColonyListener mAdColonyListener;
     private AdColonyAdOptions mAdColonyAdOptions = new AdColonyAdOptions();
-    private AdColonyAppOptions mAdColonyAppOptions = new AdColonyAppOptions();
+    private String mAdColonyClientOptions = "";
     private static WeakHashMap<String, AdColonyInterstitial> sZoneIdToAdMap = new WeakHashMap<>();
     @NonNull
     private String mAdUnitId = "";
     private boolean mIsLoading = false;
+
+    private AdColonyAppOptions mAdColonyAppOptions;
 
     // For waiting and notifying the SDK:
     private final Handler mHandler;
@@ -131,25 +108,41 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                 return false;
             }
 
-            String adColonyClientOptions = DEFAULT_CLIENT_OPTIONS;
-            String adColonyAppId = DEFAULT_APP_ID;
-            String[] adColonyAllZoneIds = DEFAULT_ALL_ZONE_IDS;
+            String clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+            if (clientOptions == null)
+                clientOptions = "";
 
-            // Set up serverExtras
-            if (extrasAreValid(serverExtras)) {
-                adColonyClientOptions = serverExtras.get(CLIENT_OPTIONS_KEY);
-                adColonyAppId = serverExtras.get(APP_ID_KEY);
-                adColonyAllZoneIds = extractAllZoneIds(serverExtras);
+            final String appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
+
+            String[] allZoneIds;
+            String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+            if (allZoneIdsString != null) {
+                allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
+            } else {
+                allZoneIds = null;
             }
 
-            if (!TextUtils.isEmpty(adColonyClientOptions)) {
-                mAdColonyAppOptions = AdColonyAppOptions.getMoPubAppOptions(adColonyClientOptions);
+            if (appId == null) {
+                abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.APP_ID_KEY);
+                return false;
             }
 
-            if (!isAdColonyConfigured() && !TextUtils.isEmpty(adColonyAppId)) {
-                previousAdColonyAllZoneIds = adColonyAllZoneIds;
-                AdColony.configure(launcherActivity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
+            if (allZoneIds == null || allZoneIds.length == 0) {
+                abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY);
+                return false;
             }
+
+            mAdColonyClientOptions = clientOptions;
+            if (mAdColonyAppOptions == null) {
+                mAdColonyAppOptions = AdColonyAdapterConfiguration.getAdColonyAppOptionsAndSetConsent(clientOptions);
+            }
+
+            AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(
+                    launcherActivity,
+                    clientOptions,
+                    appId,
+                    allZoneIds
+            );
 
             sInitialized = true;
             return true;
@@ -161,66 +154,54 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                                           @NonNull final Map<String, Object> localExtras,
                                           @NonNull final Map<String, String> serverExtras) throws Exception {
 
-        if (extrasAreValid(serverExtras)) {
-            mAdColonyAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
-            mZoneId = serverExtras.get(ZONE_ID_KEY);
-            String adColonyAppId = serverExtras.get(APP_ID_KEY);
-            String[] adColonyAllZoneIds = extractAllZoneIds(serverExtras);
+        mAdColonyAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
 
-            // Check to see if app ID parameter is present. If not AdColony will not return an ad.
-            // So there's no need to make a request. If so, must fail and log the flow.
-            if (TextUtils.isEmpty(adColonyAppId) || TextUtils.equals(adColonyAppId, DEFAULT_APP_ID)) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AppId parameter cannot be empty. " +
-                        "Please make sure you enter correct AppId on the MoPub Dashboard " +
-                        "for AdColony.");
+        String clientOptions;
+        String appId;
+        String zoneId;
+        String[] allZoneIds;
 
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
-                        AdColonyRewardedVideo.class,
-                        mZoneId,
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                return;
-            }
+        // Set optional parameters
+        clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+        if (clientOptions == null)
+            clientOptions = "";
 
-            // Pass the user consent from the MoPub SDK to AdColony as per GDPR
-            PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+        // Set mandatory parameters
+        appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
+        zoneId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY, serverExtras);
 
-            boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
-            boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
-
-            mAdColonyAppOptions = mAdColonyAppOptions == null ? new AdColonyAppOptions() :
-                    mAdColonyAppOptions;
-
-            if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
-                if (shouldAllowLegitimateInterest) {
-                    if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
-                            || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
-                        mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                                .setOption(CONSENT_RESPONSE, false);
-                    } else {
-                        mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                                .setOption(CONSENT_RESPONSE, true);
-                    }
-                } else {
-                    mAdColonyAppOptions.setOption(CONSENT_GIVEN, true)
-                            .setOption(CONSENT_RESPONSE, canCollectPersonalInfo);
-                }
-            }
-
-            setUpGlobalSettings();
-
-            // Need to check the zone IDs sent from the MoPub portal and reconfigure if they are
-            // different than the zones we initially called AdColony.configure() with
-            if (shouldReconfigure(previousAdColonyAllZoneIds, adColonyAllZoneIds)) {
-                if (!TextUtils.isEmpty(adColonyAppId)) {
-                    AdColony.configure(activity, mAdColonyAppOptions, adColonyAppId, adColonyAllZoneIds);
-                }
-                previousAdColonyAllZoneIds = adColonyAllZoneIds;
-            } else {
-                // If we aren't reconfiguring we should update the app options via setAppOptions() in case
-                // consent has changed since the last adapter initialization.
-                AdColony.setAppOptions(mAdColonyAppOptions);
-            }
+        String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+        if (allZoneIdsString != null) {
+            allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
+        } else {
+            allZoneIds = null;
         }
+
+        // Check if mandatory parameters are valid, abort otherwise
+        if (appId == null) {
+            abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.APP_ID_KEY);
+            return;
+        }
+
+        if (zoneId == null || allZoneIds == null || allZoneIds.length == 0) {
+            abortRequestForIncorrectParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY);
+            return;
+        }
+
+        mZoneId = zoneId;
+        mAdColonyClientOptions = clientOptions;
+        if (mAdColonyAppOptions == null) {
+            mAdColonyAppOptions = AdColonyAdapterConfiguration.getAdColonyAppOptionsAndSetConsent(clientOptions);
+        }
+
+        AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(
+                activity,
+                clientOptions,
+                appId,
+                allZoneIds
+        );
+
+        setUpGlobalSettings();
 
         Object adUnitObject = localExtras.get(DataKeys.AD_UNIT_ID_KEY);
         if (adUnitObject instanceof String) {
@@ -236,30 +217,17 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         MoPubLog.log(mZoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
-    private static boolean shouldReconfigure(String[] previousZones, String[] newZones) {
-        // If AdColony is configured already, but previousZones is null, then that means AdColony
-        // was configured with the AdColonyInterstitial adapter so attempt to configure with
-        // the ids in newZones. They will be ignored within the AdColony SDK if the zones are
-        // the same as the zones that the other adapter called AdColony.configure() with.
-        if (previousZones == null) {
-            return true;
-        } else if (newZones == null) {
-            return false;
-        } else if (previousZones.length != newZones.length) {
-            return true;
-        }
-        Arrays.sort(previousZones);
-        Arrays.sort(newZones);
-        return !Arrays.equals(previousZones, newZones);
+    private void abortRequestForIncorrectParameter(String parameterName) {
+        AdColonyAdapterConfiguration.logAndFail("rewarded video request", parameterName);
+        MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
+                AdColonyRewardedVideo.class,
+                mZoneId,
+                MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
     }
 
     private void setUpAdOptions() {
         mAdColonyAdOptions.enableConfirmationDialog(getConfirmationDialogFromSettings());
         mAdColonyAdOptions.enableResultsDialog(getResultsDialogFromSettings());
-    }
-
-    private boolean isAdColonyConfigured() {
-        return !AdColony.getSDKVersion().isEmpty();
     }
 
     @Override
@@ -281,30 +249,16 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         }
     }
 
-    private boolean extrasAreValid(Map<String, String> extras) {
-        return extras != null
-                && extras.containsKey(CLIENT_OPTIONS_KEY)
-                && extras.containsKey(APP_ID_KEY)
-                && extras.containsKey(ALL_ZONE_IDS_KEY)
-                && extras.containsKey(ZONE_ID_KEY);
-    }
-
-    private String[] extractAllZoneIds(Map<String, String> serverExtras) {
-        String[] result = Json.jsonArrayToStringArray(serverExtras.get(ALL_ZONE_IDS_KEY));
-
-        // AdColony requires at least one valid String in the allZoneIds array.
-        if (result.length == 0) {
-            result = new String[]{""};
-        }
-
-        return result;
-    }
-
     private void setUpGlobalSettings() {
         final AdColonyGlobalMediationSettings globalMediationSettings =
                 MoPubRewardedVideoManager.getGlobalMediationSettings(AdColonyGlobalMediationSettings.class);
         if (globalMediationSettings != null) {
             if (globalMediationSettings.getUserId() != null) {
+                if(mAdColonyAppOptions == null)
+                {
+                    mAdColonyAppOptions = AdColonyAdapterConfiguration.getAdColonyAppOptionsAndSetConsent(mAdColonyClientOptions);
+                    AdColony.setAppOptions(mAdColonyAppOptions);
+                }
                 mAdColonyAppOptions.setUserID(globalMediationSettings.getUserId());
             }
         }

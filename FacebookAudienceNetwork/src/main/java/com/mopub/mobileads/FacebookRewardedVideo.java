@@ -94,7 +94,6 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
                 }
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Creating a Facebook Rewarded Video instance, and registering callbacks.");
                 mRewardedVideoAd = new RewardedVideoAd(activity, mPlacementId);
-                mRewardedVideoAd.setAdListener(this);
             } else {
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(FacebookRewardedVideo.class, getAdNetworkId(), MoPubErrorCode.NETWORK_NO_FILL);
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
@@ -111,11 +110,16 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
             }
 
             final String adm = serverExtras.get(DataKeys.ADM_KEY);
+
+            RewardedVideoAd.RewardedVideoAdLoadConfigBuilder rewardedVideoAdLoadConfigBuilder = mRewardedVideoAd
+                    .buildLoadAdConfig()
+                    .withAdListener(this);
+
             if (!TextUtils.isEmpty(adm)) {
-                mRewardedVideoAd.loadAdFromBid(adm);
+                mRewardedVideoAd.loadAd(rewardedVideoAdLoadConfigBuilder.withBid(adm).build());
                 MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
             } else {
-                mRewardedVideoAd.loadAd();
+                mRewardedVideoAd.loadAd(rewardedVideoAdLoadConfigBuilder.build());
                 MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
             }
         }
@@ -132,7 +136,6 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
         cancelExpirationTimer();
         if (mRewardedVideoAd != null) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Performing cleanup tasks...");
-            mRewardedVideoAd.setAdListener(null);
             mRewardedVideoAd.destroy();
             mRewardedVideoAd = null;
         }

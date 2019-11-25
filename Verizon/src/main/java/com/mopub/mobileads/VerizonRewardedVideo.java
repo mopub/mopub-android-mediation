@@ -2,9 +2,10 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.app.Application;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
@@ -31,7 +32,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
-import static com.mopub.mobileads.VerizonUtils.convertErrorInfoToMoPub;
+import static com.mopub.mobileads.VerizonAdapterConfiguration.convertErrorInfoToMoPub;
 
 public class VerizonRewardedVideo extends CustomEventRewardedVideo {
 
@@ -180,7 +181,7 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
     @Override
     protected void show() {
 
-        VerizonUtils.postOnUiThread(new Runnable() {
+        VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
             @Override
             public void run() {
@@ -205,7 +206,7 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
 
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
 

@@ -84,14 +84,15 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         AdSize adSize = calculateAdSize(height);
 
         mFacebookBanner = new AdView(context, placementId, adSize);
-        mFacebookBanner.setAdListener(this);
+
+        AdView.AdViewLoadConfigBuilder bannerConfigBuilder = mFacebookBanner.buildLoadAdConfig().withAdListener(this);
 
         final String adm = serverExtras.get(DataKeys.ADM_KEY);
         if (!TextUtils.isEmpty(adm)) {
-            mFacebookBanner.loadAdFromBid(adm);
+            mFacebookBanner.loadAd(bannerConfigBuilder.withBid(adm).build());
             MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
-            mFacebookBanner.loadAd();
+            mFacebookBanner.loadAd(bannerConfigBuilder.build());
             MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         }
     }
@@ -126,10 +127,10 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Facebook banner ad failed to load.");
 
         if (mBannerListener != null) {
-            if (error == AdError.NO_FILL) {
+            if (error.getErrorCode() == AdError.NO_FILL.getErrorCode()) {
                 mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-            } else if (error == AdError.INTERNAL_ERROR) {
+            } else if (error.getErrorCode() == AdError.INTERNAL_ERROR.getErrorCode()) {
                 mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(), MoPubErrorCode.NETWORK_INVALID_STATE);
             } else {
@@ -167,10 +168,10 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
 
     @Nullable
     private AdSize calculateAdSize(int height) {
-        if (height >= AdSize.BANNER_HEIGHT_90.getHeight()) {
-            return AdSize.BANNER_HEIGHT_90;
-        } else if (height >= AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
+        if (height >= AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
             return AdSize.RECTANGLE_HEIGHT_250;
+        } else if (height >= AdSize.BANNER_HEIGHT_90.getHeight()) {
+            return AdSize.BANNER_HEIGHT_90;
         } else {
             // Default to standard banner size
             return AdSize.BANNER_HEIGHT_50;

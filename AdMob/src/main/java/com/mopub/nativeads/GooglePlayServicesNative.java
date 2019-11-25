@@ -331,7 +331,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
          */
         public void loadAd(final Context context, String adUnitId,
                            Map<String, Object> localExtras) {
-            AdLoader.Builder builder = new AdLoader.Builder(context, adUnitId);
+            final AdLoader.Builder builder = new AdLoader.Builder(context, adUnitId);
             // Get the experimental swap margins extra.
             if (localExtras.containsKey(KEY_EXPERIMENTAL_EXTRA_SWAP_MARGINS)) {
                 Object swapMarginExtra = localExtras.get(KEY_EXPERIMENTAL_EXTRA_SWAP_MARGINS);
@@ -340,7 +340,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 }
             }
 
-            NativeAdOptions.Builder optionsBuilder = new NativeAdOptions.Builder();
+            final NativeAdOptions.Builder optionsBuilder = new NativeAdOptions.Builder();
 
             // MoPub requires the images to be pre-cached using their APIs, so we do not want
             // Google to download the image assets.
@@ -446,18 +446,18 @@ public class GooglePlayServicesNative extends CustomEventNative {
                         }
                     }).withNativeAdOptions(adOptions).build();
 
-            AdRequest.Builder requestBuilder = new AdRequest.Builder();
+            final AdRequest.Builder requestBuilder = new AdRequest.Builder();
             requestBuilder.setRequestAgent("MoPub");
 
             // Publishers may append a content URL by passing it to the MoPubNative.setLocalExtras() call.
-            String contentUrl = (String) localExtras.get(KEY_CONTENT_URL);
+            final String contentUrl = (String) localExtras.get(KEY_CONTENT_URL);
 
             if (!TextUtils.isEmpty(contentUrl)) {
                 requestBuilder.setContentUrl(contentUrl);
             }
 
             // Publishers may request for test ads by passing test device IDs to the MoPubNative.setLocalExtras() call.
-            String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+            final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
 
             if (!TextUtils.isEmpty(testDeviceId)) {
                 requestBuilder.addTestDevice(testDeviceId);
@@ -467,11 +467,11 @@ public class GooglePlayServicesNative extends CustomEventNative {
             // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
             forwardNpaIfSet(requestBuilder);
 
-            RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+            final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
             // Publishers may want to indicate that their content is child-directed and forward this
             // information to Google.
-            Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+            final Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
 
             if (childDirected != null) {
                 if (childDirected) {
@@ -485,7 +485,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
             // Publishers may want to mark their requests to receive treatment for users in the
             // European Economic Area (EEA) under the age of consent.
-            Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+            final Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
 
             if (underAgeOfConsent != null) {
                 if (underAgeOfConsent) {
@@ -497,10 +497,10 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED);
             }
 
-            RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
+            final RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
             MobileAds.setRequestConfiguration(requestConfiguration);
 
-            AdRequest adRequest = requestBuilder.build();
+            final AdRequest adRequest = requestBuilder.build();
             adLoader.loadAd(adRequest);
 
             MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -509,7 +509,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
         private void forwardNpaIfSet(AdRequest.Builder builder) {
 
             // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-            Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
+            final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
 
             if (npaBundle != null && !npaBundle.isEmpty()) {
                 builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);

@@ -238,6 +238,7 @@ public class VungleInterstitial extends CustomEventInterstitial {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        mCustomEventInterstitialListener.onInterstitialShown();
                         mCustomEventInterstitialListener.onInterstitialImpression();
 
                         MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);

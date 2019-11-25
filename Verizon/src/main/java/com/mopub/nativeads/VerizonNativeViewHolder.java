@@ -1,9 +1,10 @@
 package com.mopub.nativeads;
 
-import androidx.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import com.mopub.common.logging.MoPubLog;
 import com.verizon.ads.videoplayer.VideoView;
