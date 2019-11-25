@@ -1,4 +1,4 @@
-package com.mintegral.adapter.customnative.nativeadapter;
+package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.app.Application;
@@ -8,19 +8,18 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
-import com.mintegral.adapter.common.AdapterCommonUtil;
-import com.mintegral.adapter.common.AdapterTools;
+import com.mopub.common.MoPub;
 import com.mintegral.msdk.MIntegralConstans;
 import com.mintegral.msdk.MIntegralSDK;
 import com.mintegral.msdk.out.Campaign;
 import com.mintegral.msdk.out.Frame;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
-import com.mintegral.msdk.out.MTGBidRewardVideoHandler;
 import com.mintegral.msdk.out.MtgBidNativeHandler;
 import com.mintegral.msdk.out.MtgNativeHandler;
 import com.mintegral.msdk.out.NativeListener;
 
 
+import com.mopub.mobileads.mintegral.BuildConfig;
 import com.mopub.nativeads.CustomEventNative;
 import com.mopub.nativeads.ImpressionTracker;
 import com.mopub.nativeads.NativeClickHandler;
@@ -35,30 +34,26 @@ import java.util.Map;
 import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
 
 
-/**
- * Created by songjunjun on 16/11/15.
- */
-
 public class MintegralNative extends CustomEventNative {
 
-    private static final String ADAPTER_NAME = "MintegralNative";
+    private static final String ADAPTER_NAME = MintegralNative.class.getName();
+    static boolean isInitialized = false;
 
     @Override
     protected void loadNativeAd(@NonNull Context context, @NonNull CustomEventNativeListener customEventNativeListener, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) {
 
 
-        final String unit_id;
+        final String adUnitId;
 
 
         if (extrasAreValid(serverExtras, context, localExtras)) {
-            unit_id = serverExtras.get("unitId");
+            adUnitId = serverExtras.get("unitId");
         } else {
             customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
             return;
         }
         String adm = (String) serverExtras.get("adm");
-//        adm="45ba6646-6243-4260-890b-a499a5b4151e_hk";
-        new MintegralStaticNativeAd(unit_id,
+        new MintegralStaticNativeAd(adUnitId,
                 context,
                 new ImpressionTracker(context),
                 new NativeClickHandler(context),
@@ -67,27 +62,27 @@ public class MintegralNative extends CustomEventNative {
     }
 
 
-    private boolean extrasAreValid(final Map<String, String> serverExtras, Context mContext, Map<String, Object> localExtras) {
-        final String placementId = serverExtras.get("appId");
+    private boolean extrasAreValid(final Map<String, String> serverExtras, Context context, Map<String, Object> localExtras) {
+        final String appId = serverExtras.get("appId");
         final String appKey = serverExtras.get("appKey");
-
-        AdapterCommonUtil.addChannel();
-        if (placementId != null && placementId.length() > 0 && appKey != null && appKey.length() > 0) {
+        BuildConfig.addChannel();
+        if (!isInitialized && !TextUtils.isEmpty(appId) && TextUtils.isEmpty(appKey)) {
             MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-            if (!AdapterTools.canCollectPersonalInformation()) {
-                sdk.setUserPrivateInfoType(mContext, MIntegralConstans.AUTHORITY_ALL_INFO, MIntegralConstans.IS_SWITCH_OFF);
+            if (!MoPub.canCollectPersonalInformation()) {
+                sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO, MIntegralConstans.IS_SWITCH_OFF);
             } else {
-                sdk.setUserPrivateInfoType(mContext, MIntegralConstans.AUTHORITY_ALL_INFO, MIntegralConstans.IS_SWITCH_ON);
+                sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO, MIntegralConstans.IS_SWITCH_ON);
             }
 
-            Map<String, String> map = sdk.getMTGConfigurationMap(placementId,
+            Map<String, String> map = sdk.getMTGConfigurationMap(appId,
                     appKey);
-            if (mContext instanceof Activity) {
-                sdk.init(map, ((Activity) mContext).getApplication());
-            } else if (mContext instanceof Application) {
-                sdk.init(map, mContext);
+            if (context instanceof Activity) {
+                sdk.init(map, ((Activity) context).getApplication());
+            } else if (context instanceof Application) {
+                sdk.init(map, context);
             }
-            AdapterCommonUtil.parseLocalExtras(localExtras, sdk);
+            BuildConfig.parseLocalExtras(localExtras, sdk);
+            isInitialized = true;
             return true;
         }
 
@@ -105,7 +100,7 @@ public class MintegralNative extends CustomEventNative {
         Context mContext;
         public Campaign mCampaign;
 
-        public MintegralStaticNativeAd(String unit_id, final Context context, final ImpressionTracker impressionTracker,
+        public MintegralStaticNativeAd(String adUnitId, final Context context, final ImpressionTracker impressionTracker,
                                        @NonNull final NativeClickHandler nativeClickHandler, final CustomEventNativeListener customEventNativeListener, String adm) {
 
 
@@ -114,7 +109,7 @@ public class MintegralNative extends CustomEventNative {
             this.mNativeClickHandler = nativeClickHandler;
             this.mContext = context;
 
-            Map<String, Object> properties = MtgNativeHandler.getNativeProperties(unit_id);
+            Map<String, Object> properties = MtgNativeHandler.getNativeProperties(adUnitId);
             properties.put(MIntegralConstans.PROPERTIES_AD_NUM, 1);
             properties.put(MIntegralConstans.NATIVE_VIDEO_WIDTH, 720);
             properties.put(MIntegralConstans.NATIVE_VIDEO_HEIGHT, 480);
@@ -226,7 +221,7 @@ public class MintegralNative extends CustomEventNative {
 
         @Override
         public void onAdLoadError(String msg) {
-            mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED);
+            mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
 
         }
 
@@ -272,7 +267,6 @@ public class MintegralNative extends CustomEventNative {
         public void clear(@NonNull View view) {
 
             mImpressionTracker.removeView(view);
-            // mNativeClickHandler.clearOnClickListener(view);
         }
 
         @Override
@@ -287,15 +281,8 @@ public class MintegralNative extends CustomEventNative {
 
         @Override
         public void handleClick(@NonNull View view) {
-//            super.handleClick(view);
-
 
         }
-
-//        @Override
-//        public void setNativeEventListener(@Nullable NativeEventListener nativeEventListener) {
-//
-//        }
 
     }
 }

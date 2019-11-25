@@ -11,17 +11,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.mintegral.adapter.customnative.nativeadapter.MintegralNative;
+import com.mopub.mobileads.MintegralNative;
 import com.mintegral.msdk.nativex.view.MTGMediaView;
 import com.mintegral.msdk.out.Campaign;
 import com.mintegral.msdk.out.OnMTGMediaViewListener;
 import com.mintegral.msdk.widget.MTGAdChoice;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.nativeads.BaseNativeAd;
-import com.mopub.nativeads.MoPubAdRenderer;
-import com.mopub.nativeads.NativeImageHelper;
-import com.mopub.nativeads.NativeRendererHelper;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,22 +27,17 @@ import java.util.WeakHashMap;
 import static android.view.View.VISIBLE;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
 
-/**
- * Created by songjunjun on 16/11/15.
- */
 
 public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.MintegralStaticNativeAd> {
 
 
-    public static final String TAG="renderNativeVideo";
+    public static final String TAG = MintegralAdRenderer.class.getName();
     private final MintegralViewBinder mViewBinder;
-    // This is used instead of View.setTag, which causes a memory leak in 2.3
-    // and earlier: https://code.google.com/p/android/issues/detail?id=18273
+
     final WeakHashMap<View, MintegralNativeViewHolder> mViewHolderMap;
-    Context mContext;
 
 
-    public MintegralAdRenderer(final MintegralViewBinder viewBinder){
+    public MintegralAdRenderer(final MintegralViewBinder viewBinder) {
         mViewBinder = viewBinder;
         mViewHolderMap = new WeakHashMap<View, MintegralNativeViewHolder>();
     }
@@ -77,13 +68,6 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
         }
 
         if (mainImageViewLayoutParams instanceof RelativeLayout.LayoutParams) {
-//            final RelativeLayout.LayoutParams mainImageViewRelativeLayoutParams =
-//                    (RelativeLayout.LayoutParams) mainImageViewLayoutParams;
-//            final int[] rules = mainImageViewRelativeLayoutParams.getRules();
-//            for (int i = 0; i < rules.length; i++) {
-//                mediaViewLayoutParams.addRule(i, rules[i]);
-////                mediaViewLayoutParams
-//            }
             mainImageView.setVisibility(View.INVISIBLE);
         } else {
             mainImageView.setVisibility(View.GONE);
@@ -97,11 +81,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
 
     }
 
-    /**
-     * 在该方法中渲染视图
-     * @param view
-     * @param ad
-     */
+
     @Override
     public void renderAdView(@NonNull View view, @NonNull MintegralNative.MintegralStaticNativeAd ad) {
 
@@ -116,60 +96,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
 
         setViewVisibility(mintegralNativeViewHolder, VISIBLE);
         ad.prepare(view);
-//       TextView titleTv = (TextView) view.findViewById(mViewBinder.titleId);
-//        titleTv.setText(ad.getTitle());
-//
-//        TextView contextTv = (TextView) view.findViewById(mViewBinder.textId);
-//        contextTv.setText(ad.getText());
-//
-//        TextView ctaTV = (TextView) view.findViewById(mViewBinder.callToActionId);
-//        if(ctaTV != null){
-//            ctaTV.setText(ad.getCallToAction());
-//        }
-//
-//        MVMediaView mediaView = (MVMediaView) view.findViewById(mViewBinder.mvmediaViewId);
-//        if (mediaView!=null && ad!=null && ad.campaign!=null){
-//            mediaView.setNativeAd(ad.campaign);
-//
-//            mediaView.setOnMediaViewListener(new OnMVMediaViewListener() {
-//                @Override
-//                public void onEnterFullscreen() {
-//                    Log.i(TAG,"onEnterFullscreen");
-//                }
-//
-//                @Override
-//                public void onExitFullscreen() {
-//                    Log.i(TAG,"onExitFullscreen");
-//                }
-//
-//                @Override
-//                public void onStartRedirection(Campaign campaign, String s) {
-//                    Log.i(TAG,"onStartRedirection");
-//                }
-//
-//                @Override
-//                public void onFinishRedirection(Campaign campaign, String s) {
-//                    Log.i(TAG,"onFinishRedirection");
-//                }
-//
-//                @Override
-//                public void onRedirectionFailed(Campaign campaign, String s) {
-//                    Log.i(TAG,"onRedirectionFailed");
-//                }
-//
-//                @Override
-//                public void onVideoAdClicked(Campaign campaign) {
-//                    Log.i(TAG,"onVideoAdClicked");
-//                }
-//            });
-//        }
-//
-//        ad.prepare(view);
-//        if(mContext != null){
-//
-//            ImageView iconImg = (ImageView) view.findViewById(mViewBinder.iconImageId);
-//            Picasso.with(mContext).load(ad.getIconImageUrl()).resize(200,200).into(iconImg);
-//        }
+
 
     }
 
@@ -179,7 +106,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
     }
 
     private void update(final MintegralNativeViewHolder mintegralNativeViewHolder,
-                        final MintegralNative.MintegralStaticNativeAd  nativeAd) {
+                        final MintegralNative.MintegralStaticNativeAd nativeAd) {
 
         final ImageView mainImageView = mintegralNativeViewHolder.getMainImageView();
         NativeRendererHelper.addTextView(mintegralNativeViewHolder.getTitleView(),
@@ -226,7 +153,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
 
                 @Override
                 public void onVideoAdClicked(Campaign campaign) {
-                    Log.e(TAG,"MV MEDIAVIEW CLICK");
+                    Log.e(TAG, "onVideoAdClicked");
                     nativeAd.notifyAdClicked();
                 }
 
@@ -250,8 +177,8 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
             Params.height = campaign.getAdchoiceSizeHeight();
             Params.width = campaign.getAdchoiceSizeWidth();
             adChoice.setLayoutParams(Params);
-        }catch (Throwable e){
-            Log.e(TAG, "adchoice update params: "+e.getMessage());
+        } catch (Throwable e) {
+            Log.e(TAG, "adchoice update params: " + e.getMessage());
         }
         adChoice.setCampaign(campaign);
 
@@ -263,36 +190,35 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
             mintegralNativeViewHolder.getMainView().setVisibility(visibility);
         }
     }
+
     static class MintegralNativeViewHolder {
-//        private final StaticNativeViewHolder mStaticNativeViewHolder;
         private MTGMediaView mMediaView;
-        private  boolean isMainImageViewInRelativeView;
+        private boolean isMainImageViewInRelativeView;
         private MTGAdChoice adChoice;
 
-        @Nullable View mainView;
-        @Nullable TextView titleView;
-        @Nullable TextView textView;
-        @Nullable TextView callToActionView;
-        @Nullable ImageView mainImageView;
-        @Nullable ImageView iconImageView;
-        @Nullable ImageView privacyInformationIconImageView;
+        @Nullable
+        View mainView;
+        @Nullable
+        TextView titleView;
+        @Nullable
+        TextView textView;
+        @Nullable
+        TextView callToActionView;
+        @Nullable
+        ImageView mainImageView;
+        @Nullable
+        ImageView iconImageView;
+        @Nullable
+        ImageView privacyInformationIconImageView;
 
         @VisibleForTesting
         static final MintegralNativeViewHolder EMPTY_VIEW_HOLDER = new MintegralNativeViewHolder();
 
-//        // Use fromViewBinder instead of a constructor
-//        private MintegralNativeViewHolder(final StaticNativeViewHolder staticNativeViewHolder,
-//                                         final MTGMediaView mediaView, final boolean mainImageViewInRelativeView) {
-//            mStaticNativeViewHolder = staticNativeViewHolder;
-//            mMediaView = mediaView;
-//            isMainImageViewInRelativeView = mainImageViewInRelativeView;
-//        }
-
-        // Use fromViewBinder instead of a constructor
-        private MintegralNativeViewHolder() {}
+        private MintegralNativeViewHolder() {
+        }
 
         static MintegralNativeViewHolder fromViewBinder(final View view,
-                                                       final MintegralViewBinder viewBinder) {
+                                                        final MintegralViewBinder viewBinder) {
             final MintegralNativeViewHolder staticNativeViewHolder = new MintegralNativeViewHolder();
             staticNativeViewHolder.mainView = view;
             try {
@@ -367,13 +293,13 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
             return isMainImageViewInRelativeView;
         }
 
-        public MTGAdChoice getAdChoice(){
+        public MTGAdChoice getAdChoice() {
             return adChoice;
         }
     }
 
 
-    public static class MintegralViewBinder{
+    public static class MintegralViewBinder {
         public final static class Builder {
             private final int layoutId;
             private int titleId;
@@ -384,7 +310,8 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
             private int privacyInformationIconImageId;
 
             private int adchoiceId;
-            @NonNull private Map<String, Integer> extras = Collections.emptyMap();
+            @NonNull
+            private Map<String, Integer> extras = Collections.emptyMap();
 
             public Builder(final int layoutId) {
                 this.layoutId = layoutId;
@@ -459,7 +386,8 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
         final int iconImageId;
         final int privacyInformationIconImageId;
         final int adchoiceId;
-        @NonNull final Map<String, Integer> extras;
+        @NonNull
+        final Map<String, Integer> extras;
 
         private MintegralViewBinder(@NonNull final Builder builder) {
             this.layoutId = builder.layoutId;
