@@ -1,177 +1,201 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
-
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.mopub.common.MoPub;
-
-import com.mintegral.msdk.MIntegralConstans;
-import com.mintegral.msdk.MIntegralSDK;
 import com.mintegral.msdk.interstitialvideo.out.InterstitialVideoListener;
 import com.mintegral.msdk.interstitialvideo.out.MTGBidInterstitialVideoHandler;
 import com.mintegral.msdk.interstitialvideo.out.MTGInterstitialVideoHandler;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
-
-
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.mintegral.BuildConfig;
-
 
 import java.util.Map;
 
+import static com.mopub.common.DataKeys.ADM_KEY;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.DID_DISAPPEAR;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
+import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
+import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
 public class MintegralInterstitial extends CustomEventInterstitial implements InterstitialVideoListener {
-    private static final String ADAPTER_NAME = MintegralRewardVideo.class.getName();
-    MTGInterstitialVideoHandler mInterstitialHandler;
-    MTGBidInterstitialVideoHandler mBidInterstitialVideoHandler;
-    CustomEventInterstitialListener mCustomEventInterstitialListener;
-    private String adUnitId = "";
-    static boolean isInitialized = false;
 
+    private static final String ADAPTER_NAME = MintegralInterstitial.class.getSimpleName();
+
+    private MTGInterstitialVideoHandler mInterstitialHandler;
+    private MTGBidInterstitialVideoHandler mBidInterstitialVideoHandler;
+    private CustomEventInterstitialListener mCustomEventInterstitialListener;
+
+    private String mAdUnitId;
 
     @Override
-    protected void loadInterstitial(Context context, CustomEventInterstitialListener customEventInterstitialListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
-        try {
-            mCustomEventInterstitialListener = customEventInterstitialListener;
-            String appId = serverExtras.get("appId");
-            String appKey = serverExtras.get("appKey");
-            adUnitId = serverExtras.get("unitId");
-            BuildConfig.addChannel();
+    protected void loadInterstitial(final Context context,
+                                    final CustomEventInterstitialListener customEventInterstitialListener,
+                                    final Map<String, Object> localExtras, Map<String, String> serverExtras) {
 
+        mCustomEventInterstitialListener = customEventInterstitialListener;
 
-            if (!isInitialized && !TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appKey) && !TextUtils.isEmpty(adUnitId)) {
-                MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-                if (!MoPub.canCollectPersonalInformation()) {
-                    sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO, MIntegralConstans.IS_SWITCH_OFF);
-                } else {
-                    sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO, MIntegralConstans.IS_SWITCH_ON);
-                }
-                Map<String, String> map = sdk.getMTGConfigurationMap(appId,
-                        appKey);
-                if (context instanceof Activity) {
-                    sdk.init(map, ((Activity) context).getApplication());
-                } else if (context instanceof Application) {
-                    sdk.init(map, context);
-                }
-                BuildConfig.parseLocalExtras(localExtras, sdk);
-                isInitialized = true;
-            } else {
-                if (mCustomEventInterstitialListener != null) {
-                    mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!serverDataIsValid(serverExtras, context)) {
+            failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "One or " +
+                    "more keys used for Mintegral's ad requests are empty. Failing adapter. Please " +
+                    "ensure you have populated all the required keys on the MoPub dashboard.");
+
+            return;
         }
 
+        MintegralAdapterConfiguration.addChannel();
+        MintegralAdapterConfiguration.setTargeting(localExtras, MIntegralSDKFactory.getMIntegralSDK());
+
         if (context instanceof Activity) {
-            String adm = (String) serverExtras.get("adm");
+            final String adm = serverExtras.get(ADM_KEY);
+
             if (TextUtils.isEmpty(adm)) {
-                mInterstitialHandler = new MTGInterstitialVideoHandler((Activity) context, adUnitId);
+                mInterstitialHandler = new MTGInterstitialVideoHandler(context, mAdUnitId);
                 mInterstitialHandler.setRewardVideoListener(this);
                 mInterstitialHandler.load();
             } else {
-                mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler((Activity) context, adUnitId);
+                mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mAdUnitId);
                 mBidInterstitialVideoHandler.setRewardVideoListener(this);
                 mBidInterstitialVideoHandler.loadFromBid(adm);
             }
-            MoPubLog.log(adUnitId, MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED, new Object[]{ADAPTER_NAME});
-        } else {
-            if (mCustomEventInterstitialListener != null) {
-                mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
-        }
 
+            MoPubLog.log(mAdUnitId, LOAD_ATTEMPTED, ADAPTER_NAME);
+        } else {
+            failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "Context is not an instance " +
+                    "of Activity. Aborting ad request, and failing adapter.");
+        }
     }
 
+    @Override
+    protected void showInterstitial() {
+        if (mInterstitialHandler != null && mInterstitialHandler.isReady()) {
+            mInterstitialHandler.show();
+        } else if (mBidInterstitialVideoHandler != null && mBidInterstitialVideoHandler.isBidReady()) {
+            mBidInterstitialVideoHandler.showFromBid();
+        } else {
+            failAdapter(SHOW_FAILED, NETWORK_NO_FILL, "Failed to show Mintegral interstitial " +
+                    "because it is not ready. Please make a new ad request.");
+        }
+
+        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+    }
+
+    @Override
+    protected void onInvalidate() {
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Finished showing Mintegral interstitial. " +
+                "Invalidating adapter...");
+
+        if (mInterstitialHandler != null) {
+            mInterstitialHandler.clearVideoCache();
+            mInterstitialHandler = null;
+        }
+
+        if (mBidInterstitialVideoHandler != null) {
+            mBidInterstitialVideoHandler.clearVideoCache();
+            mBidInterstitialVideoHandler = null;
+        }
+
+        mCustomEventInterstitialListener = null;
+    }
+
+    private void failAdapter(final MoPubLog.AdapterLogEvent event, final MoPubErrorCode errorCode,
+                             final String errorMsg) {
+
+        MoPubLog.log(event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+
+        if (!TextUtils.isEmpty(errorMsg)) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMsg);
+        }
+
+        if (mCustomEventInterstitialListener != null) {
+            mCustomEventInterstitialListener.onInterstitialFailed(errorCode);
+        }
+    }
+
+    private boolean serverDataIsValid(final Map<String, String> serverExtras, Context context) {
+
+        if (serverExtras != null && !serverExtras.isEmpty()) {
+            mAdUnitId = serverExtras.get(MintegralAdapterConfiguration.UNIT_ID_KEY);
+            final String appId = serverExtras.get(MintegralAdapterConfiguration.APP_ID_KEY);
+            final String appKey = serverExtras.get(MintegralAdapterConfiguration.APP_KEY);
+
+            if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appKey) && !TextUtils.isEmpty(mAdUnitId)) {
+                MintegralAdapterConfiguration.configureMintegral(appId, appKey, context);
+
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public void onVideoLoadSuccess(String s) {
-        Log.e(ADAPTER_NAME, "onVideoLoadSuccess");
-        MoPubLog.log(adUnitId, MoPubLog.AdapterLogEvent.LOAD_SUCCESS, new Object[]{ADAPTER_NAME});
+        MoPubLog.log(mAdUnitId, LOAD_SUCCESS, ADAPTER_NAME);
+
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialLoaded();
         }
     }
 
     @Override
-    public void onVideoLoadFail(String s) {
-        Log.e(ADAPTER_NAME, "onVideoLoadFail:" + s);
-        MoPubLog.log(adUnitId, MoPubLog.AdapterLogEvent.LOAD_FAILED, new Object[]{ADAPTER_NAME});
-        if (mCustomEventInterstitialListener != null) {
-            mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.UNSPECIFIED);
-        }
-        Log.e(ADAPTER_NAME, "onInterstitialLoadFail");
+    public void onVideoLoadFail(String errorMsg) {
+        failAdapter(LOAD_FAILED, UNSPECIFIED, errorMsg);
     }
 
     @Override
     public void onAdShow() {
+        MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialShown();
         }
-        Log.e(ADAPTER_NAME, "onInterstitialShowSuccess");
     }
 
     @Override
-    public void onShowFail(String s) {
-        if (mCustomEventInterstitialListener != null) {
-            mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.UNSPECIFIED);
-        }
-        Log.e(ADAPTER_NAME, "onInterstitialShowFail");
+    public void onShowFail(String errorMsg) {
+        failAdapter(SHOW_FAILED, UNSPECIFIED, "Failed to show Mintegral interstitial: "
+                + errorMsg);
     }
 
     @Override
     public void onAdClose(boolean b) {
+        MoPubLog.log(DID_DISAPPEAR, ADAPTER_NAME);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdClose");
+
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialDismissed();
         }
-        Log.e(ADAPTER_NAME, "onInterstitialClosed");
     }
 
     @Override
-    public void onVideoAdClicked(String s) {
+    public void onVideoAdClicked(String message) {
+        MoPubLog.log(CLICKED, ADAPTER_NAME);
+
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialClicked();
         }
-        Log.e(ADAPTER_NAME, "onInterstitialAdClick");
     }
 
     @Override
-    public void onEndcardShow(String s) {
-        Log.e(ADAPTER_NAME, "onEndcardShow");
-
+    public void onEndcardShow(String message) {
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onEndcardShow");
     }
 
     @Override
-    public void onVideoComplete(String s) {
-        Log.e(ADAPTER_NAME, "onVideoComplete");
-
+    public void onVideoComplete(String message) {
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
     }
 
     @Override
-    protected void showInterstitial() {
-        Log.e(ADAPTER_NAME, "showInterstitial");
-        MoPubLog.log(MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED, new Object[]{ADAPTER_NAME});
-        if (mInterstitialHandler != null) {
-            mInterstitialHandler.show();
-        } else if (mBidInterstitialVideoHandler != null) {
-            mBidInterstitialVideoHandler.showFromBid();
-        }
-
-    }
-
-    @Override
-    protected void onInvalidate() {
-    }
-
-    @Override
-    public void onLoadSuccess(String s) {
-        Log.e(ADAPTER_NAME, "onLoadSuccess");
-
+    public void onLoadSuccess(String message) {
+        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
     }
 }
