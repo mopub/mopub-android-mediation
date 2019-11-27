@@ -14,6 +14,7 @@ import com.mopub.common.logging.MoPubLog;
 
 import com.vungle.warren.AdConfig;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
@@ -346,12 +347,49 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         private final String closeButtonText;
         @Nullable
         private final String keepWatchingButtonText;
+
         private final boolean isStartMuted;
         private final int flexViewCloseTimeInSec;
         private final int ordinalViewCount;
         private final int adOrientation;
+        private final Map<String, Object> extrasMap;
+
+        public Map<String, Object> getExtrasMap() {
+            return extrasMap;
+        }
+
+        static void adConfigWithLocalExtras(AdConfig adConfig, Map<String, Object> localExtras) {
+            if (localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
+                Object isStartMuted = localExtras.get(Builder.EXTRA_START_MUTED_KEY);
+                if (isStartMuted instanceof Boolean)
+                    adConfig.setMuted((Boolean) isStartMuted);
+            } else {
+                Object isSoundEnabled = localExtras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
+                if (isSoundEnabled instanceof Boolean)
+                    adConfig.setMuted(!(Boolean) isSoundEnabled);
+            }
+            Object flexViewCloseTimeInSec = localExtras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
+            if (flexViewCloseTimeInSec instanceof Integer)
+                adConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
+            Object ordinalViewCount = localExtras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
+            if (ordinalViewCount instanceof Integer)
+                adConfig.setOrdinal((Integer) ordinalViewCount);
+            Object adOrientation = localExtras.get(Builder.EXTRA_ORIENTATION_KEY);
+            if (adOrientation instanceof Integer)
+                adConfig.setAdOrientation((Integer) adOrientation);
+        }
+
+        static boolean isStartMutedNotConfigured(Map<String, Object> localExtras) {
+            return !localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY) || !localExtras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
+        }
 
         public static class Builder {
+            private static final String EXTRA_START_MUTED_KEY = "startMuted";
+            private static final String EXTRA_SOUND_ENABLED_KEY = VungleInterstitial.SOUND_ENABLED_KEY;
+            private static final String EXTRA_FLEXVIEW_CLOSE_TIME_KEY = VungleInterstitial.FLEX_VIEW_CLOSE_TIME_KEY;
+            private static final String EXTRA_ORDINAL_VIEW_COUNT_KEY = VungleInterstitial.ORDINAL_VIEW_COUNT_KEY;
+            private static final String EXTRA_ORIENTATION_KEY = VungleInterstitial.AD_ORIENTATION_KEY;
+
             @Nullable
             private String userId;
             @Nullable
@@ -362,10 +400,12 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
             private String closeButtonText;
             @Nullable
             private String keepWatchingButtonText;
+
             private boolean isStartMuted = false;
             private int flexViewCloseTimeInSec = 0;
             private int ordinalViewCount = 0;
             private int adOrientation = AdConfig.AUTO_ROTATE;
+            private final Map<String, Object> extrasMap = new HashMap<>();
 
             public Builder withUserId(@NonNull final String userId) {
                 this.userId = userId;
@@ -399,21 +439,25 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
             public Builder withStartMuted(boolean isStartMuted) {
                 this.isStartMuted = isStartMuted;
+                extrasMap.put(EXTRA_START_MUTED_KEY, isStartMuted);
                 return this;
             }
 
             public Builder withFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
                 this.flexViewCloseTimeInSec = flexViewCloseTimeInSec;
+                extrasMap.put(EXTRA_FLEXVIEW_CLOSE_TIME_KEY, flexViewCloseTimeInSec);
                 return this;
             }
 
             public Builder withOrdinalViewCount(int ordinalViewCount) {
                 this.ordinalViewCount = ordinalViewCount;
+                extrasMap.put(EXTRA_ORDINAL_VIEW_COUNT_KEY, ordinalViewCount);
                 return this;
             }
 
             public Builder withAutoRotate(@AdConfig.Orientation int adOrientation) {
                 this.adOrientation = adOrientation;
+                extrasMap.put(EXTRA_ORIENTATION_KEY, adOrientation);
                 return this;
             }
 
@@ -432,6 +476,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
             this.flexViewCloseTimeInSec = builder.flexViewCloseTimeInSec;
             this.ordinalViewCount = builder.ordinalViewCount;
             this.adOrientation = builder.adOrientation;
+            this.extrasMap = builder.extrasMap;
         }
     }
 }

@@ -12,6 +12,7 @@
 
  import com.mopub.common.logging.MoPubLog;
  import com.mopub.common.util.Views;
+ import com.mopub.mobileads.VungleRewardedVideo.VungleMediationSettings;
  import com.vungle.warren.AdConfig;
  import com.vungle.warren.AdConfig.AdSize;
  import com.vungle.warren.VungleNativeAd;
@@ -127,8 +128,8 @@
 
         sVungleRouter.addRouterListener(mPlacementId, mVungleRouterListener);
 
-        VungleExtrasBuilder.adConfigWithLocalExtras(adConfig, localExtras);
-        if (VungleExtrasBuilder.isStartMutedNotConfigured(localExtras)) {
+        VungleMediationSettings.adConfigWithLocalExtras(adConfig, localExtras);
+        if (VungleMediationSettings.isStartMutedNotConfigured(localExtras)) {
             adConfig.setMuted(true); // start muted by default
         }
 
