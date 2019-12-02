@@ -33,19 +33,19 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     public static final String APP_ID_KEY = "appId";
     public static final String APP_KEY = "appKey";
     public static final String UNIT_ID_KEY = "unitId";
-    static final String USER_ID_KEY = "Rewarded-Video-Customer-Id";
-
-    // Mintegral targeting keys
-    public static final String AGE_TARGETING_KEY = "age";
-    public static final String CUSTOM_TARGETING_KEY = "custom";
-    public static final String GENDER_TARGETING_KEY = "gender";
-    public static final String LATITUDE_TARGETING_KEY = "lat";
-    public static final String LONGITUDE_TARGETING_KEY = "lng";
-    public static final String PAY_TARGETING_KEY = "pay";
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String SDK_VERSION = MTGConfiguration.SDK_VERSION;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+
+    private static int mAge;
+    private static String mCustomData;
+    private static int mGender;
+    private static double mLatitude;
+    private static double mLongitude;
+    private static int mPay;
+    private static String mRewardId;
+    private static String mUserId;
 
     @NonNull
     @Override
@@ -113,20 +113,17 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
                 sdk.init(mtgConfigurationMap, context);
             }
 
-            handleGdpr(MoPub.canCollectPersonalInformation(), sdk, context);
+            if (MoPub.canCollectPersonalInformation()) {
+                sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO,
+                        MIntegralConstans.IS_SWITCH_ON);
+            } else {
+                sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO,
+                        MIntegralConstans.IS_SWITCH_OFF);
+            }
+
         } else {
             MoPubLog.log(CUSTOM, "Failed to initialize the Mintegral SDK because the SDK " +
                     "instance is null.");
-        }
-    }
-
-    static void handleGdpr(boolean canCollectPersonalInfo, MIntegralSDK sdk, Context context) {
-        if (canCollectPersonalInfo) {
-            sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO,
-                    MIntegralConstans.IS_SWITCH_ON);
-        } else {
-            sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO,
-                    MIntegralConstans.IS_SWITCH_OFF);
         }
     }
 
@@ -139,55 +136,104 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
 
             final MIntegralUser user = new MIntegralUser();
 
-            final Object ageObj = localExtras.get(AGE_TARGETING_KEY);
-
-            if (ageObj instanceof Integer) {
-                final int age = (int) ageObj;
+            final int age = getAge();
+            if (age > 0) {
                 user.setAge(age);
             }
 
-            final Object customObj = localExtras.get(CUSTOM_TARGETING_KEY);
-
-            if (customObj instanceof String) {
-                final String customData = (String) customObj;
+            final String customData = getCustomData();
+            if (!TextUtils.isEmpty(customData)) {
                 user.setCustom(customData);
             }
 
-            final Object genderObj = localExtras.get(GENDER_TARGETING_KEY);
-
-            if (genderObj instanceof Integer) {
-                final int gender = (int) genderObj;
+            final int gender = getGender();
+            if (gender == 1 || gender == 2) {
                 user.setGender(gender);
             }
 
-            final Object latitudeObj = localExtras.get(LATITUDE_TARGETING_KEY);
+            final double latitude = getLatitude();
+            user.setLat(latitude);
 
-            if (latitudeObj instanceof Double) {
-                final double latitude = (double) latitudeObj;
-                user.setLat(latitude);
-            }
+            final double longitude = getLongitude();
+            user.setLng(longitude);
 
-            final Object longitudeObj = localExtras.get(LONGITUDE_TARGETING_KEY);
-
-            if (longitudeObj instanceof Double) {
-                final double longitude = (double) longitudeObj;
-                user.setLng(longitude);
-            }
-
-            final Object payObj = localExtras.get(PAY_TARGETING_KEY);
-
-            if (payObj instanceof Integer) {
-                final int pay = (int) payObj;
+            final int pay = getPay();
+            if (pay == 0 || pay == 1) {
                 user.setPay(pay);
             }
 
             sdk.reportUser(user);
         } catch (Throwable t) {
-            MoPubLog.log(CUSTOM_WITH_THROWABLE, "Failed to set ad targeting for Mintegral.", t);
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, "Failed to set ad targeting for Mintegral.",
+                    t);
         }
     }
 
-    public static void addChannel() {
+    public static void setAge(int age) {
+        mAge = age;
+    }
+
+    public static int getAge() {
+        return mAge;
+    }
+
+    public static void setCustomData(String customData) {
+        mCustomData = customData;
+    }
+
+    public static String getCustomData() {
+        return mCustomData;
+    }
+
+    public static void setGender(int gender) {
+        mGender = gender;
+    }
+
+    public static int getGender() {
+        return mGender;
+    }
+
+    public static void setLatitude(double latitude) {
+        mLatitude = latitude;
+    }
+
+    public static double getLatitude() {
+        return mLatitude;
+    }
+
+    public static void setLongitude(double longitude) {
+        mLongitude = longitude;
+    }
+
+    public static double getLongitude() {
+        return mLongitude;
+    }
+
+    public static void setPay(int pay) {
+        mPay = pay;
+    }
+
+    public static int getPay() {
+        return mPay;
+    }
+
+    public static void setRewardId(String rewardId) {
+        mRewardId = rewardId;
+    }
+
+    public static String getRewardId() {
+        return mRewardId;
+    }
+
+    public static void setUserId(String userId) {
+        mUserId = userId;
+    }
+
+    public static String getUserId() {
+        return mUserId;
+    }
+
+    static void addChannel() {
         try {
             final Aa a = new Aa();
             final Class c = a.getClass();
