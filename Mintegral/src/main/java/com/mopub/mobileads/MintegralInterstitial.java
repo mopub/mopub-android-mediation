@@ -52,7 +52,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
         }
 
         MintegralAdapterConfiguration.addChannel();
-        MintegralAdapterConfiguration.setTargeting(localExtras, MIntegralSDKFactory.getMIntegralSDK());
+        MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
         if (context instanceof Activity) {
             final String adm = serverExtras.get(ADM_KEY);

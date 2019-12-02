@@ -41,8 +41,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static int mAge;
     private static String mCustomData;
     private static int mGender;
-    private static double mLatitude;
-    private static double mLongitude;
+    private static Double mLatitude;
+    private static Double mLongitude;
     private static int mPay;
     private static String mRewardId;
     private static String mUserId;
@@ -127,13 +127,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    public static void setTargeting(Map<String, Object> localExtras, MIntegralSDK sdk) {
+    public static void setTargeting(MIntegralSDK sdk) {
         try {
-            if (localExtras == null || localExtras.isEmpty() || sdk == null) {
-                MoPubLog.log(CUSTOM, "Failed to set ad targeting for Mintegral.");
-                return;
-            }
-
             final MIntegralUser user = new MIntegralUser();
 
             final int age = getAge();
@@ -151,11 +146,15 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
                 user.setGender(gender);
             }
 
-            final double latitude = getLatitude();
-            user.setLat(latitude);
+            final Double latitude = getLatitude();
+            if (latitude != null) {
+                user.setLat(latitude);
+            }
 
-            final double longitude = getLongitude();
-            user.setLng(longitude);
+            final Double longitude = getLongitude();
+            if (longitude != null) {
+                user.setLng(longitude);
+            }
 
             final int pay = getPay();
             if (pay == 0 || pay == 1) {
@@ -197,7 +196,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
         mLatitude = latitude;
     }
 
-    public static double getLatitude() {
+    public static Double getLatitude() {
         return mLatitude;
     }
 
@@ -205,7 +204,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
         mLongitude = longitude;
     }
 
-    public static double getLongitude() {
+    public static Double getLongitude() {
         return mLongitude;
     }
 

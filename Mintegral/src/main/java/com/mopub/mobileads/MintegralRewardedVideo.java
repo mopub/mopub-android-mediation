@@ -103,7 +103,7 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         }
 
         MintegralAdapterConfiguration.addChannel();
-        MintegralAdapterConfiguration.setTargeting(localExtras, MIntegralSDKFactory.getMIntegralSDK());
+        MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
         final String adm = serverExtras.get(ADM_KEY);
 

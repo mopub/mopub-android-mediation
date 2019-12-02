@@ -93,7 +93,7 @@ public class MintegralNative extends CustomEventNative {
             properties.put(MIntegralConstans.NATIVE_VIDEO_HEIGHT, 480);
             properties.put(MIntegralConstans.NATIVE_VIDEO_SUPPORT, true);
 
-            MintegralAdapterConfiguration.setTargeting(localExtras, MIntegralSDKFactory.getMIntegralSDK());
+            MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
             final String adm = serverExtras.get(ADM_KEY);
 
