@@ -44,8 +44,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static Double mLatitude;
     private static Double mLongitude;
     private static int mPay;
-    private static String mRewardId;
-    private static String mUserId;
+    private static String mRewardId = "1";
+    private static String mUserId = "";
 
     @NonNull
     @Override
