@@ -5,12 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.mintegral.msdk.nativex.view.MTGMediaView;
 import com.mintegral.msdk.out.Campaign;
 import com.mintegral.msdk.out.OnMTGMediaViewListener;
@@ -18,18 +15,15 @@ import com.mintegral.msdk.widget.MTGAdChoice;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import static android.view.View.VISIBLE;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
-public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.MintegralStaticNativeAd> {
+public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.MintegralNativeAd> {
 
     private static final String ADAPTER_NAME = MintegralAdRenderer.class.getSimpleName();
     private final MintegralViewBinder mViewBinder;
@@ -47,52 +41,13 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
 
         Preconditions.checkNotNull(context);
 
-        final View adView = LayoutInflater.from(context).inflate(mViewBinder.layoutId, parent, false);
-        final View mainImageView = adView.findViewById(mViewBinder.mainImageId);
-
-        if (mainImageView == null) {
-            return adView;
-        }
-
-        final ViewGroup.LayoutParams mainImageViewLayoutParams = mainImageView.getLayoutParams();
-        final MTGMediaView.LayoutParams mediaViewLayoutParams = new MTGMediaView.LayoutParams(
-                mainImageViewLayoutParams.width, mainImageViewLayoutParams.height);
-
-        if (mainImageViewLayoutParams instanceof ViewGroup.MarginLayoutParams) {
-            final ViewGroup.MarginLayoutParams marginParams = (ViewGroup.MarginLayoutParams) mainImageViewLayoutParams;
-
-            mediaViewLayoutParams.setMargins(marginParams.leftMargin,
-                    marginParams.topMargin,
-                    marginParams.rightMargin,
-                    marginParams.bottomMargin);
-        }
-
-        if (mainImageViewLayoutParams instanceof RelativeLayout.LayoutParams) {
-            mainImageView.setVisibility(View.INVISIBLE);
-        } else {
-            mainImageView.setVisibility(View.GONE);
-        }
-
-        final MTGMediaView mediaView = new MTGMediaView(context);
-        mediaView.setLayoutParams(mainImageViewLayoutParams);
-
-        final ViewGroup mainImageParent = (ViewGroup) mainImageView.getParent();
-        final int mainImageIndex = mainImageParent.indexOfChild(mainImageView);
-
-        // Mintegral uses a MediaView instead of the main image ImageView supplied by the publisher,
-        // so we swap the main image ImageView with the MediaView using the former's layout params
-        // (while still keeping the former in the view hierarchy).
-        mainImageParent.addView(mediaView, mainImageIndex + 1);
-
-        return adView;
+        return LayoutInflater
+                .from(context)
+                .inflate(mViewBinder.layoutId, parent, false);
     }
 
     @Override
-    public void renderAdView(@NonNull final View view, @NonNull final MintegralNative.MintegralStaticNativeAd ad) {
-
-        Preconditions.checkNotNull(view);
-        Preconditions.checkNotNull(ad);
-
+    public void renderAdView(@NonNull View view, @NonNull MintegralNative.MintegralNativeAd ad) {
         MintegralNativeViewHolder mintegralNativeViewHolder = mViewHolderMap.get(view);
 
         if (mintegralNativeViewHolder == null) {
@@ -101,18 +56,16 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
         }
 
         update(mintegralNativeViewHolder, ad);
-
-        setViewVisibility(mintegralNativeViewHolder, VISIBLE);
-        ad.prepare(view);
     }
 
     @Override
     public boolean supports(@NonNull BaseNativeAd nativeAd) {
-        return nativeAd instanceof MintegralNative.MintegralStaticNativeAd;
+        Preconditions.checkNotNull(nativeAd);
+        return nativeAd instanceof MintegralNative.MintegralNativeAd;
     }
 
     private void update(final MintegralNativeViewHolder mintegralNativeViewHolder,
-                        final MintegralNative.MintegralStaticNativeAd nativeAd) {
+                        final MintegralNative.MintegralNativeAd nativeAd) {
 
         final ImageView mainImageView = mintegralNativeViewHolder.getMainImageView();
 
@@ -122,16 +75,14 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
         NativeRendererHelper.addTextView(mintegralNativeViewHolder.getCallToActionView(),
                 nativeAd.getCallToAction());
         NativeImageHelper.loadImageView(nativeAd.getMainImageUrl(), mainImageView);
-        NativeImageHelper.loadImageView(nativeAd.getIconImageUrl(),
+        NativeImageHelper.loadImageView(nativeAd.getIconUrl(),
                 mintegralNativeViewHolder.getIconImageView());
-        NativeRendererHelper.addPrivacyInformationIcon(
-                mintegralNativeViewHolder.getPrivacyInformationIconImageView(),
-                nativeAd.getPrivacyInformationIconImageUrl(),
-                nativeAd.getPrivacyInformationIconClickThroughUrl());
+
+        nativeAd.registerViewForInteraction(mintegralNativeViewHolder.getMainView());
 
         final MTGMediaView mediaView = mintegralNativeViewHolder.getMediaView();
 
-        if (mediaView != null && mainImageView != null) {
+        if (mediaView != null) {
             mediaView.setNativeAd(nativeAd.mCampaign);
             mediaView.setVisibility(View.VISIBLE);
 
@@ -173,43 +124,20 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
                 }
             });
 
-            if (mintegralNativeViewHolder.isMainImageViewInRelativeView()) {
-                mainImageView.setVisibility(View.INVISIBLE);
-            } else {
-                mainImageView.setVisibility(View.GONE);
-            }
         }
 
         final Campaign campaign = nativeAd.mCampaign;
-        final MTGAdChoice adChoices = mintegralNativeViewHolder.getAdChoices();
-
         try {
-            final RelativeLayout view = (RelativeLayout) mintegralNativeViewHolder.getTitleView().getParent();
-            final RelativeLayout.LayoutParams Params = (RelativeLayout.LayoutParams) view.getLayoutParams();
-
-            Params.height = campaign.getAdchoiceSizeHeight();
-            Params.width = campaign.getAdchoiceSizeWidth();
-
+            final MTGAdChoice adChoices = mintegralNativeViewHolder.getAdChoice();
             if (adChoices != null) {
-                adChoices.setLayoutParams(Params);
                 adChoices.setCampaign(campaign);
             }
         } catch (Throwable e) {
-            MoPubLog.log(CUSTOM_WITH_THROWABLE, "Failed to update AdChoices layout params", e);
-        }
-    }
-
-    private static void setViewVisibility(final MintegralNativeViewHolder mintegralNativeViewHolder,
-                                          final int visibility) {
-        if (mintegralNativeViewHolder.getMainView() != null) {
-            mintegralNativeViewHolder.getMainView().setVisibility(visibility);
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, "Failed to set AdChoices", e);
         }
     }
 
     static class MintegralNativeViewHolder {
-        private MTGMediaView mMediaView;
-        private boolean isMainImageViewInRelativeView;
-        private MTGAdChoice adChoices;
 
         @Nullable
         View mainView;
@@ -225,6 +153,10 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
         ImageView iconImageView;
         @Nullable
         ImageView privacyInformationIconImageView;
+        @Nullable
+        MTGMediaView mediaView;
+        @Nullable
+        MTGAdChoice adChoice;
 
         @VisibleForTesting
         static final MintegralNativeViewHolder EMPTY_VIEW_HOLDER = new MintegralNativeViewHolder();
@@ -234,41 +166,22 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
 
         static MintegralNativeViewHolder fromViewBinder(final View view,
                                                         final MintegralViewBinder viewBinder) {
-            final MintegralNativeViewHolder staticNativeViewHolder = new MintegralNativeViewHolder();
-            staticNativeViewHolder.mainView = view;
+            if (view == null || viewBinder == null) {
+                return new MintegralNativeViewHolder();
+            }
+            final MintegralNativeViewHolder viewHolder = new MintegralNativeViewHolder();
+            viewHolder.mainView = view;
 
             try {
-                staticNativeViewHolder.titleView = view.findViewById(viewBinder.titleId);
-                staticNativeViewHolder.textView = view.findViewById(viewBinder.textId);
-                staticNativeViewHolder.callToActionView = view.findViewById(viewBinder.callToActionId);
-                staticNativeViewHolder.mainImageView = view.findViewById(viewBinder.mainImageId);
-                staticNativeViewHolder.iconImageView = view.findViewById(viewBinder.iconImageId);
-                staticNativeViewHolder.privacyInformationIconImageView = view.findViewById(viewBinder.privacyInformationIconImageId);
-                staticNativeViewHolder.adChoices = view.findViewById(viewBinder.adChoicesId);
+                viewHolder.titleView = view.findViewById(viewBinder.titleId);
+                viewHolder.textView = view.findViewById(viewBinder.textId);
+                viewHolder.mainImageView = view.findViewById(viewBinder.mainImageId);
+                viewHolder.iconImageView = view.findViewById(viewBinder.iconImageId);
+                viewHolder.callToActionView = view.findViewById(viewBinder.callToActionId);
+                viewHolder.adChoice = view.findViewById(viewBinder.adChoicesId);
+                viewHolder.mediaView = view.findViewById(viewBinder.mediaViewId);
 
-                final View mainImageView = staticNativeViewHolder.mainImageView;
-                boolean mainImageViewInRelativeView = false;
-                MTGMediaView mediaView = null;
-
-                if (mainImageView != null) {
-                    final ViewGroup mainImageParent = (ViewGroup) mainImageView.getParent();
-
-                    if (mainImageParent instanceof RelativeLayout) {
-                        mainImageViewInRelativeView = true;
-                    }
-
-                    final int mainImageIndex = mainImageParent.indexOfChild(mainImageView);
-                    final View viewAfterImageView = mainImageParent.getChildAt(mainImageIndex + 1);
-
-                    if (viewAfterImageView instanceof MTGMediaView) {
-                        mediaView = (MTGMediaView) viewAfterImageView;
-                    }
-                }
-
-                staticNativeViewHolder.mMediaView = mediaView;
-                staticNativeViewHolder.isMainImageViewInRelativeView = mainImageViewInRelativeView;
-
-                return staticNativeViewHolder;
+                return viewHolder;
             } catch (ClassCastException exception) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Could not cast from id in ViewBinder to " +
                         "expected View type", exception);
@@ -313,16 +226,12 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
 
         @Nullable
         MTGMediaView getMediaView() {
-            return mMediaView;
-        }
-
-        boolean isMainImageViewInRelativeView() {
-            return isMainImageViewInRelativeView;
+            return mediaView;
         }
 
         @Nullable
-        MTGAdChoice getAdChoices() {
-            return adChoices;
+        public MTGAdChoice getAdChoice() {
+            return adChoice;
         }
     }
 
@@ -335,6 +244,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
             private int mainImageId;
             private int iconImageId;
             private int privacyInformationIconImageId;
+            private int mediaViewId;
             private int adChoicesId;
 
             @NonNull
@@ -387,6 +297,11 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
                 return this;
             }
 
+            public final Builder mediaViewId(final int mediaViewId) {
+                this.mediaViewId = mediaViewId;
+                return this;
+            }
+
             @NonNull
             public final Builder addExtras(final Map<String, Integer> resourceIds) {
                 this.extras = new HashMap<String, Integer>(resourceIds);
@@ -412,6 +327,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
         final int mainImageId;
         final int iconImageId;
         final int privacyInformationIconImageId;
+        final int mediaViewId;
         final int adChoicesId;
         @NonNull
         final Map<String, Integer> extras;
@@ -424,6 +340,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
             this.mainImageId = builder.mainImageId;
             this.iconImageId = builder.iconImageId;
             this.privacyInformationIconImageId = builder.privacyInformationIconImageId;
+            this.mediaViewId = builder.mediaViewId;
             this.adChoicesId = builder.adChoicesId;
             this.extras = builder.extras;
         }
