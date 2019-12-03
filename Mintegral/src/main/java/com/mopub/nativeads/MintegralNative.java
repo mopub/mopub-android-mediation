@@ -3,7 +3,9 @@ package com.mopub.nativeads;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
+
 import androidx.annotation.NonNull;
+
 import com.mintegral.msdk.MIntegralConstans;
 import com.mintegral.msdk.out.Campaign;
 import com.mintegral.msdk.out.Frame;
@@ -11,19 +13,21 @@ import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MtgBidNativeHandler;
 import com.mintegral.msdk.out.MtgNativeHandler;
 import com.mintegral.msdk.out.NativeListener;
-import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MintegralAdapterConfiguration;
+
 import java.util.List;
 import java.util.Map;
+
+import static com.mopub.common.DataKeys.ADM_KEY;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
-
+import static com.mopub.nativeads.NativeErrorCode.NETWORK_NO_FILL;
 
 public class MintegralNative extends CustomEventNative {
 
@@ -54,17 +58,16 @@ public class MintegralNative extends CustomEventNative {
 
             return;
         }
-        MintegralAdapterConfiguration.setTargeting(localExtras, MIntegralSDKFactory.getMIntegralSDK());
 
-        final String bid = serverExtras.get(DataKeys.ADM_KEY);
+        final String bid = serverExtras.get(ADM_KEY);
 
-        final MintegralNativeAd mintegralNativeAd =
-                new MintegralNativeAd(context, customEventNativeListener, mAdUnitId, bid);
+        final MintegralNativeAd mintegralNativeAd = new MintegralNativeAd(context,
+                customEventNativeListener, mAdUnitId, bid);
         mintegralNativeAd.loadAd();
     }
 
-    public static class MintegralNativeAd extends BaseNativeAd
-            implements NativeListener.NativeAdListener, NativeListener.NativeTrackingListener {
+    public static class MintegralNativeAd extends BaseNativeAd implements
+            NativeListener.NativeAdListener, NativeListener.NativeTrackingListener {
 
         private final String mBid;
         private final String mUnitid;
@@ -75,14 +78,13 @@ public class MintegralNative extends CustomEventNative {
         Campaign mCampaign;
 
         MintegralNativeAd(final Context context,
-                                final CustomEventNativeListener customEventNativeListener,
-                                final String adUnitId,
-                                final String bid) {
+                          final CustomEventNativeListener customEventNativeListener,
+                          final String adUnitId,
+                          final String bid) {
             mBid = bid;
             mUnitid = adUnitId;
             mCustomEventNativeListener = customEventNativeListener;
             this.mContext = context;
-
         }
 
         void loadAd() {
@@ -92,20 +94,21 @@ public class MintegralNative extends CustomEventNative {
             properties.put(MIntegralConstans.NATIVE_VIDEO_HEIGHT, 480);
             properties.put(MIntegralConstans.NATIVE_VIDEO_SUPPORT, true);
 
+            MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
+
             if (TextUtils.isEmpty(mBid)) {
                 mNativeHandler = new MtgNativeHandler(properties, mContext);
                 mNativeHandler.setAdListener(this);
                 mNativeHandler.setTrackingListener(this);
                 mNativeHandler.load();
-                MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
             } else {
                 mtgBidNativeHandler = new MtgBidNativeHandler(properties, mContext);
                 mtgBidNativeHandler.setAdListener(this);
                 mtgBidNativeHandler.setTrackingListener(this);
                 mtgBidNativeHandler.bidLoad(mBid);
-                MoPubLog.log(mBid, LOAD_ATTEMPTED, ADAPTER_NAME);
             }
 
+            MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
         }
 
         @Override
@@ -146,7 +149,6 @@ public class MintegralNative extends CustomEventNative {
         @Override
         public void onShowLoading(Campaign campaign) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "onShowLoading");
-
         }
 
         @Override
@@ -156,19 +158,22 @@ public class MintegralNative extends CustomEventNative {
 
         @Override
         public void onAdLoaded(List<Campaign> campaigns, int template) {
-            if (campaigns == null || campaigns.size() == 0){
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, NativeErrorCode.NETWORK_NO_FILL.getIntCode(), NativeErrorCode.NETWORK_NO_FILL);
+            if (campaigns == null || campaigns.size() == 0) {
+                failAdapter(NETWORK_NO_FILL, "No Mintegral campaign active. Failing " +
+                        "adapter.");
+
                 return;
             }
+
             mCampaign = campaigns.get(0);
             mCustomEventNativeListener.onNativeAdLoaded(MintegralNativeAd.this);
+
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
         public void onAdLoadError(String errorMsg) {
-            failAdapter(NativeErrorCode.NETWORK_NO_FILL, errorMsg);
+            failAdapter(NETWORK_NO_FILL, errorMsg);
         }
 
         @Override
@@ -190,16 +195,15 @@ public class MintegralNative extends CustomEventNative {
 
         @Override
         public void prepare(@NonNull View view) {
-
         }
 
         @Override
         public void clear(@NonNull View view) {
             Preconditions.checkNotNull(view);
-            if (mNativeHandler!=null){
-                mNativeHandler.unregisterView(view,mCampaign);
-            }
 
+            if (mNativeHandler != null) {
+                mNativeHandler.unregisterView(view, mCampaign);
+            }
         }
 
         @Override
@@ -218,9 +222,9 @@ public class MintegralNative extends CustomEventNative {
             mCustomEventNativeListener = null;
         }
 
-        void registerViewForInteraction(View view){
-            if (mNativeHandler!=null){
-                mNativeHandler.registerView(view,mCampaign);
+        void registerViewForInteraction(View view) {
+            if (mNativeHandler != null) {
+                mNativeHandler.registerView(view, mCampaign);
             }
         }
 
@@ -244,7 +248,7 @@ public class MintegralNative extends CustomEventNative {
             return mCampaign.getIconUrl();
         }
 
-        final public int getStarRating(){
+        final public int getStarRating() {
             return (int) mCampaign.getRating();
         }
     }

@@ -44,8 +44,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static Double mLatitude;
     private static Double mLongitude;
     private static int mPay;
-    private static String mRewardId = "1";
-    private static String mUserId = "";
+    private static String mRewardId;
+    private static String mUserId;
 
     @NonNull
     @Override
@@ -221,7 +221,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static String getRewardId() {
-        return mRewardId;
+        return TextUtils.isEmpty(mRewardId) ? "1" : mRewardId;
     }
 
     public static void setUserId(String userId) {
@@ -229,7 +229,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static String getUserId() {
-        return mUserId;
+        return TextUtils.isEmpty(mUserId) ? "" : mUserId;
     }
 
     static void addChannel() {

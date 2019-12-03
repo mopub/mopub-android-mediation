@@ -6,8 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.mintegral.msdk.nativex.view.MTGMediaView;
 import com.mintegral.msdk.out.Campaign;
 import com.mintegral.msdk.out.OnMTGMediaViewListener;
@@ -15,10 +17,12 @@ import com.mintegral.msdk.widget.MTGAdChoice;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
@@ -61,6 +65,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
     @Override
     public boolean supports(@NonNull BaseNativeAd nativeAd) {
         Preconditions.checkNotNull(nativeAd);
+
         return nativeAd instanceof MintegralNative.MintegralNativeAd;
     }
 
@@ -75,8 +80,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
         NativeRendererHelper.addTextView(mintegralNativeViewHolder.getCallToActionView(),
                 nativeAd.getCallToAction());
         NativeImageHelper.loadImageView(nativeAd.getMainImageUrl(), mainImageView);
-        NativeImageHelper.loadImageView(nativeAd.getIconUrl(),
-                mintegralNativeViewHolder.getIconImageView());
+        NativeImageHelper.loadImageView(nativeAd.getIconUrl(), mintegralNativeViewHolder.getIconImageView());
 
         nativeAd.registerViewForInteraction(mintegralNativeViewHolder.getMainView());
 
