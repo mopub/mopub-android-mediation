@@ -45,6 +45,7 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     private static boolean isInitialized = false;
     private String mAdUnitId;
     private String mUserId;
+    private String mRewardId;
 
     @Nullable
     @Override
@@ -68,6 +69,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         Preconditions.checkNotNull(serverExtras);
 
         mContext = launcherActivity.getApplicationContext();
+        mUserId = MintegralAdapterConfiguration.getUserId();
+        mRewardId = MintegralAdapterConfiguration.getRewardId();
 
         if (!serverDataIsValid(serverExtras, mContext)) {
             failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "One or " +
@@ -99,14 +102,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
             return;
         }
 
-        final Object userIdObj = localExtras.get(MintegralAdapterConfiguration.USER_ID_KEY);
-
-        if (userIdObj instanceof String) {
-            mUserId = (String) userIdObj;
-        }
-
         MintegralAdapterConfiguration.addChannel();
-        MintegralAdapterConfiguration.setTargeting(localExtras, MIntegralSDKFactory.getMIntegralSDK());
+        MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
         final String adm = serverExtras.get(ADM_KEY);
 
@@ -127,12 +124,13 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     protected void showVideo() {
+
         if (mMtgRewardVideoHandler != null && mMtgRewardVideoHandler.isReady()) {
-            mMtgRewardVideoHandler.show("1", mUserId);
+            mMtgRewardVideoHandler.show(mRewardId, mUserId);
 
             MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
         } else if (mtgBidRewardVideoHandler != null && mtgBidRewardVideoHandler.isBidReady()) {
-            mtgBidRewardVideoHandler.showFromBid("1", mUserId);
+            mtgBidRewardVideoHandler.showFromBid(mRewardId, mUserId);
 
             MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
         } else {

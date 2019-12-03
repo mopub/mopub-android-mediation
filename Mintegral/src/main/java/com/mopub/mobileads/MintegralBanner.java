@@ -81,7 +81,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         });
 
         MintegralAdapterConfiguration.addChannel();
-        MintegralAdapterConfiguration.setTargeting(localExtras, MIntegralSDKFactory.getMIntegralSDK());
+        MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
         final String adm = serverExtras.get(ADM_KEY);
         if (TextUtils.isEmpty(adm)) {
