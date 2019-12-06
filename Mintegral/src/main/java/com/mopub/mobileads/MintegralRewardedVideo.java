@@ -119,7 +119,7 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
             mtgBidRewardVideoHandler.loadFromBid(adm);
         }
 
-        MoPubLog.log(mAdUnitId, LOAD_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     @Override
@@ -128,11 +128,11 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         if (mMtgRewardVideoHandler != null && mMtgRewardVideoHandler.isReady()) {
             mMtgRewardVideoHandler.show(mRewardId, mUserId);
 
-            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         } else if (mtgBidRewardVideoHandler != null && mtgBidRewardVideoHandler.isBidReady()) {
             mtgBidRewardVideoHandler.showFromBid(mRewardId, mUserId);
 
-            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         } else {
             failAdapter(SHOW_FAILED, NETWORK_NO_FILL, "There is no Mintegral rewarded " +
                     "video available. Please make a new ad request.", false);
@@ -141,8 +141,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     protected void onInvalidate() {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Finished showing Mintegral rewarded video. " +
-                "Invalidating adapter...");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Finished showing Mintegral " +
+                "rewarded video. Invalidating adapter...");
 
         if (mMtgRewardVideoHandler != null) {
             mMtgRewardVideoHandler.clearVideoCache();
@@ -190,10 +190,10 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     private void failAdapter(final MoPubLog.AdapterLogEvent event, final MoPubErrorCode errorCode,
                              final String errorMsg, final boolean loadRelated) {
 
-        MoPubLog.log(event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+        MoPubLog.log(getAdNetworkId(), event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 
         if (!TextUtils.isEmpty(errorMsg)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMsg);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, errorMsg);
         }
 
         if (loadRelated) {
@@ -207,7 +207,7 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     public void onLoadSuccess(String message) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onLoadSuccess: " + message);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onLoadSuccess: " + message);
     }
 
     @Override
@@ -216,11 +216,11 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
             MoPubRewardedVideoManager.onRewardedVideoCompleted(MintegralRewardedVideo.class, mAdUnitId,
                     MoPubReward.success(label, (int) amount));
 
-            MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, amount, label);
+            MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, amount, label);
         }
 
         MoPubRewardedVideoManager.onRewardedVideoClosed(MintegralRewardedVideo.class, mAdUnitId);
-        MoPubLog.log(DID_DISAPPEAR, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
     }
 
     @Override
@@ -231,13 +231,13 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     @Override
     public void onVideoLoadSuccess(String s) {
         MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(MintegralRewardedVideo.class, mAdUnitId);
-        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
     }
 
     @Override
     public void onAdShow() {
         MoPubRewardedVideoManager.onRewardedVideoStarted(MintegralRewardedVideo.class, mAdUnitId);
-        MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
     }
 
     @Override
@@ -248,16 +248,16 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     @Override
     public void onVideoAdClicked(String s) {
         MoPubRewardedVideoManager.onRewardedVideoClicked(MintegralRewardedVideo.class, mAdUnitId);
-        MoPubLog.log(CLICKED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
     }
 
     @Override
     public void onEndcardShow(String message) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onEndcardShow: " + message);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onEndcardShow: " + message);
     }
 
     @Override
     public void onVideoComplete(String message) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
     }
 }

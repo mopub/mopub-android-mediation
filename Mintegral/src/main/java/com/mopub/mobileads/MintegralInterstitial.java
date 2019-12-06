@@ -34,7 +34,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     private MTGBidInterstitialVideoHandler mBidInterstitialVideoHandler;
     private CustomEventInterstitialListener mCustomEventInterstitialListener;
 
-    private String mAdUnitId;
+    private static String mAdUnitId;
 
     @Override
     protected void loadInterstitial(final Context context,
@@ -67,7 +67,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
                 mBidInterstitialVideoHandler.loadFromBid(adm);
             }
 
-            MoPubLog.log(mAdUnitId, LOAD_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
             failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "Context is not an instance " +
                     "of Activity. Aborting ad request, and failing adapter.");
@@ -85,13 +85,13 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
                     "because it is not ready. Please make a new ad request.");
         }
 
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
     }
 
     @Override
     protected void onInvalidate() {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Finished showing Mintegral interstitial. " +
-                "Invalidating adapter...");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Finished showing Mintegral " +
+                "interstitial. Invalidating adapter...");
 
         if (mInterstitialHandler != null) {
             mInterstitialHandler.clearVideoCache();
@@ -109,10 +109,10 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     private void failAdapter(final MoPubLog.AdapterLogEvent event, final MoPubErrorCode errorCode,
                              final String errorMsg) {
 
-        MoPubLog.log(event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+        MoPubLog.log(getAdNetworkId(), event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 
         if (!TextUtils.isEmpty(errorMsg)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMsg);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, errorMsg);
         }
 
         if (mCustomEventInterstitialListener != null) {
@@ -136,9 +136,13 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
         return false;
     }
 
+    private static String getAdNetworkId() {
+        return mAdUnitId;
+    }
+
     @Override
     public void onVideoLoadSuccess(String s) {
-        MoPubLog.log(mAdUnitId, LOAD_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialLoaded();
@@ -152,7 +156,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
     @Override
     public void onAdShow() {
-        MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialShown();
@@ -167,8 +171,8 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
     @Override
     public void onAdClose(boolean b) {
-        MoPubLog.log(DID_DISAPPEAR, ADAPTER_NAME);
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdClose");
+        MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdClose");
 
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialDismissed();
@@ -177,7 +181,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
     @Override
     public void onVideoAdClicked(String message) {
-        MoPubLog.log(CLICKED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialClicked();
@@ -186,16 +190,16 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
     @Override
     public void onEndcardShow(String message) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onEndcardShow");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onEndcardShow");
     }
 
     @Override
     public void onVideoComplete(String message) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
     }
 
     @Override
     public void onLoadSuccess(String message) {
-        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
     }
 }

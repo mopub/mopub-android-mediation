@@ -34,7 +34,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
     private CustomEventBannerListener mBannerListener;
     private MTGBannerView mBannerAd;
 
-    private String mAdUnitId;
+    private static String mAdUnitId;
     private int mAdWidth, mAdHeight;
 
     @Override
@@ -45,7 +45,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         mBannerListener = customEventBannerListener;
 
         if (!serverDataIsValid(serverExtras, context)) {
-            failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "One or " +
+            failAdapter(ADAPTER_CONFIGURATION_ERROR, "One or " +
                     "more keys used for Mintegral's ad requests are empty. Failing adapter. Please " +
                     "ensure you have populated all the required keys on the MoPub dashboard.");
 
@@ -53,7 +53,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         }
 
         if (!adSizesAreValid(localExtras)) {
-            failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "Either the ad width " +
+            failAdapter(ADAPTER_CONFIGURATION_ERROR, "Either the ad width " +
                     "or the ad height is less than or equal to 0. Failing adapter. Please ensure " +
                     "you have supplied the MoPub SDK non-zero ad width and height.");
 
@@ -90,15 +90,16 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
             mBannerAd.loadFromBid(adm);
         }
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requesting Mintegral banner with width " + mAdWidth +
-                " and height " + mAdHeight);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Requesting Mintegral banner " +
+                "with width " + mAdWidth + " and height " + mAdHeight);
 
-        MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     @Override
     protected void onInvalidate() {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Finished showing Mintegral banner. Invalidating adapter...");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Finished showing Mintegral " +
+                "banner. Invalidating adapter...");
 
         if (mBannerAd != null) {
             mBannerAd.release();
@@ -144,13 +145,12 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         return false;
     }
 
-    private void failAdapter(final MoPubLog.AdapterLogEvent event, final MoPubErrorCode errorCode,
-                             final String errorMsg) {
+    private void failAdapter(final MoPubErrorCode errorCode, final String errorMsg) {
 
-        MoPubLog.log(event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 
         if (!TextUtils.isEmpty(errorMsg)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMsg);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, errorMsg);
         }
 
         if (mBannerListener != null) {
@@ -164,22 +164,26 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         return (int) (dipValue * scale + 0.5f);
     }
 
+    private static String getAdNetworkId() {
+        return mAdUnitId;
+    }
+
     @Override
     public void onLoadFailed(String errorMsg) {
-        failAdapter(LOAD_FAILED, NETWORK_NO_FILL, errorMsg);
+        failAdapter(NETWORK_NO_FILL, errorMsg);
     }
 
     @Override
     public void onLoadSuccessed() {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Mintegral banner ad loaded successfully. " +
-                "Showing ad...");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Mintegral banner ad loaded " +
+                "successfully. Showing ad...");
 
         if (mBannerListener != null && mBannerAd != null) {
             mBannerListener.onBannerLoaded(mBannerAd);
             mBannerAd.setVisibility(View.VISIBLE);
 
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         }
     }
 
@@ -189,7 +193,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
             mBannerListener.onBannerImpression();
         }
 
-        MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
     }
 
 
@@ -199,7 +203,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
             mBannerListener.onBannerClicked();
         }
 
-        MoPubLog.log(CLICKED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
     }
 
     @Override
@@ -208,7 +212,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
             mBannerListener.onLeaveApplication();
         }
 
-        MoPubLog.log(WILL_LEAVE_APPLICATION, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
     }
 
     @Override

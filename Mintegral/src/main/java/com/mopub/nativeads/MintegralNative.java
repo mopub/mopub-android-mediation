@@ -35,7 +35,7 @@ public class MintegralNative extends CustomEventNative {
     private static boolean isInitialized = false;
     private static CustomEventNativeListener mCustomEventNativeListener;
 
-    private String mAdUnitId;
+    private static String mAdUnitId;
 
     @Override
     protected void loadNativeAd(@NonNull final Context context,
@@ -108,37 +108,37 @@ public class MintegralNative extends CustomEventNative {
                 mtgBidNativeHandler.bidLoad(mBid);
             }
 
-            MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         }
 
         @Override
         public void onStartRedirection(Campaign campaign, String url) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onStartRedirection: " + url);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onStartRedirection: " + url);
         }
 
         @Override
         public void onRedirectionFailed(Campaign campaign, String url) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onRedirectionFailed: " + url);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRedirectionFailed: " + url);
         }
 
         @Override
         public void onFinishRedirection(Campaign campaign, String url) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onFinishRedirection: " + url);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onFinishRedirection: " + url);
         }
 
         @Override
         public void onDownloadStart(Campaign campaign) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onDownloadStart");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onDownloadStart");
         }
 
         @Override
         public void onDownloadFinish(Campaign campaign) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onDownloadFinish");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onDownloadFinish");
         }
 
         @Override
         public void onDownloadProgress(int progress) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onDownloadProgress");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onDownloadProgress");
         }
 
         @Override
@@ -148,12 +148,12 @@ public class MintegralNative extends CustomEventNative {
 
         @Override
         public void onShowLoading(Campaign campaign) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onShowLoading");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onShowLoading");
         }
 
         @Override
         public void onDismissLoading(Campaign campaign) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onDismissLoading");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onDismissLoading");
         }
 
         @Override
@@ -168,7 +168,7 @@ public class MintegralNative extends CustomEventNative {
             mCampaign = campaigns.get(0);
             mCustomEventNativeListener.onNativeAdLoaded(MintegralNativeAd.this);
 
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
@@ -179,18 +179,18 @@ public class MintegralNative extends CustomEventNative {
         @Override
         public void onAdClick(Campaign campaign) {
             this.notifyAdClicked();
-            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
         }
 
         @Override
         public void onAdFramesLoaded(final List<Frame> list) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdFramesLoaded");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdFramesLoaded");
         }
 
         @Override
         public void onLoggingImpression(int adSourceType) {
             this.notifyAdImpressed();
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
@@ -209,8 +209,8 @@ public class MintegralNative extends CustomEventNative {
         @Override
         public void destroy() {
 
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Finished showing Mintegral native ads. " +
-                    "Invalidating adapter...");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Finished showing Mintegral " +
+                    "native ads. Invalidating adapter...");
 
             if (mNativeHandler != null) {
                 mNativeHandler.release();
@@ -274,14 +274,18 @@ public class MintegralNative extends CustomEventNative {
 
     private static void failAdapter(final NativeErrorCode errorCode, final String errorMsg) {
 
-        MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 
         if (!TextUtils.isEmpty(errorMsg)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMsg);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, errorMsg);
         }
 
         if (mCustomEventNativeListener != null) {
             mCustomEventNativeListener.onNativeAdFailed(errorCode);
         }
+    }
+
+    private static String getAdNetworkId() {
+        return mAdUnitId;
     }
 }
