@@ -14,7 +14,6 @@ dependencies {
     implementation "com.mintegral.msdk:reward:${sdkVersion}"
     implementation "com.mintegral.msdk:videocommon:${sdkVersion}"
     implementation "com.mintegral.msdk:common:${sdkVersion}"
-    implementation "com.mintegral.msdk:mtgdownloads:${sdkVersion}"
     implementation "com.mintegral.msdk:mtgnative:${sdkVersion}"
     implementation "com.mintegral.msdk:mtgbid:${sdkVersion}"
 }
