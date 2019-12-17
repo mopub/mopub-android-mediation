@@ -1,4 +1,7 @@
 ## Changelog
+  * 1.3.0.0
+    * This version of the adapters has been certified with Verizon 1.3.0.
+
   * 1.2.1.2
     * Add support for Advanced Bidding for banner and interstitial.
 
