@@ -304,7 +304,7 @@ public class VerizonBanner extends CustomEventBanner {
                     final CreativeInfo creativeInfo = verizonInlineAd == null ? null : verizonInlineAd.getCreativeInfo();
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
 
-                    if (internalView != null) {
+                    if (internalView != null && verizonInlineAd != null) {
                         internalView.addView(verizonInlineAd);
                     }
 
