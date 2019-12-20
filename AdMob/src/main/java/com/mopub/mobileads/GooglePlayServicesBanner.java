@@ -162,9 +162,8 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             npaBundle.putString("npa", "0");
         }
 
-        if (!npaBundle.isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-        }
+        builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
+
     }
 
     private boolean extrasAreValid(Map<String, String> serverExtras) {

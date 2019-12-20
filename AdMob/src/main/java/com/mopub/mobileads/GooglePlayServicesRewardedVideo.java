@@ -244,9 +244,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
             npaBundle.putString("npa", "0");
         }
 
-        if (!npaBundle.isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-        }
+        builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
+
     }
 
     @Override
