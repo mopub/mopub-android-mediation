@@ -49,8 +49,8 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        // Advanced Bidding not currently supported
-        return null;
+        // Moving dynamic bidding token creation into the SDK. Will be added back in a future update.
+        return "test_token";
     }
 
     @NonNull
