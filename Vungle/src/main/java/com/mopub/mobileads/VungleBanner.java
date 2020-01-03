@@ -127,8 +127,8 @@
 
         sVungleRouter.addRouterListener(mPlacementId, mVungleRouterListener);
 
-        VungleExtrasBuilder.adConfigWithLocalExtras(adConfig, localExtras);
-        if (VungleExtrasBuilder.isStartMutedNotConfigured(localExtras)) {
+        VungleMediationConfiguration.adConfigWithLocalExtras(adConfig, localExtras);
+        if (VungleMediationConfiguration.isStartMutedNotConfigured(localExtras)) {
             adConfig.setMuted(true); // start muted by default
         }
 
