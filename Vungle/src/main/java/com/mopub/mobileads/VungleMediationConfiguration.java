@@ -94,7 +94,7 @@ public class VungleMediationConfiguration implements MediationSettings {
     }
 
     static boolean isStartMutedNotConfigured(Map<String, Object> localExtras) {
-        return !localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY) || !localExtras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
+        return !localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY) && !localExtras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
     }
 
     public static class Builder {
