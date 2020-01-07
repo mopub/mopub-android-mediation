@@ -1,4 +1,7 @@
 ## Changelog
+  * 18.3.0.2
+    * Log the AdMob ad unit ID in ad lifecycle events.
+
   * 18.3.0.1
     * Make the adapter keys public.
 

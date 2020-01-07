@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
@@ -111,6 +112,21 @@ public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
 
     public static String getSdkKey() {
         return sdkKey;
+    }
+
+    public static MoPubErrorCode getMoPubErrorCode(final int error) {
+        switch (error) {
+            case AppLovinErrorCodes.NO_FILL:
+                return MoPubErrorCode.NETWORK_NO_FILL;
+            case AppLovinErrorCodes.NO_NETWORK:
+                return MoPubErrorCode.NO_CONNECTION;
+            case AppLovinErrorCodes.FETCH_AD_TIMEOUT:
+                return MoPubErrorCode.NETWORK_TIMEOUT;
+            case AppLovinErrorCodes.INVALID_ZONE:
+                return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
+            default:
+                return MoPubErrorCode.UNSPECIFIED;
+        }
     }
 
     static boolean androidManifestContainsValidSdkKey(final Context context) {

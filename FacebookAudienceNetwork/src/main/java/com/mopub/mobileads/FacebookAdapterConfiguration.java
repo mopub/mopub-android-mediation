@@ -21,10 +21,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
 public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
+    public static final String NATIVE_BANNER_KEY = "native_banner";
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
-    private static final String NATIVE_BANNER_KEY = "native_banner";
 
     private static Boolean isNativeBanner;
 
@@ -82,7 +82,8 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
             } catch (Throwable t) {
                 MoPubLog.log(
                         CUSTOM_WITH_THROWABLE,
-                        "Initializing Facebook Audience Network" + " has encountered an exception.",
+                        "Initializing Facebook Audience Network" + " has encountered an " +
+                                "exception.",
                         t);
             }
         }

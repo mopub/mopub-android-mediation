@@ -38,6 +38,7 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     public static final String SERVER_EXTRAS_AD_CONTENT_KEY = "adm";
     public static final String VAS_SITE_ID_KEY = "siteId";
 
+    private static String mSiteId;
     static final String REQUEST_METADATA_AD_CONTENT_KEY = "adContent";
 
     @NonNull

@@ -44,6 +44,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
     private CustomEventInterstitialListener mInterstitialListener;
     private InterstitialAd mGoogleInterstitialAd;
+    private static String mAdUnitId;
 
     public GooglePlayServicesInterstitial() {
         mGooglePlayServicesAdapterConfiguration = new GooglePlayServicesAdapterConfiguration();
@@ -59,14 +60,13 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         setAutomaticImpressionAndClickTracking(false);
 
         mInterstitialListener = customEventInterstitialListener;
-        final String adUnitId;
 
         if (extrasAreValid(serverExtras)) {
-            adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
+            mAdUnitId = serverExtras.get(AD_UNIT_ID_KEY);
 
             mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         } else {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -79,7 +79,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         mGoogleInterstitialAd = new InterstitialAd(context);
         mGoogleInterstitialAd.setAdListener(new InterstitialAdListener());
-        mGoogleInterstitialAd.setAdUnitId(adUnitId);
+        mGoogleInterstitialAd.setAdUnitId(mAdUnitId);
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
@@ -140,10 +140,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         try {
             mGoogleInterstitialAd.loadAd(adRequest);
 
-            MoPubLog.log(adUnitId, LOAD_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         } catch (NoClassDefFoundError e) {
             // This can be thrown by Play Services on Honeycomb.
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -165,12 +165,12 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
     @Override
     protected void showInterstitial() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (mGoogleInterstitialAd.isLoaded()) {
             mGoogleInterstitialAd.show();
         } else {
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -191,6 +191,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         return serverExtras.containsKey(AD_UNIT_ID_KEY);
     }
 
+    private static String getAdNetworkId() {
+        return mAdUnitId;
+    }
+
     private class InterstitialAdListener extends AdListener {
         /*
          * Google Play Services AdListener implementation
@@ -204,7 +208,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         @Override
         public void onAdFailedToLoad(int errorCode) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     getMoPubErrorCode(errorCode).getIntCode(),
                     getMoPubErrorCode(errorCode));
 
@@ -222,7 +226,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         @Override
         public void onAdLoaded() {
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialLoaded();
@@ -231,7 +235,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         @Override
         public void onAdOpened() {
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
             if (mInterstitialListener != null) {
                 mInterstitialListener.onInterstitialShown();

@@ -130,7 +130,7 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     public void showVideo() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (hasVideoAvailable()) {
             Chartboost.showRewardedVideo(mLocation);
@@ -140,10 +140,10 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
                     getAdNetworkId(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Chartboost rewarded video before it " +
-                    "was available.");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Attempted to show Chartboost " +
+                    "rewarded video before it was available.");
 
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
         }

@@ -148,7 +148,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
             mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
             if (TextUtils.isEmpty(mAdUnitId)) {
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                         MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                         MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -175,7 +175,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
         if (TextUtils.isEmpty(mAdUnitId)) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
@@ -299,12 +299,12 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected void showVideo() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (hasVideoAvailable() && mWeakActivity != null && mWeakActivity.get() != null) {
             mRewardedAd.show(mWeakActivity.get(), mRewardedAdCallback);
         } else {
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -319,7 +319,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         @Override
         public void onRewardedAdLoaded() {
             mIsLoaded = true;
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
             MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
                     GooglePlayServicesRewardedVideo.class,
@@ -328,7 +328,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onRewardedAdFailedToLoad(int error) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     getMoPubRequestErrorCode(error).getIntCode(),
                     getMoPubRequestErrorCode(error));
 
@@ -342,7 +342,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
     private RewardedAdCallback mRewardedAdCallback = new RewardedAdCallback() {
         @Override
         public void onRewardedAdOpened() {
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
             MoPubRewardedVideoManager.onRewardedVideoStarted(
                     GooglePlayServicesRewardedVideo.class,
@@ -351,7 +351,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onRewardedAdClosed() {
-            MoPubLog.log(DID_DISAPPEAR, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
 
             MoPubRewardedVideoManager.onRewardedVideoClosed(
                     GooglePlayServicesRewardedVideo.class,
@@ -360,7 +360,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-            MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
                     rewardItem.getAmount(), rewardItem.getType());
 
             MoPubRewardedVideoManager.onRewardedVideoCompleted(
@@ -371,7 +371,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onRewardedAdFailedToShow(int error) {
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
 
             MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
                     GooglePlayServicesRewardedVideo.class,

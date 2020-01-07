@@ -49,6 +49,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
     private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
     private CustomEventBannerListener mBannerListener;
     private AdView mGoogleAdView;
+    private static String mAdUnitId;
 
     @Override
     protected void loadBanner(
@@ -61,14 +62,12 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         final Integer adWidth;
         final Integer adHeight;
 
-        String adUnitId = "";
-
         if (localExtras != null && !localExtras.isEmpty()) {
-            adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
+            mAdUnitId = serverExtras.get(AD_UNIT_ID_KEY);
             adWidth = (Integer) localExtras.get(DataKeys.AD_WIDTH);
             adHeight = (Integer) localExtras.get(DataKeys.AD_HEIGHT);
         } else {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -78,7 +77,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         mGoogleAdView = new AdView(context);
         mGoogleAdView.setAdListener(new AdViewListener());
-        mGoogleAdView.setAdUnitId(adUnitId);
+        mGoogleAdView.setAdUnitId(mAdUnitId);
 
         final AdSize adSize = (adWidth == null || adHeight == null)
                 ? null
@@ -87,7 +86,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         if (adSize != null) {
             mGoogleAdView.setAdSize(adSize);
         } else {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -154,10 +153,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         try {
             mGoogleAdView.loadAd(adRequest);
 
-            MoPubLog.log(adUnitId, LOAD_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         } catch (NoClassDefFoundError e) {
             // This can be thrown by Play Services on Honeycomb.
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -204,6 +203,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         }
     }
 
+    private static String getAdNetworkId() {
+        return mAdUnitId;
+    }
+
     private class AdViewListener extends AdListener {
         /*
          * Google Play Services AdListener implementation
@@ -216,7 +219,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         @Override
         public void onAdFailedToLoad(int errorCode) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     getMoPubErrorCode(errorCode).getIntCode(),
                     getMoPubErrorCode(errorCode));
 
@@ -231,9 +234,9 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         @Override
         public void onAdLoaded() {
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
             if (mBannerListener != null) {
                 mBannerListener.onBannerLoaded(mGoogleAdView);
@@ -242,7 +245,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         @Override
         public void onAdOpened() {
-            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
             if (mBannerListener != null) {
                 mBannerListener.onBannerClicked();
