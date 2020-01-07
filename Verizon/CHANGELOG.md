@@ -1,6 +1,10 @@
 ## Changelog
   * 1.3.0.0
     * This version of the adapters has been certified with Verizon 1.3.0.
+    * Remove Advanced Bidding token generation logic from the adapters. The equivalent logic will be added to the Verizon SDK.
+
+  * 1.2.1.3
+    * Log the Verizon placement ID in ad lifecycle events.
 
   * 1.2.1.2
     * Add support for Advanced Bidding for banner and interstitial.

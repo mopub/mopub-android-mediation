@@ -6,6 +6,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
@@ -20,9 +23,6 @@ import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.utils.ThreadUtils;
 
 import java.util.Map;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_FAILED;
 import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_TIMED_OUT;
@@ -94,25 +94,26 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
             VASAds.setLogLevel(Logger.INFO);
         }
 
-        String siteId = null;
+        String mSiteId = null;
 
         if (configuration != null) {
-            siteId = configuration.get(VAS_SITE_ID_KEY);
+            mSiteId = configuration.get(VAS_SITE_ID_KEY);
         }
 
         // The Verizon SDK needs a meaningful siteId to initialize. siteId is cached on the first request.
-        if (TextUtils.isEmpty(siteId)) {
+        if (TextUtils.isEmpty(mSiteId)) {
             listener.onNetworkInitializationFinished(VerizonAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
 
             return;
         }
 
-        final String finalSiteId = siteId;
+        final String finalSiteId = mSiteId;
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (context instanceof Application && StandardEdition.initialize((Application) context, finalSiteId)) {
+                if (context instanceof Application && StandardEdition.initialize((Application) context,
+                        finalSiteId)) {
                     listener.onNetworkInitializationFinished(VerizonAdapterConfiguration.class,
                             MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
                 } else {
