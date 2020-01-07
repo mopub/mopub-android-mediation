@@ -204,6 +204,9 @@ public class MintegralNative extends CustomEventNative {
             if (mNativeHandler != null) {
                 mNativeHandler.unregisterView(view, mCampaign);
             }
+            if (mtgBidNativeHandler!=null){
+                mtgBidNativeHandler.unregisterView(view,mCampaign);
+            }
         }
 
         @Override
@@ -225,6 +228,8 @@ public class MintegralNative extends CustomEventNative {
         void registerViewForInteraction(View view) {
             if (mNativeHandler != null) {
                 mNativeHandler.registerView(view, mCampaign);
+            }else if (mtgBidNativeHandler!=null){
+                mtgBidNativeHandler.registerView(view,mCampaign);
             }
         }
 
