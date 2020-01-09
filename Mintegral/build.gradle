@@ -5,7 +5,6 @@ apply from: '../shared-build.gradle'
 
 dependencies {
     implementation "com.mintegral.msdk:mtgbanner:${sdkVersion}"
-    implementation "com.mintegral.msdk:interstitial:${sdkVersion}"
     implementation "com.mintegral.msdk:interstitialvideo:${sdkVersion}"
     implementation "com.mintegral.msdk:videojs:${sdkVersion}"
     implementation "com.mintegral.msdk:nativeex:${sdkVersion}";
