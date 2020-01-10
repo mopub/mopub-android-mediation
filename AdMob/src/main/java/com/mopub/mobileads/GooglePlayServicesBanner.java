@@ -29,6 +29,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesBanner extends CustomEventBanner {
     /*
@@ -106,7 +107,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         // Consent collected from the MoPub’s consent dialogue should not be used to set up
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-        forwardNpaIfSet(builder);
+        builder =  forwardNpaIfSet(builder);
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
@@ -152,18 +153,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             mGoogleAdView.setAdListener(null);
             mGoogleAdView.destroy();
         }
-    }
-
-    private void forwardNpaIfSet(AdRequest.Builder builder) {
-        Bundle npaBundle = new Bundle();
-        if (MoPub.canCollectPersonalInformation()) {
-            npaBundle.putString("npa", "1");
-        } else {
-            npaBundle.putString("npa", "0");
-        }
-
-        builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-
     }
 
     private boolean extrasAreValid(Map<String, String> serverExtras) {

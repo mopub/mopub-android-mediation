@@ -6,6 +6,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
@@ -103,5 +105,19 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
     private static void setNpaBundle(String npaValue) {
         npaBundle = new Bundle();
         npaBundle.putString(KEY_NPA, npaValue);
+    }
+
+    public static AdRequest.Builder forwardNpaIfSet(AdRequest.Builder builder) {
+        Bundle npaBundle = new Bundle();
+        if (MoPub.canCollectPersonalInformation()) {
+            npaBundle.putString("npa", "1");
+        } else {
+            npaBundle.putString("npa", "0");
+        }
+
+        if (!npaBundle.isEmpty()) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
+        }
+        return builder;
     }
 }

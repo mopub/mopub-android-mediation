@@ -23,6 +23,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     /*
@@ -95,7 +96,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         // Consent collected from the MoPub’s consent dialogue should not be used to set up
         // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-        forwardNpaIfSet(builder);
+        builder =  forwardNpaIfSet(builder);
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
@@ -133,19 +134,6 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
                 mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
             }
         }
-    }
-
-    private void forwardNpaIfSet(AdRequest.Builder builder) {
-
-        Bundle npaBundle = new Bundle();
-        if (MoPub.canCollectPersonalInformation()) {
-            npaBundle.putString("npa", "1");
-        } else {
-            npaBundle.putString("npa", "0");
-        }
-
-        builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-
     }
 
     @Override
