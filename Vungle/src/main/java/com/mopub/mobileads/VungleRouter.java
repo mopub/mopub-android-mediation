@@ -113,7 +113,7 @@ public class VungleRouter {
             }
 
             @Override
-            public void onError(Throwable throwable) {
+            public void onError(VungleException throwable) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initialization failed.", throwable);
 
                 sInitState = SDKInitState.NOTINITIALIZED;
@@ -289,7 +289,7 @@ public class VungleRouter {
         }
 
         @Override
-        public void onError(String id, Throwable error) {
+        public void onError(String id, VungleException error) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE, "onUnableToPlayAd - Placement ID: " + id, error);
 
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
@@ -309,7 +309,7 @@ public class VungleRouter {
         }
 
         @Override
-        public void onError(String id, Throwable cause) {
+        public void onError(String id, VungleException cause) {
             onAdAvailabilityUpdate(id, false);
         }
 

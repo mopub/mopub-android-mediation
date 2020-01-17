@@ -244,8 +244,6 @@
             if (mPlacementId.equals(placementReferenceId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
-
-
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
                 mHandler.post(new Runnable() {
@@ -253,18 +251,8 @@
                     @Override
                     public void run() {
                         if (wasCallToActionClicked && mCustomEventBannerListener != null) {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (wasCallToActionClicked) {
-
-                                        mCustomEventBannerListener.onBannerClicked();
-                                        MoPubLog.log(CLICKED, ADAPTER_NAME);
-                                    }
-                                }
-                            });
-                            sVungleRouter.removeRouterListener(mPlacementId);
-                            mVungleRouterListener = null;
+                            mCustomEventBannerListener.onBannerClicked();
+                            MoPubLog.log(CLICKED, ADAPTER_NAME);
                         }
                     }
                 });
