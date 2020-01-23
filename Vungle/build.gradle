@@ -1,0 +1,13 @@
+project.version = '6.4.11.5'
+
+apply from: '../shared-build.gradle'
+
+def sdkSrcDependency = hasProperty("SdkSrcDependency") ? "$SdkSrcDependency".toBoolean() : false
+
+dependencies {
+    if (sdkSrcDependency) {
+        implementation project(':vungle-android-sdk:publisher-sdk-android')
+    } else {
+        implementation "com.vungle:publisher-sdk-android:${sdkVersion}"
+    }
+}
