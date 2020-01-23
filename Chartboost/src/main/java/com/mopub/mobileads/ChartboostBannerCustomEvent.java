@@ -118,8 +118,8 @@ public class ChartboostBannerCustomEvent extends CustomEventBanner {
 
             if (adWidth >= 728 && adHeight >= 90) {
                 return BannerSize.LEADERBOARD;
-            } else if (adWidth >= 468 && adHeight >= 60) {
-                return BannerSize.STANDARD;
+            } else if (adWidth >= 300 && adHeight >= 250) {
+                return BannerSize.MEDIUM;
             } else {
                 return BannerSize.STANDARD;
             }
