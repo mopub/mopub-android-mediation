@@ -1,0 +1,8 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <item name="ic_menu_unlock" type="drawable">@android:drawable/ic_lock_idle_lock</item>
+    <item name="ic_menu_lock" type="drawable">@android:drawable/ic_lock_lock</item>
+    <item name="ic_menu_slideshow" type="drawable">@android:drawable/ic_menu_slideshow</item>
+    <item name="ic_menu_manage" type="drawable">@android:drawable/ic_menu_manage</item>
+    <item name="ic_menu_adapters" type="drawable">@android:drawable/ic_menu_info_details</item>
+    <item name="ic_menu_info" type="drawable">@android:drawable/ic_dialog_info</item>
+</resources>

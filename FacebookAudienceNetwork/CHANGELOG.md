@@ -1,4 +1,89 @@
 ## Changelog
+ * 5.6.1.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.6.1.
+ 
+ * 5.6.0.1
+    * Log the Facebook placement name in ad lifecycle events.
+    * Map additional error codes for failure cases.
+    * Fail fast when certain parameters are null. 
+
+ * 5.6.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.6.0.
+    * Add support for [native banner](https://developers.facebook.com/docs/audience-network/android-native-banner/). Refer to the [Mediate Facebook page](https://developers.mopub.com/publishers/mediation/networks/facebook/) for integration instructions.
+    * Refactor ad request logic to use Facebook Audience Network's `LoadConfigBuilder`. 
+
+ * 5.5.0.8
+    * Replace `AdIconView` with `MediaView` for the ad icon view as it has been deprecated by Facebook. 
+
+ * 5.5.0.7
+    * Fix error codes mapping for the banner and interstitial adapters. 
+
+ * 5.5.0.6
+    * Fix banner size checks so 250 doesn't always get treated as 90.
+
+ * 5.5.0.5
+    * Remove native video handling code and associated comments. Publishers can enable/disable video on the Facebook Audience Network dashboard.
+
+ * 5.5.0.4
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
+ * 5.5.0.3
+    * Throw a playback error (instead of load failure) when a rewarded video has expired.
+
+ * 5.5.0.2
+    * Check if the Facebook ad (interstitial / rewarded video) has been invalidated before showing.
+
+ * 5.5.0.1
+    * Support additional interstitial and rewarded video callbacks from the `InterstitialAdExtendedListener` interface.
+
+ * 5.5.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.5.0.
+    * Bidder token generation doesn't depend on Facebook SDK initialization.
+
+ * 5.4.1.1
+    * Fix banner size passing as part of 5.8.0+ MoPub SDK release changes.
+
+ * 5.4.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.4.1.
+
+ * 5.4.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.4.0.
+
+ * 5.3.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.3.1.
+
+ * 5.3.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.3.0.
+
+ * 5.2.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.2.1.
+
+ * 5.2.0.1
+    * Facebook Audience Network Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [FAN manifest changes](https://developers.facebook.com/docs/audience-network/android-interstitial/).
+
+  * 5.2.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.2.0. 
+    * Add `FacebookTemplateRenderer.java` to render native ads using [predefined layouts from Facebook Audience Network](https://developers.facebook.com/docs/audience-network/android/nativeadtemplate). You won't need to bind to your XML layouts/views; instead of creating a new `FacebookAdRenderer`, simply create a new `FacebookTemplateRenderer` and pass in a new `NativeAdViewAttributes()`.
+    * Replace `AdChoiceView` with `AdOptionsView`.
+
+  * 5.1.0.2
+    * Fix an ANR when getting the bidding token by calling Facebook's `BidderTokenProvider.getBidderToken()` from a background thread.
+
+  * 5.1.0.1
+    * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
+    * Add the `FacebookAdapterConfiguration` class to: 
+         * pre-initialize the Facebook Audience Network SDK during MoPub SDK initialization process
+         * store adapter and SDK versions for logging purpose
+         * return the Advanced Biding token previously returned by `FacebookAdvancedBidder.java`
+    * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
+
+  * 5.1.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.1.0
+    * For all ad formats, add support to initialize Facebook Audience Network SDK at the time of the first ad request to Facebook Audience Network.
+ 
+  * 5.0.1.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.0.1.
+
   * 5.0.0.0
     * This version of the adapters has been certified with Facebook Audience Network 5.0.0.
     * Remove calls to `disableAutoRefresh()` for banner (deprecated by Facebook).
