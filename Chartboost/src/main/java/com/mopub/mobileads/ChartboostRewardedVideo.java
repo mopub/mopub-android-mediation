@@ -66,7 +66,7 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
                                          @NonNull Map<String, String> serverExtras) throws Exception {
         // We need to attempt to reinitialize Chartboost on each request, in case an interstitial has been
         // loaded and used since then.
-        ChartboostShared.initializeSdk(launcherActivity, serverExtras);  // throws IllegalStateException
+        ChartboostShared.initializeSdk(launcherActivity.getApplicationContext(), serverExtras);  // throws IllegalStateException
 
         // Always return true so that the lifecycle listener is registered even if an interstitial
         // did the initialization.
@@ -158,22 +158,18 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
     private static final class ChartboostLifecycleListener implements LifecycleListener {
         @Override
         public void onCreate(@NonNull Activity activity) {
-            Chartboost.onCreate(activity);
         }
 
         @Override
         public void onStart(@NonNull Activity activity) {
-            Chartboost.onStart(activity);
         }
 
         @Override
         public void onPause(@NonNull Activity activity) {
-            Chartboost.onPause(activity);
         }
 
         @Override
         public void onResume(@NonNull Activity activity) {
-            Chartboost.onResume(activity);
         }
 
         @Override
@@ -182,12 +178,10 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onStop(@NonNull Activity activity) {
-            Chartboost.onStop(activity);
         }
 
         @Override
         public void onDestroy(@NonNull Activity activity) {
-            Chartboost.onDestroy(activity);
         }
 
         @Override

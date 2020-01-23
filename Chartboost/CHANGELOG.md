@@ -1,4 +1,9 @@
 ## Changelog
+  * 8.0.1.0
+    * Support Chartboost SDK 8.0.1
+    * Remove activity dependency
+    * Remove deprecated api calls
+  
   * 7.5.0.3
     * Log the Chartboost location String in ad lifecycle events.
     * Map additional error codes for failure cases.
