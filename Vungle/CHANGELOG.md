@@ -1,4 +1,9 @@
 ## Changelog
+
+  *  6.5.1.0
+    * Verified compatibility with Vungle SDK 6.5.1
+    * Add support for the newly-introduced Vungle's Banner format
+
   * 6.4.11.2
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
 
