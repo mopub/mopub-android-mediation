@@ -297,11 +297,11 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                                 final FlurryAdErrorType adErrorType,
                                 final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
+                mCustomEventNativeListener.onNativeAdFailed(getMoPubNativeErrorCode(adErrorType));
 
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                        NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        NativeErrorCode.NETWORK_NO_FILL);
+                        getMoPubNativeErrorCode(adErrorType).getIntCode(),
+                        getMoPubNativeErrorCode(adErrorType));
             }
         };
 
@@ -439,11 +439,11 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                                 final FlurryAdErrorType adErrorType,
                                 final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
+                mCustomEventNativeListener.onNativeAdFailed(getMoPubNativeErrorCode(adErrorType));
 
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                        NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        NativeErrorCode.NETWORK_NO_FILL);
+                        getMoPubNativeErrorCode(adErrorType).getIntCode(),
+                        getMoPubNativeErrorCode(adErrorType));
             }
         };
 
@@ -712,8 +712,19 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                             final int errorCode) {
 
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "onError: Flurry native ad not available. " +
-                    "Error type: %s. Error code: %s", adErrorType.toString(), errorCode);
+                    "Error type: %s. Error code: %s", getMoPubNativeErrorCode(adErrorType).toString(), getMoPubNativeErrorCode(adErrorType));
             sFlurryNativeAds.remove(flurryAdNative);
+        }
+    }
+
+    private static NativeErrorCode getMoPubNativeErrorCode(FlurryAdErrorType adErrorType) {
+        switch (adErrorType) {
+            case FETCH:
+                return NativeErrorCode.NETWORK_NO_FILL;
+            case RENDER:
+                return NativeErrorCode.NETWORK_INVALID_STATE;
+            default:
+                return NativeErrorCode.UNSPECIFIED;
         }
     }
 }

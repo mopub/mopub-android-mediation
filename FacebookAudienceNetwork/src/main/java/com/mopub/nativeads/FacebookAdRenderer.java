@@ -11,7 +11,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.facebook.ads.AdIconView;
 import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAdLayout;
@@ -41,15 +40,19 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
     }
 
     @Override
-    public View createAdView(final Context context, final ViewGroup parent) {
+    public View createAdView(@NonNull Context context, final ViewGroup parent) {
+        Preconditions.checkNotNull(context);
         return LayoutInflater
                 .from(context)
                 .inflate(mViewBinder.layoutId, parent, false);
     }
 
     @Override
-    public void renderAdView(final View view,
-                             final FacebookNative.FacebookNativeAd facebookNativeAd) {
+    public void renderAdView(@NonNull View view,
+                             @NonNull FacebookNative.FacebookNativeAd facebookNativeAd) {
+        Preconditions.checkNotNull(facebookNativeAd);
+        Preconditions.checkNotNull(view);
+
         FacebookNativeViewHolder facebookNativeViewHolder = mViewHolderMap.get(view);
         if (facebookNativeViewHolder == null) {
             facebookNativeViewHolder = FacebookNativeViewHolder.fromViewBinder(view, mViewBinder);
@@ -63,7 +66,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
     }
 
     @Override
-    public boolean supports(final BaseNativeAd nativeAd) {
+    public boolean supports(@NonNull BaseNativeAd nativeAd) {
         Preconditions.checkNotNull(nativeAd);
         return nativeAd instanceof FacebookNative.FacebookNativeAd;
     }
@@ -77,6 +80,8 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
                 nativeAd.getCallToAction());
         NativeRendererHelper.addTextView(facebookNativeViewHolder.getAdvertiserNameView(),
                 nativeAd.getAdvertiserName());
+        NativeRendererHelper.addTextView(facebookNativeViewHolder.getSponsoredLabelView(),
+                nativeAd.getSponsoredName());
 
         final RelativeLayout adChoicesContainer =
                 facebookNativeViewHolder.getAdChoicesContainer();
@@ -96,9 +101,11 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
             ViewGroup.LayoutParams layoutParams = adOptionsView.getLayoutParams();
             if (layoutParams instanceof RelativeLayout.LayoutParams) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    ((RelativeLayout.LayoutParams) layoutParams).addRule(RelativeLayout.ALIGN_PARENT_END);
+                    ((RelativeLayout.LayoutParams) layoutParams).addRule(
+                            RelativeLayout.ALIGN_PARENT_END);
                 } else {
-                    ((RelativeLayout.LayoutParams) layoutParams).addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    ((RelativeLayout.LayoutParams) layoutParams).addRule(
+                            RelativeLayout.ALIGN_PARENT_RIGHT);
                 }
             }
             adChoicesContainer.addView(adOptionsView);
@@ -119,9 +126,11 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         @Nullable
         private MediaView mediaView;
         @Nullable
-        private AdIconView adIconView;
+        private MediaView adIconView;
         @Nullable
         private TextView advertiserNameView;
+        @Nullable
+        private TextView sponsoredLabelView;
 
         // Use fromViewBinder instead of a constructor
         private FacebookNativeViewHolder() {
@@ -144,6 +153,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
             viewHolder.mediaView = view.findViewById(facebookViewBinder.mediaViewId);
             viewHolder.adIconView = view.findViewById(facebookViewBinder.adIconViewId);
             viewHolder.advertiserNameView = view.findViewById(facebookViewBinder.advertiserNameId);
+            viewHolder.sponsoredLabelView = view.findViewById(facebookViewBinder.sponsoredLabelId);
             return viewHolder;
         }
 
@@ -173,7 +183,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         }
 
         @Nullable
-        public AdIconView getAdIconView() {
+        public MediaView getAdIconView() {
             return adIconView;
         }
 
@@ -185,6 +195,11 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         @Nullable
         public TextView getAdvertiserNameView() {
             return advertiserNameView;
+        }
+
+        @Nullable
+        public TextView getSponsoredLabelView() {
+            return sponsoredLabelView;
         }
     }
 
@@ -200,8 +215,11 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         final int mediaViewId;
         final int adIconViewId;
         final int advertiserNameId;
+        final int sponsoredLabelId;
 
         private FacebookViewBinder(@NonNull final Builder builder) {
+            Preconditions.checkNotNull(builder);
+
             this.layoutId = builder.layoutId;
             this.titleId = builder.titleId;
             this.textId = builder.textId;
@@ -211,6 +229,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
             this.mediaViewId = builder.mediaViewId;
             this.adIconViewId = builder.adIconViewId;
             this.advertiserNameId = builder.advertiserNameId;
+            this.sponsoredLabelId = builder.sponsoredLabelId;
         }
 
         public static class Builder {
@@ -225,6 +244,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
             private int mediaViewId;
             private int adIconViewId;
             private int advertiserNameId;
+            private int sponsoredLabelId;
 
             public Builder(final int layoutId) {
                 this.layoutId = layoutId;
@@ -282,6 +302,12 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
             @NonNull
             public Builder advertiserNameId(final int advertiserNameId) {
                 this.advertiserNameId = advertiserNameId;
+                return this;
+            }
+
+            @NonNull
+            public Builder sponsoredNameId(final int sponsoredLabelId) {
+                this.sponsoredLabelId = sponsoredLabelId;
                 return this;
             }
 

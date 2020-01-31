@@ -34,27 +34,27 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
     /**
      * Key to set and get star rating text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_STAR_RATING = "key_star_rating";
+    public static final String VIEW_BINDER_KEY_STAR_RATING = "key_star_rating";
 
     /**
      * Key to set and get advertiser text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_ADVERTISER = "key_advertiser";
+    public static final String VIEW_BINDER_KEY_ADVERTISER = "key_advertiser";
 
     /**
      * Key to set and get store text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_STORE = "key_store";
+    public static final String VIEW_BINDER_KEY_STORE = "key_store";
 
     /**
      * Key to set and get price text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_PRICE = "key_price";
+    public static final String VIEW_BINDER_KEY_PRICE = "key_price";
 
     /**
      * Key to set and get the AdChoices icon view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_AD_CHOICES_ICON_CONTAINER = "ad_choices_container";
+    public static final String VIEW_BINDER_KEY_AD_CHOICES_ICON_CONTAINER = "ad_choices_container";
 
     /**
      * ID for the frame layout that wraps the Google ad view.

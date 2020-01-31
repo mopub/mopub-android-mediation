@@ -1,14 +1,15 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.VerizonUtils;
+import com.mopub.mobileads.VerizonAdapterConfiguration;
 import com.verizon.ads.videoplayer.VideoView;
 
 import java.util.Map;
@@ -91,7 +92,7 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
                     videoView.setVisibility(View.VISIBLE);
                     videoView.load(url);
 
-                    VerizonUtils.postOnUiThread(new Runnable() {
+                    VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             videoView.play();

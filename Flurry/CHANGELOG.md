@@ -1,4 +1,11 @@
 ## Changelog
+ * 12.0.3.1
+    * Log Flurry ad space name in ad lifecycle events.
+    * Map additional error codes for failure cases.
+
+ * 12.0.3.0
+    * This version of the adapters has been certified with Flurry 12.0.3.
+
  * 11.7.1.1
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
 

@@ -1,4 +1,20 @@
 ## Changelog
+ * 5.6.1.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.6.1.
+ 
+ * 5.6.0.1
+    * Log the Facebook placement name in ad lifecycle events.
+    * Map additional error codes for failure cases.
+    * Fail fast when certain parameters are null. 
+
+ * 5.6.0.0
+    * This version of the adapters has been certified with Facebook Audience Network 5.6.0.
+    * Add support for [native banner](https://developers.facebook.com/docs/audience-network/android-native-banner/). Refer to the [Mediate Facebook page](https://developers.mopub.com/publishers/mediation/networks/facebook/) for integration instructions.
+    * Refactor ad request logic to use Facebook Audience Network's `LoadConfigBuilder`. 
+
+ * 5.5.0.8
+    * Replace `AdIconView` with `MediaView` for the ad icon view as it has been deprecated by Facebook. 
+
  * 5.5.0.7
     * Fix error codes mapping for the banner and interstitial adapters. 
 

@@ -1,4 +1,17 @@
 ## Changelog
+  * 12.4.0.1
+    * Log the Tapjoy placement ID in ad lifecycle events.
+
+  * 12.4.0.0
+    * This version of the adapters has been certified with Tapjoy 12.4.0.
+
+  * 12.3.4.0
+    * This version of the adapters has been certified with Tapjoy 12.3.4.
+
+  * 12.3.3.1
+    * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for `TapjoyRewardedVideo.java`.
+    * Removed `sdkKey` setter from code. It must be entered on the Mopub dashboard.
+    
   * 12.3.3.0
     * This version of adapters has been certified with Tapjoy 12.3.3.
 

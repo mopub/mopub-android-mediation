@@ -31,7 +31,15 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
+import static com.mopub.mobileads.MoPubErrorCode.CANCELLED;
+import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
+import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
+import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
+import static com.mopub.mobileads.MoPubErrorCode.NO_CONNECTION;
+import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 import static com.mopub.mobileads.MoPubErrorCode.VIDEO_DOWNLOAD_ERROR;
+import static com.mopub.mobileads.MoPubErrorCode.VIDEO_NOT_AVAILABLE;
+import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
 public class ChartboostShared {
     private static volatile ChartboostSingletonDelegate sDelegate = new ChartboostSingletonDelegate();
@@ -229,11 +237,39 @@ public class ChartboostShared {
             String suffix = error != null ? "Error: " + error.name() : "";
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost interstitial ad failed to load." + suffix);
 
-            getInterstitialListener(location).onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubErrorCode errorCode = null;
 
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+            if (error != null) {
+                switch (error) {
+                    case INTERNAL:
+                        errorCode = NETWORK_INVALID_STATE;
+                        break;
+                    case INTERNET_UNAVAILABLE:
+                        errorCode = NO_CONNECTION;
+                        break;
+                    case TOO_MANY_CONNECTIONS:
+                        errorCode = CANCELLED;
+                        break;
+                    case NETWORK_FAILURE:
+                        errorCode = NETWORK_TIMEOUT;
+                        break;
+                    case NO_AD_FOUND:
+                        errorCode = NETWORK_NO_FILL;
+                        break;
+                    case VIDEO_UNAVAILABLE:
+                        errorCode = VIDEO_NOT_AVAILABLE;
+                        break;
+                    case ERROR_PLAYING_VIDEO:
+                        errorCode = VIDEO_PLAYBACK_ERROR;
+                        break;
+                    default:
+                        errorCode = UNSPECIFIED;
+                }
+
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+            }
+
+            getInterstitialListener(location).onInterstitialFailed(errorCode);
         }
 
         @Override
@@ -284,19 +320,44 @@ public class ChartboostShared {
             super.didFailToLoadRewardedVideo(location, error);
             String suffix = error != null ? " with error: " + error.name() : "";
             if (mRewardedVideoLocationsToLoad.contains(location)) {
-                MoPubErrorCode errorCode = VIDEO_DOWNLOAD_ERROR;
 
-                if (CBError.CBImpressionError.INVALID_LOCATION.equals(error)) {
-                    errorCode = ADAPTER_CONFIGURATION_ERROR;
+                MoPubErrorCode errorCode = null;
+
+                if (error != null) {
+                    switch (error) {
+                        case INTERNAL:
+                            errorCode = NETWORK_INVALID_STATE;
+                            break;
+                        case INTERNET_UNAVAILABLE:
+                            errorCode = NO_CONNECTION;
+                            break;
+                        case TOO_MANY_CONNECTIONS:
+                            errorCode = CANCELLED;
+                            break;
+                        case NETWORK_FAILURE:
+                            errorCode = NETWORK_TIMEOUT;
+                            break;
+                        case NO_AD_FOUND:
+                            errorCode = NETWORK_NO_FILL;
+                            break;
+                        case VIDEO_UNAVAILABLE:
+                            errorCode = VIDEO_NOT_AVAILABLE;
+                            break;
+                        case ERROR_PLAYING_VIDEO:
+                            errorCode = VIDEO_PLAYBACK_ERROR;
+                            break;
+                        default:
+                            errorCode = UNSPECIFIED;
+                    }
+
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video cache " +
+                            "failed for location " + location + suffix);
                 }
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(ChartboostRewardedVideo.class, location, errorCode);
-                mRewardedVideoLocationsToLoad.remove(location);
 
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                        errorCode.getIntCode(),
-                        errorCode);
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost rewarded video cache failed for location " +
-                        location + suffix);
+                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(ChartboostRewardedVideo.class,
+                        location, errorCode);
+                mRewardedVideoLocationsToLoad.remove(location);
             }
         }
 

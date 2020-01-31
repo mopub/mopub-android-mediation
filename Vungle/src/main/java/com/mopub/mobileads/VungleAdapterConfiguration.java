@@ -75,7 +75,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
                 } else if (configuration != null && sVungleRouter != null) {
                     final String mAppId = configuration.get(APP_ID_KEY);
                     if (TextUtils.isEmpty(mAppId)) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle's initialization not " +
+                        MoPubLog.log(mAppId, CUSTOM, ADAPTER_NAME, "Vungle's initialization not " +
                                 "started. Ensure Vungle's appId is populated");
                         listener.onNetworkInitializationFinished(this.getClass(),
                                 MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);

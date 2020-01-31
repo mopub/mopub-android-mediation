@@ -2,9 +2,10 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.app.Application;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
@@ -31,7 +32,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
-import static com.mopub.mobileads.VerizonUtils.convertErrorInfoToMoPub;
+import static com.mopub.mobileads.VerizonAdapterConfiguration.convertErrorInfoToMoPub;
 
 public class VerizonRewardedVideo extends CustomEventRewardedVideo {
 
@@ -91,8 +92,8 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
                                             @NonNull final Map<String, Object> localExtras,
                                             @NonNull final Map<String, String> serverExtras) {
         if (serverExtras.isEmpty()) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad request to Verizon failed because " +
-                    "serverExtras is null or empty");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Ad request to Verizon " +
+                    "failed because serverExtras is null or empty");
 
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VerizonRewardedVideo.class, getAdNetworkId(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
@@ -106,8 +107,8 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
             Application application = launcherActivity.getApplication();
 
             if (!StandardEdition.initialize(application, siteId)) {
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                        ADAPTER_CONFIGURATION_ERROR);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                        ADAPTER_CONFIGURATION_ERROR.getIntCode(), ADAPTER_CONFIGURATION_ERROR);
                 MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VerizonRewardedVideo.class, getAdNetworkId(),
                         MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
@@ -118,8 +119,8 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
         placementId = serverExtras.get(PLACEMENT_ID_KEY);
 
         if (TextUtils.isEmpty(placementId)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Invalid extras--Make sure you have a " +
-                    "valid placement ID specified on the MoPub dashboard.");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Invalid extras--Make sure " +
+                    "you have a valid placement ID specified on the MoPub dashboard.");
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VerizonRewardedVideo.class, getAdNetworkId(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
@@ -180,15 +181,15 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
     @Override
     protected void show() {
 
-        VerizonUtils.postOnUiThread(new Runnable() {
+        VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
             @Override
             public void run() {
                 if (verizonInterstitialAd != null) {
                     verizonInterstitialAd.show(activity);
                 } else {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Show() called before Verizon rewarded " +
-                            "video ad was loaded.");
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Show() called " +
+                            "before Verizon rewarded video ad was loaded.");
                     MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VerizonRewardedVideo.class,
                             getAdNetworkId(), MoPubErrorCode.NETWORK_INVALID_STATE);
                 }
@@ -203,15 +204,16 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
 
             verizonInterstitialAd = interstitialAd;
 
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
-            VerizonUtils.postOnUiThread(new Runnable() {
+            VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
 
                     final CreativeInfo creativeInfo = verizonInterstitialAd == null ? null :
                             verizonInterstitialAd.getCreativeInfo();
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verizon creative info: " + creativeInfo);
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Verizon creative " +
+                            "info: " + creativeInfo);
                 }
             });
 
@@ -229,8 +231,8 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onError(final InterstitialAdFactory interstitialAdFactory, final ErrorInfo errorInfo) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to load Verizon rewarded video due to " +
-                    "error: " + errorInfo.toString());
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Verizon " +
+                    "rewarded video due to error: " + errorInfo.toString());
 
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VerizonRewardedVideo.class, getAdNetworkId(),
                     convertErrorInfoToMoPub(errorInfo));
@@ -241,8 +243,8 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onError(final InterstitialAd interstitialAd, final ErrorInfo errorInfo) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show Verizon rewarded video due to " +
-                    "error: " + errorInfo.toString());
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Verizon " +
+                    "rewarded video due to error: " + errorInfo.toString());
 
             MoPubRewardedVideoManager.onRewardedVideoPlaybackError(VerizonRewardedVideo.class, getAdNetworkId(),
                     MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
@@ -250,19 +252,19 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onShown(final InterstitialAd interstitialAd) {
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
             MoPubRewardedVideoManager.onRewardedVideoStarted(VerizonRewardedVideo.class, getAdNetworkId());
         }
 
         @Override
         public void onClosed(final InterstitialAd interstitialAd) {
-            MoPubLog.log(DID_DISAPPEAR, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
             MoPubRewardedVideoManager.onRewardedVideoClosed(VerizonRewardedVideo.class, getAdNetworkId());
         }
 
         @Override
         public void onClicked(final InterstitialAd interstitialAd) {
-            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
             MoPubRewardedVideoManager.onRewardedVideoClicked(VerizonRewardedVideo.class, getAdNetworkId());
         }
 
@@ -270,7 +272,7 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
         public void onAdLeftApplication(final InterstitialAd interstitialAd) {
             // Only logging this event. No need to call interstitialListener.onLeaveApplication()
             // because it's an alias for interstitialListener.onInterstitialClicked()
-            MoPubLog.log(WILL_LEAVE_APPLICATION, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
         }
 
         @Override

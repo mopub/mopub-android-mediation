@@ -21,9 +21,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
 public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
+    public static final String NATIVE_BANNER_KEY = "native_banner";
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+
+    private static Boolean isNativeBanner;
 
     private AtomicReference<String> tokenReference = new AtomicReference<>(null);
     private AtomicBoolean isComputingToken = new AtomicBoolean(false);
@@ -70,15 +73,30 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
                 AudienceNetworkAds.buildInitSettings(context)
                         .withMediationService("MOPUB_" + MoPub.SDK_VERSION + ":" + ADAPTER_VERSION)
                         .initialize();
+
+                if (configuration != null && !configuration.isEmpty()) {
+                    isNativeBanner = Boolean.valueOf(configuration.get(NATIVE_BANNER_KEY));
+
+                    setNativeBannerPref(isNativeBanner);
+                }
             } catch (Throwable t) {
                 MoPubLog.log(
                         CUSTOM_WITH_THROWABLE,
-                        "Initializing Facebook Audience Network" + " has encountered an exception.",
+                        "Initializing Facebook Audience Network" + " has encountered an " +
+                                "exception.",
                         t);
             }
         }
         listener.onNetworkInitializationFinished(this.getClass(),
                 MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
+    }
+
+    public static Boolean getNativeBannerPref() {
+        return isNativeBanner;
+    }
+
+    private static void setNativeBannerPref(Boolean pref) {
+        isNativeBanner = pref;
     }
 
     private void refreshBidderToken(final Context context) {

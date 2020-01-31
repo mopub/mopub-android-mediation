@@ -4,6 +4,15 @@
     * Verified compatibility with Vungle SDK 6.5.1
     * Add support for the newly-introduced Vungle's Banner format
 
+  * 6.4.11.5
+    * Log the Vungle placement ID in ad lifecycle events.
+
+  * 6.4.11.4
+    * Fire `onInterstitialShown` callback when interstitial records an impression.
+
+  * 6.4.11.3
+    * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for `VungleRewardedVideo.java`
+
   * 6.4.11.2
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
 

@@ -82,10 +82,24 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, activity.getApplicationContext());
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Initializing AppLovin rewarded video...");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Initializing AppLovin rewarded video...");
 
         if (!initialized) {
-            sdk = retrieveSdk(serverExtras, activity);
+            sdk = retrieveSdk(activity);
+
+            if (sdk == null) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AppLovinSdk instance is null likely because " +
+                        "no AppLovin SDK key is available. Failing ad request.");
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(AppLovinRewardedVideo.this.
+                        getClass(), getAdNetworkId(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+                return false;
+            }
+
             sdk.setMediationProvider(AppLovinMediationProvider.MOPUB);
             sdk.setPluginVersion(AppLovinAdapterConfiguration.APPLOVIN_PLUGIN_VERSION);
 
@@ -101,10 +115,17 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
         parentActivity = activity;
 
+        if (serverExtras == null || serverExtras.isEmpty()) {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "No serverExtras provided");
+            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(AppLovinRewardedVideo.this.
+                    getClass(), getAdNetworkId(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            return;
+        }
+
         final String adMarkup = serverExtras.get(DataKeys.ADM_KEY);
         final boolean hasAdMarkup = !TextUtils.isEmpty(adMarkup);
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requesting AppLovin rewarded video with serverExtras: " + serverExtras
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Requesting AppLovin rewarded video with serverExtras: " + serverExtras
                 + ", localExtras: " + localExtras + " and has ad markup: " + hasAdMarkup);
 
         mAppLovinAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
@@ -141,7 +162,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
     @Override
     protected void showVideo() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (hasVideoAvailable()) {
             fullyWatched = false;
@@ -153,12 +174,12 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
                 incentivizedInterstitial.show(parentActivity, null, this, this, this, this);
             }
         } else {
-            MoPubLog.log(SHOW_FAILED,
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED,
                     ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show an AppLovin rewarded video before one was loaded");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show an AppLovin rewarded video before one was loaded");
             MoPubRewardedVideoManager.onRewardedVideoPlaybackError(getClass(), getAdNetworkId(), MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
         }
     }
@@ -194,7 +215,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
     @Override
     public void adReceived(final AppLovinAd ad) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Rewarded video did load ad: " + ad.getAdIdNumber());
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Rewarded video did load ad: " + ad.getAdIdNumber());
 
         if (isTokenEvent) {
             tokenAd = ad;
@@ -206,9 +227,9 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
                 try {
                     MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(AppLovinRewardedVideo.this.getClass(), getAdNetworkId());
 
-                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                    MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                 } catch (Throwable th) {
-                    MoPubLog.log(CUSTOM_WITH_THROWABLE, "Unable to notify listener of " +
+                    MoPubLog.log(getAdNetworkId(), CUSTOM_WITH_THROWABLE, "Unable to notify listener of " +
                             "successful ad load.", th);
                 }
             }
@@ -223,13 +244,13 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
             public void run() {
                 try {
                     MoPubRewardedVideoManager.onRewardedVideoLoadFailure(AppLovinRewardedVideo.this.
-                            getClass(), getAdNetworkId(), toMoPubErrorCode(errorCode));
+                            getClass(), getAdNetworkId(), AppLovinAdapterConfiguration.getMoPubErrorCode(errorCode));
 
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                            toMoPubErrorCode(errorCode).getIntCode(),
-                            toMoPubErrorCode(errorCode));
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                            AppLovinAdapterConfiguration.getMoPubErrorCode(errorCode).getIntCode(),
+                            AppLovinAdapterConfiguration.getMoPubErrorCode(errorCode));
                 } catch (Throwable th) {
-                    MoPubLog.log(CUSTOM_WITH_THROWABLE, "Unable to notify listener of failure" +
+                    MoPubLog.log(getAdNetworkId(), CUSTOM_WITH_THROWABLE, "Unable to notify listener of failure" +
                             " to receive ad.", th);
                 }
             }
@@ -244,15 +265,15 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     public void adDisplayed(final AppLovinAd ad) {
         MoPubRewardedVideoManager.onRewardedVideoStarted(getClass(), getAdNetworkId());
 
-        MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
     }
 
     @Override
     public void adHidden(final AppLovinAd ad) {
 
         if (fullyWatched && reward != null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Rewarded: " + reward.getAmount() + " " + reward.getLabel());
-            MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, reward.getAmount(), reward.getLabel());
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Rewarded: " + reward.getAmount() + " " + reward.getLabel());
+            MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, reward.getAmount(), reward.getLabel());
 
             MoPubRewardedVideoManager.onRewardedVideoCompleted(getClass(), getAdNetworkId(), reward);
         }
@@ -268,7 +289,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     public void adClicked(final AppLovinAd ad) {
         MoPubRewardedVideoManager.onRewardedVideoClicked(getClass(), getAdNetworkId());
 
-        MoPubLog.log(CLICKED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
     }
 
     //
@@ -277,12 +298,12 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
     @Override
     public void videoPlaybackBegan(final AppLovinAd ad) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Rewarded video playback began");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Rewarded video playback began");
     }
 
     @Override
     public void videoPlaybackEnded(final AppLovinAd ad, final double percentViewed, final boolean fullyWatched) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Rewarded video playback ended at playback percent: " + percentViewed);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Rewarded video playback ended at playback percent: " + percentViewed);
 
         this.fullyWatched = fullyWatched;
     }
@@ -293,25 +314,25 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
 
     @Override
     public void userOverQuota(final AppLovinAd appLovinAd, final Map map) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Rewarded video validation request for ad did exceed quota with " +
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Rewarded video validation request for ad did exceed quota with " +
                 "response: " + map);
     }
 
     @Override
     public void validationRequestFailed(final AppLovinAd appLovinAd, final int errorCode) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Rewarded video validation request for ad failed with error " +
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Rewarded video validation request for ad failed with error " +
                 "code: " + errorCode);
     }
 
     @Override
     public void userRewardRejected(final AppLovinAd appLovinAd, final Map map) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Rewarded video validation request was rejected with response: "
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Rewarded video validation request was rejected with response: "
                 + map);
     }
 
     @Override
     public void userDeclinedToViewAd(final AppLovinAd appLovinAd) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "User declined to view rewarded video");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "User declined to view rewarded video");
         MoPubRewardedVideoManager.onRewardedVideoClosed(getClass(), getAdNetworkId());
     }
 
@@ -320,7 +341,7 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
         final String currency = (String) map.get("currency");
         final int amount = (int) Double.parseDouble((String) map.get("amount")); // AppLovin returns amount as double
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Verified " + amount + " " + currency);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Verified " + amount + " " + currency);
 
         reward = MoPubReward.success(currency, amount);
     }
@@ -329,33 +350,22 @@ public class AppLovinRewardedVideo extends CustomEventRewardedVideo implements A
     // Utility Methods
     //
 
-    private static MoPubErrorCode toMoPubErrorCode(final int applovinErrorCode) {
-        if (applovinErrorCode == AppLovinErrorCodes.NO_FILL) {
-            return MoPubErrorCode.NETWORK_NO_FILL;
-        } else if (applovinErrorCode == AppLovinErrorCodes.UNSPECIFIED_ERROR) {
-            return MoPubErrorCode.UNSPECIFIED;
-        } else if (applovinErrorCode == AppLovinErrorCodes.NO_NETWORK) {
-            return MoPubErrorCode.NO_CONNECTION;
-        } else if (applovinErrorCode == AppLovinErrorCodes.FETCH_AD_TIMEOUT) {
-            return MoPubErrorCode.NETWORK_TIMEOUT;
-        } else {
-            return MoPubErrorCode.UNSPECIFIED;
-        }
-    }
-
     /**
-     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key given in the server parameters, or Android Manifest.
+     * Retrieves the appropriate instance of AppLovin's SDK from the SDK key. This check prioritizes
+     * the SDK Key in the AndroidManifest, and only uses the one passed in to the AdapterConfiguration
+     * if the former is not available.
      */
-    private static AppLovinSdk retrieveSdk(final Map<String, String> serverExtras, final Context context) {
-        final String sdkKey = AppLovinAdapterConfiguration.getSdkKey();
-        final AppLovinSdk sdk;
+    private static AppLovinSdk retrieveSdk(final Context context) {
 
-        if (!TextUtils.isEmpty(sdkKey)) {
-            sdk = AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context);
+        if (!AppLovinAdapterConfiguration.androidManifestContainsValidSdkKey(context)) {
+            final String sdkKey = AppLovinAdapterConfiguration.getSdkKey();
+
+            return !TextUtils.isEmpty(sdkKey)
+                    ? AppLovinSdk.getInstance(sdkKey, new AppLovinSdkSettings(), context)
+                    : null;
         } else {
-            sdk = AppLovinSdk.getInstance(context);
+            return AppLovinSdk.getInstance(context);
         }
-        return sdk;
     }
 
     private static AppLovinIncentivizedInterstitial createIncentivizedInterstitialAd(final String zoneId, final AppLovinSdk sdk) {

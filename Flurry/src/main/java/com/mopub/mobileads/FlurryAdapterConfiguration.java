@@ -75,7 +75,7 @@ public class FlurryAdapterConfiguration extends BaseAdapterConfiguration {
                     final String apiKey = configuration.get(FlurryAgentWrapper.PARAM_API_KEY);
 
                     if (TextUtils.isEmpty(apiKey)) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Flurry's initialization not " +
+                        MoPubLog.log(apiKey, CUSTOM, ADAPTER_NAME, "Flurry's initialization not " +
                                 "started. Ensure Flurry's " + API_KEY +
                                 "is populated on the MoPub dashboard.");
                     } else {
