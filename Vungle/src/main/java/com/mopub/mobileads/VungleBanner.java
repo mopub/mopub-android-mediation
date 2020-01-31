@@ -49,7 +49,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
     private CustomEventBannerListener mCustomEventBannerListener;
     private final Handler mHandler;
     private String mAppId;
-    private static String mPlacementId;
+    private String mPlacementId;
     private VungleBannerRouterListener mVungleRouterListener;
     private static VungleRouter sVungleRouter;
     private boolean mIsPlaying;
@@ -60,8 +60,6 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
     private VungleAdapterConfiguration mVungleAdapterConfiguration;
     private AtomicBoolean pendingRequestBanner = new AtomicBoolean(false);
     private AdConfig adConfig = new AdConfig();
-
-    private int adWidthInDp, adHeightInDp;
 
     public VungleBanner() {
         this.mHandler = new Handler(Looper.getMainLooper());
@@ -146,7 +144,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
                 sVungleRouter.loadBannerAd(mPlacementId, vungleAdSize, mVungleRouterListener);
                 MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
             }
-        } else if (VUNGLE_MREC == getVungleAdSize(localExtras)) {
+        } else if (VUNGLE_MREC == vungleAdSize) {
             if (sVungleRouter.isAdPlayableForPlacement(mPlacementId)) {
                 mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
                 MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
@@ -167,6 +165,8 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
 
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
         AdConfig.AdSize adSizeType = null;
+        int adWidthInDp = 0, adHeightInDp = 0;
+
         Preconditions.checkNotNull(localExtras);
 
         final Object adWidthObject = localExtras.get(AD_WIDTH);
@@ -251,7 +251,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
         return isAllDataValid;
     }
 
-    private static String getAdNetworkId() {
+    private String getAdNetworkId() {
         return mPlacementId;
     }
 
