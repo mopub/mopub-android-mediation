@@ -1,13 +1,11 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -35,6 +33,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 /**
  * The {@link GooglePlayServicesNative} class is used to load native Google mobile ads.
@@ -452,7 +451,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                         }
                     }).withNativeAdOptions(adOptions).build();
 
-            final AdRequest.Builder requestBuilder = new AdRequest.Builder();
+            AdRequest.Builder requestBuilder = new AdRequest.Builder();
             requestBuilder.setRequestAgent("MoPub");
 
             // Publishers may append a content URL by passing it to the MoPubNative.setLocalExtras() call.
@@ -469,8 +468,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 requestBuilder.addTestDevice(testDeviceId);
             }
 
-            // Consent collected from the MoPub’s consent dialogue should not be used to set up
-            // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
             forwardNpaIfSet(requestBuilder);
 
             final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
@@ -510,16 +507,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
             adLoader.loadAd(adRequest);
 
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-        }
-
-        private void forwardNpaIfSet(AdRequest.Builder builder) {
-
-            // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-            final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
-
-            if (npaBundle != null && !npaBundle.isEmpty()) {
-                builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-            }
         }
 
         /**

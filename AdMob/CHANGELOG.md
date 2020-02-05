@@ -1,4 +1,7 @@
 ## Changelog
+  * 18.3.0.3
+    * MoPub now collects GDPR consent on behalf of Google.
+
   * 18.3.0.2
     * Log the AdMob ad unit ID in ad lifecycle events.
 
