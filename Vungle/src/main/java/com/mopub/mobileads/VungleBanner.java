@@ -43,8 +43,6 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
     private static final String APP_ID_KEY = "appId";
     private static final String PLACEMENT_ID_KEY = "pid";
     private static final String PLACEMENT_IDS_KEY = "pids";
-    private static final String KEY_AD_HEIGHT = "com_mopub_ad_height";
-    private static final String KEY_AD_WIDTH = "com_mopub_ad_width";
 
     private CustomEventBannerListener mCustomEventBannerListener;
     private final Handler mHandler;
@@ -164,7 +162,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
     }
 
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
-        AdConfig.AdSize adSizeType = null;
+        AdConfig.AdSize adSizeType;
         int adWidthInDp = 0, adHeightInDp = 0;
 
         Preconditions.checkNotNull(localExtras);
@@ -179,15 +177,14 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
             adHeightInDp = (int) adHeightObject;
         }
 
-        if((adWidthInDp == VUNGLE_MREC.getWidth() && adHeightInDp == VUNGLE_MREC.getHeight())
-                || (adWidthInDp == 336 && adHeightInDp == 280)) {
+        if ((adWidthInDp >= VUNGLE_MREC.getWidth() && adHeightInDp >= VUNGLE_MREC.getHeight())) {
             adSizeType = VUNGLE_MREC;
-        } else if (adWidthInDp == BANNER_SHORT.getWidth() && adHeightInDp == BANNER_SHORT.getHeight()) {
-            adSizeType = BANNER_SHORT;
-        } else if (adWidthInDp == BANNER.getWidth() && adHeightInDp == BANNER.getHeight()) {
-            adSizeType = BANNER;
-        } else if (adWidthInDp == BANNER_LEADERBOARD.getWidth() && adHeightInDp == BANNER_LEADERBOARD.getHeight()) {
+        } else if (adWidthInDp >= BANNER_LEADERBOARD.getWidth() && adHeightInDp >= BANNER_LEADERBOARD.getHeight()) {
             adSizeType = BANNER_LEADERBOARD;
+        } else if (adWidthInDp >= BANNER.getWidth() && adHeightInDp >= BANNER.getHeight()) {
+            adSizeType = BANNER;
+        } else {
+            adSizeType = BANNER_SHORT;
         }
 
         return adSizeType;
