@@ -1,4 +1,16 @@
 ## Changelog
+  * 12.4.2.0
+    * This version of the adapters has been certified with Tapjoy 12.4.2.
+
+  * 12.4.1.0
+    * This version of the adapters has been certified with Tapjoy 12.4.1.
+
+  * 12.4.0.1
+    * Log the Tapjoy placement ID in ad lifecycle events.
+
+  * 12.4.0.0
+    * This version of the adapters has been certified with Tapjoy 12.4.0.
+
   * 12.3.4.0
     * This version of the adapters has been certified with Tapjoy 12.3.4.
 

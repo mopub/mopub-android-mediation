@@ -28,7 +28,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
     private Context mContext;
     private CustomEventInterstitialListener mListener;
 
-    private String mAdSpaceName;
+    private static String mAdSpaceName;
 
     private FlurryAdInterstitial mInterstitial;
 
@@ -45,37 +45,37 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
                                     Map<String, Object> localExtras,
                                     Map<String, String> serverExtras) {
         if (context == null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Context cannot be null.");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Context cannot be null.");
             listener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
             return;
         }
 
         if (listener == null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "CustomEventInterstitialListener cannot be null.");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "CustomEventInterstitialListener cannot be null.");
             return;
         }
 
         if (!(context instanceof Activity)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ad can be rendered only in Activity context.");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Ad can be rendered only in Activity context.");
 
             listener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
             return;
         }
 
         if (!validateExtras(serverExtras)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed interstitial ad fetch: Missing required server " +
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed interstitial ad fetch: Missing required server " +
                     "extras [FLURRY_APIKEY and/or FLURRY_ADSPACE].");
             listener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -94,12 +94,12 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
         FlurryAgentWrapper.getInstance().startSession(context, apiKey, null);
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Fetching Flurry ad, ad unit name:" + mAdSpaceName);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Fetching Flurry ad, ad unit name:" + mAdSpaceName);
         mInterstitial = new FlurryAdInterstitial(mContext, mAdSpaceName);
         mInterstitial.setListener(new FlurryMoPubInterstitialListener());
         mInterstitial.fetchAd();
 
-        MoPubLog.log(mAdSpaceName, LOAD_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     @Override
@@ -121,12 +121,12 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
     @Override
     protected void showInterstitial() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (mInterstitial != null) {
             mInterstitial.displayAd();
         } else {
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -134,6 +134,10 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
                 mListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
             }
         }
+    }
+
+    private static String getAdNetworkId() {
+        return mAdSpaceName;
     }
 
     private boolean validateExtras(final Map<String, String> serverExtras) {
@@ -144,7 +148,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
         final String flurryApiKey = serverExtras.get(FlurryAgentWrapper.PARAM_API_KEY);
         final String flurryAdSpace = serverExtras.get(FlurryAgentWrapper.PARAM_AD_SPACE_NAME);
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "ServerInfo fetched from MoPub " +
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ServerInfo fetched from MoPub " +
                 FlurryAgentWrapper.PARAM_API_KEY + " : " + flurryApiKey + " and " +
                 FlurryAgentWrapper.PARAM_AD_SPACE_NAME + " :" + flurryAdSpace);
 
@@ -156,7 +160,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
         @Override
         public void onFetched(FlurryAdInterstitial adInterstitial) {
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
             if (mListener != null) {
                 mListener.onInterstitialLoaded();
@@ -165,7 +169,7 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
         @Override
         public void onRendered(FlurryAdInterstitial adInterstitial) {
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
             if (mListener != null) {
                 mListener.onInterstitialShown();
@@ -188,12 +192,12 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
         @Override
         public void onAppExit(FlurryAdInterstitial adInterstitial) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAppExit: Flurry interstitial ad exited app");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAppExit: Flurry interstitial ad exited app");
         }
 
         @Override
         public void onClicked(FlurryAdInterstitial adInterstitial) {
-            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
             if (mListener != null) {
                 mListener.onInterstitialClicked();
@@ -202,16 +206,16 @@ class FlurryCustomEventInterstitial extends com.mopub.mobileads.CustomEventInter
 
         @Override
         public void onVideoCompleted(FlurryAdInterstitial adInterstitial) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onVideoCompleted: Flurry interstitial ad video completed");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoCompleted: Flurry interstitial ad video completed");
         }
 
         @Override
         public void onError(FlurryAdInterstitial adInterstitial, FlurryAdErrorType adErrorType,
                             int errorCode) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onError: Flurry interstitial ad not available. " +
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onError: Flurry interstitial ad not available. " +
                     "Error type: %s. Error code: %s", adErrorType.toString(), errorCode);
 
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     getMoPubErrorCode(adErrorType).getIntCode(),
                     getMoPubErrorCode(adErrorType));
         }

@@ -1,4 +1,10 @@
 ## Changelog
+  * 18.3.0.2
+    * Log the AdMob ad unit ID in ad lifecycle events.
+
+  * 18.3.0.1
+    * Make the adapter keys public.
+
   * 18.3.0.0
     * This version of the adapters has been certified with AdMob 18.3.0.
     * Allow publishers to reset previously-supplied npa without re-initializing the MoPub SDK. This change expands upon the one introduced in v18.2.0.4.

@@ -34,6 +34,14 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
     private com.adcolony.sdk.AdColonyInterstitial mAdColonyInterstitial;
 
     @NonNull
+    private String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
+
+    @NonNull
+    public String getAdNetworkId() {
+        return mZoneId;
+    }
+
+    @NonNull
     private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
 
     public AdColonyInterstitial() {
@@ -82,12 +90,14 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
             return;
         }
 
+        mZoneId = zoneId;
+
         mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         mAdColonyInterstitialListener = getAdColonyInterstitialListener();
 
         AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(context, clientOptions, appId, allZoneIds);
-        AdColony.requestInterstitial(zoneId, mAdColonyInterstitialListener);
-        MoPubLog.log(zoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
+        AdColony.requestInterstitial(mZoneId, mAdColonyInterstitialListener);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     private void abortRequestForIncorrectParameter(String parameterName) {
@@ -97,13 +107,13 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
 
     @Override
     protected void showInterstitial() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         if (mAdColonyInterstitial == null || mAdColonyInterstitial.isExpired()) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                    MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                             MoPubErrorCode.NETWORK_NO_FILL);
                 }
             });
@@ -116,6 +126,7 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
     protected void onInvalidate() {
         if (mAdColonyInterstitial != null) {
             mAdColonyInterstitial.destroy();
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColony interstitial destroyed");
             mAdColonyInterstitial = null;
         }
         mAdColonyInterstitialListener = null;
@@ -133,7 +144,7 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
                         @Override
                         public void run() {
                             mCustomEventInterstitialListener.onInterstitialLoaded();
-                            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                         }
                     });
                 }
@@ -144,7 +155,7 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
                         @Override
                         public void run() {
                             mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                                     MoPubErrorCode.NETWORK_NO_FILL);
                         }
                     });
@@ -152,7 +163,7 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
 
                 @Override
                 public void onClosed(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColony interstitial ad has been dismissed");
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColony interstitial ad has been dismissed");
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -167,21 +178,21 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
                         @Override
                         public void run() {
                             mCustomEventInterstitialListener.onInterstitialShown();
-                            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+                            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
                         }
                     });
                 }
 
                 @Override
                 public void onExpiring(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColony interstitial is expiring; requesting new ad" + ad.getZoneID());
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColony interstitial is expiring; requesting new ad.");
                     AdColony.requestInterstitial(ad.getZoneID(), mAdColonyInterstitialListener);
                 }
 
                 @Override
                 public void onClicked(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
                     mCustomEventInterstitialListener.onInterstitialClicked();
-                    MoPubLog.log(CLICKED, ADAPTER_NAME);
+                    MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
                 }
             };
         }

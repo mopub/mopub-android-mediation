@@ -1,4 +1,8 @@
 ## Changelog
+  * 7.5.0.3
+    * Log the Chartboost location String in ad lifecycle events.
+    * Map additional error codes for failure cases.
+
   * 7.5.0.2
     * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for ChartboostRewardedVideo.java.
 

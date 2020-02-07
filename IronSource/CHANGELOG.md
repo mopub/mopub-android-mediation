@@ -1,4 +1,14 @@
 ## Changelog
+ * 6.13.0.1.0
+    * This version of the adapters has been certified with ironSource 6.13.0.1.
+    * Log the ironSource instance id in ad lifecycle events, and improve error console logs.
+
+ * 6.13.0.0
+    * This version of the adapters has been certified with ironSource 6.13.0.
+
+ * 6.11.0.0
+    * This version of the adapters has been certified with ironSource 6.11.0.
+
  * 6.10.2.0
     * This version of the adapters has been certified with ironSource 6.10.2.
 

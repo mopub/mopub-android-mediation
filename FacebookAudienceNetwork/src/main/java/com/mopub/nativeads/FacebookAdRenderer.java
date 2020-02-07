@@ -40,15 +40,19 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
     }
 
     @Override
-    public View createAdView(final Context context, final ViewGroup parent) {
+    public View createAdView(@NonNull Context context, final ViewGroup parent) {
+        Preconditions.checkNotNull(context);
         return LayoutInflater
                 .from(context)
                 .inflate(mViewBinder.layoutId, parent, false);
     }
 
     @Override
-    public void renderAdView(final View view,
-                             final FacebookNative.FacebookNativeAd facebookNativeAd) {
+    public void renderAdView(@NonNull View view,
+                             @NonNull FacebookNative.FacebookNativeAd facebookNativeAd) {
+        Preconditions.checkNotNull(facebookNativeAd);
+        Preconditions.checkNotNull(view);
+
         FacebookNativeViewHolder facebookNativeViewHolder = mViewHolderMap.get(view);
         if (facebookNativeViewHolder == null) {
             facebookNativeViewHolder = FacebookNativeViewHolder.fromViewBinder(view, mViewBinder);
@@ -62,7 +66,7 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
     }
 
     @Override
-    public boolean supports(final BaseNativeAd nativeAd) {
+    public boolean supports(@NonNull BaseNativeAd nativeAd) {
         Preconditions.checkNotNull(nativeAd);
         return nativeAd instanceof FacebookNative.FacebookNativeAd;
     }
@@ -97,9 +101,11 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
             ViewGroup.LayoutParams layoutParams = adOptionsView.getLayoutParams();
             if (layoutParams instanceof RelativeLayout.LayoutParams) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    ((RelativeLayout.LayoutParams) layoutParams).addRule(RelativeLayout.ALIGN_PARENT_END);
+                    ((RelativeLayout.LayoutParams) layoutParams).addRule(
+                            RelativeLayout.ALIGN_PARENT_END);
                 } else {
-                    ((RelativeLayout.LayoutParams) layoutParams).addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    ((RelativeLayout.LayoutParams) layoutParams).addRule(
+                            RelativeLayout.ALIGN_PARENT_RIGHT);
                 }
             }
             adChoicesContainer.addView(adOptionsView);
@@ -212,6 +218,8 @@ public class FacebookAdRenderer implements MoPubAdRenderer<FacebookNative.Facebo
         final int sponsoredLabelId;
 
         private FacebookViewBinder(@NonNull final Builder builder) {
+            Preconditions.checkNotNull(builder);
+
             this.layoutId = builder.layoutId;
             this.titleId = builder.titleId;
             this.textId = builder.textId;

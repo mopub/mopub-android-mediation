@@ -145,7 +145,7 @@ public class VungleRouter {
     public void loadAdForPlacement(String placementId, VungleRouterListener routerListener) {
         switch (sInitState) {
             case NOTINITIALIZED:
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadAdForPlacement is called before " +
+                MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "loadAdForPlacement is called before " +
                         "initialization starts. This is not an expect case.");
                 break;
 
@@ -180,7 +180,7 @@ public class VungleRouter {
         if (Vungle.canPlayAd(placementId)) {
             Vungle.playAd(placementId, adConfig, playAdCallback);
         } else {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "There should not be this case. playAdForPlacement is called " +
+            MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "There should not be this case. playAdForPlacement is called " +
                     "before an ad is loaded for Placement ID: " + placementId);
         }
     }
@@ -235,13 +235,13 @@ public class VungleRouter {
 
         @Override
         public void onAdStart(String id) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdStart - Placement ID: " + id);
+            MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdStart - Placement ID: " + id);
 
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
             if (targetListener != null) {
                 targetListener.onAdStart(id);
             } else {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdStart - VungleRouterListener is not found for " +
+                MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdStart - VungleRouterListener is not found for " +
                         "Placement ID: " + id);
             }
         }
@@ -254,7 +254,7 @@ public class VungleRouter {
             if (targetListener != null) {
                 targetListener.onUnableToPlayAd(id, error.getLocalizedMessage());
             } else {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onUnableToPlayAd - VungleRouterListener is not found " +
+                MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onUnableToPlayAd - VungleRouterListener is not found " +
                         "for Placement ID: " + id);
             }
         }
@@ -272,14 +272,14 @@ public class VungleRouter {
         }
 
         private void onAdAvailabilityUpdate(String placementReferenceId, boolean isAdAvailable) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate - Placement ID: " +
+            MoPubLog.log(placementReferenceId, CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate - Placement ID: " +
                     placementReferenceId);
 
             VungleRouterListener targetListener = sVungleRouterListeners.get(placementReferenceId);
             if (targetListener != null) {
                 targetListener.onAdAvailabilityUpdate(placementReferenceId, isAdAvailable);
             } else {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate - VungleRouterListener is not " +
+                MoPubLog.log(placementReferenceId, CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate - VungleRouterListener is not " +
                         "found for Placement ID: " + placementReferenceId);
             }
         }

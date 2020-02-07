@@ -1,30 +1,35 @@
- package com.mopub.mobileads;
+package com.mopub.mobileads;
 
- import android.content.Context;
- import android.os.Handler;
- import android.os.Looper;
- import androidx.annotation.Keep;
- import androidx.annotation.NonNull;
- import android.text.TextUtils;
- import android.view.View;
- import android.widget.RelativeLayout;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
- import com.mopub.common.logging.MoPubLog;
- import com.mopub.common.util.Views;
- import com.vungle.warren.AdConfig;
- import com.vungle.warren.VungleNativeAd;
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 
- import java.util.Map;
- import java.util.concurrent.atomic.AtomicBoolean;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.RelativeLayout;
 
- import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
- import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
- import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
- import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
- import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import com.mopub.common.Preconditions;
+import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.util.Views;
+import com.vungle.warren.AdConfig;
+import com.vungle.warren.VungleNativeAd;
 
- @Keep
- public class VungleBanner extends CustomEventBanner {
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.mopub.common.DataKeys.AD_HEIGHT;
+import static com.mopub.common.DataKeys.AD_WIDTH;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+
+@Keep
+public class VungleBanner extends CustomEventBanner {
 
     private static final String ADAPTER_NAME = VungleBanner.class.getSimpleName();
     /*
@@ -33,14 +38,11 @@
     private static final String APP_ID_KEY = "appId";
     private static final String PLACEMENT_ID_KEY = "pid";
     private static final String PLACEMENT_IDS_KEY = "pids";
-    private static final String KEY_AD_HEIGHT = "com_mopub_ad_height";
-    private static final String KEY_AD_WIDTH = "com_mopub_ad_width";
-
-
+    
     private CustomEventBannerListener mCustomEventBannerListener;
     private final Handler mHandler;
     private String mAppId;
-    private String mPlacementId;
+    private static String mPlacementId;
     private VungleBannerRouterListener mVungleRouterListener;
     private static VungleRouter sVungleRouter;
     private boolean mIsPlaying;
@@ -49,9 +51,10 @@
     @NonNull
     private VungleAdapterConfiguration mVungleAdapterConfiguration;
     private AtomicBoolean pendingRequestBanner = new AtomicBoolean(false);
-     private AdConfig adConfig = new AdConfig();
+    private AdConfig adConfig = new AdConfig();
+    private int adWidthInDp, adHeightInDp;
 
-     public VungleBanner() {
+    public VungleBanner() {
         this.mHandler = new Handler(Looper.getMainLooper());
         sVungleRouter = VungleRouter.getInstance();
         mVungleAdapterConfiguration = new VungleAdapterConfiguration();
@@ -120,11 +123,11 @@
         }
 
         //currently we only support MREC for banners. This will require to be reworked once we add other sizes
-        if(adConfig.getAdSize() != AdConfig.AdSize.VUNGLE_MREC) {
+        if (adConfig.getAdSize() != AdConfig.AdSize.VUNGLE_MREC) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,  "Unsupported Ad size, only MREC supported:  Placement ID:" + mPlacementId);
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, "Unsupported Ad size, only MREC supported:  Placement ID:" + mPlacementId);
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             });
@@ -135,10 +138,19 @@
     }
 
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
-        int adWidthInDp = localExtras.containsKey(KEY_AD_WIDTH) ? (int)localExtras.get(KEY_AD_WIDTH) : 0;
-        int adHeightInDp = localExtras.containsKey(KEY_AD_HEIGHT) ? (int)localExtras.get(KEY_AD_HEIGHT) : 0;
+        Preconditions.checkNotNull(localExtras);
 
-        if((adWidthInDp == 300 && adHeightInDp == 250) || (adWidthInDp == 336 && adHeightInDp == 280)) {
+        final Object adWidthObject = localExtras.get(AD_WIDTH);
+        if (adWidthObject instanceof Integer) {
+            adWidthInDp = (int) adWidthObject;
+        }
+
+        final Object adHeightObject = localExtras.get(AD_HEIGHT);
+        if (adHeightObject instanceof Integer) {
+            adHeightInDp = (int) adHeightObject;
+        }
+
+        if ((adWidthInDp == 300 && adHeightInDp == 250) || (adWidthInDp == 336 && adHeightInDp == 280)) {
             return AdConfig.AdSize.VUNGLE_MREC;
         } else {
             return null;
@@ -190,7 +202,7 @@
         }
 
         if (serverExtras.containsKey(PLACEMENT_IDS_KEY)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME,  "No need to set placement IDs " +
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "No need to set placement IDs " +
                     "in MoPub dashboard with Vungle SDK version " +
                     com.vungle.warren.BuildConfig.VERSION_NAME);
         }
@@ -198,13 +210,17 @@
         return isAllDataValid;
     }
 
+    private static String getAdNetworkId() {
+        return mPlacementId;
+    }
+
     private class VungleBannerRouterListener implements VungleRouterListener {
 
         @Override
         public void onAdEnd(@NonNull String placementReferenceId, boolean wasSuccessfulView, final boolean wasCallToActionClicked) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd placement id"+ placementReferenceId);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd placement id" + placementReferenceId);
             if (mPlacementId.equals(placementReferenceId)) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView + ", wasCallToActionClicked: " + wasCallToActionClicked);
                 mIsPlaying = false;
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
@@ -214,7 +230,7 @@
                     public void run() {
                         if (wasCallToActionClicked && mCustomEventBannerListener != null) {
                             mCustomEventBannerListener.onBannerClicked();
-                            MoPubLog.log(CLICKED, ADAPTER_NAME);
+                            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
                         }
                     }
                 });
@@ -223,10 +239,10 @@
 
         @Override
         public void onAdStart(@NonNull String placementReferenceId) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME,"onAdStart placement id"+ placementReferenceId);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdStart placement id" + placementReferenceId);
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression. Placement id" + placementReferenceId);
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Vungle banner ad logged impression. Placement id" + placementReferenceId);
                 mHandler.post(new Runnable() {
 
                     @Override
@@ -244,14 +260,14 @@
 
         @Override
         public void onUnableToPlayAd(@NonNull String placementReferenceId, String reason) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onUnableToPlayAd - Placement ID: " + placementReferenceId + ", reason: " + reason);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onUnableToPlayAd - Placement ID: " + placementReferenceId + ", reason: " + reason);
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = false;
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                        MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                                 MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                                 MoPubErrorCode.NETWORK_NO_FILL);
                     }
@@ -261,11 +277,11 @@
 
         @Override
         public void onAdAvailabilityUpdate(@NonNull final String placementReferenceId, boolean isAdAvailable) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate placement id"+ placementReferenceId + " isAdAvailable "+isAdAvailable);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate placement id" + placementReferenceId + " isAdAvailable " + isAdAvailable);
             if (mPlacementId.equals(placementReferenceId)) {
                 if (!mIsPlaying) {
                     if (isAdAvailable) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "banner ad successfully loaded - Placement ID: " + placementReferenceId);
+                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "banner ad successfully loaded - Placement ID: " + placementReferenceId);
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -283,21 +299,21 @@
                                     }
                                 };
                                 vungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, adConfig);
-                                if(vungleBannerAd != null) {
+                                if (vungleBannerAd != null) {
                                     final View adView = vungleBannerAd.renderNativeView();
                                     if (adView != null) {
                                         isSuccess = true;
                                         layout.addView(adView);
                                         mCustomEventBannerListener.onBannerLoaded(layout);
-                                        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                                        MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                                     }
                                 }
-                                if(!isSuccess) {
+                                if (!isSuccess) {
                                     mHandler.post(new Runnable() {
                                         @Override
                                         public void run() {
                                             mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                                            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                                                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                                                     MoPubErrorCode.NETWORK_NO_FILL);
                                         }
@@ -306,12 +322,12 @@
                             }
                         });
                     } else {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "banner ad is not loaded - Placement ID: " + placementReferenceId);
+                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "banner ad is not loaded - Placement ID: " + placementReferenceId);
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                                         MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                                         MoPubErrorCode.NETWORK_NO_FILL);
                             }

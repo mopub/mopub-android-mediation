@@ -1,4 +1,7 @@
 ## Changelog
+  * 6.4.11.5
+    * Log the Vungle placement ID in ad lifecycle events.
+
   * 6.4.11.4
     * Fire `onInterstitialShown` callback when interstitial records an impression.
 
