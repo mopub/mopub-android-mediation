@@ -1,4 +1,7 @@
 ## Changelog
+  * 1.4.0.0
+    * This version of the adapters has been certified with Verizon 1.4.0.
+
   * 1.3.1.0
     * This version of the adapters has been certified with Verizon 1.3.1.
   
