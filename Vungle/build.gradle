@@ -8,6 +8,6 @@ dependencies {
         implementation project(':vungle-android-sdk:publisher-sdk-android')
     } else {
         //implementation "com.vungle:publisher-sdk-android:${sdkVersion}"
-        implementation "com.github.vungle:vungle-android-sdk:6.5.2-RC3"
+        implementation "com.github.vungle:vungle-android-sdk:6.5.2-RC4"
     }
 }
