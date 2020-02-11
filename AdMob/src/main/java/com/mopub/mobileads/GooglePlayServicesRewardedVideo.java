@@ -38,6 +38,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
@@ -189,7 +190,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         mWeakActivity = new WeakReference<>(activity);
         mRewardedAd = new RewardedAd(activity, mAdUnitId);
 
-        final AdRequest.Builder builder = new AdRequest.Builder();
+        AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the
@@ -224,9 +225,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
             builder.addTestDevice(testDeviceId);
         }
 
-        // Consent collected from the MoPub’s consent dialogue should not be used
-        // to set up Google's personalization preference.
-        // Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
 
         final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
@@ -280,16 +278,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         mRewardedAd.loadAd(adRequest, mRewardedAdLoadCallback);
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-    }
-
-    private void forwardNpaIfSet(AdRequest.Builder builder) {
-        // Only forward the "npa" bundle if it is explicitly set.
-        // Otherwise, don't attach it with the ad request.
-        final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
-
-        if (npaBundle != null && !npaBundle.isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-        }
     }
 
     @Override
