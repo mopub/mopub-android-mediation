@@ -382,7 +382,9 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onExpiring(@NonNull AdColonyInterstitial ad) {
-            AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
+            if (ad.getListener() != null) {
+                AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
+            }
         }
 
         @Override
