@@ -12,6 +12,7 @@ import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.tapjoy.BuildConfig;
 import com.tapjoy.TJConnectListener;
+import com.tapjoy.TJError;
 import com.tapjoy.Tapjoy;
 
 import java.util.Map;
@@ -87,11 +88,11 @@ public class TapjoyAdapterConfiguration extends BaseAdapterConfiguration {
                             public void onConnectFailure() {
                                 listener.onNetworkInitializationFinished(TapjoyAdapterConfiguration.class,
                                         MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                                MoPubLog.log(CUSTOM, "Initializing Tapjoy has encountered a problem.");
+                                MoPubLog.log(sdkKey, CUSTOM, "Initializing Tapjoy has encountered a problem.");
                             }
                         });
                     } else {
-                        MoPubLog.log(CUSTOM, MOPUB_NETWORK_NAME, "Tapjoy adapter is initialized with empty/null 'sdkKey'. You must call Tapjoy.connect()");
+                        MoPubLog.log(sdkKey, CUSTOM, MOPUB_NETWORK_NAME, "Tapjoy adapter is initialized with empty/null 'sdkKey'. You must call Tapjoy.connect()");
                         networkInitializationSucceeded = false;
                     }
                 }

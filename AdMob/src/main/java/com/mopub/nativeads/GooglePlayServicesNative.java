@@ -1,13 +1,11 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -35,6 +33,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 /**
  * The {@link GooglePlayServicesNative} class is used to load native Google mobile ads.
@@ -44,27 +43,48 @@ public class GooglePlayServicesNative extends CustomEventNative {
     /**
      * Key to obtain AdMob application ID from the server extras provided by MoPub.
      */
-    private static final String KEY_EXTRA_APPLICATION_ID = "appid";
+    public static final String KEY_EXTRA_APPLICATION_ID = "appid";
 
     /**
      * Key to obtain AdMob ad unit ID from the extras provided by MoPub.
      */
-    private static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
+    public static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
 
     /**
      * Key to set and obtain the image orientation preference.
      */
-    private static final String KEY_EXTRA_ORIENTATION_PREFERENCE = "orientation_preference";
+    public static final String KEY_EXTRA_ORIENTATION_PREFERENCE = "orientation_preference";
 
     /**
      * Key to set and obtain the AdChoices icon placement preference.
      */
-    private static final String KEY_EXTRA_AD_CHOICES_PLACEMENT = "ad_choices_placement";
+    public static final String KEY_EXTRA_AD_CHOICES_PLACEMENT = "ad_choices_placement";
 
     /**
      * Key to set and obtain the experimental swap margins flag.
      */
-    private static final String KEY_EXPERIMENTAL_EXTRA_SWAP_MARGINS = "swap_margins";
+    public static final String KEY_EXPERIMENTAL_EXTRA_SWAP_MARGINS = "swap_margins";
+
+    /**
+     * Key to set and obtain the content URL to be passed with AdMob's ad request.
+     */
+    public static final String KEY_CONTENT_URL = "contentUrl";
+
+    /**
+     * Key to set and obtain the flag whether the application's content is child-directed.
+     */
+    public static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+
+    /**
+     * Key to set and obtain the flag to mark ad requests to Google to receive treatment for
+     * users in the European Economic Area (EEA) under the age of consent.
+     */
+    public static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
+
+    /**
+     * Key to set and obtain the test device ID String to be passed with AdMob's ad request.
+     */
+    public static final String TEST_DEVICES_KEY = "testDevices";
 
     /**
      * String to store the simple class name for this adapter.
@@ -72,30 +92,14 @@ public class GooglePlayServicesNative extends CustomEventNative {
     private static final String ADAPTER_NAME = GooglePlayServicesNative.class.getSimpleName();
 
     /**
-     * Key to set and obtain the content URL to be passed with AdMob's ad request.
-     */
-    private static final String KEY_CONTENT_URL = "contentUrl";
-
-    /**
-     * Key to set and obtain the flag whether the application's content is child-directed.
-     */
-    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
-
-    /**
-     * Key to set and obtain the flag to mark ad requests to Google to receive treatment for
-     * users in the European Economic Area (EEA) under the age of consent.
-     */
-    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
-
-    /**
-     * Key to set and obtain the test device ID String to be passed with AdMob's ad request.
-     */
-    private static final String TEST_DEVICES_KEY = "testDevices";
-
-    /**
      * Flag to determine whether or not the adapter has been initialized.
      */
     private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
+
+    /**
+     * String to store the AdMob ad unit ID.
+     */
+    private static String mAdUnitId;
 
     @NonNull
     private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
@@ -119,18 +123,18 @@ public class GooglePlayServicesNative extends CustomEventNative {
             }
         }
 
-        String adUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
-        if (TextUtils.isEmpty(adUnitId)) {
+        mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
+        if (TextUtils.isEmpty(mAdUnitId)) {
             customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
                     NativeErrorCode.NETWORK_NO_FILL);
             return;
         }
 
         GooglePlayServicesNativeAd nativeAd = new GooglePlayServicesNativeAd(customEventNativeListener);
-        nativeAd.loadAd(context, adUnitId, localExtras);
+        nativeAd.loadAd(context, mAdUnitId, localExtras);
 
         mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
     }
@@ -374,13 +378,14 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                 @Override
                                 public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
                                     if (!isValidUnifiedAd(unifiedNativeAd)) {
-                                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "The Google native unified ad " +
-                                                "is missing one or more required assets, failing request.");
+                                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                                                "The Google native unified ad is missing one or " +
+                                                        "more required assets, failing request.");
 
                                         mCustomEventNativeListener.onNativeAdFailed(
                                                 NativeErrorCode.NETWORK_NO_FILL);
 
-                                        MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                                        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                                                 NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
                                                 NativeErrorCode.NETWORK_NO_FILL);
                                         return;
@@ -408,7 +413,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             super.onAdClicked();
                             GooglePlayServicesNativeAd.this.notifyAdClicked();
 
-                            MoPubLog.log(CLICKED, ADAPTER_NAME);
+                            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
                         }
 
                         @Override
@@ -416,7 +421,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                             super.onAdImpression();
                             GooglePlayServicesNativeAd.this.notifyAdImpressed();
 
-                            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+                            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
                         }
 
                         @Override
@@ -446,7 +451,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                         }
                     }).withNativeAdOptions(adOptions).build();
 
-            final AdRequest.Builder requestBuilder = new AdRequest.Builder();
+            AdRequest.Builder requestBuilder = new AdRequest.Builder();
             requestBuilder.setRequestAgent("MoPub");
 
             // Publishers may append a content URL by passing it to the MoPubNative.setLocalExtras() call.
@@ -463,8 +468,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 requestBuilder.addTestDevice(testDeviceId);
             }
 
-            // Consent collected from the MoPub’s consent dialogue should not be used to set up
-            // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
             forwardNpaIfSet(requestBuilder);
 
             final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
@@ -503,17 +506,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
             final AdRequest adRequest = requestBuilder.build();
             adLoader.loadAd(adRequest);
 
-            MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
-        }
-
-        private void forwardNpaIfSet(AdRequest.Builder builder) {
-
-            // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-            final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
-
-            if (npaBundle != null && !npaBundle.isEmpty()) {
-                builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-            }
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         }
 
         /**
@@ -610,7 +603,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                 mCustomEventNativeListener.onNativeAdLoaded(
                                         GooglePlayServicesNativeAd.this);
 
-                                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                             }
                         }
 
@@ -618,7 +611,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                         public void onImagesFailedToCache(NativeErrorCode errorCode) {
                             mCustomEventNativeListener.onNativeAdFailed(errorCode);
 
-                            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                                     errorCode.getIntCode(),
                                     errorCode);
                         }
@@ -654,5 +647,9 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 setPrice(unifiedNativeAd.getPrice());
             }
         }
+    }
+
+    private static String getAdNetworkId() {
+        return mAdUnitId;
     }
 }

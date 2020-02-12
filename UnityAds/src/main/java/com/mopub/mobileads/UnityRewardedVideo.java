@@ -210,11 +210,11 @@ public class UnityRewardedVideo extends CustomEventRewardedVideo implements IUni
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video cache failed for placement " +
-                mPlacementId + ".");
+                mPlacementId + "." + message);
         MoPubErrorCode errorCode = UnityRouter.UnityAdsUtils.getMoPubErrorCode(unityAdsError);
         MoPubRewardedVideoManager.onRewardedVideoLoadFailure(UnityRewardedVideo.class, mPlacementId, errorCode);
 
-        MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                 errorCode.getIntCode(),
                 errorCode);
 

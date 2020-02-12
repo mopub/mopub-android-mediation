@@ -1,10 +1,8 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -35,20 +33,22 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesBanner extends CustomEventBanner {
     /*
      * These keys are intended for MoPub internal use. Do not modify.
      */
-    private static final String AD_UNIT_ID_KEY = "adUnitID";
-    private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
-    private static final String CONTENT_URL_KEY = "contentUrl";
-    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
-    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
-    private static final String TEST_DEVICES_KEY = "testDevices";
+    public static final String AD_UNIT_ID_KEY = "adUnitID";
+    public static final String CONTENT_URL_KEY = "contentUrl";
+    public static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+    public static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
+    public static final String TEST_DEVICES_KEY = "testDevices";
 
+    private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
     private CustomEventBannerListener mBannerListener;
     private AdView mGoogleAdView;
+    private static String mAdUnitId;
 
     @Override
     protected void loadBanner(
@@ -61,14 +61,12 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         final Integer adWidth;
         final Integer adHeight;
 
-        String adUnitId = "";
-
         if (localExtras != null && !localExtras.isEmpty()) {
-            adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
+            mAdUnitId = serverExtras.get(AD_UNIT_ID_KEY);
             adWidth = (Integer) localExtras.get(DataKeys.AD_WIDTH);
             adHeight = (Integer) localExtras.get(DataKeys.AD_HEIGHT);
         } else {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -78,7 +76,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         mGoogleAdView = new AdView(context);
         mGoogleAdView.setAdListener(new AdViewListener());
-        mGoogleAdView.setAdUnitId(adUnitId);
+        mGoogleAdView.setAdUnitId(mAdUnitId);
 
         final AdSize adSize = (adWidth == null || adHeight == null)
                 ? null
@@ -87,7 +85,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         if (adSize != null) {
             mGoogleAdView.setAdSize(adSize);
         } else {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -95,7 +93,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             return;
         }
 
-        final AdRequest.Builder builder = new AdRequest.Builder();
+        AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubView.setLocalExtras() call.
@@ -112,8 +110,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             builder.addTestDevice(testDeviceId);
         }
 
-        // Consent collected from the MoPub’s consent dialogue should not be used to set up
-        // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
         forwardNpaIfSet(builder);
 
         final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
@@ -154,10 +150,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         try {
             mGoogleAdView.loadAd(adRequest);
 
-            MoPubLog.log(adUnitId, LOAD_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         } catch (NoClassDefFoundError e) {
             // This can be thrown by Play Services on Honeycomb.
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
@@ -172,16 +168,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         if (mGoogleAdView != null) {
             mGoogleAdView.setAdListener(null);
             mGoogleAdView.destroy();
-        }
-    }
-
-    private void forwardNpaIfSet(AdRequest.Builder builder) {
-
-        // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
-
-        if (npaBundle != null && !npaBundle.isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
     }
 
@@ -204,6 +190,10 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         }
     }
 
+    private static String getAdNetworkId() {
+        return mAdUnitId;
+    }
+
     private class AdViewListener extends AdListener {
         /*
          * Google Play Services AdListener implementation
@@ -216,7 +206,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         @Override
         public void onAdFailedToLoad(int errorCode) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     getMoPubErrorCode(errorCode).getIntCode(),
                     getMoPubErrorCode(errorCode));
 
@@ -231,9 +221,9 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         @Override
         public void onAdLoaded() {
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
             if (mBannerListener != null) {
                 mBannerListener.onBannerLoaded(mGoogleAdView);
@@ -242,7 +232,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         @Override
         public void onAdOpened() {
-            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
             if (mBannerListener != null) {
                 mBannerListener.onBannerClicked();

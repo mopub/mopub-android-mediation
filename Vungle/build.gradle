@@ -1,4 +1,4 @@
-project.version = '6.4.11.4'
+project.version = '6.4.11.5'
 
 apply from: '../shared-build.gradle'
 

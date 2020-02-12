@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mintegral.msdk.MIntegralConstans;
+
 import com.mintegral.msdk.MIntegralSDK;
 import com.mintegral.msdk.MIntegralUser;
 import com.mintegral.msdk.base.common.net.Aa;
@@ -104,6 +104,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static void configureMintegral(String appId, String appKey, Context context) {
+
         if (isSDKInitialized) return;
 
         final MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
@@ -118,14 +119,6 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
             }
 
             isSDKInitialized = true;
-
-            if (MoPub.canCollectPersonalInformation()) {
-                sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO,
-                        MIntegralConstans.IS_SWITCH_ON);
-            } else {
-                sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO,
-                        MIntegralConstans.IS_SWITCH_OFF);
-            }
 
         } else {
             MoPubLog.log(CUSTOM, "Failed to initialize the Mintegral SDK because the SDK " +

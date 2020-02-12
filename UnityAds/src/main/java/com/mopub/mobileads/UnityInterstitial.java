@@ -161,7 +161,7 @@ public class UnityInterstitial extends CustomEventInterstitial implements IUnity
 
         if (mCustomEventInterstitialListener != null) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity interstitial video cache failed for placement " +
-                    mPlacementId + ".");
+                    mPlacementId + "." + message);
             MoPubErrorCode errorCode = UnityRouter.UnityAdsUtils.getMoPubErrorCode(unityAdsError);
             mCustomEventInterstitialListener.onInterstitialFailed(errorCode);
 

@@ -1,4 +1,20 @@
 ## Changelog
+  * 1.3.1.0
+    * This version of the adapters has been certified with Verizon 1.3.1.
+  
+  * 1.3.0.0
+    * This version of the adapters has been certified with Verizon 1.3.0.
+    * Remove Advanced Bidding token generation logic from the adapters. The equivalent logic will be added to the Verizon SDK.
+
+  * 1.2.1.3
+    * Log the Verizon placement ID in ad lifecycle events.
+
+  * 1.2.1.2
+    * Add support for Advanced Bidding for banner and interstitial.
+
+  * 1.2.1.1
+    * Migrate utility methods in `VerizonUtils.java` to `VerizonAdapterConfiguration.java` and delete the former.
+
   * 1.2.1.0
     * This version of the adapters has been certified with Verizon 1.2.1.
     * Remove all permissions except INTERNET in the adapter's AndroidManifest (to be in parity with the [Verizon SDK](https://sdk.verizonmedia.com/standard-edition/releasenotes-android.html)).

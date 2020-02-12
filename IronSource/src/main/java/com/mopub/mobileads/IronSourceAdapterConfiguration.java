@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.ironsource.mediationsdk.IronSource;
+import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.ironsource.sdk.utils.Logger;
 import com.mopub.common.BaseAdapterConfiguration;
@@ -124,6 +125,34 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
             Logger.enableLogging(0);
         } else {
             Logger.enableLogging(1);
+        }
+    }
+
+    /**
+     * Class Helper Methods
+     **/
+
+    public static MoPubErrorCode getMoPubErrorCode(IronSourceError ironSourceError) {
+        if (ironSourceError == null) {
+            return MoPubErrorCode.INTERNAL_ERROR;
+        }
+
+        switch (ironSourceError.getErrorCode()) {
+            case IronSourceError.ERROR_CODE_NO_CONFIGURATION_AVAILABLE:
+            case IronSourceError.ERROR_CODE_KEY_NOT_SET:
+            case IronSourceError.ERROR_CODE_INVALID_KEY_VALUE:
+            case IronSourceError.ERROR_CODE_INIT_FAILED:
+                return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
+            case IronSourceError.ERROR_CODE_USING_CACHED_CONFIGURATION:
+                return MoPubErrorCode.VIDEO_CACHE_ERROR;
+            case IronSourceError.ERROR_CODE_NO_ADS_TO_SHOW:
+                return MoPubErrorCode.NETWORK_NO_FILL;
+            case IronSourceError.ERROR_CODE_GENERIC:
+                return MoPubErrorCode.INTERNAL_ERROR;
+            case IronSourceError.ERROR_NO_INTERNET_CONNECTION:
+                return MoPubErrorCode.NO_CONNECTION;
+            default:
+                return MoPubErrorCode.UNSPECIFIED;
         }
     }
 }

@@ -101,7 +101,7 @@ public class UnityRouter {
                     errorCode = MoPubErrorCode.NETWORK_INVALID_STATE;
                     break;
                 default:
-                    errorCode = MoPubErrorCode.NETWORK_NO_FILL;
+                    errorCode = MoPubErrorCode.UNSPECIFIED;
                     break;
             }
             return errorCode;
