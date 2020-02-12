@@ -208,10 +208,6 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
 
     @Override
     public void onLeaveApp() {
-        if (mBannerListener != null) {
-            mBannerListener.onLeaveApplication();
-        }
-
         MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
     }
 
@@ -221,5 +217,9 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
 
     @Override
     public void closeFullScreen() {
+    }
+
+    @Override
+    public void onCloseBanner() {
     }
 }
