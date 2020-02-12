@@ -38,6 +38,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String SDK_VERSION = MTGConfiguration.SDK_VERSION;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
+    private static boolean isSDKInitialized = false;
+
     private static int mAge;
     private static String mCustomData;
     private static int mGender;
@@ -102,6 +104,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static void configureMintegral(String appId, String appKey, Context context) {
+        if (isSDKInitialized) return;
+
         final MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
 
         if (sdk != null) {
@@ -112,6 +116,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
             } else if (context instanceof Application) {
                 sdk.init(mtgConfigurationMap, context);
             }
+
+            isSDKInitialized = true;
 
             if (MoPub.canCollectPersonalInformation()) {
                 sdk.setUserPrivateInfoType(context, MIntegralConstans.AUTHORITY_ALL_INFO,
