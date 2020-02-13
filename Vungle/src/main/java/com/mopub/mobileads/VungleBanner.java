@@ -162,7 +162,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
     }
 
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
-        AdConfig.AdSize adSizeType;
+        AdConfig.AdSize adSizeType = null;
         int adWidthInDp = 0, adHeightInDp = 0;
 
         Preconditions.checkNotNull(localExtras);
@@ -183,8 +183,14 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
             adSizeType = BANNER_LEADERBOARD;
         } else if (adWidthInDp >= BANNER.getWidth() && adHeightInDp >= BANNER.getHeight()) {
             adSizeType = BANNER;
-        } else {
+        } else if (adWidthInDp >= BANNER_SHORT.getWidth() && adHeightInDp >= BANNER_SHORT.getHeight()) {
             adSizeType = BANNER_SHORT;
+        }
+
+        if (adSizeType == null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "no matched ad size for requesting ad size:" + adWidthInDp + "x" + adHeightInDp);
+        } else {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "matched ad size:" + adSizeType + " for requesting ad size:" + adWidthInDp + "x" + adHeightInDp);
         }
 
         return adSizeType;
