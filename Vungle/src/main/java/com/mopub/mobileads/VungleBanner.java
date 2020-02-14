@@ -184,12 +184,11 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
             adUnitFormat = adUnitFormat.toLowerCase();
         }
         final boolean isMRECFormat = "medium_rectangle".equals(adUnitFormat);
-        final boolean isBannerFormat = "banner".equals(adUnitFormat);
         if (isMRECFormat) {
             if ((adWidthInDp >= VUNGLE_MREC.getWidth() && adHeightInDp >= VUNGLE_MREC.getHeight())) {
                 adSizeType = VUNGLE_MREC;
             }
-        } else if (isBannerFormat) {
+        } else {
             if (adWidthInDp >= BANNER_LEADERBOARD.getWidth() && adHeightInDp >= BANNER_LEADERBOARD.getHeight()) {
                 adSizeType = BANNER_LEADERBOARD;
             } else if (adWidthInDp >= BANNER.getWidth() && adHeightInDp >= BANNER.getHeight()) {
