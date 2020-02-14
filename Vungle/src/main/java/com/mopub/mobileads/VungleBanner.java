@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
+import static com.mopub.common.DataKeys.ADUNIT_FORMAT;
 import static com.mopub.common.DataKeys.AD_HEIGHT;
 import static com.mopub.common.DataKeys.AD_WIDTH;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
@@ -110,7 +111,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
             mVungleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
-        AdSize vungleAdSize = getVungleAdSize(localExtras);
+        AdSize vungleAdSize = getVungleAdSize(localExtras, serverExtras);
         if (vungleAdSize == null) {
             mHandler.post(new Runnable() {
                 @Override
@@ -161,11 +162,12 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
         }
     }
 
-    private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras) {
+    private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras, Map<String, String> serverExtras) {
         AdConfig.AdSize adSizeType = null;
         int adWidthInDp = 0, adHeightInDp = 0;
 
         Preconditions.checkNotNull(localExtras);
+        Preconditions.checkNotNull(serverExtras);
 
         final Object adWidthObject = localExtras.get(AD_WIDTH);
         if (adWidthObject instanceof Integer) {
@@ -177,20 +179,32 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
             adHeightInDp = (int) adHeightObject;
         }
 
-        if ((adWidthInDp >= VUNGLE_MREC.getWidth() && adHeightInDp >= VUNGLE_MREC.getHeight())) {
-            adSizeType = VUNGLE_MREC;
-        } else if (adWidthInDp >= BANNER_LEADERBOARD.getWidth() && adHeightInDp >= BANNER_LEADERBOARD.getHeight()) {
-            adSizeType = BANNER_LEADERBOARD;
-        } else if (adWidthInDp >= BANNER.getWidth() && adHeightInDp >= BANNER.getHeight()) {
-            adSizeType = BANNER;
-        } else if (adWidthInDp >= BANNER_SHORT.getWidth() && adHeightInDp >= BANNER_SHORT.getHeight()) {
-            adSizeType = BANNER_SHORT;
+        String adUnitFormat = serverExtras.get(ADUNIT_FORMAT);
+        if (adUnitFormat != null) {
+            adUnitFormat = adUnitFormat.toLowerCase();
+        }
+        final boolean isMRECFormat = "medium_rectangle".equals(adUnitFormat);
+        final boolean isBannerFormat = "banner".equals(adUnitFormat);
+        if (isMRECFormat) {
+            if ((adWidthInDp >= VUNGLE_MREC.getWidth() && adHeightInDp >= VUNGLE_MREC.getHeight())) {
+                adSizeType = VUNGLE_MREC;
+            }
+        } else if (isBannerFormat) {
+            if (adWidthInDp >= BANNER_LEADERBOARD.getWidth() && adHeightInDp >= BANNER_LEADERBOARD.getHeight()) {
+                adSizeType = BANNER_LEADERBOARD;
+            } else if (adWidthInDp >= BANNER.getWidth() && adHeightInDp >= BANNER.getHeight()) {
+                adSizeType = BANNER;
+            } else if (adWidthInDp >= BANNER_SHORT.getWidth() && adHeightInDp >= BANNER_SHORT.getHeight()) {
+                adSizeType = BANNER_SHORT;
+            }
         }
 
         if (adSizeType == null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "no matched ad size for requesting ad size:" + adWidthInDp + "x" + adHeightInDp);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "no matched ad size for requesting ad size:" + adWidthInDp
+                    + "x" + adHeightInDp + " adUnitFormat is:" + adUnitFormat);
         } else {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "matched ad size:" + adSizeType + " for requesting ad size:" + adWidthInDp + "x" + adHeightInDp);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "matched ad size:" + adSizeType + " for requesting ad size:"
+                    + adWidthInDp + "x" + adHeightInDp + " adUnitFormat is:" + adUnitFormat);
         }
 
         return adSizeType;
