@@ -3,11 +3,13 @@ package com.mopub.mobileads;
 import androidx.annotation.NonNull;
 
 public interface VungleRouterListener {
-    void onAdEnd(@NonNull String var1, boolean var2, boolean var3);
 
-    void onAdStart(@NonNull String var1);
+    void onAdEnd(@NonNull String placementRefId, boolean wasSuccessfulView, boolean wasCallToActionClicked);
 
-    void onUnableToPlayAd(@NonNull String var1, String var2);
+    void onAdStart(@NonNull String placementRefId);
 
-    void onAdAvailabilityUpdate(@NonNull String var1, boolean var2);
+    void onUnableToPlayAd(@NonNull String placementRefId, String reason);
+
+    void onAdAvailabilityUpdate(@NonNull String placementRefId, boolean isAdAvailable);
+
 }

@@ -3,6 +3,8 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
@@ -26,27 +28,12 @@ import com.vungle.warren.error.VungleException;
 import java.util.HashMap;
 import java.util.Map;
 
-import androidx.annotation.NonNull;
-
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
 public class VungleRouter {
 
     private static final String ADAPTER_NAME = VungleRouter.class.getSimpleName();
-
-    private static VungleRouter instance = new VungleRouter();
-
-    private enum SDKInitState {
-        NOTINITIALIZED,
-        INITIALIZING,
-        INITIALIZED
-    }
-
-    private static SDKInitState sInitState = SDKInitState.NOTINITIALIZED;
-    private static Map<String, VungleRouterListener> sVungleRouterListeners = new HashMap<>();
-    private static Map<String, VungleRouterListener> sWaitingList = new HashMap<>();
-
     private static final LifecycleListener sLifecycleListener = new BaseLifecycleListener() {
         @Override
         public void onPause(@NonNull final Activity activity) {
@@ -58,6 +45,16 @@ public class VungleRouter {
             super.onResume(activity);
         }
     };
+    private static VungleRouter sInstance = new VungleRouter();
+    private static SDKInitState sInitState = SDKInitState.NOTINITIALIZED;
+    private static Map<String, VungleRouterListener> sVungleRouterListeners = new HashMap<>();
+    private static Map<String, VungleRouterListener> sWaitingList = new HashMap<>();
+
+    private enum SDKInitState {
+        NOTINITIALIZED,
+        INITIALIZING,
+        INITIALIZED
+    }
 
     private VungleRouter() {
         Plugin.addWrapperInfo(VungleApiClient.WrapperFramework.mopub,
@@ -65,7 +62,7 @@ public class VungleRouter {
     }
 
     static VungleRouter getInstance() {
-        return instance;
+        return sInstance;
     }
 
     LifecycleListener getLifecycleListener() {
@@ -73,7 +70,6 @@ public class VungleRouter {
     }
 
     void initVungle(final Context context, final String vungleAppId) {
-
         // Pass the user consent from the MoPub SDK to Vungle as per GDPR
         // Pass consentMessageVersion per Vungle 6.3.17:
         // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
@@ -82,7 +78,6 @@ public class VungleRouter {
             @Override
             public void onSuccess() {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "SDK is initialized successfully.");
-
                 sInitState = SDKInitState.INITIALIZED;
 
                 clearWaitingList();
@@ -97,25 +92,25 @@ public class VungleRouter {
                     if (shouldAllowLegitimateInterest) {
                         if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
                                 || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT
-                                || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.POTENTIAL_WHITELIST) {
+                                || personalInfoManager.getPersonalInfoConsentStatus() ==
+                                ConsentStatus.POTENTIAL_WHITELIST) {
                             Vungle.updateConsentStatus(Vungle.Consent.OPTED_OUT, "");
                         } else {
                             Vungle.updateConsentStatus(Vungle.Consent.OPTED_IN, "");
                         }
                     } else {
                         // Pass consentMessageVersion per Vungle 6.3.17:
-                        // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
+                        // https://support.vungle.com/hc/en-us/articles/360002922871#
+                        // GDPRRecommendedImplementationInstructions
                         Vungle.updateConsentStatus(canCollectPersonalInfo ? Vungle.Consent.OPTED_IN :
                                 Vungle.Consent.OPTED_OUT, "");
                     }
                 }
-
             }
 
             @Override
             public void onError(VungleException throwable) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initialization failed.", throwable);
-
                 sInitState = SDKInitState.NOTINITIALIZED;
             }
 
@@ -132,8 +127,7 @@ public class VungleRouter {
         sInitState = SDKInitState.INITIALIZING;
     }
 
-    void setIncentivizedFields(String userID, String title, String body,
-                               String keepWatching, String close) {
+    void setIncentivizedFields(String userID, String title, String body, String keepWatching, String close) {
         Vungle.setIncentivizedFields(userID, title, body, keepWatching, close);
     }
 
@@ -155,11 +149,9 @@ public class VungleRouter {
                 MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "loadAdForPlacement is called before " +
                         "initialization starts. This is not an expect case.");
                 break;
-
             case INITIALIZING:
                 sWaitingList.put(placementId, routerListener);
                 break;
-
             case INITIALIZED:
                 if (isValidPlacement(placementId)) {
                     addRouterListener(placementId, routerListener);
@@ -171,16 +163,16 @@ public class VungleRouter {
         }
     }
 
-    void loadBannerAd(@NonNull String placementId, @NonNull AdSize adSize, @NonNull VungleRouterListener routerListener) {
+    void loadBannerAd(@NonNull String placementId, @NonNull AdSize adSize,
+                      @NonNull VungleRouterListener routerListener) {
         switch (sInitState) {
             case NOTINITIALIZED:
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBannerAdForPlacement is called before the adapter initialization.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBannerAdForPlacement is called before the " +
+                        "adapter initialization.");
                 break;
-
             case INITIALIZING:
                 sWaitingList.put(placementId, routerListener);
                 break;
-
             case INITIALIZED:
                 if (isValidPlacement(placementId)) {
                     addRouterListener(placementId, routerListener);
@@ -219,8 +211,8 @@ public class VungleRouter {
         if (isAdPlayableForPlacement(placementId)) {
             Vungle.playAd(placementId, adConfig, playAdCallback);
         } else {
-            MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "There should not be this case. playAdForPlacement is called " +
-                    "before an ad is loaded for Placement ID: " + placementId);
+            MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "There should not be this case. " +
+                    "playAdForPlacement is called before an ad is loaded for Placement ID: " + placementId);
         }
     }
 
@@ -235,12 +227,11 @@ public class VungleRouter {
     /**
      * Checks and returns if the passed Placement ID is a valid placement for App ID
      *
-     * @param placementId
+     * @param placementId placementReferenceId
      * @return
      */
     boolean isValidPlacement(String placementId) {
-        return Vungle.isInitialized() &&
-                Vungle.getValidPlacements().contains(placementId);
+        return Vungle.isInitialized() && Vungle.getValidPlacements().contains(placementId);
     }
 
     public void updateConsentStatus(Vungle.Consent status) {
@@ -266,7 +257,6 @@ public class VungleRouter {
         @Override
         public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);
-
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
             if (targetListener != null) {
                 targetListener.onAdEnd(id, completed, isCTAClicked);
@@ -279,7 +269,6 @@ public class VungleRouter {
         @Override
         public void onAdStart(String id) {
             MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdStart - Placement ID: " + id);
-
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
             if (targetListener != null) {
                 targetListener.onAdStart(id);
@@ -292,7 +281,6 @@ public class VungleRouter {
         @Override
         public void onError(String id, VungleException error) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE, "onUnableToPlayAd - Placement ID: " + id, error);
-
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
             if (targetListener != null) {
                 targetListener.onUnableToPlayAd(id, error.getLocalizedMessage());
@@ -317,13 +305,12 @@ public class VungleRouter {
         private void onAdAvailabilityUpdate(String placementReferenceId, boolean isAdAvailable) {
             MoPubLog.log(placementReferenceId, CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate - Placement ID: " +
                     placementReferenceId);
-
             VungleRouterListener targetListener = sVungleRouterListeners.get(placementReferenceId);
             if (targetListener != null) {
                 targetListener.onAdAvailabilityUpdate(placementReferenceId, isAdAvailable);
             } else {
-                MoPubLog.log(placementReferenceId, CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate - VungleRouterListener is not " +
-                        "found for Placement ID: " + placementReferenceId);
+                MoPubLog.log(placementReferenceId, CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate - " +
+                        "VungleRouterListener is not found for Placement ID: " + placementReferenceId);
             }
         }
     };
