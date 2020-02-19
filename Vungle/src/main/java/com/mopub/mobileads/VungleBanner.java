@@ -377,13 +377,14 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
                                         View adView = vungleMrecAd.renderNativeView();
                                         if (adView != null) {
                                             isLoadSuccess = true;
+                                            // Honoring the server dimensions forces the WebView to be the size of the MREC
+                                            AdViewController.setShouldHonorServerDimensions(layout);
                                             layout.addView(adView);
                                         }
                                     }
                                 }
 
                                 if (isLoadSuccess) {
-                                    AdViewController.setShouldHonorServerDimensions(layout);
                                     mCustomEventBannerListener.onBannerLoaded(layout);
                                     MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                                 } else {
