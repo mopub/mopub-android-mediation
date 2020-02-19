@@ -389,7 +389,8 @@ public class VungleBanner extends CustomEventBanner {
                                             int height = (int) ceil(VUNGLE_MREC.getHeight() * density);
                                             RelativeLayout mrecViewWrapper = new RelativeLayout(mContext);
                                             mrecViewWrapper.addView(adView);
-                                            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
+                                            RelativeLayout.LayoutParams params =
+                                                    new RelativeLayout.LayoutParams(width, height);
                                             params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
                                             layout.addView(mrecViewWrapper, params);
                                         }
