@@ -90,10 +90,10 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
                 if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appKey)) {
                     configureMintegral(appId, appKey, context);
 
-                    listener.onNetworkInitializationFinished(MintegralAdapterConfiguration.class,
+                    listener.onNetworkInitializationFinished(this.getClass(),
                             MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
                 } else {
-                    listener.onNetworkInitializationFinished(MintegralAdapterConfiguration.class,
+                    listener.onNetworkInitializationFinished(this.getClass(),
                             MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             }

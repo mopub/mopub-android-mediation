@@ -29,7 +29,7 @@ import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 
 public class MintegralBanner extends CustomEventBanner implements BannerAdListener {
 
-    private static final String ADAPTER_NAME = MintegralBanner.class.getSimpleName();
+    private final String ADAPTER_NAME = this.getClass().getSimpleName();
 
     private CustomEventBannerListener mBannerListener;
     private MTGBannerView mBannerAd;

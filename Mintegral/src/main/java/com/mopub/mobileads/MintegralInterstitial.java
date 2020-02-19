@@ -28,7 +28,7 @@ import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
 public class MintegralInterstitial extends CustomEventInterstitial implements InterstitialVideoListener {
 
-    private static final String ADAPTER_NAME = MintegralInterstitial.class.getSimpleName();
+    private final String ADAPTER_NAME = this.getClass().getSimpleName();
 
     private MTGInterstitialVideoHandler mInterstitialHandler;
     private MTGBidInterstitialVideoHandler mBidInterstitialVideoHandler;

@@ -36,7 +36,7 @@ import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
 public class MintegralRewardedVideo extends CustomEventRewardedVideo implements RewardVideoListener {
 
-    private static final String ADAPTER_NAME = this.getClass().getSimpleName();
+    private final String ADAPTER_NAME = this.getClass().getSimpleName();
 
     private Context mContext;
     private MTGRewardVideoHandler mMtgRewardVideoHandler;
