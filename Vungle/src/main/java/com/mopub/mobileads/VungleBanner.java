@@ -33,6 +33,7 @@ import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
 import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
+import static java.lang.Math.ceil;
 
  @Keep
  public class VungleBanner extends CustomEventBanner {
@@ -374,12 +375,18 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
                                 } else if (VUNGLE_MREC == adConfig.getAdSize()) {
                                     vungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, adConfig);
                                     if (vungleMrecAd != null) {
-                                        View adView = vungleMrecAd.renderNativeView();
+                                        final View adView = vungleMrecAd.renderNativeView();
                                         if (adView != null) {
                                             isLoadSuccess = true;
-                                            // Honoring the server dimensions forces the WebView to be the size of the MREC
                                             AdViewController.setShouldHonorServerDimensions(layout);
-                                            layout.addView(adView);
+                                            float density = mContext.getResources().getDisplayMetrics().density;
+                                            final int width = (int) ceil(VUNGLE_MREC.getWidth() * density);
+                                            final int height = (int) ceil(VUNGLE_MREC.getHeight() * density);
+                                            RelativeLayout mrecViewWrapper = new RelativeLayout(mContext);
+                                            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
+                                            params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+                                            mrecViewWrapper.addView(adView, params);
+                                            layout.addView(mrecViewWrapper, params);
                                         }
                                     }
                                 }
