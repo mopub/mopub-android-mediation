@@ -383,6 +383,7 @@ import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
                                 }
 
                                 if (isLoadSuccess) {
+                                    AdViewController.setShouldHonorServerDimensions(layout);
                                     mCustomEventBannerListener.onBannerLoaded(layout);
                                     MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                                 } else {
