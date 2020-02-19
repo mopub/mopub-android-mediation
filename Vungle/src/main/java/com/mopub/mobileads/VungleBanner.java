@@ -375,17 +375,16 @@ import static java.lang.Math.ceil;
                                 } else if (VUNGLE_MREC == adConfig.getAdSize()) {
                                     vungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, adConfig);
                                     if (vungleMrecAd != null) {
-                                        final View adView = vungleMrecAd.renderNativeView();
+                                        View adView = vungleMrecAd.renderNativeView();
                                         if (adView != null) {
                                             isLoadSuccess = true;
-                                            AdViewController.setShouldHonorServerDimensions(layout);
                                             float density = mContext.getResources().getDisplayMetrics().density;
-                                            final int width = (int) ceil(VUNGLE_MREC.getWidth() * density);
-                                            final int height = (int) ceil(VUNGLE_MREC.getHeight() * density);
+                                            int width = (int) ceil(VUNGLE_MREC.getWidth() * density);
+                                            int height = (int) ceil(VUNGLE_MREC.getHeight() * density);
                                             RelativeLayout mrecViewWrapper = new RelativeLayout(mContext);
+                                            mrecViewWrapper.addView(adView);
                                             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
                                             params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-                                            mrecViewWrapper.addView(adView, params);
                                             layout.addView(mrecViewWrapper, params);
                                         }
                                     }
