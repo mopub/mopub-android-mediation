@@ -1,4 +1,7 @@
 ## Changelog
+  * 4.1.3.1
+    * Fix NPE crash issue while requesting ad from onExpiring callback.
+    
   * 4.1.3.0
     * This version of the adapters has been certified with AdColony 4.1.3.
     * Log the AdColony zone id in ad lifecycle events.
