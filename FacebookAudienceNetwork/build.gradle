@@ -1,4 +1,4 @@
-project.version = '5.6.1.0'
+project.version = '5.7.0.0'
 project.ext.networkName = 'facebook'
 
 apply from: '../shared-build.gradle'

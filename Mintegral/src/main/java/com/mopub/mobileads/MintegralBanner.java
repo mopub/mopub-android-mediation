@@ -29,7 +29,7 @@ import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 
 public class MintegralBanner extends CustomEventBanner implements BannerAdListener {
 
-    private static final String ADAPTER_NAME = MintegralBanner.class.getSimpleName();
+    private final String ADAPTER_NAME = this.getClass().getSimpleName();
 
     private CustomEventBannerListener mBannerListener;
     private MTGBannerView mBannerAd;
@@ -208,10 +208,6 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
 
     @Override
     public void onLeaveApp() {
-        if (mBannerListener != null) {
-            mBannerListener.onLeaveApplication();
-        }
-
         MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
     }
 
@@ -221,5 +217,9 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
 
     @Override
     public void closeFullScreen() {
+    }
+
+    @Override
+    public void onCloseBanner() {
     }
 }
