@@ -1,8 +1,9 @@
 ## Changelog
 
-  *  6.5.1.0
-    * Verified compatibility with Vungle SDK 6.5.1
+  *  6.5.2.0
+    * Verified compatibility with Vungle SDK 6.5.2
     * Add support for the newly-introduced Vungle's Banner format
+    * Additional logic to map requested Banner size to Vungle's supported Banner sizes
 
   * 6.4.11.5
     * Log the Vungle placement ID in ad lifecycle events.
