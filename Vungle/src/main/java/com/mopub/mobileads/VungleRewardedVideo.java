@@ -3,6 +3,10 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
@@ -10,10 +14,6 @@ import com.mopub.common.logging.MoPubLog;
 import com.vungle.warren.AdConfig;
 
 import java.util.Map;
-
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -205,16 +205,16 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         VungleMediationConfiguration globalMediationSettings =
                 MoPubRewardedVideoManager.getGlobalMediationSettings(VungleMediationConfiguration.class);
         if (globalMediationSettings == null) {
-            // pubs are using elder adapter version
+            // pubs are using older adapter version
             globalMediationSettings = MoPubRewardedVideoManager.getGlobalMediationSettings(VungleMediationSettings.class);
         }
+
         VungleMediationConfiguration instanceMediationSettings =
                 MoPubRewardedVideoManager.getInstanceMediationSettings(VungleMediationConfiguration.class, mAdUnitId);
         if (instanceMediationSettings == null) {
             instanceMediationSettings = MoPubRewardedVideoManager.getInstanceMediationSettings(VungleMediationSettings.class, mAdUnitId);
         }
         // Local options override global options.
-        // The two objects are not merged.
         if (instanceMediationSettings != null) {
             modifyAdConfig(adConfig, instanceMediationSettings);
         } else if (globalMediationSettings != null) {
@@ -224,6 +224,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
     private void modifyAdConfig(AdConfig adConfig, VungleMediationConfiguration mediationSettings) {
         String userId = null;
+
         if (!TextUtils.isEmpty(mCustomerId)) {
             userId = mCustomerId;
         } else if (!TextUtils.isEmpty(mediationSettings.getUserId())) {

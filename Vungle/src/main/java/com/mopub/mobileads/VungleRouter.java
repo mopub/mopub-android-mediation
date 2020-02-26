@@ -3,9 +3,12 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
@@ -25,8 +28,6 @@ import com.vungle.warren.error.VungleException;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import androidx.annotation.NonNull;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
@@ -77,7 +78,6 @@ public class VungleRouter {
         // Pass the user consent from the MoPub SDK to Vungle as per GDPR
         // Pass consentMessageVersion per Vungle 6.3.17:
         // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
-        //no-op
         InitCallback initCallback = new InitCallback() {
             @Override
             public void onSuccess() {
@@ -155,11 +155,9 @@ public class VungleRouter {
                 MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "loadAdForPlacement is called before " +
                         "initialization starts. This is not an expect case.");
                 break;
-
             case INITIALIZING:
                 sWaitingList.put(placementId, routerListener);
                 break;
-
             case INITIALIZED:
                 if (isValidPlacement(placementId)) {
                     addRouterListener(placementId, routerListener);
@@ -174,7 +172,7 @@ public class VungleRouter {
     void loadBannerAd(@NonNull String placementId, @NonNull AdSize adSize, @NonNull VungleRouterListener routerListener) {
         switch (sInitState) {
             case NOTINITIALIZED:
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBannerAdForPlacement is called before the adapter initialization.");
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBannerAdForPlacement is called before the Vungle SDK initialization.");
                 break;
 
             case INITIALIZING:
@@ -187,6 +185,7 @@ public class VungleRouter {
                     Banners.loadBanner(placementId, adSize, loadAdCallback);
                 } else {
                     routerListener.onUnableToPlayAd(placementId, "Invalid/Inactive Banner Placement Id");
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to play ad due to invalid/inactive Banner placement Id");
                 }
                 break;
         }
@@ -212,6 +211,9 @@ public class VungleRouter {
     }
 
     boolean isBannerAdPlayable(@NonNull String placementId, @NonNull AdSize adSize) {
+        Preconditions.checkNotNull(placementId);
+        Preconditions.checkNotNull(adSize);
+
         return Banners.canPlayAd(placementId, adSize);
     }
 
@@ -229,6 +231,9 @@ public class VungleRouter {
     }
 
     VungleBanner getVungleBannerAd(@NonNull String placementId, @NonNull AdSize adSize) {
+        Preconditions.checkNotNull(placementId);
+        Preconditions.checkNotNull(adSize);
+
         return Banners.getBanner(placementId, adSize, playAdCallback);
     }
 
