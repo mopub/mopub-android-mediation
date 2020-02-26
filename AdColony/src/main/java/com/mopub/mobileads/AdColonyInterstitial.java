@@ -186,7 +186,9 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
                 @Override
                 public void onExpiring(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColony interstitial is expiring; requesting new ad.");
-                    AdColony.requestInterstitial(ad.getZoneID(), mAdColonyInterstitialListener);
+                    if (mAdColonyInterstitialListener != null) {
+                        AdColony.requestInterstitial(ad.getZoneID(), mAdColonyInterstitialListener);
+                    }
                 }
 
                 @Override
