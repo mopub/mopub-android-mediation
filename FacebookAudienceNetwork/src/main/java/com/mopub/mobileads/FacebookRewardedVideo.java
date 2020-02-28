@@ -60,7 +60,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
     private Runnable mAdExpiration;
     @NonNull
     private FacebookAdapterConfiguration mFacebookAdapterConfiguration;
-    private boolean callbackRVClosedFired;
+    private boolean closeCallbackFired;
 
     public FacebookRewardedVideo() {
         mHandler = new Handler();
@@ -216,7 +216,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     public void onRewardedVideoClosed() {
-        callbackRVClosedFired = true;
+        closeCallbackFired = true;
         MoPubRewardedVideoManager.onRewardedVideoClosed(FacebookRewardedVideo.class, mPlacementId);
     }
 
@@ -249,7 +249,7 @@ public class FacebookRewardedVideo extends CustomEventRewardedVideo implements R
 
     @Override
     public void onRewardedVideoActivityDestroyed() {
-        if(!callbackRVClosedFired){
+        if (!closeCallbackFired) {
             MoPubRewardedVideoManager.onRewardedVideoClosed(FacebookRewardedVideo.class, mPlacementId);
         }
     }

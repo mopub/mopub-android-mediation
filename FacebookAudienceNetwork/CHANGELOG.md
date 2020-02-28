@@ -1,4 +1,7 @@
 ## Changelog
+ * 5.7.1.1
+   * Fix duplicate firing of `onRewardedVideoClosed()`. 
+
  * 5.7.1.0
    * This version of the adapters has been certified with Facebook Audience Network 5.7.1.
 
