@@ -38,7 +38,6 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String SDK_VERSION = MTGConfiguration.SDK_VERSION;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
-
     private static boolean isSDKInitialized = false;
 
     private static int mAge;
@@ -93,10 +92,10 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
                 if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appKey)) {
                     configureMintegral(appId, appKey, context);
 
-                    listener.onNetworkInitializationFinished(MintegralAdapterConfiguration.class,
+                    listener.onNetworkInitializationFinished(this.getClass(),
                             MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
                 } else {
-                    listener.onNetworkInitializationFinished(MintegralAdapterConfiguration.class,
+                    listener.onNetworkInitializationFinished(this.getClass(),
                             MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             }

@@ -1,4 +1,13 @@
 ## Changelog
+
+  * 12.2.11.0
+    * This version of the adapters has been certified with Mintegral 12.2.11.
+    * Implement `onAdCloseWithIVReward()` for interstitial.
+
+  * 12.1.51.1
+    * Use `this.getClass()` instead of hard-coding class names to allow for extension.
+
+
   * 12.1.51.0
     * This version of the adapters has been certified with Mintegral 12.1.51.
     * Add `onCloseBanner()` in `MintegralBanner`.

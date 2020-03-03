@@ -1,19 +1,16 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.text.TextUtils;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.Keep;
-
-import android.text.TextUtils;
 
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
-import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
-
 import com.vungle.warren.AdConfig;
 
 import java.util.Map;
@@ -44,15 +41,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
     private static final String VUNGLE_DEFAULT_APP_ID = "YOUR_APP_ID_HERE";
 
     private static final String ADAPTER_NAME = VungleRewardedVideo.class.getSimpleName();
-    public static final String USER_ID_KEY = "userId";
-    public static final String TITLE_KEY = "title";
-    public static final String BODY_KEY = "body";
-    public static final String CLOSE_BUTTON_TEXT_KEY = "closeButtonText";
-    public static final String KEEP_WATCHING_BUTTON_TEXT_KEY = "keepWatchingButtonText";
-    public static final String IS_SOUND_ENABLED_KEY = "isSoundEnabled";
-    public static final String FLEX_VIEW_CLOSE_TIME_KEY = "flexViewCloseTimeInSec";
-    public static final String ORDINAL_VIEW_COUNT_KEY = "ordinalViewCount";
-    public static final String AUTO_ROTATE_ENABLED_KEY = "autoRotateEnabled";
 
     private static VungleRouter sVungleRouter;
     private VungleRewardedRouterListener mVungleRewardedRouterListener;
@@ -66,17 +54,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
 
     private String mAdUnitId;
     private String mCustomerId;
-    @Nullable
-    private Map<String, Object> localExtrasData;
-    private String mUserId;
-    private String mTitle;
-    private String mBody;
-    private String mCloseButtonText;
-    private String mKeepWatchingButtonText;
-    private boolean mIsSoundEnabled = true;
-    private int mFlexViewCloseTimeInSec = 0;
-    private int mOrdinalViewCount = 0;
-    private boolean mAutoRotateEnabled = false;
 
     public VungleRewardedVideo() {
         sVungleRouter = VungleRouter.getInstance();
@@ -136,8 +113,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
                     MoPubErrorCode.NETWORK_NO_FILL);
             return;
         }
-        // save localExtras here
-        localExtrasData = localExtras;
 
         Object adUnitObject = localExtras.get(DataKeys.AD_UNIT_ID_KEY);
         if (adUnitObject instanceof String) {
@@ -226,88 +201,42 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         return isAllDataValid;
     }
 
-    private void setWithMediationSettings(@NonNull VungleMediationSettings mediationSettings) {
-
-        mUserId = mediationSettings.userId;
-        mTitle = mediationSettings.title;
-        mBody = mediationSettings.body;
-        mCloseButtonText = mediationSettings.closeButtonText;
-        mKeepWatchingButtonText = mediationSettings.keepWatchingButtonText;
-        mIsSoundEnabled = mediationSettings.isSoundEnabled;
-        mFlexViewCloseTimeInSec = mediationSettings.flexViewCloseTimeInSec;
-        mOrdinalViewCount = mediationSettings.ordinalViewCount;
-        mAutoRotateEnabled = mediationSettings.autoRotateEnabled;
-    }
-
     private void setUpMediationSettingsForRequest(AdConfig adConfig) {
+        VungleMediationConfiguration globalMediationSettings =
+                MoPubRewardedVideoManager.getGlobalMediationSettings(VungleMediationConfiguration.class);
+        if (globalMediationSettings == null) {
+            // pubs are using older adapter version
+            globalMediationSettings = MoPubRewardedVideoManager.getGlobalMediationSettings(VungleMediationSettings.class);
+        }
 
-        final VungleMediationSettings globalMediationSettings =
-                MoPubRewardedVideoManager.getGlobalMediationSettings(VungleMediationSettings.class);
-        final VungleMediationSettings instanceMediationSettings =
-                MoPubRewardedVideoManager.getInstanceMediationSettings(VungleMediationSettings.class, mAdUnitId);
-
+        VungleMediationConfiguration instanceMediationSettings =
+                MoPubRewardedVideoManager.getInstanceMediationSettings(VungleMediationConfiguration.class, mAdUnitId);
+        if (instanceMediationSettings == null) {
+            instanceMediationSettings = MoPubRewardedVideoManager.getInstanceMediationSettings(VungleMediationSettings.class, mAdUnitId);
+        }
         // Local options override global options.
-        // local extras that are set will override fields from mediation settings
         if (instanceMediationSettings != null) {
-            setWithMediationSettings(instanceMediationSettings);
+            modifyAdConfig(adConfig, instanceMediationSettings);
         } else if (globalMediationSettings != null) {
-            setWithMediationSettings(globalMediationSettings);
+            modifyAdConfig(adConfig, globalMediationSettings);
         }
-
-        if (localExtrasData != null) {
-            if (!TextUtils.isEmpty(mCustomerId)) {
-                mUserId = mCustomerId;
-            }
-
-            final Object titleObject = localExtrasData.get(TITLE_KEY);
-            if (titleObject instanceof String) {
-                mTitle = (String) titleObject;
-            }
-
-            final Object bodyObject = localExtrasData.get(BODY_KEY);
-            if (bodyObject instanceof String) {
-                mBody = (String) bodyObject;
-            }
-
-            final Object closeButtonTextObject = localExtrasData.get(CLOSE_BUTTON_TEXT_KEY);
-            if (closeButtonTextObject instanceof String) {
-                mCloseButtonText = (String) closeButtonTextObject;
-            }
-
-            final Object keepWatchingButtonTextObject = localExtrasData.get(KEEP_WATCHING_BUTTON_TEXT_KEY);
-            if (keepWatchingButtonTextObject instanceof String) {
-                mKeepWatchingButtonText = (String) keepWatchingButtonTextObject;
-            }
-
-            final Object isSoundEnabledObject = localExtrasData.get(IS_SOUND_ENABLED_KEY);
-            if (isSoundEnabledObject instanceof Boolean) {
-                mIsSoundEnabled = (Boolean) isSoundEnabledObject;
-            }
-
-            final Object flexViewCloseTimeInSecObject = localExtrasData.get(FLEX_VIEW_CLOSE_TIME_KEY);
-            if (flexViewCloseTimeInSecObject instanceof Integer) {
-                mFlexViewCloseTimeInSec = (Integer) flexViewCloseTimeInSecObject;
-            }
-
-            final Object ordinalViewCountObject = localExtrasData.get(ORDINAL_VIEW_COUNT_KEY);
-            if (ordinalViewCountObject instanceof Integer) {
-                mOrdinalViewCount = (Integer) ordinalViewCountObject;
-            }
-
-            final Object autoRotateEnabledObject = localExtrasData.get(AUTO_ROTATE_ENABLED_KEY);
-            if (autoRotateEnabledObject instanceof Boolean) {
-                mAutoRotateEnabled = (Boolean) autoRotateEnabledObject;
-            }
-        }
-        sVungleRouter.setIncentivizedFields(mUserId, mTitle, mBody,
-                mKeepWatchingButtonText, mCloseButtonText);
-
-        adConfig.setMuted(!mIsSoundEnabled);
-        adConfig.setFlexViewCloseTime(mFlexViewCloseTimeInSec);
-        adConfig.setOrdinal(mOrdinalViewCount);
-        adConfig.setAutoRotate(mAutoRotateEnabled);
     }
 
+    private void modifyAdConfig(AdConfig adConfig, VungleMediationConfiguration mediationSettings) {
+        String userId = null;
+
+        if (!TextUtils.isEmpty(mCustomerId)) {
+            userId = mCustomerId;
+        } else if (!TextUtils.isEmpty(mediationSettings.getUserId())) {
+            userId = mediationSettings.getUserId();
+        }
+        sVungleRouter.setIncentivizedFields(userId, mediationSettings.getTitle(), mediationSettings.getBody(),
+                mediationSettings.getKeepWatchingButtonText(), mediationSettings.getCloseButtonText());
+        adConfig.setMuted(mediationSettings.isStartMuted());
+        adConfig.setFlexViewCloseTime(mediationSettings.getFlexViewCloseTimeInSec());
+        adConfig.setOrdinal(mediationSettings.getOrdinalViewCount());
+        adConfig.setAdOrientation(mediationSettings.getAdOrientation());
+    }
 
     /*
      * VungleRewardedRouterListener
@@ -370,8 +299,8 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
                         placementReferenceId + ", reason: " + reason);
 
                 mIsPlaying = false;
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(VungleRewardedVideo.class,
-                        mPlacementId, MoPubErrorCode.NETWORK_NO_FILL);
+                MoPubRewardedVideoManager.onRewardedVideoPlaybackError(VungleRewardedVideo.class,
+                        mPlacementId, MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                         MoPubErrorCode.NETWORK_NO_FILL);
@@ -404,98 +333,84 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         }
     }
 
-    public static class VungleMediationSettings implements MediationSettings {
-        @Nullable
-        private final String userId;
-        @Nullable
-        private final String title;
-        @Nullable
-        private final String body;
-        @Nullable
-        private final String closeButtonText;
-        @Nullable
-        private final String keepWatchingButtonText;
-        private final boolean isSoundEnabled;
-        private final int flexViewCloseTimeInSec;
-        private final int ordinalViewCount;
-        private final boolean autoRotateEnabled;
+    /**
+     * @see com.mopub.mobileads.VungleMediationConfiguration
+     * @deprecated
+     */
+    @Deprecated
+    public static class VungleMediationSettings extends VungleMediationConfiguration {
 
-        public static class Builder {
-            @Nullable
-            private String userId;
-            @Nullable
-            private String title;
-            @Nullable
-            private String body;
-            @Nullable
-            private String closeButtonText;
-            @Nullable
-            private String keepWatchingButtonText;
-            private boolean isSoundEnabled = true;
-            private int flexViewCloseTimeInSec = 0;
-            private int ordinalViewCount = 0;
-            private boolean autoRotateEnabled = false;
+        public static class Builder extends VungleMediationConfiguration.Builder {
 
+            @Override
             public Builder withUserId(@NonNull final String userId) {
-                this.userId = userId;
+                super.withUserId(userId);
                 return this;
             }
 
+            @Override
             public Builder withCancelDialogTitle(@NonNull final String title) {
-                this.title = title;
+                super.withCancelDialogTitle(title);
                 return this;
             }
 
+            @Override
             public Builder withCancelDialogBody(@NonNull final String body) {
-                this.body = body;
+                super.withCancelDialogBody(body);
                 return this;
             }
 
+            @Override
             public Builder withCancelDialogCloseButton(@NonNull final String buttonText) {
-                this.closeButtonText = buttonText;
+                super.withCancelDialogCloseButton(buttonText);
                 return this;
             }
 
+            @Override
             public Builder withCancelDialogKeepWatchingButton(@NonNull final String buttonText) {
-                this.keepWatchingButtonText = buttonText;
+                super.withCancelDialogKeepWatchingButton(buttonText);
                 return this;
             }
 
+            @Deprecated
+            @Override
             public Builder withSoundEnabled(boolean isSoundEnabled) {
-                this.isSoundEnabled = isSoundEnabled;
+                super.withSoundEnabled(isSoundEnabled);
                 return this;
             }
 
+            @Override
+            public Builder withStartMuted(boolean isStartMuted) {
+                super.withStartMuted(isStartMuted);
+                return this;
+            }
+
+            @Override
             public Builder withFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
-                this.flexViewCloseTimeInSec = flexViewCloseTimeInSec;
+                super.withFlexViewCloseTimeInSec(flexViewCloseTimeInSec);
                 return this;
             }
 
+            @Override
             public Builder withOrdinalViewCount(int ordinalViewCount) {
-                this.ordinalViewCount = ordinalViewCount;
+                super.withOrdinalViewCount(ordinalViewCount);
                 return this;
             }
 
-            public Builder withAutoRotate(boolean autoRotateEnabled) {
-                this.autoRotateEnabled = autoRotateEnabled;
+            @Override
+            public Builder withAutoRotate(@AdConfig.Orientation int adOrientation) {
+                super.withAutoRotate(adOrientation);
                 return this;
             }
 
+            @Override
             public VungleMediationSettings build() {
                 return new VungleMediationSettings(this);
             }
         }
 
         private VungleMediationSettings(@NonNull final Builder builder) {
-            this.userId = builder.userId;
-            this.title = builder.title;
-            this.body = builder.body;
-            this.closeButtonText = builder.closeButtonText;
-            this.keepWatchingButtonText = builder.keepWatchingButtonText;
-            this.isSoundEnabled = builder.isSoundEnabled;
-            this.flexViewCloseTimeInSec = builder.flexViewCloseTimeInSec;
-            this.ordinalViewCount = builder.ordinalViewCount;
-            this.autoRotateEnabled = builder.autoRotateEnabled;
+            super(builder);
         }
     }
 }

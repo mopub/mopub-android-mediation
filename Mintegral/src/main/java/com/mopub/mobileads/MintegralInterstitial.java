@@ -29,7 +29,7 @@ import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
 public class MintegralInterstitial extends CustomEventInterstitial implements InterstitialVideoListener {
 
-    private static final String ADAPTER_NAME = MintegralInterstitial.class.getSimpleName();
+    private final String ADAPTER_NAME = this.getClass().getSimpleName();
 
     private MTGInterstitialVideoHandler mInterstitialHandler;
     private MTGBidInterstitialVideoHandler mBidInterstitialVideoHandler;
@@ -220,8 +220,19 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onAdCloseWithIVReward(boolean b, int i) {
+    public void onAdCloseWithIVReward(boolean isComplete, int rewardAlertStatus) {
+        String rewardStatus = null;
 
+        if (rewardAlertStatus == MIntegralConstans.IVREWARDALERT_STATUS_NOTSHOWN) {
+            rewardStatus = "The dialog was not shown.";
+        } else if (rewardAlertStatus == MIntegralConstans.IVREWARDALERT_STATUS_CLICKCONTINUE) {
+            rewardStatus = "The dialog's continue button was clicked.";
+        } else if (rewardAlertStatus == MIntegralConstans.IVREWARDALERT_STATUS_CLICKCANCEL) {
+            rewardStatus = "The dialog's cancel button was clicked.";
+        }
+
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, isComplete ? "Video playback is " +
+                "complete." : "Video playback is not complete. " + rewardStatus);
     }
 
     @Override
