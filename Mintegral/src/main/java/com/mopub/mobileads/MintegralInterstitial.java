@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.mintegral.msdk.MIntegralConstans;
 import com.mintegral.msdk.interstitialvideo.out.InterstitialVideoListener;
 import com.mintegral.msdk.interstitialvideo.out.MTGBidInterstitialVideoHandler;
 import com.mintegral.msdk.interstitialvideo.out.MTGInterstitialVideoHandler;
@@ -59,10 +60,20 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
             if (TextUtils.isEmpty(adm)) {
                 mInterstitialHandler = new MTGInterstitialVideoHandler(context, mAdUnitId);
+                if (MintegralAdapterConfiguration.isMute()){
+                    mInterstitialHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
+                }else {
+                    mInterstitialHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+                }
                 mInterstitialHandler.setRewardVideoListener(this);
                 mInterstitialHandler.load();
             } else {
                 mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mAdUnitId);
+                if (MintegralAdapterConfiguration.isMute()){
+                    mBidInterstitialVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
+                }else {
+                    mBidInterstitialVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+                }
                 mBidInterstitialVideoHandler.setRewardVideoListener(this);
                 mBidInterstitialVideoHandler.loadFromBid(adm);
             }
@@ -77,8 +88,18 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     @Override
     protected void showInterstitial() {
         if (mInterstitialHandler != null && mInterstitialHandler.isReady()) {
+            if (MintegralAdapterConfiguration.isMute()){
+                mInterstitialHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
+            }else {
+                mInterstitialHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+            }
             mInterstitialHandler.show();
         } else if (mBidInterstitialVideoHandler != null && mBidInterstitialVideoHandler.isBidReady()) {
+            if (MintegralAdapterConfiguration.isMute()){
+                mBidInterstitialVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
+            }else {
+                mBidInterstitialVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
+            }
             mBidInterstitialVideoHandler.showFromBid();
         } else {
             failAdapter(SHOW_FAILED, NETWORK_NO_FILL, "Failed to show Mintegral interstitial " +
@@ -196,6 +217,11 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     @Override
     public void onVideoComplete(String message) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
+    }
+
+    @Override
+    public void onAdCloseWithIVReward(boolean b, int i) {
+
     }
 
     @Override

@@ -38,6 +38,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String SDK_VERSION = MTGConfiguration.SDK_VERSION;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
+
     private static boolean isSDKInitialized = false;
 
     private static int mAge;
@@ -48,6 +49,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static int mPay;
     private static String mRewardId;
     private static String mUserId;
+
+    private static boolean mute = false;
 
     @NonNull
     @Override
@@ -229,6 +232,15 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
 
     public static String getUserId() {
         return TextUtils.isEmpty(mUserId) ? "" : mUserId;
+    }
+
+
+    public static boolean isMute() {
+        return mute;
+    }
+
+    public static void setMute(boolean muteStatus) {
+        mute = muteStatus;
     }
 
     static void addChannel() {
