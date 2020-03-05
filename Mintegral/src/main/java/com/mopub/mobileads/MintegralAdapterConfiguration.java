@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-
 import com.mintegral.msdk.MIntegralSDK;
 import com.mintegral.msdk.MIntegralUser;
 import com.mintegral.msdk.base.common.net.Aa;
@@ -16,7 +15,6 @@ import com.mintegral.msdk.mtgbid.out.BidManager;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MTGConfiguration;
 import com.mopub.common.BaseAdapterConfiguration;
-import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -45,11 +43,10 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static int mGender;
     private static Double mLatitude;
     private static Double mLongitude;
+    private static boolean mIsMute;
     private static int mPay;
     private static String mRewardId;
     private static String mUserId;
-
-    private static boolean mute = false;
 
     @NonNull
     @Override
@@ -233,13 +230,12 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
         return TextUtils.isEmpty(mUserId) ? "" : mUserId;
     }
 
-
-    public static boolean isMute() {
-        return mute;
+    public static void setMute(boolean muteStatus) {
+        mIsMute = muteStatus;
     }
 
-    public static void setMute(boolean muteStatus) {
-        mute = muteStatus;
+    public static boolean isMute() {
+        return mIsMute;
     }
 
     static void addChannel() {
