@@ -67,7 +67,6 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
     @Override
     public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String>
             configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
-
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
@@ -75,7 +74,7 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
 
         synchronized (ChartboostAdapterConfiguration.class) {
             try {
-                if (configuration != null) {
+                if (configuration != null && !configuration.isEmpty()) {
 
                     ChartboostShared.initializeSdk(context, configuration);
 
