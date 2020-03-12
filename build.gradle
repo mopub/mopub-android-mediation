@@ -29,6 +29,7 @@ subprojects {
         maven { url "https://adcolony.bintray.com/AdColony" }
         maven { url 'https://dl.bintray.com/ironsource-mobile/android-sdk'}
         maven { url 'https://tapjoy.bintray.com/maven' }
+        maven { url  "https://chartboostmobile.bintray.com/Chartboost" }
     }
 
     if (project.name == 'Testing')
