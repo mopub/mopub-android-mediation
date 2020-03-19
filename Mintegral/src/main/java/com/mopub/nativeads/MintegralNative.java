@@ -31,7 +31,7 @@ import static com.mopub.nativeads.NativeErrorCode.NETWORK_NO_FILL;
 
 public class MintegralNative extends CustomEventNative {
 
-    private static final String ADAPTER_NAME = MintegralNative.class.getName();
+    private final String ADAPTER_NAME = this.getClass().getName();
     private static boolean isInitialized = false;
     private static CustomEventNativeListener mCustomEventNativeListener;
 
@@ -66,7 +66,7 @@ public class MintegralNative extends CustomEventNative {
         mintegralNativeAd.loadAd();
     }
 
-    public static class MintegralNativeAd extends BaseNativeAd implements
+    public class MintegralNativeAd extends BaseNativeAd implements
             NativeListener.NativeAdListener, NativeListener.NativeTrackingListener {
 
         private final String mBid;
@@ -277,7 +277,7 @@ public class MintegralNative extends CustomEventNative {
         return false;
     }
 
-    private static void failAdapter(final NativeErrorCode errorCode, final String errorMsg) {
+    private void failAdapter(final NativeErrorCode errorCode, final String errorMsg) {
 
         MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 

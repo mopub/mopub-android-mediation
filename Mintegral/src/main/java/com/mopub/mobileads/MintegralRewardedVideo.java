@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mintegral.msdk.MIntegralConstans;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MTGBidRewardVideoHandler;
 import com.mintegral.msdk.out.MTGRewardVideoHandler;
@@ -19,6 +18,8 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_MUTE;
+import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE;
 import static com.mopub.common.DataKeys.ADM_KEY;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -37,7 +38,7 @@ import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
 public class MintegralRewardedVideo extends CustomEventRewardedVideo implements RewardVideoListener {
 
-    private static final String ADAPTER_NAME = MintegralRewardedVideo.class.getSimpleName();
+    private final String ADAPTER_NAME = this.getClass().getSimpleName();
 
     private Context mContext;
     private MTGRewardVideoHandler mMtgRewardVideoHandler;
@@ -110,22 +111,18 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
         if (TextUtils.isEmpty(adm)) {
             mMtgRewardVideoHandler = new MTGRewardVideoHandler(mAdUnitId);
-            if (MintegralAdapterConfiguration.isMute()) {
-                mMtgRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
-            }else {
-                mMtgRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-            }
+
             mMtgRewardVideoHandler.setRewardVideoListener(this);
             mMtgRewardVideoHandler.load();
+
+            handleAudio();
         } else {
             mtgBidRewardVideoHandler = new MTGBidRewardVideoHandler(mAdUnitId);
-            if (MintegralAdapterConfiguration.isMute()) {
-                mtgBidRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
-            }else {
-                mtgBidRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-            }
+
             mtgBidRewardVideoHandler.setRewardVideoListener(this);
             mtgBidRewardVideoHandler.loadFromBid(adm);
+
+            handleAudio();
         }
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -135,20 +132,12 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     protected void showVideo() {
 
         if (mMtgRewardVideoHandler != null && mMtgRewardVideoHandler.isReady()) {
-            if (MintegralAdapterConfiguration.isMute()) {
-                mMtgRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
-            }else {
-                mMtgRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-            }
+            handleAudio();
             mMtgRewardVideoHandler.show(mRewardId, mUserId);
 
             MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         } else if (mtgBidRewardVideoHandler != null && mtgBidRewardVideoHandler.isBidReady()) {
-            if (MintegralAdapterConfiguration.isMute()) {
-                mtgBidRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_MUTE);
-            }else {
-                mtgBidRewardVideoHandler.playVideoMute(MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE);
-            }
+            handleAudio();
             mtgBidRewardVideoHandler.showFromBid(mRewardId, mUserId);
 
             MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
@@ -216,11 +205,22 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         }
 
         if (loadRelated) {
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(MintegralRewardedVideo.class,
+            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(this.getClass(),
                     mAdUnitId, errorCode);
         } else {
-            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(MintegralRewardedVideo.class,
+            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(this.getClass(),
                     mAdUnitId, errorCode);
+        }
+    }
+
+    private void handleAudio() {
+        boolean isMute = MintegralAdapterConfiguration.isMute();
+        int muteStatus = isMute ? REWARD_VIDEO_PLAY_MUTE : REWARD_VIDEO_PLAY_NOT_MUTE;
+
+        if (mMtgRewardVideoHandler != null) {
+            mMtgRewardVideoHandler.playVideoMute(muteStatus);
+        } else if (mtgBidRewardVideoHandler != null) {
+            mtgBidRewardVideoHandler.playVideoMute(muteStatus);
         }
     }
 
@@ -232,13 +232,13 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     @Override
     public void onAdClose(boolean b, String label, float amount) {
         if (b) {
-            MoPubRewardedVideoManager.onRewardedVideoCompleted(MintegralRewardedVideo.class, mAdUnitId,
+            MoPubRewardedVideoManager.onRewardedVideoCompleted(this.getClass(), mAdUnitId,
                     MoPubReward.success(label, (int) amount));
 
             MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, amount, label);
         }
 
-        MoPubRewardedVideoManager.onRewardedVideoClosed(MintegralRewardedVideo.class, mAdUnitId);
+        MoPubRewardedVideoManager.onRewardedVideoClosed(this.getClass(), mAdUnitId);
         MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
     }
 
@@ -249,13 +249,13 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     public void onVideoLoadSuccess(String s) {
-        MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(MintegralRewardedVideo.class, mAdUnitId);
+        MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(this.getClass(), mAdUnitId);
         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
     }
 
     @Override
     public void onAdShow() {
-        MoPubRewardedVideoManager.onRewardedVideoStarted(MintegralRewardedVideo.class, mAdUnitId);
+        MoPubRewardedVideoManager.onRewardedVideoStarted(this.getClass(), mAdUnitId);
         MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
     }
 
@@ -266,7 +266,7 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     public void onVideoAdClicked(String s) {
-        MoPubRewardedVideoManager.onRewardedVideoClicked(MintegralRewardedVideo.class, mAdUnitId);
+        MoPubRewardedVideoManager.onRewardedVideoClicked(this.getClass(), mAdUnitId);
         MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
     }
 

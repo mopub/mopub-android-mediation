@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Json;
 
@@ -186,7 +187,11 @@ public class AdColonyInterstitial extends CustomEventInterstitial {
                 @Override
                 public void onExpiring(@NonNull com.adcolony.sdk.AdColonyInterstitial ad) {
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColony interstitial is expiring; requesting new ad.");
-                    AdColony.requestInterstitial(ad.getZoneID(), mAdColonyInterstitialListener);
+                    Preconditions.checkNotNull(ad);
+
+                    if (mAdColonyInterstitialListener != null) {
+                        AdColony.requestInterstitial(ad.getZoneID(), mAdColonyInterstitialListener);
+                    }
                 }
 
                 @Override

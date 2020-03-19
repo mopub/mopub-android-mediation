@@ -29,7 +29,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.MintegralNativeAd> {
 
-    private static final String ADAPTER_NAME = MintegralAdRenderer.class.getSimpleName();
+    private final String ADAPTER_NAME = this.getClass().getSimpleName();
     private final MintegralViewBinder mViewBinder;
 
     private final WeakHashMap<View, MintegralNativeViewHolder> mViewHolderMap;

@@ -1,4 +1,9 @@
 ## Changelog
+  *  6.5.2.0
+    * This version of the adapters has been certified with Vungle 6.5.2.
+    * Add support for Vungle's newly-introduced [banner format](https://support.vungle.com/hc/en-us/articles/360032641251-Early-Access-Get-Started-with-Banner-Ads-Android-or-Amazon-SDK-v-6-5-1).
+    * Deprecate `VungleMediationSettings` in the favor of `VungleMediationConfiguration`, through which custom ad configurations can be passed that apply to all ad formats. Refer to [Vungle doc](https://support.vungle.com/hc/en-us/articles/360033932751#interstitial-ads-0-5) for details.
+
   * 6.4.11.5
     * Log the Vungle placement ID in ad lifecycle events.
 
@@ -7,7 +12,7 @@
 
   * 6.4.11.3
     * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for `VungleRewardedVideo.java`
-      
+
   * 6.4.11.2
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
 

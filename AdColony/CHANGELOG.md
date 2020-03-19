@@ -1,4 +1,8 @@
 ## Changelog
+  * 4.1.4.0
+    * This version of the adapters has been certified with AdColony 4.1.4.
+    * Fix a NullPointerException crash while requesting ads from the `onExpiring` callback.
+
   * 4.1.3.0
     * This version of the adapters has been certified with AdColony 4.1.3.
     * Log the AdColony zone id in ad lifecycle events.
