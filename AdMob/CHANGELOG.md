@@ -1,4 +1,8 @@
 ## Changelog
+  * 19.0.0.0
+    * This version of the adapters has been certified with AdMob 19.0.0.
+    * Deprecated `AdRequest.Builder.addTestDevice()` in favor of `RequestConfiguration.Builder.setTestDeviceIds()`.
+
   * 18.3.0.3
     * MoPub now collects GDPR consent on behalf of Google.
 

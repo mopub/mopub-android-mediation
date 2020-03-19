@@ -1,4 +1,9 @@
 ## Changelog
+
+  * 13.0.11.0
+    * This version of the adapters has been certified with Mintegral 13.0.11 and MoPub 5.11.1.
+    * Disable automatic impression and click tracking for banner.
+
   * 12.2.31.0
     * This version of the adapters has been certified with Mintegral 12.2.31.
     * Add a mute API for interstitial and rewarded video. Unless muted via `MintegralAdapterConfiguration.setMute(true)`, creatives play unmuted by default. 

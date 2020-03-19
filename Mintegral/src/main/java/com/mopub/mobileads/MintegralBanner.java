@@ -42,6 +42,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
                               final CustomEventBannerListener customEventBannerListener,
                               final Map<String, Object> localExtras, Map<String, String> serverExtras) {
 
+        setAutomaticImpressionAndClickTracking(false);
         mBannerListener = customEventBannerListener;
 
         if (!serverDataIsValid(serverExtras, context)) {

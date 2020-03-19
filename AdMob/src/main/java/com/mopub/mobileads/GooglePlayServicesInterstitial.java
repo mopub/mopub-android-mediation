@@ -1,12 +1,10 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -14,6 +12,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.mopub.common.logging.MoPubLog;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
@@ -92,16 +91,16 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             builder.setContentUrl(contentUrl);
         }
 
-        // Publishers may request for test ads by passing test device IDs to the MoPubInterstitial.setLocalExtras() call.
-        final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
-
-        if (!TextUtils.isEmpty(testDeviceId)) {
-            builder.addTestDevice(testDeviceId);
-        }
-
         forwardNpaIfSet(builder);
 
         final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
+        // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
+        final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+
+        if (!TextUtils.isEmpty(testDeviceId)) {
+            requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
+        }
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
