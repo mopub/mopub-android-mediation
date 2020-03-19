@@ -180,6 +180,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
         MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
+            mCustomEventInterstitialListener.onInterstitialImpression();
             mCustomEventInterstitialListener.onInterstitialShown();
         }
     }
