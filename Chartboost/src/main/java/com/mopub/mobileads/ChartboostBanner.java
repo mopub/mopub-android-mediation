@@ -141,9 +141,9 @@ public class ChartboostBanner extends CustomEventBanner {
                 int MEDIUM_WIDTH = BannerSize.getWidth(BannerSize.MEDIUM);
 
                 if (mAdHeight >= LEADERBOARD_HEIGHT && mAdWith >= LEADERBOARD_WIDTH) {
-                    return BannerSize.MEDIUM;
-                } else if (mAdHeight >= MEDIUM_HEIGHT && mAdWith >= MEDIUM_WIDTH) {
                     return BannerSize.LEADERBOARD;
+                } else if (mAdHeight >= MEDIUM_HEIGHT && mAdWith >= MEDIUM_WIDTH) {
+                    return BannerSize.MEDIUM;
                 } else {
                     return BannerSize.STANDARD;
                 }
