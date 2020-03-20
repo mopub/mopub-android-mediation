@@ -67,6 +67,7 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
     @Override
     public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String>
             configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
+
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
@@ -97,7 +98,7 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
                     networkInitializationSucceeded = true;
                 } else {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost's initialization via " +
-                            ADAPTER_NAME + " not started. Configuration is missing.");
+                            ADAPTER_NAME + " not started as the context calling it is missing or null.");
                 }
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Chartboost has encountered " +
