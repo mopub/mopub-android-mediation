@@ -7,8 +7,11 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.ads.mediation.admob.AdMobAdapter;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.mopub.common.BaseAdapterConfiguration;
+import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -22,10 +25,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String KEY_EXTRA_APPLICATION_ID = "appid";
-    private static final String KEY_NPA = "npa";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
-
-    private static Bundle npaBundle;
 
     @NonNull
     @Override
@@ -73,10 +73,6 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
                     if (!TextUtils.isEmpty(appId)) {
                         MobileAds.initialize(context, configuration.get(KEY_EXTRA_APPLICATION_ID));
                     }
-
-                    String npaValue = configuration.get(KEY_NPA);
-
-                    setNpaBundle(npaValue);
                 } else {
                     MobileAds.initialize(context);
                 }
@@ -97,15 +93,18 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         }
     }
 
-    public static Bundle getNpaBundle() {
-        return npaBundle;
-    }
+    // MoPub collects GDPR consent on behalf of Google
+    public static AdRequest.Builder forwardNpaIfSet(AdRequest.Builder builder) {
+        final Bundle npaBundle = new Bundle();
 
-    public static void setNpaBundle(String npaValue) {
-        npaBundle = new Bundle();
-
-        if (!TextUtils.isEmpty((npaValue))) {
-            npaBundle.putString(KEY_NPA, npaValue);
+        if (!MoPub.canCollectPersonalInformation()) {
+            npaBundle.putString("npa", "1");
         }
+
+        if (!npaBundle.isEmpty()) {
+            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
+        }
+
+        return builder;
     }
 }

@@ -1,4 +1,11 @@
 ## Changelog
+  * 1.4.0.0
+    * Update Advanced Bidding API
+    * This version of the adapters has been certified with Verizon 1.4.0.
+
+  * 1.3.1.0
+    * This version of the adapters has been certified with Verizon 1.3.1.
+  
   * 1.3.0.0
     * This version of the adapters has been certified with Verizon 1.3.0.
     * Remove Advanced Bidding token generation logic from the adapters. The equivalent logic will be added to the Verizon SDK.

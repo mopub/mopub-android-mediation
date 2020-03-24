@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MoPub Sample App</string>
+    <string name="app_name">MoPub</string>
+    <string name="app_title">MoPub Sample App</string>
     <string name="keywords">Keywords (optional)</string>
     <string name="user_data_keywords">User Data Keywords (optional)</string>
+    <string name="ad_size_label">MoPub Ad Size</string>
+    <string name="ad_size_detail_empty_text">MoPub Ad Size Details</string>
+    <string name="ad_size_change_button">Change Ad Size</string>
+    <string name="ad_size_width_label">Width</string>
+    <string name="ad_size_height_label">Height</string>
+    <string name="ad_size_dp_hint">In dips</string>
+    <string name="ad_size_dialog_title">Set MoPubAdSize</string>
+    <string name="ad_size_dialog_save_button">Save MoPubAdSize</string>
     <string name="custom_data">Custom Data (optional)</string>
     <string name="load_ad">Load Ad</string>
     <string name="refresh_ad">Refresh Ad</string>
@@ -17,12 +26,13 @@
     <string name="ad_unit_hint">Enter Ad Unit Id</string>
     <string name="ad_unit_name">Name:</string>
     <string name="ad_unit_name_hint">Enter Name</string>
+    <string name="ad_unit_keywords">Keywords:</string>
+    <string name="ad_unit_keywords_hint">Enter Keywords String</string>
     <string name="ad_type">Ad Type:</string>
     <string name="add_ad_unit_title">Add an Ad Unit</string>
-    <string name="add_ad_unit_button">Add an Ad Unit</string>
+    <string name="add_ad_unit_button">New ad unit</string>
     <string name="ad_unit_id_banner">b195f8dd8ded45fe847ad89ed1d016da</string>
-    <string name="ad_unit_id_mrect">252412d5e9364a05ab77d9396346d73d</string>
-    <string name="ad_unit_id_leaderboard">a8919cca19784497872ae69d48f678e1</string>
+    <string name="ad_unit_id_medium_rectangle">252412d5e9364a05ab77d9396346d73d</string>
     <string name="ad_unit_id_interstitial">24534e1901884e398f1253216226017e</string>
     <string name="ad_unit_id_rewarded_video">920b6145fb1546cf8b5cf2ac34638bb7</string>
     <string name="ad_unit_id_rewarded_rich_media">a96ae2ef41d44822af45c6328c4e1eb1</string>
@@ -54,4 +64,11 @@
     <string name="network_adapters">Network Adapters</string>
     <string name="pim_is_not_available">getPersonalInformationManager() returned null</string>
     <string name="list_fragment_not_found">Can\'t find MoPubListFragment.</string>
+    <string name="filter_ads">Filter ads</string>
+    <string name="impressions_text">Impressions</string>
+    <string name="clear_logs">Clear logs</string>
+    <string name="empty_list">Empty list</string>
+    <string name="share_impression">Share Impression</string>
+    <string name="checkmark">checkmark</string>
+
 </resources>

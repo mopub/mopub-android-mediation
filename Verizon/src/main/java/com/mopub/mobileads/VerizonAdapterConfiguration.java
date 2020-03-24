@@ -38,7 +38,6 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     public static final String SERVER_EXTRAS_AD_CONTENT_KEY = "adm";
     public static final String VAS_SITE_ID_KEY = "siteId";
 
-    private static String mSiteId;
     static final String REQUEST_METADATA_AD_CONTENT_KEY = "adContent";
 
     @NonNull
@@ -50,8 +49,7 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        // Moving dynamic bidding token creation into the SDK. Will be added back in a future update.
-        return "test_token";
+        return VASAds.getBiddingToken(context, VASAds.getRequestMetadata());
     }
 
     @NonNull

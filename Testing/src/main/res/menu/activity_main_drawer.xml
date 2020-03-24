@@ -3,45 +3,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <item android:title="@string/api_endpoint">
-        <menu>
-            <group android:checkableBehavior="single">
-                <item
-                    android:id="@+id/nav_production"
-                    android:checkable="true"
-                    android:icon="@drawable/ic_menu_slideshow"
-                    android:title="@string/production" />
-                <item
-                    android:id="@+id/nav_staging"
-                    android:checkable="true"
-                    android:icon="@drawable/ic_menu_manage"
-                    android:title="@string/staging" />
-            </group>
-        </menu>
-    </item>
-
     <item android:title="@string/privacy">
         <menu>
             <item
                 android:id="@+id/nav_privacy_info"
-                android:icon="@drawable/ic_menu_adapters"
+                android:icon="@drawable/ic_menu_info"
                 android:title="@string/information" />
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/nav_privacy_grant"
                     android:checkable="true"
-                    android:icon="@drawable/ic_menu_lock"
+                    android:icon="@drawable/ic_menu_grant"
                     android:title="@string/grant_consent" />
                 <item
                     android:id="@+id/nav_privacy_revoke"
                     android:checkable="true"
-                    android:icon="@drawable/ic_menu_unlock"
+                    android:icon="@drawable/ic_menu_revoke"
                     android:title="@string/revoke_consent" />
             </group>
             <item
                 android:id="@+id/nav_force_gdpr"
                 android:checkable="true"
-                android:icon="@drawable/ic_menu_info"
+                android:icon="@drawable/ic_menu_force_gdpr"
                 android:title="@string/force_gdpr_applicable" />
         </menu>
     </item>
