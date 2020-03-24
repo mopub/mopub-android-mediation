@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
@@ -34,6 +35,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class VungleRouter {
 
     private static final String ADAPTER_NAME = VungleRouter.class.getSimpleName();
+
     private static final LifecycleListener sLifecycleListener = new BaseLifecycleListener() {
         @Override
         public void onPause(@NonNull final Activity activity) {
@@ -73,7 +75,6 @@ public class VungleRouter {
         // Pass the user consent from the MoPub SDK to Vungle as per GDPR
         // Pass consentMessageVersion per Vungle 6.3.17:
         // https://support.vungle.com/hc/en-us/articles/360002922871#GDPRRecommendedImplementationInstructions
-        //no-op
         InitCallback initCallback = new InitCallback() {
             @Override
             public void onSuccess() {
@@ -168,7 +169,7 @@ public class VungleRouter {
         switch (sInitState) {
             case NOTINITIALIZED:
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBannerAdForPlacement is called before the " +
-                        "adapter initialization.");
+                        "Vungle SDK initialization.");
                 break;
             case INITIALIZING:
                 sWaitingList.put(placementId, routerListener);
@@ -179,6 +180,7 @@ public class VungleRouter {
                     Banners.loadBanner(placementId, adSize, loadAdCallback);
                 } else {
                     routerListener.onUnableToPlayAd(placementId, "Invalid/Inactive Banner Placement Id");
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to play ad due to invalid/inactive Banner placement Id");
                 }
                 break;
         }
@@ -204,6 +206,9 @@ public class VungleRouter {
     }
 
     boolean isBannerAdPlayable(@NonNull String placementId, @NonNull AdSize adSize) {
+        Preconditions.checkNotNull(placementId);
+        Preconditions.checkNotNull(adSize);
+
         return Banners.canPlayAd(placementId, adSize);
     }
 
@@ -221,6 +226,9 @@ public class VungleRouter {
     }
 
     VungleBanner getVungleBannerAd(@NonNull String placementId, @NonNull AdSize adSize) {
+        Preconditions.checkNotNull(placementId);
+        Preconditions.checkNotNull(adSize);
+
         return Banners.getBanner(placementId, adSize, playAdCallback);
     }
 

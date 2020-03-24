@@ -15,7 +15,6 @@ import com.mintegral.msdk.mtgbid.out.BidManager;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MTGConfiguration;
 import com.mopub.common.BaseAdapterConfiguration;
-import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -37,11 +36,14 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String SDK_VERSION = MTGConfiguration.SDK_VERSION;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
+    private static boolean isSDKInitialized = false;
+
     private static int mAge;
     private static String mCustomData;
     private static int mGender;
     private static Double mLatitude;
     private static Double mLongitude;
+    private static boolean mIsMute;
     private static int mPay;
     private static String mRewardId;
     private static String mUserId;
@@ -87,10 +89,10 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
                 if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appKey)) {
                     configureMintegral(appId, appKey, context);
 
-                    listener.onNetworkInitializationFinished(MintegralAdapterConfiguration.class,
+                    listener.onNetworkInitializationFinished(this.getClass(),
                             MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
                 } else {
-                    listener.onNetworkInitializationFinished(MintegralAdapterConfiguration.class,
+                    listener.onNetworkInitializationFinished(this.getClass(),
                             MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             }
@@ -101,6 +103,9 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static void configureMintegral(String appId, String appKey, Context context) {
+
+        if (isSDKInitialized) return;
+
         final MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
 
         if (sdk != null) {
@@ -111,6 +116,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
             } else if (context instanceof Application) {
                 sdk.init(mtgConfigurationMap, context);
             }
+
+            isSDKInitialized = true;
 
         } else {
             MoPubLog.log(CUSTOM, "Failed to initialize the Mintegral SDK because the SDK " +
@@ -221,6 +228,14 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
 
     public static String getUserId() {
         return TextUtils.isEmpty(mUserId) ? "" : mUserId;
+    }
+
+    public static void setMute(boolean muteStatus) {
+        mIsMute = muteStatus;
+    }
+
+    public static boolean isMute() {
+        return mIsMute;
     }
 
     static void addChannel() {

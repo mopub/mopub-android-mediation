@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
@@ -21,6 +20,7 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -38,6 +38,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
 
@@ -189,7 +190,7 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         mWeakActivity = new WeakReference<>(activity);
         mRewardedAd = new RewardedAd(activity, mAdUnitId);
 
-        final AdRequest.Builder builder = new AdRequest.Builder();
+        AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the
@@ -208,6 +209,10 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
             builder.setContentUrl(contentUrl);
         }
 
+        forwardNpaIfSet(builder);
+
+        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may request for test ads by passing test device IDs to the
         // GooglePlayServicesMediationSettings instance when initializing the MoPub SDK:
         // https://developers.mopub.com/docs/mediation/networks/google/#android
@@ -221,15 +226,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         }
 
         if (!TextUtils.isEmpty(testDeviceId)) {
-            builder.addTestDevice(testDeviceId);
+            requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
         }
-
-        // Consent collected from the MoPub’s consent dialogue should not be used
-        // to set up Google's personalization preference.
-        // Publishers should work with Google to be GDPR-compliant.
-        forwardNpaIfSet(builder);
-
-        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
         // Publishers may want to indicate that their content is child-directed and
         // forward this information to Google.
@@ -280,16 +278,6 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         mRewardedAd.loadAd(adRequest, mRewardedAdLoadCallback);
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-    }
-
-    private void forwardNpaIfSet(AdRequest.Builder builder) {
-        // Only forward the "npa" bundle if it is explicitly set.
-        // Otherwise, don't attach it with the ad request.
-        final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
-
-        if (npaBundle != null && !npaBundle.isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-        }
     }
 
     @Override

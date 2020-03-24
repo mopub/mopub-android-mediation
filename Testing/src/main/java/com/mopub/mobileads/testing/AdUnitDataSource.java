@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
 import androidx.annotation.NonNull;
 
 import com.mopub.common.Preconditions;
@@ -22,17 +23,10 @@ import static com.mopub.mobileads.testing.MoPubSQLiteHelper.COLUMN_AD_TYPE;
 import static com.mopub.mobileads.testing.MoPubSQLiteHelper.COLUMN_AD_UNIT_ID;
 import static com.mopub.mobileads.testing.MoPubSQLiteHelper.COLUMN_DESCRIPTION;
 import static com.mopub.mobileads.testing.MoPubSQLiteHelper.COLUMN_ID;
+import static com.mopub.mobileads.testing.MoPubSQLiteHelper.COLUMN_KEYWORDS;
 import static com.mopub.mobileads.testing.MoPubSQLiteHelper.COLUMN_USER_GENERATED;
 import static com.mopub.mobileads.testing.MoPubSQLiteHelper.TABLE_AD_CONFIGURATIONS;
 import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.BANNER;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.CUSTOM_NATIVE;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.INTERSTITIAL;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.LEADERBOARD;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.LIST_VIEW;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.MRECT;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.RECYCLER_VIEW;
-import static com.mopub.mobileads.testing.MoPubSampleAdUnit.AdType.REWARDED_VIDEO;
 
 class AdUnitDataSource {
     private Context mContext;
@@ -42,7 +36,8 @@ class AdUnitDataSource {
             COLUMN_AD_UNIT_ID,
             COLUMN_DESCRIPTION,
             COLUMN_USER_GENERATED,
-            COLUMN_AD_TYPE
+            COLUMN_AD_TYPE,
+            COLUMN_KEYWORDS
     };
 
     AdUnitDataSource(final Context context) {
@@ -60,9 +55,11 @@ class AdUnitDataSource {
     }
 
     private MoPubSampleAdUnit createSampleAdUnit(final MoPubSampleAdUnit sampleAdUnit,
-            final boolean isUserGenerated) {
-        deleteAllAdUnitsWithAdUnitIdAndAdType(sampleAdUnit.getAdUnitId(),
-                sampleAdUnit.getFragmentClassName());
+                                                 final boolean isUserGenerated) {
+        deleteAllAdUnitsWithAdUnitIdAndAdTypeAndKeywords(sampleAdUnit.getAdUnitId(),
+                sampleAdUnit.getFragmentClassName(),
+                sampleAdUnit.getKeywords(),
+                isUserGenerated);
 
         final ContentValues values = new ContentValues();
         final int userGenerated = isUserGenerated ? 1 : 0;
@@ -70,6 +67,7 @@ class AdUnitDataSource {
         values.put(COLUMN_DESCRIPTION, sampleAdUnit.getDescription());
         values.put(COLUMN_USER_GENERATED, userGenerated);
         values.put(COLUMN_AD_TYPE, sampleAdUnit.getFragmentClassName());
+        values.put(COLUMN_KEYWORDS, sampleAdUnit.getKeywords());
 
         final SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
         final long insertId = database.insert(TABLE_AD_CONFIGURATIONS, null, values);
@@ -95,16 +93,21 @@ class AdUnitDataSource {
         database.close();
     }
 
-    private void deleteAllAdUnitsWithAdUnitIdAndAdType(@NonNull final String adUnitId,
-            @NonNull final String adType) {
+    private void deleteAllAdUnitsWithAdUnitIdAndAdTypeAndKeywords(@NonNull final String adUnitId,
+                                                                  @NonNull final String adType,
+                                                                  @NonNull final String keywords,
+                                                                  boolean isUserGenerated) {
         Preconditions.checkNotNull(adUnitId);
         Preconditions.checkNotNull(adType);
+        Preconditions.checkNotNull(keywords);
 
+        final String userGenerated = isUserGenerated ? "1" : "0";
         final SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
         final int numDeletedRows = database.delete(TABLE_AD_CONFIGURATIONS,
-                COLUMN_AD_UNIT_ID + " = '" + adUnitId +
-                "' AND " + COLUMN_USER_GENERATED + " = 1 AND " +
-                COLUMN_AD_TYPE + " = '" + adType + "'", null);
+                COLUMN_AD_UNIT_ID + " = '" + adUnitId
+                        + "' AND " + COLUMN_USER_GENERATED + " = " + userGenerated
+                        + " AND " + COLUMN_AD_TYPE + " = '" + adType + "'"
+                        + " AND " + COLUMN_KEYWORDS + " = '" + keywords + "'", null);
         MoPubLog.log(CUSTOM, numDeletedRows + " rows deleted with adUnitId: " + adUnitId);
         database.close();
     }
@@ -129,65 +132,11 @@ class AdUnitDataSource {
         return adConfigurations;
     }
 
-    List<MoPubSampleAdUnit> getDefaultAdUnits() {
-        final List<MoPubSampleAdUnit> adUnitList = new ArrayList<>();
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_banner), BANNER)
-                        .description("MoPub Banner Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_mrect), MRECT)
-                        .description("MoPub Mrect Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_leaderboard), LEADERBOARD)
-                        .description("MoPub Leaderboard Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_interstitial), INTERSTITIAL)
-                        .description("MoPub Interstitial Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_rewarded_video),
-                        REWARDED_VIDEO)
-                        .description("MoPub Rewarded Video Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_rewarded_rich_media),
-                        REWARDED_VIDEO)
-                        .description("MoPub Rewarded Rich Media Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_native), LIST_VIEW)
-                        .description("MoPub Ad Placer Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_native), RECYCLER_VIEW)
-                        .description("MoPub Recycler View Sample")
-                        .build());
-        adUnitList.add(
-                new MoPubSampleAdUnit
-                        .Builder(mContext.getString(R.string.ad_unit_id_native), CUSTOM_NATIVE)
-                        .description("MoPub View Pager Sample")
-                        .build());
-        return adUnitList;
-    }
-
     private void populateDefaultSampleAdUnits() {
-        final HashSet<MoPubSampleAdUnit> allAdUnits = new HashSet<>();
-        for (final MoPubSampleAdUnit adUnit : getAllAdUnits()) {
-            allAdUnits.add(adUnit);
-        }
+        final HashSet<MoPubSampleAdUnit> allAdUnits = new HashSet<>(getAllAdUnits());
 
-        for (final MoPubSampleAdUnit defaultAdUnit : getDefaultAdUnits()) {
+        for (final MoPubSampleAdUnit defaultAdUnit :
+                SampleAppAdUnits.Defaults.getAdUnits(mContext)) {
             if (!allAdUnits.contains(defaultAdUnit)) {
                 createDefaultSampleAdUnit(defaultAdUnit);
             }
@@ -200,6 +149,7 @@ class AdUnitDataSource {
         final String description = cursor.getString(2);
         final int userGenerated = cursor.getInt(3);
         final AdType adType = AdType.fromFragmentClassName(cursor.getString(4));
+        final String keywords = cursor.getString(5);
 
         if (adType == null) {
             return null;
@@ -208,6 +158,7 @@ class AdUnitDataSource {
         return new MoPubSampleAdUnit.Builder(adUnitId, adType)
                 .description(description)
                 .isUserDefined(userGenerated == 1)
+                .keywords(keywords)
                 .id(id)
                 .build();
     }

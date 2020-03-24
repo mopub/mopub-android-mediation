@@ -194,7 +194,7 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
         VungleMediationConfiguration globalMediationSettings =
                 MoPubRewardedVideoManager.getGlobalMediationSettings(VungleMediationConfiguration.class);
         if (globalMediationSettings == null) {
-            // pubs are using elder adapter version
+            // pubs are using older adapter version
             globalMediationSettings = MoPubRewardedVideoManager
                     .getGlobalMediationSettings(VungleMediationSettings.class);
         }
@@ -205,7 +205,6 @@ public class VungleRewardedVideo extends CustomEventRewardedVideo {
                     .getInstanceMediationSettings(VungleMediationSettings.class, mAdUnitId);
         }
         // Local options override global options.
-        // The two objects are not merged.
         if (instanceMediationSettings != null) {
             modifyAdConfig(adConfig, instanceMediationSettings);
         } else if (globalMediationSettings != null) {

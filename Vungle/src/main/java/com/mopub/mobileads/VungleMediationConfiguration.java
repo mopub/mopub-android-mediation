@@ -25,7 +25,7 @@ public class VungleMediationConfiguration implements MediationSettings {
     private final int mFlexViewCloseTimeInSec;
     private final int mOrdinalViewCount;
     private final int mAdOrientation;
-    private final Map<String, Object> mExtrasMap;
+    private final Map<String, Object> mExtras;
 
     @Nullable
     public String getUserId() {
@@ -69,35 +69,37 @@ public class VungleMediationConfiguration implements MediationSettings {
     }
 
     public Map<String, Object> getExtrasMap() {
-        return mExtrasMap;
+        return mExtras;
     }
 
     static void adConfigWithLocalExtras(AdConfig adConfig, Map<String, Object> localExtras) {
-        if (localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
-            Object isStartMuted = localExtras.get(Builder.EXTRA_START_MUTED_KEY);
-            if (isStartMuted instanceof Boolean) {
-                adConfig.setMuted((Boolean) isStartMuted);
+        if (localExtras != null && !localExtras.isEmpty()) {
+            if (localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
+                Object isStartMuted = localExtras.get(Builder.EXTRA_START_MUTED_KEY);
+                if (isStartMuted instanceof Boolean) {
+                    adConfig.setMuted((Boolean) isStartMuted);
+                }
+            } else {
+                Object isSoundEnabled = localExtras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
+                if (isSoundEnabled instanceof Boolean) {
+                    adConfig.setMuted(!(Boolean) isSoundEnabled);
+                }
             }
-        } else {
-            Object isSoundEnabled = localExtras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
-            if (isSoundEnabled instanceof Boolean) {
-                adConfig.setMuted(!(Boolean) isSoundEnabled);
+
+            Object flexViewCloseTimeInSec = localExtras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
+            if (flexViewCloseTimeInSec instanceof Integer) {
+                adConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
             }
-        }
 
-        Object flexViewCloseTimeInSec = localExtras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
-        if (flexViewCloseTimeInSec instanceof Integer) {
-            adConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
-        }
+            Object ordinalViewCount = localExtras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
+            if (ordinalViewCount instanceof Integer) {
+                adConfig.setOrdinal((Integer) ordinalViewCount);
+            }
 
-        Object ordinalViewCount = localExtras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
-        if (ordinalViewCount instanceof Integer) {
-            adConfig.setOrdinal((Integer) ordinalViewCount);
-        }
-
-        Object adOrientation = localExtras.get(Builder.EXTRA_ORIENTATION_KEY);
-        if (adOrientation instanceof Integer) {
-            adConfig.setAdOrientation((Integer) adOrientation);
+            Object adOrientation = localExtras.get(Builder.EXTRA_ORIENTATION_KEY);
+            if (adOrientation instanceof Integer) {
+                adConfig.setAdOrientation((Integer) adOrientation);
+            }
         }
     }
 
@@ -128,7 +130,7 @@ public class VungleMediationConfiguration implements MediationSettings {
         private int mFlexViewCloseTimeInSec = 0;
         private int mOrdinalViewCount = 0;
         private int mAdOrientation = AdConfig.AUTO_ROTATE;
-        private Map<String, Object> mExtrasMap = new HashMap<>();
+        private Map<String, Object> mExtras = new HashMap<>();
 
         public Builder withUserId(@NonNull final String userId) {
             this.mUserId = userId;
@@ -162,25 +164,25 @@ public class VungleMediationConfiguration implements MediationSettings {
 
         public Builder withStartMuted(boolean isStartMuted) {
             this.mIsStartMuted = isStartMuted;
-            mExtrasMap.put(EXTRA_START_MUTED_KEY, isStartMuted);
+            mExtras.put(EXTRA_START_MUTED_KEY, isStartMuted);
             return this;
         }
 
         public Builder withFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
             this.mFlexViewCloseTimeInSec = flexViewCloseTimeInSec;
-            mExtrasMap.put(EXTRA_FLEXVIEW_CLOSE_TIME_KEY, flexViewCloseTimeInSec);
+            mExtras.put(EXTRA_FLEXVIEW_CLOSE_TIME_KEY, flexViewCloseTimeInSec);
             return this;
         }
 
         public Builder withOrdinalViewCount(int ordinalViewCount) {
             this.mOrdinalViewCount = ordinalViewCount;
-            mExtrasMap.put(EXTRA_ORDINAL_VIEW_COUNT_KEY, ordinalViewCount);
+            mExtras.put(EXTRA_ORDINAL_VIEW_COUNT_KEY, ordinalViewCount);
             return this;
         }
 
         public Builder withAutoRotate(@AdConfig.Orientation int adOrientation) {
             this.mAdOrientation = adOrientation;
-            mExtrasMap.put(EXTRA_ORIENTATION_KEY, adOrientation);
+            mExtras.put(EXTRA_ORIENTATION_KEY, adOrientation);
             return this;
         }
 
@@ -199,6 +201,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         this.mFlexViewCloseTimeInSec = builder.mFlexViewCloseTimeInSec;
         this.mOrdinalViewCount = builder.mOrdinalViewCount;
         this.mAdOrientation = builder.mAdOrientation;
-        this.mExtrasMap = builder.mExtrasMap;
+        this.mExtras = builder.mExtras;
     }
 }

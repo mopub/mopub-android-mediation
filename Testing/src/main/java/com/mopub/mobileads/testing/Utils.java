@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -13,7 +13,8 @@ import android.widget.Toast;
 class Utils {
     static final String LOGTAG = "MoPub Sample App";
 
-    private Utils() {}
+    private Utils() {
+    }
 
     static void validateAdUnitId(String adUnitId) throws IllegalArgumentException {
         if (adUnitId == null) {

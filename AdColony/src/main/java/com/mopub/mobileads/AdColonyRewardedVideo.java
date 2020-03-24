@@ -19,6 +19,7 @@ import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Json;
 
@@ -382,7 +383,11 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onExpiring(@NonNull AdColonyInterstitial ad) {
-            AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
+            Preconditions.checkNotNull(ad);
+
+            if (ad.getListener() != null) {
+                AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
+            }
         }
 
         @Override

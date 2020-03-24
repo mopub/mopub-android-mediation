@@ -150,8 +150,8 @@ public class VungleBanner extends CustomEventBanner {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, "Unsupported Banner/MREC Ad size:  Placement ID:" +
-                            mPlacementId);
+                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, "Unsupported Banner/Medium rectangle Ad size:  " +
+                            "Placement ID:" + mPlacementId);
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             });
@@ -159,11 +159,12 @@ public class VungleBanner extends CustomEventBanner {
     }
 
     private AdConfig.AdSize getVungleAdSize(Map<String, Object> localExtras, Map<String, String> serverExtras) {
-        AdConfig.AdSize adSizeType = null;
-        int adWidthInDp = 0, adHeightInDp = 0;
-
         Preconditions.checkNotNull(localExtras);
         Preconditions.checkNotNull(serverExtras);
+
+        AdConfig.AdSize adSizeType = null;
+        int adWidthInDp = 0;
+        int adHeightInDp = 0;
 
         final Object adWidthObject = localExtras.get(AD_WIDTH);
         if (adWidthObject instanceof Integer) {
@@ -176,13 +177,12 @@ public class VungleBanner extends CustomEventBanner {
         }
 
         String adUnitFormat = serverExtras.get(ADUNIT_FORMAT);
-        if (adUnitFormat != null) {
+        if (!TextUtils.isEmpty(adUnitFormat)) {
             adUnitFormat = adUnitFormat.toLowerCase();
         }
-
         final boolean isMRECFormat = "medium_rectangle".equals(adUnitFormat);
         if (isMRECFormat) {
-            if ((adWidthInDp >= VUNGLE_MREC.getWidth() && adHeightInDp >= VUNGLE_MREC.getHeight())) {
+            if (adWidthInDp >= VUNGLE_MREC.getWidth() && adHeightInDp >= VUNGLE_MREC.getHeight()) {
                 adSizeType = VUNGLE_MREC;
             }
         } else {
@@ -196,7 +196,7 @@ public class VungleBanner extends CustomEventBanner {
         }
 
         if (adSizeType == null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "no matched ad size for requesting ad size:" + adWidthInDp
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "No size found that matches the requested size:" + adWidthInDp
                     + "x" + adHeightInDp + " adUnitFormat is:" + adUnitFormat);
         } else {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "matched ad size:" + adSizeType + " for requesting ad size:"
@@ -370,12 +370,12 @@ public class VungleBanner extends CustomEventBanner {
                                 // from INVISIBLE to VISIBLE.
                                 //TODO: Remove once it's fixed in MoPub Unity plugin.
                                 layout.setBackgroundColor(Color.TRANSPARENT);
-                                boolean isLoadSuccess = false;
+                                boolean loadSucceeded = false;
                                 if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
                                     mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId,
                                             mAdConfig.getAdSize());
                                     if (mVungleBannerAd != null) {
-                                        isLoadSuccess = true;
+                                        loadSucceeded = true;
                                         layout.addView(mVungleBannerAd);
                                     }
                                 } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
@@ -383,8 +383,13 @@ public class VungleBanner extends CustomEventBanner {
                                     if (mVungleMrecAd != null) {
                                         View adView = mVungleMrecAd.renderNativeView();
                                         if (adView != null) {
-                                            isLoadSuccess = true;
-                                            float density = mContext.getResources().getDisplayMetrics().density;
+                                            loadSucceeded = true;
+                                            float density = 0;
+                                            if (mContext.getResources() != null) {
+                                                if (mContext.getResources().getDisplayMetrics() != null) {
+                                                    density = mContext.getResources().getDisplayMetrics().density;
+                                                }
+                                            }
                                             int width = (int) ceil(VUNGLE_MREC.getWidth() * density);
                                             int height = (int) ceil(VUNGLE_MREC.getHeight() * density);
                                             RelativeLayout mrecViewWrapper = new RelativeLayout(mContext);
@@ -397,9 +402,11 @@ public class VungleBanner extends CustomEventBanner {
                                     }
                                 }
 
-                                if (isLoadSuccess) {
-                                    mCustomEventBannerListener.onBannerLoaded(layout);
-                                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                                if (loadSucceeded) {
+                                    if (mCustomEventBannerListener != null) {
+                                        mCustomEventBannerListener.onBannerLoaded(layout);
+                                        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                                    }
                                 } else {
                                     mHandler.post(new Runnable() {
                                         @Override
