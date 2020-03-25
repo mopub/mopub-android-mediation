@@ -3,21 +3,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="@dimen/sample_text_size"
+    android:padding="@dimen/padding_large"
     android:textDirection="locale">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/sample_text_size"
+        android:layout_marginBottom="16dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
-            android:layout_width="80sp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:text="@string/ad_type"
-            android:textSize="@dimen/sample_text_size" />
+            android:textSize="@dimen/small_text_size" />
 
         <Spinner
             android:id="@+id/add_ad_unit_type"
@@ -29,14 +29,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/sample_text_size"
+        android:layout_marginBottom="@dimen/margin_large"
         android:orientation="horizontal">
 
         <TextView
-            android:layout_width="80sp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:text="@string/ad_unit_id"
-            android:textSize="@dimen/sample_text_size" />
+            android:textSize="@dimen/small_text_size" />
 
         <EditText
             android:id="@+id/add_ad_unit_id"
@@ -47,18 +47,17 @@
 
     </LinearLayout>
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/sample_text_size"
+        android:layout_marginBottom="@dimen/margin_large"
         android:orientation="horizontal">
 
         <TextView
-            android:layout_width="80sp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:text="@string/ad_unit_name"
-            android:textSize="@dimen/sample_text_size" />
+            android:textSize="@dimen/small_text_size" />
 
         <EditText
             android:id="@+id/add_ad_unit_description"
@@ -66,6 +65,26 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/ad_unit_name_hint" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_large"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="85dp"
+            android:layout_height="wrap_content"
+            android:text="@string/ad_unit_keywords"
+            android:textSize="@dimen/small_text_size" />
+
+        <EditText
+            android:id="@+id/add_ad_unit_keywords"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/ad_unit_keywords_hint"/>
     </LinearLayout>
 
 </LinearLayout>

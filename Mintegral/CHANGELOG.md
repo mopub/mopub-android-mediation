@@ -1,5 +1,8 @@
 ## Changelog
 
+  * 13.0.11.1
+    * Add dedicated impression and click callback for interstitial.
+
   * 13.0.11.0
     * This version of the adapters has been certified with Mintegral 13.0.11 and MoPub 5.11.1.
     * Disable automatic impression and click tracking for banner.

@@ -10,7 +10,9 @@
         android:id="@+id/separator"
         style="?android:attr/listSeparatorTextViewStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="56dp"
+        android:textSize="@dimen/sample_text_size"
+        android:background="@color/colorLightGray"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -28,7 +30,6 @@
             android:paddingTop="8dp"
             android:singleLine="true"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
@@ -36,14 +37,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/banner_description"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:paddingEnd="8dp"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:paddingStart="8dp"
             android:singleLine="true"
             android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp"
             android:textStyle="normal" />
 
         <ImageView

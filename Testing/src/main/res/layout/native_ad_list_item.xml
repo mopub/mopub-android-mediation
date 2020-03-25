@@ -44,7 +44,6 @@
         android:layout_marginTop="10dp"
         android:textColor="@android:color/darker_gray" />
 
-
     <ImageView
         android:id="@+id/native_main_image"
         android:layout_width="match_parent"
@@ -59,10 +58,25 @@
         android:contentDescription="@string/native_main_image"
         android:scaleType="centerCrop" />
 
+    <TextView
+        android:id="@+id/native_sponsored_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/native_main_image"
+        android:layout_alignStart="@id/native_main_image"
+        android:layout_alignLeft="@id/native_main_image"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_toStartOf="@id/native_cta"
+        android:layout_toLeftOf="@id/native_cta"
+        android:visibility="invisible" />
+
     <Button
         android:id="@+id/native_cta"
         android:layout_width="wrap_content"
-        android:layout_height="35dp"
+        android:layout_height="@dimen/button_height"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/native_main_image"
@@ -71,10 +85,7 @@
         android:layout_marginTop="10dp"
         android:clickable="true"
         android:focusable="true"
-        android:paddingBottom="10dp"
         android:text="@string/learn_more"
-        android:textColor="@android:color/black"
-        android:textSize="12sp"
         android:textStyle="bold" />
 
     <ImageView
