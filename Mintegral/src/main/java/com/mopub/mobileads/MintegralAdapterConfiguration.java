@@ -58,7 +58,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     @Override
     public String getBiddingToken(@NonNull Context context) {
         Preconditions.checkNotNull(context);
-
+        if (!isSDKInitialized) return null;
         return BidManager.getBuyerUid(context);
     }
 
