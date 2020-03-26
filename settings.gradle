@@ -12,7 +12,8 @@ include ':AdColony',
         ':Tapjoy',
         ':UnityAds',
         ':Verizon',
-        ':Vungle'
+        ':Vungle',
+        ':Huawei'
 
 // Test App
 if (file('Testing').exists()) {

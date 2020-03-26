@@ -1,0 +1,10 @@
+project.version = '1.0.0.1'
+project.ext.networkName = 'huawei'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation 'com.huawei.hms:ads-lite:13.4.28.305'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+
+}
