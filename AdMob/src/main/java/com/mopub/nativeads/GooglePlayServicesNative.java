@@ -17,6 +17,7 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.GooglePlayServicesAdapterConfiguration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -461,16 +462,16 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 requestBuilder.setContentUrl(contentUrl);
             }
 
-            // Publishers may request for test ads by passing test device IDs to the MoPubNative.setLocalExtras() call.
-            final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
-
-            if (!TextUtils.isEmpty(testDeviceId)) {
-                requestBuilder.addTestDevice(testDeviceId);
-            }
-
             forwardNpaIfSet(requestBuilder);
 
             final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
+            // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
+            final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+
+            if (!TextUtils.isEmpty(testDeviceId)) {
+                requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
+            }
 
             // Publishers may want to indicate that their content is child-directed and forward this
             // information to Google.

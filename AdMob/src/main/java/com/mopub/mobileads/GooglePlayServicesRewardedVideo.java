@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
@@ -21,6 +20,7 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -209,6 +209,10 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
             builder.setContentUrl(contentUrl);
         }
 
+        forwardNpaIfSet(builder);
+
+        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may request for test ads by passing test device IDs to the
         // GooglePlayServicesMediationSettings instance when initializing the MoPub SDK:
         // https://developers.mopub.com/docs/mediation/networks/google/#android
@@ -222,12 +226,8 @@ public class GooglePlayServicesRewardedVideo extends CustomEventRewardedVideo {
         }
 
         if (!TextUtils.isEmpty(testDeviceId)) {
-            builder.addTestDevice(testDeviceId);
+            requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
         }
-
-        forwardNpaIfSet(builder);
-
-        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
         // Publishers may want to indicate that their content is child-directed and
         // forward this information to Google.

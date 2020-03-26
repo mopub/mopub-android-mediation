@@ -18,6 +18,8 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_MUTE;
+import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE;
 import static com.mopub.common.DataKeys.ADM_KEY;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -112,11 +114,15 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
             mMtgRewardVideoHandler.setRewardVideoListener(this);
             mMtgRewardVideoHandler.load();
+
+            handleAudio();
         } else {
             mtgBidRewardVideoHandler = new MTGBidRewardVideoHandler(mAdUnitId);
 
             mtgBidRewardVideoHandler.setRewardVideoListener(this);
             mtgBidRewardVideoHandler.loadFromBid(adm);
+
+            handleAudio();
         }
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -126,10 +132,12 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     protected void showVideo() {
 
         if (mMtgRewardVideoHandler != null && mMtgRewardVideoHandler.isReady()) {
+            handleAudio();
             mMtgRewardVideoHandler.show(mRewardId, mUserId);
 
             MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         } else if (mtgBidRewardVideoHandler != null && mtgBidRewardVideoHandler.isBidReady()) {
+            handleAudio();
             mtgBidRewardVideoHandler.showFromBid(mRewardId, mUserId);
 
             MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
@@ -202,6 +210,17 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         } else {
             MoPubRewardedVideoManager.onRewardedVideoPlaybackError(this.getClass(),
                     mAdUnitId, errorCode);
+        }
+    }
+
+    private void handleAudio() {
+        boolean isMute = MintegralAdapterConfiguration.isMute();
+        int muteStatus = isMute ? REWARD_VIDEO_PLAY_MUTE : REWARD_VIDEO_PLAY_NOT_MUTE;
+
+        if (mMtgRewardVideoHandler != null) {
+            mMtgRewardVideoHandler.playVideoMute(muteStatus);
+        } else if (mtgBidRewardVideoHandler != null) {
+            mtgBidRewardVideoHandler.playVideoMute(muteStatus);
         }
     }
 

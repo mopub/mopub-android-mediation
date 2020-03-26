@@ -16,7 +16,7 @@
         android:paddingTop="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp"
+        android:textSize="@dimen/small_text_size"
         android:textStyle="bold" />
 
     <TextView
@@ -29,7 +29,7 @@
         android:paddingStart="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorSecondary"
-        android:textSize="14sp"
+        android:textSize="@dimen/small_text_size"
         android:textStyle="normal" />
 
     <EditText
@@ -61,22 +61,29 @@
         android:visibility="gone" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_gravity="right">
 
         <Button
             android:id="@+id/load_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginRight="4dp"
             android:text="@string/load_ad" />
 
         <Button
             android:id="@+id/show_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginRight="4dp"
             android:text="@string/show_ad" />
     </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/callbacks_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp" />
 </LinearLayout>

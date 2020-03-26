@@ -13,6 +13,7 @@ import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.google.android.gms.ads.AdSize.BANNER;
@@ -103,16 +104,16 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             builder.setContentUrl(contentUrl);
         }
 
+        forwardNpaIfSet(builder);
+
+        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
         final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
 
         if (!TextUtils.isEmpty(testDeviceId)) {
-            builder.addTestDevice(testDeviceId);
+            requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
         }
-
-        forwardNpaIfSet(builder);
-
-        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.

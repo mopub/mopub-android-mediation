@@ -13,6 +13,8 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_MUTE;
+import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE;
 import static com.mopub.common.DataKeys.ADM_KEY;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -42,6 +44,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
                                     final CustomEventInterstitialListener customEventInterstitialListener,
                                     final Map<String, Object> localExtras, Map<String, String> serverExtras) {
 
+        setAutomaticImpressionAndClickTracking(false);
         mCustomEventInterstitialListener = customEventInterstitialListener;
 
         if (!serverDataIsValid(serverExtras, context)) {
@@ -62,10 +65,14 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
                 mInterstitialHandler = new MTGInterstitialVideoHandler(context, mAdUnitId);
                 mInterstitialHandler.setRewardVideoListener(this);
                 mInterstitialHandler.load();
+
+                handleAudio();
             } else {
                 mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mAdUnitId);
                 mBidInterstitialVideoHandler.setRewardVideoListener(this);
                 mBidInterstitialVideoHandler.loadFromBid(adm);
+
+                handleAudio();
             }
 
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -78,8 +85,10 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     @Override
     protected void showInterstitial() {
         if (mInterstitialHandler != null && mInterstitialHandler.isReady()) {
+            handleAudio();
             mInterstitialHandler.show();
         } else if (mBidInterstitialVideoHandler != null && mBidInterstitialVideoHandler.isBidReady()) {
+            handleAudio();
             mBidInterstitialVideoHandler.showFromBid();
         } else {
             failAdapter(SHOW_FAILED, NETWORK_NO_FILL, "Failed to show Mintegral interstitial " +
@@ -118,6 +127,17 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialFailed(errorCode);
+        }
+    }
+
+    private void handleAudio() {
+        boolean isMute = MintegralAdapterConfiguration.isMute();
+        int muteStatus = isMute ? REWARD_VIDEO_PLAY_MUTE : REWARD_VIDEO_PLAY_NOT_MUTE;
+
+        if (mInterstitialHandler != null) {
+            mInterstitialHandler.playVideoMute(muteStatus);
+        } else if (mBidInterstitialVideoHandler != null) {
+            mBidInterstitialVideoHandler.playVideoMute(muteStatus);
         }
     }
 
@@ -161,6 +181,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
         if (mCustomEventInterstitialListener != null) {
             mCustomEventInterstitialListener.onInterstitialShown();
+            mCustomEventInterstitialListener.onInterstitialImpression();
         }
     }
 

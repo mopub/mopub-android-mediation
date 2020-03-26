@@ -1,6 +1,5 @@
 package com.mopub.mobileads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -49,15 +48,6 @@ class ChartboostInterstitial extends CustomEventInterstitial {
         Preconditions.checkNotNull(localExtras);
         Preconditions.checkNotNull(serverExtras);
 
-        if (!(context instanceof Activity)) {
-            interstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
-
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-            return;
-        }
-
         if (serverExtras.containsKey(ChartboostShared.LOCATION_KEY)) {
             String location = serverExtras.get(ChartboostShared.LOCATION_KEY);
             mLocation = TextUtils.isEmpty(location) ? mLocation : location;
@@ -75,9 +65,8 @@ class ChartboostInterstitial extends CustomEventInterstitial {
             return;
         }
 
-        Activity activity = (Activity) context;
         try {
-            ChartboostShared.initializeSdk(activity, serverExtras);
+            ChartboostShared.initializeSdk(context, serverExtras);
             ChartboostShared.getDelegate().registerInterstitialListener(mLocation, interstitialListener);
 
             mChartboostAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
@@ -97,8 +86,6 @@ class ChartboostInterstitial extends CustomEventInterstitial {
             return;
         }
 
-        Chartboost.onCreate(activity);
-        Chartboost.onStart(activity);
         if (Chartboost.hasInterstitial(mLocation)) {
             ChartboostShared.getDelegate().didCacheInterstitial(mLocation);
         } else {
@@ -110,7 +97,6 @@ class ChartboostInterstitial extends CustomEventInterstitial {
     @Override
     protected void showInterstitial() {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
-
         Chartboost.showInterstitial(mLocation);
     }
 
