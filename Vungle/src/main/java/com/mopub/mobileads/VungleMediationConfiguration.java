@@ -73,30 +73,35 @@ public class VungleMediationConfiguration implements MediationSettings {
     }
 
     static void adConfigWithLocalExtras(AdConfig adConfig, Map<String, Object> localExtras) {
+
         if (localExtras != null && !localExtras.isEmpty()) {
+
             if (localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
-                Object isStartMuted = localExtras.get(Builder.EXTRA_START_MUTED_KEY);
+                final Object isStartMuted = localExtras.get(Builder.EXTRA_START_MUTED_KEY);
+
                 if (isStartMuted instanceof Boolean) {
                     adConfig.setMuted((Boolean) isStartMuted);
                 }
             } else {
-                Object isSoundEnabled = localExtras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
+                final Object isSoundEnabled = localExtras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
                 if (isSoundEnabled instanceof Boolean) {
                     adConfig.setMuted(!(Boolean) isSoundEnabled);
                 }
             }
 
-            Object flexViewCloseTimeInSec = localExtras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
+            final Object flexViewCloseTimeInSec = localExtras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
+
             if (flexViewCloseTimeInSec instanceof Integer) {
                 adConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
             }
+            final Object ordinalViewCount = localExtras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
 
-            Object ordinalViewCount = localExtras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
             if (ordinalViewCount instanceof Integer) {
                 adConfig.setOrdinal((Integer) ordinalViewCount);
             }
 
-            Object adOrientation = localExtras.get(Builder.EXTRA_ORIENTATION_KEY);
+            final Object adOrientation = localExtras.get(Builder.EXTRA_ORIENTATION_KEY);
+
             if (adOrientation instanceof Integer) {
                 adConfig.setAdOrientation((Integer) adOrientation);
             }

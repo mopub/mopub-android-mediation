@@ -87,6 +87,7 @@ public class VungleBanner extends CustomEventBanner {
             });
             return;
         }
+
         if (!validateIdsInServerExtras(serverExtras)) {
             mHandler.post(new Runnable() {
                 @Override
@@ -97,17 +98,20 @@ public class VungleBanner extends CustomEventBanner {
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 }
             });
+
             return;
         }
 
         if (mVungleRouterListener == null) {
             mVungleRouterListener = new VungleBannerRouterListener();
         }
+
         if (!sVungleRouter.isVungleInitialized()) {
             // No longer passing the placement IDs (pids) param per Vungle 6.3.17
             sVungleRouter.initVungle(context, mAppId);
             mVungleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
+
         AdSize vungleAdSize = getVungleAdSize(localExtras, serverExtras);
         if (vungleAdSize == null) {
             mHandler.post(new Runnable() {
@@ -119,6 +123,7 @@ public class VungleBanner extends CustomEventBanner {
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 }
             });
+
             return;
         }
 
@@ -233,6 +238,7 @@ public class VungleBanner extends CustomEventBanner {
 
         if (serverExtras.containsKey(APP_ID_KEY)) {
             mAppId = serverExtras.get(APP_ID_KEY);
+
             if (TextUtils.isEmpty(mAppId)) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "App ID is empty.");
 
@@ -366,11 +372,11 @@ public class VungleBanner extends CustomEventBanner {
                                     }
                                 };
 
-                                //Fix for Unity Player that can't render a view with a state changed
-                                // from INVISIBLE to VISIBLE.
+                                //Fix for Unity Player that can't render a view with a state changed from INVISIBLE to VISIBLE.
                                 //TODO: Remove once it's fixed in MoPub Unity plugin.
                                 layout.setBackgroundColor(Color.TRANSPARENT);
                                 boolean loadSucceeded = false;
+								
                                 if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
                                     mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId,
                                             mAdConfig.getAdSize());
@@ -385,6 +391,7 @@ public class VungleBanner extends CustomEventBanner {
                                         if (adView != null) {
                                             loadSucceeded = true;
                                             float density = 0;
+
                                             if (mContext.getResources() != null) {
                                                 if (mContext.getResources().getDisplayMetrics() != null) {
                                                     density = mContext.getResources().getDisplayMetrics().density;
@@ -392,11 +399,13 @@ public class VungleBanner extends CustomEventBanner {
                                             }
                                             int width = (int) ceil(VUNGLE_MREC.getWidth() * density);
                                             int height = (int) ceil(VUNGLE_MREC.getHeight() * density);
+
                                             RelativeLayout mrecViewWrapper = new RelativeLayout(mContext);
                                             mrecViewWrapper.addView(adView);
                                             RelativeLayout.LayoutParams params =
                                                     new RelativeLayout.LayoutParams(width, height);
                                             params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+
                                             layout.addView(mrecViewWrapper, params);
                                         }
                                     }
