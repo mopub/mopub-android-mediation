@@ -1,4 +1,12 @@
 ## Changelog
+  * 13.0.41.0
+    * This version of the adapters has been certified with Mintegral 13.0.41 and MoPub 5.11.1.
+    * MoPub now collects GDPR consent on behalf of Mintegral.
+
+  * 13.0.31.0
+    * This version of the adapters has been certified with Mintegral 13.0.31 and MoPub 5.11.1.
+    * Fix `EXCEPTION_SERVICE_REQUEST_OS_VERSION_REQUIRED` and `NumberFormatException` at initialization.
+
   * 13.0.11.1
     * Add dedicated impression and click callback for interstitial.
 

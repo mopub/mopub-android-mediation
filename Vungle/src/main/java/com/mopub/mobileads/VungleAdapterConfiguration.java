@@ -20,6 +20,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
 
+    public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     // Vungle's keys
     private static final String APP_ID_KEY = "appId";
     // Adapter's keys
@@ -27,8 +28,6 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     private static VungleRouter sVungleRouter;
-
-    public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
 
     public VungleAdapterConfiguration() {
         sVungleRouter = VungleRouter.getInstance();
@@ -59,8 +58,8 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     @Override
-    public void initializeNetwork(@NonNull final Context context, @Nullable final Map<String, String> configuration, @NonNull final OnNetworkInitializationFinishedListener listener) {
-
+    public void initializeNetwork(@NonNull final Context context, @Nullable final Map<String, String> configuration,
+                                  @NonNull final OnNetworkInitializationFinishedListener listener) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
@@ -103,7 +102,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     private void applyVungleNetworkSettings(Map<String, String> configuration) {
-        if(configuration == null || configuration.isEmpty()){
+        if (configuration == null || configuration.isEmpty()) {
             return;
         }
         long minSpaceInit;

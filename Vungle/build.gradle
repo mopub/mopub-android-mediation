@@ -1,5 +1,5 @@
 
-project.version = '6.5.2.0'
+project.version = '6.5.3.0'
 
 apply from: '../shared-build.gradle'
 

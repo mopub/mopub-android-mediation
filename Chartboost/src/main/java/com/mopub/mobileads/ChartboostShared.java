@@ -93,8 +93,8 @@ public class ChartboostShared {
         // Validate Chartboost args
         if (!serverExtras.containsKey(APP_ID_KEY)) {
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             throw new IllegalStateException("Chartboost rewarded video initialization" +
                     " failed due to missing application ID.");
@@ -102,8 +102,8 @@ public class ChartboostShared {
 
         if (!serverExtras.containsKey(APP_SIGNATURE_KEY)) {
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             throw new IllegalStateException("Chartboost rewarded video initialization" +
                     " failed due to missing application signature.");

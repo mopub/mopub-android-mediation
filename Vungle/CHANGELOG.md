@@ -1,4 +1,8 @@
 ## Changelog
+  *  6.5.3.0
+    * This version of the adapters has been certified with Vungle 6.5.3 and MoPub SDK 5.11.1.
+    * Code format following [MoPub mediation coding style guideline](https://developers.mopub.com/networks/integrate/mopub-network-mediation-guidelines/).
+
   *  6.5.2.0
     * This version of the adapters has been certified with Vungle 6.5.2.
     * Add support for Vungle's newly-introduced [banner format](https://support.vungle.com/hc/en-us/articles/360032641251-Early-Access-Get-Started-with-Banner-Ads-Android-or-Amazon-SDK-v-6-5-1).
