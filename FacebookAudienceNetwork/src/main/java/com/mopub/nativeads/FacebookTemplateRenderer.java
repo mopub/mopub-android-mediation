@@ -12,6 +12,8 @@ import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdBase;
 import com.facebook.ads.NativeAdView;
 import com.facebook.ads.NativeAdViewAttributes;
+import com.facebook.ads.NativeBannerAd;
+import com.facebook.ads.NativeBannerAdView;
 import com.mopub.common.Preconditions;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -20,9 +22,17 @@ public class FacebookTemplateRenderer implements MoPubAdRenderer<FacebookNative.
 
     @Nullable
     private NativeAdViewAttributes mTemplateAttributes;
+    
+    @NonNull
+    private NativeBannerAdView.Type mViewType;
 
     public FacebookTemplateRenderer(@Nullable NativeAdViewAttributes attributes) {
         mTemplateAttributes = attributes;
+    }
+    
+    public FacebookTemplateRenderer(@Nullable NativeAdViewAttributes attributes, @NonNull NativeBannerAdView.Type viewType) {
+        mTemplateAttributes = attributes;
+        mViewType = viewType;
     }
 
     @NonNull
@@ -38,15 +48,20 @@ public class FacebookTemplateRenderer implements MoPubAdRenderer<FacebookNative.
         Preconditions.checkNotNull(ad);
 
         NativeAdBase nativeAdBase = ad.getFacebookNativeAd();
-
+        View adView = null;
         if (nativeAdBase instanceof NativeAd) {
-            View adView = NativeAdView.render(parentView.getContext(), (NativeAd) nativeAdBase,
+             adView = NativeAdView.render(parentView.getContext(), (NativeAd) nativeAdBase,
                     mTemplateAttributes);
 
-            FrameLayout.LayoutParams adViewParams = new FrameLayout.LayoutParams(WRAP_CONTENT,
-                    WRAP_CONTENT);
-            ((FrameLayout) parentView).addView(adView, adViewParams);
+        } else if (nativeAdBase instanceof NativeBannerAd){
+	        Preconditions.checkNotNull(mViewType);
+            adView = NativeBannerAdView.render(parentView.getContext(), (NativeBannerAd) nativeAdBase, mViewType,
+                mTemplateAttributes);
         }
+
+        FrameLayout.LayoutParams adViewParams = new FrameLayout.LayoutParams(WRAP_CONTENT,
+            WRAP_CONTENT);
+        ((FrameLayout) parentView).addView(adView, adViewParams);
     }
 
     @Override
