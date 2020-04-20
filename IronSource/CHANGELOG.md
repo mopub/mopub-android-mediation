@@ -1,4 +1,8 @@
 ## Changelog
+ * 6.16.0.0
+    * This version of the adapters has been certified with ironSource 6.16.0 and MoPub SDK 5.12.0.
+    * Support for Android Archive (AAR) version of the ironSource SDK.
+
  * 6.15.0.1.0
     * This version of the adapters has been certified with ironSource 6.15.0.1 and MoPub SDK 5.11.1.
 
