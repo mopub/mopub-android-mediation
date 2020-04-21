@@ -1,13 +1,13 @@
 package com.mopub.nativeads;
 
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import com.mopub.common.logging.MoPubLog;
-import com.verizon.ads.videoplayer.VideoView;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
 
@@ -19,7 +19,7 @@ class VerizonNativeViewHolder {
     @Nullable
     TextView callToActionView;
     @Nullable
-    VideoView videoView;
+    FrameLayout videoView;
     @Nullable
     ImageView mainImageView;
     @Nullable

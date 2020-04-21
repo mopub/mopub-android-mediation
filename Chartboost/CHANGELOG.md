@@ -1,4 +1,8 @@
 ## Changelog
+  * 8.0.2.0
+    * Add support for banner format.
+    * This version of the adapters has been certified with Chartboost 8.0.2 and MoPub 5.11.1.
+
   * 8.0.1.0
     * This version of the adapters has been certified with Chartboost 8.0.1 and MoPub 5.11.1.
     * Remove `Activity` requirement for Chartboost initialization, and remove `<activity>` declarations from the adapter AndroidManifest.

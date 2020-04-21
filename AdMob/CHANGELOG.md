@@ -1,4 +1,7 @@
 ## Changelog
+  * 19.0.1.0
+    * This version of the adapters has been certified with AdMob 19.0.1 and MoPub 5.11.1.
+
   * 19.0.0.0
     * This version of the adapters has been certified with AdMob 19.0.0.
     * Deprecated `AdRequest.Builder.addTestDevice()` in favor of `RequestConfiguration.Builder.setTestDeviceIds()`.
