@@ -92,6 +92,9 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
                         "an exception.", e);
             }
         }
+
+        //We don't pass OnNetworkInitializationFinishedListener callback through to Vungle init since
+        //Mopub init success will be invoked before Vungle success
         if (networkInitializationSucceeded) {
             listener.onNetworkInitializationFinished(this.getClass(),
                     MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
