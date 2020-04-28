@@ -41,10 +41,8 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
     protected void loadBanner(final Context context,
                               final CustomEventBannerListener customEventBannerListener,
                               final Map<String, Object> localExtras, Map<String, String> serverExtras) {
-
         setAutomaticImpressionAndClickTracking(false);
         mBannerListener = customEventBannerListener;
-
         if (!serverDataIsValid(serverExtras, context)) {
             failAdapter(ADAPTER_CONFIGURATION_ERROR, "One or " +
                     "more keys used for Mintegral's ad requests are empty. Failing adapter. Please " +
@@ -63,7 +61,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
 
         mBannerAd = new MTGBannerView(context);
         mBannerAd.setVisibility(View.GONE);
-        mBannerAd.init(new BannerSize(BannerSize.DEV_SET_TYPE, mAdWidth, mAdHeight), mAdUnitId);
+        mBannerAd.init(new BannerSize(BannerSize.DEV_SET_TYPE, mAdWidth, mAdHeight), "", mAdUnitId);
         mBannerAd.setBannerAdListener(this);
 
         mBannerAd.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {

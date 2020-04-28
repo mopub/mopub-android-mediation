@@ -1,4 +1,8 @@
 ## Changelog
+  
+  * 13.1.11.0
+    * This version of the adapters has been certified with Mintegral 13.0.41 and MoPub 5.12.0.
+    
   * 13.0.41.0
     * This version of the adapters has been certified with Mintegral 13.0.41 and MoPub 5.11.1.
     * MoPub now collects GDPR consent on behalf of Mintegral.
