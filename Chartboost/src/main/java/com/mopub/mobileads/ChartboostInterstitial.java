@@ -48,6 +48,9 @@ class ChartboostInterstitial extends CustomEventInterstitial {
         Preconditions.checkNotNull(localExtras);
         Preconditions.checkNotNull(serverExtras);
 
+        //Required to for the issue of delegate being null in some cases in Chartboost SDK 8.0+
+        Chartboost.setDelegate(ChartboostShared.getDelegate());
+
         if (serverExtras.containsKey(ChartboostShared.LOCATION_KEY)) {
             String location = serverExtras.get(ChartboostShared.LOCATION_KEY);
             mLocation = TextUtils.isEmpty(location) ? mLocation : location;
