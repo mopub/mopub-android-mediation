@@ -59,6 +59,8 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             final Map<String, String> serverExtras) {
         mBannerListener = customEventBannerListener;
 
+        MobileAds.initialize(context);
+
         final Integer adWidth;
         final Integer adHeight;
 

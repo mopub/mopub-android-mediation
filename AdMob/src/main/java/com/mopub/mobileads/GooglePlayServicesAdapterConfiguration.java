@@ -24,7 +24,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String KEY_EXTRA_APPLICATION_ID = "appid";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     @NonNull
@@ -67,16 +66,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
 
         synchronized (GooglePlayServicesAdapterConfiguration.class) {
             try {
-                if (configuration != null && !configuration.isEmpty()) {
-                    String appId = configuration.get(KEY_EXTRA_APPLICATION_ID);
-
-                    if (!TextUtils.isEmpty(appId)) {
-                        MobileAds.initialize(context, configuration.get(KEY_EXTRA_APPLICATION_ID));
-                    }
-                } else {
-                    MobileAds.initialize(context);
-                }
-
+                MobileAds.initialize(context);
                 networkInitializationSucceeded = true;
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing AdMob has encountered " +
