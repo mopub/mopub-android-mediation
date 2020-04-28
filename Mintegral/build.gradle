@@ -1,0 +1,18 @@
+project.version = '13.0.41.0'
+project.ext.networkName = 'mintegral'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.mintegral.msdk:mtgbanner:${sdkVersion}"
+    implementation "com.mintegral.msdk:interstitialvideo:${sdkVersion}"
+    implementation "com.mintegral.msdk:videojs:${sdkVersion}"
+    implementation "com.mintegral.msdk:nativeex:${sdkVersion}";
+    implementation "com.mintegral.msdk:mtgjscommon:${sdkVersion}"
+    implementation "com.mintegral.msdk:playercommon:${sdkVersion}"
+    implementation "com.mintegral.msdk:reward:${sdkVersion}"
+    implementation "com.mintegral.msdk:videocommon:${sdkVersion}"
+    implementation "com.mintegral.msdk:common:${sdkVersion}"
+    implementation "com.mintegral.msdk:mtgnative:${sdkVersion}"
+    implementation "com.mintegral.msdk:mtgbid:${sdkVersion}"
+}

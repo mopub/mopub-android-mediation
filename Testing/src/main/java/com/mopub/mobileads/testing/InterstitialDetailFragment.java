@@ -1,15 +1,21 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads.testing;
 
+import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubInterstitial;
@@ -21,6 +27,29 @@ import static com.mopub.mobileads.testing.Utils.logToast;
 public class InterstitialDetailFragment extends Fragment implements InterstitialAdListener {
     private MoPubInterstitial mMoPubInterstitial;
     private Button mShowButton;
+    @Nullable
+    private CallbacksAdapter mCallbacksAdapter;
+
+    private enum InterstitialCallbacks {
+        LOADED("onInterstitialLoaded"),
+        FAILED("onInterstitialFailed"),
+        SHOWN("onInterstitialShown"),
+        CLICKED("onInterstitialClicked"),
+        DISMISSED("onInterstitialDismissed");
+
+        InterstitialCallbacks(@NonNull final String name) {
+            this.name = name;
+        }
+
+        @NonNull
+        private final String name;
+
+        @Override
+        @NonNull
+        public String toString() {
+            return name;
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -47,6 +76,9 @@ public class InterstitialDetailFragment extends Fragment implements Interstitial
                 final String userDatakeywords = views.mUserDataKeywordsField.getText().toString();
                 mMoPubInterstitial.setKeywords(keywords);
                 mMoPubInterstitial.setUserDataKeywords(userDatakeywords);
+                if (mCallbacksAdapter != null) {
+                    mCallbacksAdapter.generateCallbackList(InterstitialCallbacks.class);
+                }
                 mMoPubInterstitial.load();
             }
         });
@@ -58,6 +90,15 @@ public class InterstitialDetailFragment extends Fragment implements Interstitial
                 mMoPubInterstitial.show();
             }
         });
+
+        final RecyclerView callbacksView = view.findViewById(R.id.callbacks_recycler_view);
+        final Context context = getContext();
+        if (callbacksView != null && context != null) {
+            callbacksView.setLayoutManager(new LinearLayoutManager(context));
+            mCallbacksAdapter = new CallbacksAdapter(context);
+            mCallbacksAdapter.generateCallbackList(InterstitialCallbacks.class);
+            callbacksView.setAdapter(mCallbacksAdapter);
+        }
 
         return view;
     }
@@ -76,29 +117,50 @@ public class InterstitialDetailFragment extends Fragment implements Interstitial
     @Override
     public void onInterstitialLoaded(MoPubInterstitial interstitial) {
         mShowButton.setEnabled(true);
-        logToast(getActivity(), "Interstitial loaded.");
+        if (mCallbacksAdapter == null) {
+            logToast(getActivity(), "Interstitial loaded.");
+            return;
+        }
+        mCallbacksAdapter.notifyCallbackCalled(InterstitialCallbacks.LOADED.toString());
     }
 
     @Override
     public void onInterstitialFailed(MoPubInterstitial interstitial, MoPubErrorCode errorCode) {
         mShowButton.setEnabled(false);
         final String errorMessage = (errorCode != null) ? errorCode.toString() : "";
-        logToast(getActivity(), "Interstitial failed to load: " + errorMessage);
+        if (mCallbacksAdapter == null) {
+            logToast(getActivity(), "Interstitial failed to load: " + errorMessage);
+            return;
+        }
+        mCallbacksAdapter.notifyCallbackCalled(InterstitialCallbacks.FAILED.toString(), errorMessage);
     }
 
     @Override
     public void onInterstitialShown(MoPubInterstitial interstitial) {
         mShowButton.setEnabled(false);
-        logToast(getActivity(), "Interstitial shown.");
+        if (mCallbacksAdapter == null) {
+            logToast(getActivity(), "Interstitial shown.");
+            return;
+        }
+        mCallbacksAdapter.notifyCallbackCalled(InterstitialCallbacks.SHOWN.toString());
     }
 
     @Override
     public void onInterstitialClicked(MoPubInterstitial interstitial) {
-        logToast(getActivity(), "Interstitial clicked.");
+        if (mCallbacksAdapter == null) {
+            logToast(getActivity(), "Interstitial clicked.");
+            return;
+        }
+        mCallbacksAdapter.notifyCallbackCalled(InterstitialCallbacks.CLICKED.toString());
+
     }
 
     @Override
     public void onInterstitialDismissed(MoPubInterstitial interstitial) {
-        logToast(getActivity(), "Interstitial dismissed.");
+        if (mCallbacksAdapter == null) {
+            logToast(getActivity(), "Interstitial dismissed.");
+            return;
+        }
+        mCallbacksAdapter.notifyCallbackCalled(InterstitialCallbacks.DISMISSED.toString());
     }
 }

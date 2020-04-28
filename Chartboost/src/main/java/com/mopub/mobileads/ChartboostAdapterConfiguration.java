@@ -130,4 +130,19 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
                 return CBLogging.Level.NONE;
         }
     }
+
+    public static void logChartboostError(@NonNull String chartboostLocation,
+                                          @NonNull String adapterName,
+                                          @NonNull MoPubLog.AdapterLogEvent event,
+                                          String chartboostErrorName,
+                                          Integer chartboostErrorCode) {
+        if (chartboostErrorName != null && chartboostErrorCode != null) {
+            MoPubLog.log(chartboostLocation, CUSTOM, adapterName,
+                    "Chartboost " + event + " resulted in a Chartboost error: " + chartboostErrorName +
+                            " with code: " + chartboostErrorCode);
+        } else {
+            MoPubLog.log(chartboostLocation, CUSTOM, adapterName,
+                    "Chartboost " + event + " resulted in an error");
+        }
+    }
 }

@@ -37,6 +37,14 @@ public class AdColonyBanner extends CustomEventBanner {
     private AdColonyAdSize defaultAdSize = AdColonyAdSize.BANNER;
     private AdColonyAdView mAdColonyAdView;
 
+    @NonNull
+    private String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
+
+    @NonNull
+    public String getAdNetworkId() {
+        return mZoneId;
+    }
+
     public AdColonyBanner() {
         mHandler = new Handler();
         mAdColonyAdapterConfiguration = new AdColonyAdapterConfiguration();
@@ -90,12 +98,14 @@ public class AdColonyBanner extends CustomEventBanner {
             return;
         }
 
+        mZoneId = zoneId;
+
         mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         mAdColonyBannerListener = getAdColonyBannerListener();
 
         AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(context, clientOptions, appId, allZoneIds);
         AdColony.requestAdView(zoneId, mAdColonyBannerListener, adSize);
-        MoPubLog.log(zoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     private void abortRequestForIncorrectParameter(String parameterName) {
@@ -107,6 +117,7 @@ public class AdColonyBanner extends CustomEventBanner {
     protected void onInvalidate() {
         if (mAdColonyAdView != null) {
             mAdColonyAdView.destroy();
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Banner destroyed");
             mAdColonyAdView = null;
         }
 
@@ -126,7 +137,7 @@ public class AdColonyBanner extends CustomEventBanner {
                         @Override
                         public void run() {
                             mCustomEventBannerListener.onBannerLoaded(adColonyAdView);
-                            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                         }
                     });
                 }
@@ -138,7 +149,7 @@ public class AdColonyBanner extends CustomEventBanner {
                         @Override
                         public void run() {
                             mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                                     MoPubErrorCode.NETWORK_NO_FILL);
                         }
                     });
@@ -148,25 +159,31 @@ public class AdColonyBanner extends CustomEventBanner {
                 public void onClicked(AdColonyAdView ad) {
                     super.onClicked(ad);
                     mCustomEventBannerListener.onBannerClicked();
-                    MoPubLog.log(CLICKED, ADAPTER_NAME);
+                    MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
                 }
 
                 @Override
                 public void onLeftApplication(AdColonyAdView ad) {
                     super.onLeftApplication(ad);
-                    MoPubLog.log(WILL_LEAVE_APPLICATION, ADAPTER_NAME);
+                    MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
                 }
 
                 @Override
                 public void onOpened(AdColonyAdView ad) {
                     super.onOpened(ad);
-                    mCustomEventBannerListener.onBannerExpanded();
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Banner opened fullscreen");
+                    if (mCustomEventBannerListener != null) {
+                        mCustomEventBannerListener.onBannerExpanded();
+                    }
                 }
 
                 @Override
                 public void onClosed(AdColonyAdView ad) {
                     super.onClosed(ad);
-                    mCustomEventBannerListener.onBannerCollapsed();
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Banner closed fullscreen");
+                    if (mCustomEventBannerListener != null) {
+                        mCustomEventBannerListener.onBannerCollapsed();
+                    }
                 }
             };
         }

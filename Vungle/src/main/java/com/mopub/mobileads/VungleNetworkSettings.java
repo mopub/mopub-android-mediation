@@ -10,24 +10,28 @@ class VungleNetworkSettings {
     /**
      * Minimum Space in Bytes
      */
-    private static long minimumSpaceForInit = 50 << 20;
-    private static long minimumSpaceForAd = 51 << 20;
-    private static boolean androidIdOptedOut;
-    private static VungleSettings vungleSettings;
+    private static long sMinimumSpaceForInit = 50 << 20;
+    private static long sMinimumSpaceForAd = 51 << 20;
+    private static boolean sAndroidIdOptedOut;
+    private static VungleSettings sVungleSettings;
 
-    static void setMinSpaceForInit(long spaceForInit){
-        minimumSpaceForInit = spaceForInit;
+    static void setMinSpaceForInit(long spaceForInit) {
+        sMinimumSpaceForInit = spaceForInit;
         applySettings();
     }
 
-    static void setMinSpaceForAdLoad(long spaceForAd){
-        minimumSpaceForAd = spaceForAd;
+    static void setMinSpaceForAdLoad(long spaceForAd) {
+        sMinimumSpaceForAd = spaceForAd;
         applySettings();
     }
 
-    static void setAndroidIdOptOut(boolean isOptedOut){
-        androidIdOptedOut = isOptedOut;
+    static void setAndroidIdOptOut(boolean isOptedOut) {
+        sAndroidIdOptedOut = isOptedOut;
         applySettings();
+    }
+
+    static VungleSettings getVungleSettings() {
+        return sVungleSettings;
     }
 
     /**
@@ -35,14 +39,11 @@ class VungleNetworkSettings {
      * if called after first loading an ad, settings will not be applied.
      */
     private static void applySettings() {
-        vungleSettings = new VungleSettings.Builder()
-                .setMinimumSpaceForInit(minimumSpaceForInit)
-                .setMinimumSpaceForAd(minimumSpaceForAd)
-                .setAndroidIdOptOut(androidIdOptedOut)
+        sVungleSettings = new VungleSettings.Builder()
+                .setMinimumSpaceForInit(sMinimumSpaceForInit)
+                .setMinimumSpaceForAd(sMinimumSpaceForAd)
+                .setAndroidIdOptOut(sAndroidIdOptedOut)
+                .disableBannerRefresh()
                 .build();
-    }
-
-    static VungleSettings getVungleSettings(){
-        return vungleSettings;
     }
 }

@@ -1,9 +1,9 @@
-project.version = '8.0.1.0'
+project.version = '8.0.2.0'
 project.ext.networkName = 'chartboost'
 
 apply from: '../shared-build.gradle'
 
 dependencies {
-    implementation 'com.chartboost:chartboost-sdk:8.0.1'
+    implementation "com.chartboost:chartboost-sdk:${sdkVersion}"
 }
 

@@ -1,10 +1,8 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -15,6 +13,7 @@ import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.google.android.gms.ads.AdSize.BANNER;
@@ -35,6 +34,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesBanner extends CustomEventBanner {
     /*
@@ -58,6 +58,8 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             final Map<String, Object> localExtras,
             final Map<String, String> serverExtras) {
         mBannerListener = customEventBannerListener;
+
+        MobileAds.initialize(context);
 
         final Integer adWidth;
         final Integer adHeight;
@@ -94,7 +96,7 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             return;
         }
 
-        final AdRequest.Builder builder = new AdRequest.Builder();
+        AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubView.setLocalExtras() call.
@@ -104,18 +106,16 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
             builder.setContentUrl(contentUrl);
         }
 
+        forwardNpaIfSet(builder);
+
+        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
         final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
 
         if (!TextUtils.isEmpty(testDeviceId)) {
-            builder.addTestDevice(testDeviceId);
+            requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
         }
-
-        // Consent collected from the MoPub’s consent dialogue should not be used to set up
-        // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-        forwardNpaIfSet(builder);
-
-        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
@@ -171,16 +171,6 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         if (mGoogleAdView != null) {
             mGoogleAdView.setAdListener(null);
             mGoogleAdView.destroy();
-        }
-    }
-
-    private void forwardNpaIfSet(AdRequest.Builder builder) {
-
-        // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        final Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
-
-        if (npaBundle != null && !npaBundle.isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
         }
     }
 
