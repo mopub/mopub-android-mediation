@@ -11,7 +11,6 @@ import com.mintegral.msdk.interstitialvideo.out.MTGInterstitialVideoHandler;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mopub.common.logging.MoPubLog;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_MUTE;
@@ -38,8 +37,8 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     private MTGBidInterstitialVideoHandler mBidInterstitialVideoHandler;
     private CustomEventInterstitialListener mCustomEventInterstitialListener;
 
-
     private static String mAdUnitId;
+    private static String mPlacementId;
 
     @Override
     protected void loadInterstitial(final Context context,
@@ -48,6 +47,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
         setAutomaticImpressionAndClickTracking(false);
         mCustomEventInterstitialListener = customEventInterstitialListener;
+
         if (!serverDataIsValid(serverExtras, context)) {
             failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "One or " +
                     "more keys used for Mintegral's ad requests are empty. Failing adapter. Please " +
@@ -63,21 +63,28 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
             final String adm = serverExtras.get(ADM_KEY);
 
             if (TextUtils.isEmpty(adm)) {
-                mInterstitialHandler = MintegralHandlerManager.getInstance().getMTGInterstitialVideoHandler(mAdUnitId);
+                mInterstitialHandler = MintegralHandlerManager.getInstance()
+                        .getMTGInterstitialVideoHandler(mAdUnitId);
+
                 if (mInterstitialHandler == null) {
-                    mInterstitialHandler = new MTGInterstitialVideoHandler(context, "", mAdUnitId);
-                    MintegralHandlerManager.getInstance().addMTGInterstitialVideoHandler(mAdUnitId, mInterstitialHandler);
+                    mInterstitialHandler = new MTGInterstitialVideoHandler(context, mPlacementId,
+                            mAdUnitId);
+                    MintegralHandlerManager.getInstance().addMTGInterstitialVideoHandler(mAdUnitId,
+                            mInterstitialHandler);
                 }
                 mInterstitialHandler.setRewardVideoListener(this);
                 mInterstitialHandler.load();
 
                 handleAudio();
             } else {
-                mBidInterstitialVideoHandler = MintegralHandlerManager.getInstance().getMTGBidInterstitialVideoHandler(mAdUnitId);
+                mBidInterstitialVideoHandler = MintegralHandlerManager.getInstance()
+                        .getMTGBidInterstitialVideoHandler(mAdUnitId);
 
                 if (mBidInterstitialVideoHandler == null) {
-                    mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, "", mAdUnitId);
-                    MintegralHandlerManager.getInstance().addMTGBidInterstitialVideoHandler(mAdUnitId, mBidInterstitialVideoHandler);
+                    mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mPlacementId,
+                            mAdUnitId);
+                    MintegralHandlerManager.getInstance().addMTGBidInterstitialVideoHandler(mAdUnitId,
+                            mBidInterstitialVideoHandler);
                 }
                 mBidInterstitialVideoHandler.setRewardVideoListener(this);
                 mBidInterstitialVideoHandler.loadFromBid(adm);
@@ -155,6 +162,8 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
             mAdUnitId = serverExtras.get(MintegralAdapterConfiguration.UNIT_ID_KEY);
+            mPlacementId = serverExtras.get(MintegralAdapterConfiguration.PLACEMENT_ID_KEY);
+
             final String appId = serverExtras.get(MintegralAdapterConfiguration.APP_ID_KEY);
             final String appKey = serverExtras.get(MintegralAdapterConfiguration.APP_KEY);
 
@@ -172,7 +181,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onVideoLoadSuccess(String placementID, String s) {
+    public void onVideoLoadSuccess(String placementId, String s) {
         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
@@ -190,7 +199,6 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
         MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
-            mCustomEventInterstitialListener.onInterstitialImpression();
             mCustomEventInterstitialListener.onInterstitialShown();
             mCustomEventInterstitialListener.onInterstitialImpression();
         }
@@ -213,7 +221,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onVideoAdClicked(String placementID, String message) {
+    public void onVideoAdClicked(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
@@ -222,12 +230,12 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onEndcardShow(String placementID, String message) {
+    public void onEndcardShow(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onEndcardShow");
     }
 
     @Override
-    public void onVideoComplete(String placementID, String message) {
+    public void onVideoComplete(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
     }
 
@@ -248,7 +256,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onLoadSuccess(String placementID, String message) {
+    public void onLoadSuccess(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
     }
 }

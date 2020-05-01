@@ -35,7 +35,7 @@ public class MintegralNative extends CustomEventNative {
     private static boolean isInitialized = false;
     private static CustomEventNativeListener mCustomEventNativeListener;
     private static String mAdUnitId;
-    private MintegralNativeAd mintegralNativeAd;
+    private static String mPlacementId;
 
     @Override
     protected void loadNativeAd(@NonNull final Context context,
@@ -60,8 +60,9 @@ public class MintegralNative extends CustomEventNative {
         }
 
         final String bid = serverExtras.get(ADM_KEY);
+        final MintegralNativeAd mintegralNativeAd = new MintegralNativeAd(context,
+                customEventNativeListener, mAdUnitId);
 
-        mintegralNativeAd = new MintegralNativeAd(context, customEventNativeListener, mAdUnitId);
         mintegralNativeAd.setBid(bid);
         mintegralNativeAd.loadAd();
     }
@@ -70,7 +71,7 @@ public class MintegralNative extends CustomEventNative {
             NativeListener.NativeAdListener, NativeListener.NativeTrackingListener {
 
         private String mBid;
-        private final String mUnitid;
+        private final String mUnitId;
 
         MtgNativeHandler mNativeHandler;
         MtgBidNativeHandler mtgBidNativeHandler;
@@ -80,21 +81,21 @@ public class MintegralNative extends CustomEventNative {
         MintegralNativeAd(final Context context,
                           final CustomEventNativeListener customEventNativeListener,
                           final String adUnitId) {
-            mUnitid = adUnitId;
+            mUnitId = adUnitId;
             mCustomEventNativeListener = customEventNativeListener;
             this.mContext = context;
         }
 
         void loadAd() {
-
-
             MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
-            final Map<String, Object> properties = MtgNativeHandler.getNativeProperties("", mUnitid);
+            final Map<String, Object> properties =
+                    MtgNativeHandler.getNativeProperties(mPlacementId, mUnitId);
             properties.put(MIntegralConstans.PROPERTIES_AD_NUM, 1);
             properties.put(MIntegralConstans.NATIVE_VIDEO_WIDTH, 720);
             properties.put(MIntegralConstans.NATIVE_VIDEO_HEIGHT, 480);
             properties.put(MIntegralConstans.NATIVE_VIDEO_SUPPORT, true);
+
             if (TextUtils.isEmpty(mBid)) {
                 mNativeHandler = new MtgNativeHandler(properties, mContext);
                 mNativeHandler.setAdListener(this);
@@ -110,7 +111,7 @@ public class MintegralNative extends CustomEventNative {
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         }
 
-        public void setBid(String bid) {
+        void setBid(String bid) {
             this.mBid = bid;
         }
 
@@ -267,6 +268,8 @@ public class MintegralNative extends CustomEventNative {
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
             mAdUnitId = serverExtras.get(MintegralAdapterConfiguration.UNIT_ID_KEY);
+            mPlacementId = serverExtras.get(MintegralAdapterConfiguration.PLACEMENT_ID_KEY);
+
             final String appId = serverExtras.get(MintegralAdapterConfiguration.APP_ID_KEY);
             final String appKey = serverExtras.get(MintegralAdapterConfiguration.APP_KEY);
 

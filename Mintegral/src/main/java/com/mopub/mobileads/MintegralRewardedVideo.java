@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -12,15 +11,12 @@ import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MTGBidRewardVideoHandler;
 import com.mintegral.msdk.out.MTGRewardVideoHandler;
 import com.mintegral.msdk.out.RewardVideoListener;
-import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_MUTE;
 import static com.mintegral.msdk.MIntegralConstans.REWARD_VIDEO_PLAY_NOT_MUTE;
@@ -43,12 +39,14 @@ import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 public class MintegralRewardedVideo extends CustomEventRewardedVideo implements RewardVideoListener {
 
     private final String ADAPTER_NAME = this.getClass().getSimpleName();
+
     private Context mContext;
     private MTGRewardVideoHandler mMtgRewardVideoHandler;
     private MTGBidRewardVideoHandler mtgBidRewardVideoHandler;
 
     private static boolean isInitialized = false;
     private String mAdUnitId;
+    private String mPlacementId;
     private String mUserId;
     private String mRewardId;
 
@@ -75,10 +73,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
         mContext = launcherActivity.getApplicationContext();
         mUserId = MintegralAdapterConfiguration.getUserId();
-        if (localExtras != null && !localExtras.isEmpty() && localExtras.containsKey(DataKeys.REWARDED_AD_CUSTOMER_ID_KEY)) {
-            Object rewardADCustomerID = localExtras.get(DataKeys.REWARDED_AD_CUSTOMER_ID_KEY);
-            mRewardId = String.valueOf(rewardADCustomerID == null ? "" : rewardADCustomerID);
-        }
+        mRewardId = MintegralAdapterConfiguration.getRewardId();
+
         if (!serverDataIsValid(serverExtras, mContext)) {
             failAdapter(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, "One or " +
                     "more keys used for Mintegral's ad requests are empty. Failing adapter. " +
@@ -113,13 +109,14 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
         final String adm = serverExtras.get(ADM_KEY);
-        if (TextUtils.isEmpty(adm)) {
 
+        if (TextUtils.isEmpty(adm)) {
             mMtgRewardVideoHandler = MintegralHandlerManager.getInstance().getMTGRewardVideoHandler(mAdUnitId);
 
             if (mMtgRewardVideoHandler == null) {
-                mMtgRewardVideoHandler = new MTGRewardVideoHandler("", mAdUnitId);
-                MintegralHandlerManager.getInstance().addMTGRewardVideoHandler(mAdUnitId, mMtgRewardVideoHandler);
+                mMtgRewardVideoHandler = new MTGRewardVideoHandler(mPlacementId, mAdUnitId);
+                MintegralHandlerManager.getInstance().addMTGRewardVideoHandler(mAdUnitId,
+                        mMtgRewardVideoHandler);
             }
 
             mMtgRewardVideoHandler.setRewardVideoListener(this);
@@ -130,8 +127,9 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
             mtgBidRewardVideoHandler = MintegralHandlerManager.getInstance().getMTGBidRewardVideoHandler(mAdUnitId);
 
             if (mtgBidRewardVideoHandler == null) {
-                mtgBidRewardVideoHandler = new MTGBidRewardVideoHandler("", mAdUnitId);
-                MintegralHandlerManager.getInstance().addMTGBidRewardVideoHandler(mAdUnitId, mtgBidRewardVideoHandler);
+                mtgBidRewardVideoHandler = new MTGBidRewardVideoHandler(mPlacementId, mAdUnitId);
+                MintegralHandlerManager.getInstance().addMTGBidRewardVideoHandler(mAdUnitId,
+                        mtgBidRewardVideoHandler);
             }
 
             mtgBidRewardVideoHandler.setRewardVideoListener(this);
@@ -145,8 +143,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     protected void showVideo() {
-        if (mMtgRewardVideoHandler != null && mMtgRewardVideoHandler.isReady()) {
 
+        if (mMtgRewardVideoHandler != null && mMtgRewardVideoHandler.isReady()) {
             handleAudio();
             mMtgRewardVideoHandler.show(mRewardId, mUserId);
 
@@ -164,7 +162,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     protected void onInvalidate() {
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Finished showing Mintegral rewarded video. Invalidating adapter...");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Finished showing Mintegral " +
+                "rewarded video. Invalidating adapter...");
 
         if (mMtgRewardVideoHandler != null) {
             mMtgRewardVideoHandler.setRewardVideoListener(null);
@@ -194,6 +193,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
             mAdUnitId = serverExtras.get(MintegralAdapterConfiguration.UNIT_ID_KEY);
+            mPlacementId = serverExtras.get(MintegralAdapterConfiguration.PLACEMENT_ID_KEY);
+
             final String appId = serverExtras.get(MintegralAdapterConfiguration.APP_ID_KEY);
             final String appKey = serverExtras.get(MintegralAdapterConfiguration.APP_KEY);
 
@@ -241,7 +242,9 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
     @Override
     public void onAdClose(boolean b, String label, float amount) {
         if (b) {
-            MoPubRewardedVideoManager.onRewardedVideoCompleted(this.getClass(), mAdUnitId, MoPubReward.success(label, (int) amount));
+            MoPubRewardedVideoManager.onRewardedVideoCompleted(this.getClass(), mAdUnitId,
+                    MoPubReward.success(label, (int) amount));
+
             MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, amount, label);
         }
 
@@ -257,7 +260,8 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     public void onLoadSuccess(String placementId, String unitId) {
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onLoadSuccess: " + placementId + "  " + unitId);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onLoadSuccess: " + placementId
+                + "  " + unitId);
     }
 
     @Override
@@ -277,7 +281,6 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         failAdapter(SHOW_FAILED, VIDEO_PLAYBACK_ERROR, errorMsg, false);
     }
 
-
     @Override
     public void onVideoAdClicked(String placementId, String unitId) {
         MoPubRewardedVideoManager.onRewardedVideoClicked(this.getClass(), mAdUnitId);
@@ -286,11 +289,13 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
 
     @Override
     public void onEndcardShow(String placementId, String unitId) {
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onEndcardShow: " + placementId + "  " + unitId);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onEndcardShow: " + placementId
+                + ", " + unitId);
     }
 
     @Override
     public void onVideoComplete(String placementId, String unitId) {
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete: " + placementId + "  " + unitId);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete: " +
+                placementId + ", " + unitId);
     }
 }
