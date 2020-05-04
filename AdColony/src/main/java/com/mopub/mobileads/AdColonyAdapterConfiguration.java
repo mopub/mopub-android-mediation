@@ -105,7 +105,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
                     if (appId == null) {
                         logAndFail("initialization", APP_ID_KEY);
                     } else if (allZoneIds == null || allZoneIds.length == 0) {
-                        logAndFail("initialization", ZONE_ID_KEY);
+                        logAndFail("initialization", ALL_ZONE_IDS_KEY);
                     } else {
                         AdColonyAppOptions adColonyAppOptions = getAdColonyAppOptionsAndSetConsent(clientOptions);
 

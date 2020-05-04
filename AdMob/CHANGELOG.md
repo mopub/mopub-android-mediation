@@ -1,4 +1,8 @@
 ## Changelog
+  * 19.1.0.0
+    * This version of the adapters has been certified with AdMob 19.1.0 and MoPub 5.12.0.
+    * Remove calls to `MobileAds.initialize(Context context, String applicationCode)` (deprecated by Google) in favor of `MobileAds.initialize(Context context)`.
+
   * 19.0.1.0
     * This version of the adapters has been certified with AdMob 19.0.1 and MoPub 5.11.1.
 

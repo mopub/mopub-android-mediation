@@ -1,4 +1,8 @@
 ## Changelog
+  * 4.1.4.1
+    * Update `onReward` callback logic to prevent calling reward callback `onRewardedVideoCompleted()` with an empty reward for unwatched videos. Previously it was returning a empty reward with 0 amount.
+    * Fixed empty all zone ids error message during initialization.
+
   * 4.1.4.0
     * This version of the adapters has been certified with AdColony 4.1.4.
     * Fix a NullPointerException crash while requesting ads from the `onExpiring` callback.

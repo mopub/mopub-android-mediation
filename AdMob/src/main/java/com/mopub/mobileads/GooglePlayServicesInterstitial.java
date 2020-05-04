@@ -57,6 +57,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
             final Map<String, Object> localExtras,
             final Map<String, String> serverExtras) {
 
+        MobileAds.initialize(context);
         setAutomaticImpressionAndClickTracking(false);
 
         mInterstitialListener = customEventInterstitialListener;

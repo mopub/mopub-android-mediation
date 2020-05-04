@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.0.2.1
+    * Set Chartboost delegation on each load request for interstitials and rewarded videos.
+
   * 8.0.2.0
     * Add support for banner format.
     * This version of the adapters has been certified with Chartboost 8.0.2 and MoPub 5.11.1.

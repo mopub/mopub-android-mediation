@@ -40,12 +40,6 @@ import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forward
  * The {@link GooglePlayServicesNative} class is used to load native Google mobile ads.
  */
 public class GooglePlayServicesNative extends CustomEventNative {
-
-    /**
-     * Key to obtain AdMob application ID from the server extras provided by MoPub.
-     */
-    public static final String KEY_EXTRA_APPLICATION_ID = "appid";
-
     /**
      * Key to obtain AdMob ad unit ID from the extras provided by MoPub.
      */
@@ -116,12 +110,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                 @NonNull Map<String, String> serverExtras) {
 
         if (!sIsInitialized.getAndSet(true)) {
-            if (serverExtras.containsKey(KEY_EXTRA_APPLICATION_ID)
-                    && !TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_APPLICATION_ID))) {
-                MobileAds.initialize(context, serverExtras.get(KEY_EXTRA_APPLICATION_ID));
-            } else {
-                MobileAds.initialize(context);
-            }
+            MobileAds.initialize(context);
         }
 
         mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
