@@ -1,6 +1,7 @@
 ## Changelog
- * 5.8.0.1
-   * Support added for displaying native banner ads by using native ad template. 
+
+ * 5.9.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.9.0 and MoPub 5.11.1.
 
  * 5.8.0.0
    * This version of the adapters has been certified with Facebook Audience Network 5.8.0 and MoPub 5.11.1.
