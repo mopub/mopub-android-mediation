@@ -343,8 +343,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
             // MoPub allows for only one image, so only request for one image.
             optionsBuilder.setRequestMultipleImages(false);
 
-            optionsBuilder.setReturnUrlsForImageAssets(false);
-
             // Get the preferred image orientation from the local extras.
             if (localExtras.containsKey(KEY_EXTRA_ORIENTATION_PREFERENCE)
                     && isValidOrientationExtra(localExtras.get(KEY_EXTRA_ORIENTATION_PREFERENCE))) {
