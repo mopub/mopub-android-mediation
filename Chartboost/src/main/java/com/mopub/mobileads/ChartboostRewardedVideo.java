@@ -12,6 +12,7 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.logging.MoPubLog;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -36,6 +37,11 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
 
     @NonNull
     private ChartboostAdapterConfiguration mChartboostAdapterConfiguration;
+
+    /**
+     * A Weak reference of the activity used to show the Chartboost Rewarded Ad
+     */
+    private WeakReference<Activity> mWeakActivity;
 
     public ChartboostRewardedVideo() {
         mHandler = new Handler();
@@ -77,6 +83,8 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
     protected void loadWithSdkInitialized(@NonNull Activity activity,
                                           @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras)
             throws Exception {
+
+        mWeakActivity = new WeakReference<>(activity);
 
         // Chartboost delegation can be set to null on some cases in Chartboost SDK 8.0+.
         // We should set the delegation on each load request to prevent this.
@@ -136,7 +144,7 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
     public void showVideo() {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
-        if (hasVideoAvailable()) {
+        if (hasVideoAvailable() && mWeakActivity != null && mWeakActivity.get() != null) {
             Chartboost.showRewardedVideo(mLocation);
         } else {
             MoPubRewardedVideoManager.onRewardedVideoPlaybackError(

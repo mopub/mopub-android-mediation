@@ -17,7 +17,6 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
-import com.mopub.mobileads.chartboost.BuildConfig;
 
 import java.util.Collections;
 import java.util.Map;
