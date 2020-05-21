@@ -34,6 +34,7 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
 
     public static final String APP_ID_KEY = "appId";
     public static final String APP_KEY = "appKey";
+    public static final String PLACEMENT_ID_KEY = "placementId";
     public static final String UNIT_ID_KEY = "unitId";
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;

@@ -1,4 +1,10 @@
 ## Changelog
+ * 9.12.6.0
+    * This version of the adapters has been certified with AppLovin 9.12.6 and MoPub SDK 5.12.0.
+
+ * 9.12.5.0
+    * This version of the adapters has been certified with AppLovin 9.12.5 and MoPub SDK 5.12.0.
+
  * 9.12.4.0
     * This version of the adapters has been certified with AppLovin 9.12.4 and MoPub SDK 5.12.0.
 

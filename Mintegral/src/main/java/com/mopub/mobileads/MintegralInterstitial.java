@@ -38,6 +38,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     private CustomEventInterstitialListener mCustomEventInterstitialListener;
 
     private static String mAdUnitId;
+    private static String mPlacementId;
 
     @Override
     protected void loadInterstitial(final Context context,
@@ -62,13 +63,29 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
             final String adm = serverExtras.get(ADM_KEY);
 
             if (TextUtils.isEmpty(adm)) {
-                mInterstitialHandler = new MTGInterstitialVideoHandler(context, mAdUnitId);
+                mInterstitialHandler = MintegralHandlerManager.getInstance()
+                        .getMTGInterstitialVideoHandler(mAdUnitId);
+
+                if (mInterstitialHandler == null) {
+                    mInterstitialHandler = new MTGInterstitialVideoHandler(context, mPlacementId,
+                            mAdUnitId);
+                    MintegralHandlerManager.getInstance().addMTGInterstitialVideoHandler(mAdUnitId,
+                            mInterstitialHandler);
+                }
                 mInterstitialHandler.setRewardVideoListener(this);
                 mInterstitialHandler.load();
 
                 handleAudio();
             } else {
-                mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mAdUnitId);
+                mBidInterstitialVideoHandler = MintegralHandlerManager.getInstance()
+                        .getMTGBidInterstitialVideoHandler(mAdUnitId);
+
+                if (mBidInterstitialVideoHandler == null) {
+                    mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mPlacementId,
+                            mAdUnitId);
+                    MintegralHandlerManager.getInstance().addMTGBidInterstitialVideoHandler(mAdUnitId,
+                            mBidInterstitialVideoHandler);
+                }
                 mBidInterstitialVideoHandler.setRewardVideoListener(this);
                 mBidInterstitialVideoHandler.loadFromBid(adm);
 
@@ -104,12 +121,12 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
                 "interstitial. Invalidating adapter...");
 
         if (mInterstitialHandler != null) {
-            mInterstitialHandler.clearVideoCache();
+            mInterstitialHandler.setInterstitialVideoListener(null);
             mInterstitialHandler = null;
         }
 
         if (mBidInterstitialVideoHandler != null) {
-            mBidInterstitialVideoHandler.clearVideoCache();
+            mBidInterstitialVideoHandler.setInterstitialVideoListener(null);
             mBidInterstitialVideoHandler = null;
         }
 
@@ -145,6 +162,8 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
             mAdUnitId = serverExtras.get(MintegralAdapterConfiguration.UNIT_ID_KEY);
+            mPlacementId = serverExtras.get(MintegralAdapterConfiguration.PLACEMENT_ID_KEY);
+
             final String appId = serverExtras.get(MintegralAdapterConfiguration.APP_ID_KEY);
             final String appKey = serverExtras.get(MintegralAdapterConfiguration.APP_KEY);
 
@@ -162,7 +181,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onVideoLoadSuccess(String s) {
+    public void onVideoLoadSuccess(String placementId, String s) {
         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
@@ -202,7 +221,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onVideoAdClicked(String message) {
+    public void onVideoAdClicked(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
         if (mCustomEventInterstitialListener != null) {
@@ -211,12 +230,12 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onEndcardShow(String message) {
+    public void onEndcardShow(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onEndcardShow");
     }
 
     @Override
-    public void onVideoComplete(String message) {
+    public void onVideoComplete(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete: " + message);
     }
 
@@ -237,7 +256,7 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
     }
 
     @Override
-    public void onLoadSuccess(String message) {
+    public void onLoadSuccess(String placementId, String message) {
         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
     }
 }

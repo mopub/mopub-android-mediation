@@ -78,7 +78,8 @@ public class ChartboostRewardedVideo extends CustomEventRewardedVideo {
                                           @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras)
             throws Exception {
 
-        //Required to for the issue of delegate being null in some cases in Chartboost SDK 8.0+
+        // Chartboost delegation can be set to null on some cases in Chartboost SDK 8.0+.
+        // We should set the delegation on each load request to prevent this.
         Chartboost.setDelegate(ChartboostShared.getDelegate());
 
         if (serverExtras.containsKey(ChartboostShared.LOCATION_KEY)) {
