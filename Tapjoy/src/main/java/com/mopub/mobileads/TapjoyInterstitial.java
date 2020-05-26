@@ -24,6 +24,7 @@ import com.tapjoy.TJConnectListener;
 import com.tapjoy.TJError;
 import com.tapjoy.TJPlacement;
 import com.tapjoy.TJPlacementListener;
+import com.tapjoy.TJPrivacyPolicy;
 import com.tapjoy.Tapjoy;
 
 import org.json.JSONException;
@@ -52,6 +53,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
     public static final String ADAPTER_NAME = TapjoyInterstitial.class.getSimpleName();
     private static final String ADM_KEY = "adm";
     private String mPlacementName;
+    private static TJPrivacyPolicy tjPrivacyPolicy;
 
     @NonNull
     private TapjoyAdapterConfiguration mTapjoyAdapterConfiguration;
@@ -66,6 +68,7 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
 
     public TapjoyInterstitial() {
         mTapjoyAdapterConfiguration = new TapjoyAdapterConfiguration();
+        tjPrivacyPolicy = Tapjoy.getPrivacyPolicy();
     }
 
     @Override
@@ -151,14 +154,14 @@ public class TapjoyInterstitial extends CustomEventInterstitial implements TJPla
             Boolean gdprApplies = personalInfoManager.gdprApplies();
 
             if (gdprApplies != null) {
-                Tapjoy.subjectToGDPR(gdprApplies);
+                tjPrivacyPolicy.setSubjectToGDPR(gdprApplies);
 
                 if (gdprApplies) {
                     String userConsented = MoPub.canCollectPersonalInformation() ? "1" : "0";
 
-                    Tapjoy.setUserConsent(userConsented);
+                    tjPrivacyPolicy.setUserConsent(userConsented);
                 } else {
-                    Tapjoy.setUserConsent("-1");
+                    tjPrivacyPolicy.setUserConsent("-1");
                 }
             }
         }
