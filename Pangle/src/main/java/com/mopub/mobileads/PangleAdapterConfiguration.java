@@ -2,8 +2,9 @@ package com.mopub.mobileads;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.MoPub;
@@ -11,6 +12,7 @@ import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.PersonalInfoManager;
+import com.mopub.mobileads.pangle.BuildConfig;
 
 import java.util.Map;
 
@@ -21,9 +23,11 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
  * created by wuzejian on 2019/4/14
  */
 public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
-    public static final String ADAPTER_VERSION = "3.0.0.0";
+    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    public static final String KEY_EXTRA_APP_ID = "app_id";
     private static final String TAG = "PangleAdapterConfiguration";
-    private static final String MOPUB_NETWORK_NAME = "tiktok_audience_network";
+
 
     @NonNull
     @Override
@@ -68,7 +72,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         boolean networkInitializationSucceeded = false;
         synchronized (PangleAdapterConfiguration.class) {
             try {
-                PangleSharedUtil.init(context);
+                PangleSharedUtil.init(context, configuration);
                 PersonalInfoManager personalInformationManager = MoPub.getPersonalInformationManager();
                 if (personalInformationManager != null && personalInformationManager.gdprApplies()) {
                     boolean canCollect = MoPub.canCollectPersonalInformation();

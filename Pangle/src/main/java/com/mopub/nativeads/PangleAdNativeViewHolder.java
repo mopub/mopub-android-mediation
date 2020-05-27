@@ -1,15 +1,17 @@
 package com.mopub.nativeads;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.logging.MoPubLog;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
+
 /**
  * created by wuzejian on 2020/5/12
  */

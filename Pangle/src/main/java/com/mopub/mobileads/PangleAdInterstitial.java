@@ -16,7 +16,6 @@ import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
 import com.bytedance.sdk.openadsdk.PangleAdInterstitialActivity;
 import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
-import com.union_test.toutiao.utils.TToast;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     /**
      * Key to obtain Pangolin ad unit ID from the extras provided by MoPub.
      */
-    public static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
+    public static final String KEY_EXTRA_AD_UNIT_ID = "ad_placement_id";
 
     /**
      * GDRP value if need : 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
@@ -111,8 +110,9 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
             this.mIsFullVideoAd = localExtras.get(AD_TYPE_FULL_VIDEO) != null && (boolean) localExtras.get(AD_TYPE_FULL_VIDEO);
             this.mActivity = (Activity) localExtras.get(EXPRESS_ACTIVITY_PARAM);
-            this.mCodeId = (String) localExtras.get(KEY_EXTRA_AD_UNIT_ID);
-
+            if (serverExtras != null) {
+                this.mCodeId = (String) serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
+            }
             isExpressAd = ttAdManager.getAdRequetTypeByRit(mCodeId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
 
             /** obtain extra parameters */
@@ -140,7 +140,6 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                 .setSupportDeepLink(true)
                 .setAdCount(1)
                 .withBid(adm);
-
 
 
         if (!mIsFullVideoAd) {
@@ -287,35 +286,35 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             PangleAdInterstitialActivity.showAd(mContext, mTTNativeAd, mOrientation == Configuration.ORIENTATION_PORTRAIT ? PangleAdInterstitialActivity.INTENT_TYPE_IMAGE_2_3 : PangleAdInterstitialActivity.INTENT_TYPE_IMAGE_3_2, new com.bytedance.sdk.openadsdk.CustomEventInterstitialListener() {
                 @Override
                 public void onInterstitialShown() {
-                    if (mInterstitialListener != null){
+                    if (mInterstitialListener != null) {
                         mInterstitialListener.onInterstitialShown();
                     }
                 }
 
                 @Override
                 public void onInterstitialClicked() {
-                    if (mInterstitialListener != null){
+                    if (mInterstitialListener != null) {
                         mInterstitialListener.onInterstitialClicked();
                     }
                 }
 
                 @Override
                 public void onInterstitialImpression() {
-                    if (mInterstitialListener != null){
+                    if (mInterstitialListener != null) {
                         mInterstitialListener.onInterstitialImpression();
                     }
                 }
 
                 @Override
                 public void onLeaveApplication() {
-                    if (mInterstitialListener != null){
+                    if (mInterstitialListener != null) {
                         mInterstitialListener.onLeaveApplication();
                     }
                 }
 
                 @Override
                 public void onInterstitialDismissed() {
-                    if (mInterstitialListener != null){
+                    if (mInterstitialListener != null) {
                         mInterstitialListener.onInterstitialDismissed();
                     }
                 }

@@ -2,9 +2,10 @@ package com.mopub.mobileads;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
@@ -45,7 +46,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     /**
      * Key to obtain Pangolin ad unit ID from the extras provided by MoPub.
      */
-    private static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
+    private static final String KEY_EXTRA_AD_UNIT_ID = "ad_placement_id";
 
     /**
      * Key to obtain Pangolin ad orientation from the extras provided by MoPub.
@@ -129,7 +130,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
             if (!TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_ORIENTATION))) {
                 mOrientation = Integer.valueOf(serverExtras.get(KEY_EXTRA_AD_ORIENTATION));
             }
-            PangleSharedUtil.init(launcherActivity.getApplicationContext());
+            PangleSharedUtil.init(launcherActivity.getApplicationContext(), serverExtras);
             mPangleAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
             return true;
         }

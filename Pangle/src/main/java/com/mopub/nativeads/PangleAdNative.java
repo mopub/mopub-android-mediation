@@ -3,11 +3,12 @@ package com.mopub.nativeads;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.FilterWord;
@@ -21,7 +22,6 @@ import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.PangleSharedUtil;
-import com.union_test.toutiao.config.TTAdManagerHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class PangleAdNative extends CustomEventNative {
     /**
      * Key to obtain Pangolin ad unit ID from the extras provided by MoPub.
      */
-    public static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
+    public static final String KEY_EXTRA_AD_UNIT_ID = "ad_placement_id";
 
     /**
      * gdpr
@@ -77,9 +77,9 @@ public class PangleAdNative extends CustomEventNative {
         int feedWidth = 640;
         int feedHeight = 320;
 
-        if (localExtras != null) {
-            if (localExtras.containsKey(KEY_EXTRA_AD_UNIT_ID)) {
-                mCodeId = (String) localExtras.get(KEY_EXTRA_AD_UNIT_ID);
+        if (serverExtras != null) {
+            if (serverExtras.containsKey(KEY_EXTRA_AD_UNIT_ID)) {
+                mCodeId = (String) serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
             }
             /**set gdpr */
             if (localExtras.containsKey(GDPR_RESULT)) {

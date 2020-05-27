@@ -8,6 +8,8 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import com.bytedance.sdk.openadsdk.TTAdConfig;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
@@ -16,6 +18,7 @@ import com.bytedance.sdk.openadsdk.TTAdSdk;
 import java.util.Map;
 
 import static com.mopub.mobileads.PangleAdapterConfiguration.ADAPTER_VERSION;
+import static com.mopub.mobileads.PangleAdapterConfiguration.KEY_EXTRA_APP_ID;
 
 public class PangleSharedUtil {
     static final String LOGTAG = "MoPub Sample App";
@@ -113,21 +116,21 @@ public class PangleSharedUtil {
         return TTAdSdk.getAdManager();
     }
 
-    public static void init(Context context) {
-        doInit(context);
+    public static void init(Context context, @Nullable Map<String, String> configuration) {
+        doInit(context, configuration);
     }
 
     //step1: Initialize sdk
-    private static void doInit(Context context) {
+    private static void doInit(Context context, @Nullable Map<String, String> configuration) {
         if (!sInit) {
-            TTAdSdk.init(context, buildConfig());
+            TTAdSdk.init(context, buildConfig(configuration));
             sInit = true;
         }
     }
 
-    private static TTAdConfig buildConfig() {
+    private static TTAdConfig buildConfig(@Nullable Map<String, String> configuration) {
         return new TTAdConfig.Builder()
-                .appId("5001121")
+                .appId(configuration != null && configuration.containsKey(KEY_EXTRA_APP_ID) ? configuration.get(KEY_EXTRA_APP_ID) : "50046")
                 .useTextureView(true)/*Use TextureView to play the video. The default setting is SurfaceView, when the context is in conflict with SurfaceView, you can use TextureView */
                 .appName("APP Test Name")
                 .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_DARK)
