@@ -53,6 +53,10 @@ class ChartboostInterstitial extends CustomEventInterstitial {
             mLocation = TextUtils.isEmpty(location) ? mLocation : location;
         }
 
+        // Chartboost delegation can be set to null on some cases in Chartboost SDK 8.0+.
+        // We should set the delegation on each load request to prevent this.
+        Chartboost.setDelegate(ChartboostShared.getDelegate());
+
         // If there's already a listener for this location, then another instance of
         // CustomEventInterstitial is still active and we should fail.
         if (ChartboostShared.getDelegate().hasInterstitialLocation(mLocation) &&

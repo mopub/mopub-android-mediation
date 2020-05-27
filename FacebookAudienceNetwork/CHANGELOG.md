@@ -1,4 +1,10 @@
 ## Changelog
+ * 5.9.0.1
+   * Add support for Facebook native banner rendering via [templates](https://developers.facebook.com/docs/audience-network/guides/ad-formats/native/android-template/#native-banner-ad).
+
+ * 5.9.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.9.0 and MoPub 5.12.0.
+
  * 5.8.0.0
    * This version of the adapters has been certified with Facebook Audience Network 5.8.0 and MoPub 5.11.1.
 
