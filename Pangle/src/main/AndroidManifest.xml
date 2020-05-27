@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.union_test.toutiao">
+
+    <!--overrideLibrary for minSdkVersion is 9-->
+    <uses-sdk tools:overrideLibrary="
+     android.support.graphics.drawable.animated,
+     android.support.graphics.drawable,
+     android.support.v4,
+     android.support.mediacompat,
+     android.support.fragment,
+     android.support.coreui,
+     android.support.coreutils,
+     android.support.compat,
+     android.arch.lifecycle,
+     android.arch.core,
+     android.support.v7,
+     com.dingmouren.layoutmanagergroup,
+     com.mopub.mobileads.native_video,
+     com.mopub.mobileads.native_static,
+     com.mopub.mobileads.base,
+     com.mopub.mobileads.rewarded_video,
+     com.mopub.mobileads.banner,
+     com.mopub.mobileads.interstitial,
+     com.squareup.leakcanary,
+     com.squareup.leakcanary.analyzer,
+     com.squareup.leakcanary.android.noop" />
+
+    <!-- Required permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- if use textureView for video ad，please add this permission -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- for demo, ignore, not needed in your app-->
+    <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+
+
+    <application
+        android:name=".DemoApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/app_icon"
+        android:networkSecurityConfig="@xml/network_config"
+        android:theme="@style/Theme.Light.NoActionBar"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
+        <activity android:name="com.mopub.MopubRewardedVideoActivity" />
+        <activity
+            android:name="com.mopub.MopubBannerActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden" />
+        <activity android:name="com.mopub.MopubInterstitialActivity" />
+        <activity android:name=".activity.adapter.MopubAdapterActivity" />
+        <activity android:name="com.mopub.MopubFullVideoActivity" />
+        <activity
+            android:name=".activity.MainActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.RewardVideoActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.FullScreenVideoActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+
+
+        <provider
+            android:name="com.bytedance.sdk.openadsdk.multipro.TTMultiProvider"
+            android:authorities="${applicationId}.TTMultiProvider"
+            android:exported="false" />
+
+        <!-- MoPubBrowser adapter -->
+        <activity
+            android:name="com.mopub.common.MoPubBrowser"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name="com.mopub.mobileads.MoPubActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name="com.mopub.mobileads.MraidActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name="com.mopub.mobileads.RewardedMraidActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name="com.mopub.mobileads.MraidVideoPlayerActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+
+        <activity android:name="com.google.ads.mediation.sample.activity.AdmobBannerActivity" />
+        <activity android:name="com.google.ads.mediation.sample.activity.AdmobInterstitialActivity" />
+        <activity
+            android:name="com.google.ads.mediation.sample.activity.AdmobRewardVideoActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.google.ads.mediation.sample.activity.AdmobFullVideoActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.adapter.AdapterGoogleMainActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.expressad.AllExpressAdActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.adapter.AdapterActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.expressad.BannerExpressActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.expressad.DrawNativeExpressVideoActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.expressad.InteractionExpressActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.expressad.NativeExpressActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.expressad.NativeExpressListActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.AllNativeAdActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.BannerActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.DrawNativeVideoActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.FeedListActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.FeedRecyclerActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.InteractionActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.NativeBannerActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.nativead.NativeInteractionActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.testtools.GpsToolActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.testtools.IpPortToolActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.testtools.PlayableToolActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.testtools.AllTestToolActivity"
+            android:configChanges="keyboard|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity android:name="com.mopub.MopubNativeListActivity" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2547387438729744~9596900917" />
+
+        <!--This meta-data tag is required to use Google Play Services.-->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+    </application>
+
+</manifest>
