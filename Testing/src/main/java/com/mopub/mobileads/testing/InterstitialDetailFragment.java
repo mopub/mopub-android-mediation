@@ -61,7 +61,7 @@ public class InterstitialDetailFragment extends Fragment implements Interstitial
         views.mUserDataKeywordsField.setText(getArguments().getString(MoPubListFragment.USER_DATA_KEYWORDS_KEY, ""));
         hideSoftKeyboard(views.mUserDataKeywordsField);
 
-        final String adUnitId = adConfiguration.getAdUnitId();
+        final String adUnitId = "4140393dfc6f471787c38f094a21bd69";
         views.mDescriptionView.setText(adConfiguration.getDescription());
         views.mAdUnitIdView.setText(adUnitId);
         views.mLoadButton.setOnClickListener(new View.OnClickListener() {
