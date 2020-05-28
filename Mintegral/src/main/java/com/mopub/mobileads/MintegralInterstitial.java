@@ -63,29 +63,15 @@ public class MintegralInterstitial extends CustomEventInterstitial implements In
             final String adm = serverExtras.get(ADM_KEY);
 
             if (TextUtils.isEmpty(adm)) {
-                mInterstitialHandler = MintegralHandlerManager.getInstance()
-                        .getMTGInterstitialVideoHandler(mAdUnitId);
 
-                if (mInterstitialHandler == null) {
-                    mInterstitialHandler = new MTGInterstitialVideoHandler(context, mPlacementId,
-                            mAdUnitId);
-                    MintegralHandlerManager.getInstance().addMTGInterstitialVideoHandler(mAdUnitId,
-                            mInterstitialHandler);
-                }
+                mInterstitialHandler = new MTGInterstitialVideoHandler(context, mPlacementId, mAdUnitId);
                 mInterstitialHandler.setRewardVideoListener(this);
                 mInterstitialHandler.load();
 
                 handleAudio();
             } else {
-                mBidInterstitialVideoHandler = MintegralHandlerManager.getInstance()
-                        .getMTGBidInterstitialVideoHandler(mAdUnitId);
 
-                if (mBidInterstitialVideoHandler == null) {
-                    mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mPlacementId,
-                            mAdUnitId);
-                    MintegralHandlerManager.getInstance().addMTGBidInterstitialVideoHandler(mAdUnitId,
-                            mBidInterstitialVideoHandler);
-                }
+                mBidInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(context, mPlacementId, mAdUnitId);
                 mBidInterstitialVideoHandler.setRewardVideoListener(this);
                 mBidInterstitialVideoHandler.loadFromBid(adm);
 

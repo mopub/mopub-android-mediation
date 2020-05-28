@@ -1,4 +1,9 @@
 ## Changelog
+
+  * 14.0.01.0
+    * This version of the adapters has been certified with Mintegral 14.0.01 and MoPub 5.12.0.
+    * fix some bugs
+
   * 13.1.11.0
     * This version of the adapters has been certified with Mintegral 13.1.11 and MoPub 5.12.0.
     * Add support for placement ID.

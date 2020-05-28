@@ -111,30 +111,14 @@ public class MintegralRewardedVideo extends CustomEventRewardedVideo implements 
         final String adm = serverExtras.get(ADM_KEY);
 
         if (TextUtils.isEmpty(adm)) {
-            mMtgRewardVideoHandler = MintegralHandlerManager.getInstance().getMTGRewardVideoHandler(mAdUnitId);
-
-            if (mMtgRewardVideoHandler == null) {
-                mMtgRewardVideoHandler = new MTGRewardVideoHandler(mPlacementId, mAdUnitId);
-                MintegralHandlerManager.getInstance().addMTGRewardVideoHandler(mAdUnitId,
-                        mMtgRewardVideoHandler);
-            }
-
+            mMtgRewardVideoHandler = new MTGRewardVideoHandler(mPlacementId, mAdUnitId);
             mMtgRewardVideoHandler.setRewardVideoListener(this);
             mMtgRewardVideoHandler.load();
-
             handleAudio();
         } else {
-            mtgBidRewardVideoHandler = MintegralHandlerManager.getInstance().getMTGBidRewardVideoHandler(mAdUnitId);
-
-            if (mtgBidRewardVideoHandler == null) {
-                mtgBidRewardVideoHandler = new MTGBidRewardVideoHandler(mPlacementId, mAdUnitId);
-                MintegralHandlerManager.getInstance().addMTGBidRewardVideoHandler(mAdUnitId,
-                        mtgBidRewardVideoHandler);
-            }
-
+            mtgBidRewardVideoHandler = new MTGBidRewardVideoHandler(mPlacementId, mAdUnitId);
             mtgBidRewardVideoHandler.setRewardVideoListener(this);
             mtgBidRewardVideoHandler.loadFromBid(adm);
-
             handleAudio();
         }
 
