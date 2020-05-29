@@ -2,10 +2,9 @@ package com.mopub.mobileads;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
@@ -44,11 +43,6 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     private static AtomicBoolean sIsInitialized;
 
     /**
-     * Key to obtain Pangolin ad unit ID from the extras provided by MoPub.
-     */
-    private static final String KEY_EXTRA_AD_UNIT_ID = "ad_placement_id";
-
-    /**
      * Key to obtain Pangolin ad orientation from the extras provided by MoPub.
      */
     private static final String KEY_EXTRA_AD_ORIENTATION = "orientation";
@@ -61,7 +55,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
 
-    private String mAdUnitId;
+    private String placementId;
 
     private int mOrientation = -1;
 
@@ -126,12 +120,26 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
         }
 
         if (!sIsInitialized.getAndSet(true)) {
-            mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
-            if (!TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_ORIENTATION))) {
-                mOrientation = Integer.valueOf(serverExtras.get(KEY_EXTRA_AD_ORIENTATION));
+            if (serverExtras != null) {
+                /** obtain ad orientation from server by mopub */
+                if (!TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_ORIENTATION))) {
+                    mOrientation = Integer.valueOf(serverExtras.get(KEY_EXTRA_AD_ORIENTATION));
+                }
+
+                /** obtain adunit from server by mopub */
+                String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
+                if (!TextUtils.isEmpty(adunit)) {
+                    this.placementId = adunit;
+                }
+                /** init pangolin SDK */
+                String appId = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_ID_KEY);
+                String appName = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_NAME_KEY);
+                PangleAdapterConfiguration.pangleSdkInit(launcherActivity, appId, appName);
+                mPangleAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
             }
-            PangleSharedUtil.init(launcherActivity.getApplicationContext(), serverExtras);
-            mPangleAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
+
+
+
             return true;
         }
 
@@ -142,10 +150,11 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     protected void loadWithSdkInitialized(@NonNull Activity activity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangolinRewardMediationSettings.getCodeId() + ",getOrientation=" + PangolinRewardMediationSettings.getOrientation());
         mWeakActivity = new WeakReference<>(activity);
-        TTAdManager mTTAdManager = PangleSharedUtil.get();
-        TTAdNative mTTAdNative = mTTAdManager.createAdNative(activity.getApplicationContext());
+        TTAdManager ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
+        TTAdNative ttAdNative = ttAdManager.createAdNative(activity.getApplicationContext());
+
         if (PangolinRewardMediationSettings.getGdpr() != -1) {
-            mTTAdManager.setGdpr(PangolinRewardMediationSettings.getGdpr());
+            ttAdManager.setGdpr(PangolinRewardMediationSettings.getGdpr());
         }
 
         /** Create a parameter AdSlot for reward ad request type,
@@ -165,7 +174,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
                 .withBid(adm)
                 .build();
         /**load ad */
-        mTTAdNative.loadRewardVideoAd(adSlot, mLoadRewardVideoAdListener);
+        ttAdNative.loadRewardVideoAd(adSlot, mLoadRewardVideoAdListener);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
@@ -184,7 +193,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     }
 
     private String getAdUnitId() {
-        return TextUtils.isEmpty(mAdUnitId) ? PangolinRewardMediationSettings.getCodeId() : mAdUnitId;
+        return TextUtils.isEmpty(placementId) ? PangolinRewardMediationSettings.getCodeId() : placementId;
     }
 
     private int getOrienttation() {

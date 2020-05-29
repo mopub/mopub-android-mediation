@@ -8,8 +8,6 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-
 import com.bytedance.sdk.openadsdk.TTAdConfig;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
@@ -18,7 +16,6 @@ import com.bytedance.sdk.openadsdk.TTAdSdk;
 import java.util.Map;
 
 import static com.mopub.mobileads.PangleAdapterConfiguration.ADAPTER_VERSION;
-import static com.mopub.mobileads.PangleAdapterConfiguration.KEY_EXTRA_APP_ID;
 
 public class PangleSharedUtil {
     static final String LOGTAG = "MoPub Sample App";
@@ -100,49 +97,6 @@ public class PangleSharedUtil {
         final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
         return (int) (spValue * fontScale + 0.5f);
     }
-
-
-    private static boolean sInit;
-
-    public static String getSDKVersion() {
-        if (!sInit) return ADAPTER_VERSION;
-        return TTAdSdk.getAdManager().getSDKVersion();
-    }
-
-    public static TTAdManager get() {
-        if (!sInit) {
-            throw new RuntimeException("TTAdSdk is not init, please check.");
-        }
-        return TTAdSdk.getAdManager();
-    }
-
-    public static void init(Context context, @Nullable Map<String, String> configuration) {
-        doInit(context, configuration);
-    }
-
-    //step1: Initialize sdk
-    private static void doInit(Context context, @Nullable Map<String, String> configuration) {
-        if (!sInit) {
-            TTAdSdk.init(context, buildConfig(configuration));
-            sInit = true;
-        }
-    }
-
-    private static TTAdConfig buildConfig(@Nullable Map<String, String> configuration) {
-        return new TTAdConfig.Builder()
-                .appId(configuration != null && configuration.containsKey(KEY_EXTRA_APP_ID) ? configuration.get(KEY_EXTRA_APP_ID) : "50046")
-                .useTextureView(true)/*Use TextureView to play the video. The default setting is SurfaceView, when the context is in conflict with SurfaceView, you can use TextureView */
-                .appName("APP Test Name")
-                .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_DARK)
-                .setGDPR(1)
-                .allowShowPageWhenScreenLock(true) /* Allow or deny permission to display the landing page ad in the lock screen */
-                .debug(true)/*Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
-                .supportMultiProcess(false) /* true for support multi-process environment,false for single-process */
-                //.httpStack(new MyOkStack3())/*optional,you can customize network library for sdk, the demo is based on the okhttp3 */
-                .coppa(0) /* Fields to indicate whether you are a child or an adult ，0:adult ，1:child */
-                .build();
-    }
-
 
     /**
      * pangle banner support size ：

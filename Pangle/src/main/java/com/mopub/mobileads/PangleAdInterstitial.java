@@ -13,7 +13,7 @@ import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
-import com.bytedance.sdk.openadsdk.PangleAdInterstitialActivity;
+import com.bytedance.sdk.openadsdk.adapter.PangleAdInterstitialActivity;
 import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 
@@ -34,11 +34,6 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     public static final String ADAPTER_NAME = "PangolinAdapterInterstitial";
 
     /**
-     * Key to obtain Pangolin ad unit ID from the extras provided by MoPub.
-     */
-    public static final String KEY_EXTRA_AD_UNIT_ID = "ad_placement_id";
-
-    /**
      * GDRP value if need : 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
      */
     public final static String GDPR_RESULT = "gdpr_result";
@@ -55,23 +50,11 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
 
     /**
-     * obtain value of ad type is full-video ad
-     */
-    public final static String AD_TYPE_FULL_VIDEO = "ad_type_full_video";
-
-
-    /**
-     * activity param
-     */
-    public final static String EXPRESS_ACTIVITY_PARAM = "activity_param";
-
-    /**
      * pangolin network Interstitial ad unit ID.
      */
-    private String mCodeId;
+    private String placementId;
     private boolean mIsFullVideoAd;
     private Context mContext;
-    private Activity mActivity;
     private boolean isExpressAd = false;
     private float adWidth = 0;
     private float adHeight = 0;
@@ -98,22 +81,40 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
         String adm = null;
 
-        TTAdManager ttAdManager = PangleSharedUtil.get();
-        TTAdNative ttAdNative = ttAdManager.createAdNative(context.getApplicationContext());
+        TTAdManager ttAdManager = null;
+        TTAdNative ttAdNative = null;
+
+
+        if (serverExtras != null) {
+            /** obtain adunit from server by mopub */
+            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
+            if (!TextUtils.isEmpty(adunit)) {
+                this.placementId = adunit;
+            }
+            adm = serverExtras.get(DataKeys.ADM_KEY);
+            /** init pangolin SDK */
+            String appId = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_ID_KEY);
+            String appName = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_NAME_KEY);
+            PangleAdapterConfiguration.pangleSdkInit(context, appId, appName);
+            ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
+            ttAdNative = ttAdManager.createAdNative(context.getApplicationContext());
+            mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+        }
 
         if (localExtras != null && !localExtras.isEmpty()) {
             if (localExtras.containsKey(GDPR_RESULT)) {
                 int gdpr = (int) localExtras.get(GDPR_RESULT);
                 /** set GDPR */
-                ttAdManager.setGdpr(gdpr);
+                if (ttAdManager != null && (gdpr == 0 || gdpr == 1)) {
+                    ttAdManager.setGdpr(gdpr);
+                }
             }
+            this.placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
 
-            this.mIsFullVideoAd = localExtras.get(AD_TYPE_FULL_VIDEO) != null && (boolean) localExtras.get(AD_TYPE_FULL_VIDEO);
-            this.mActivity = (Activity) localExtras.get(EXPRESS_ACTIVITY_PARAM);
-            if (serverExtras != null) {
-                this.mCodeId = (String) serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
+            if (ttAdManager != null) {
+                isExpressAd = ttAdManager.getAdRequetTypeByRit(placementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
+                mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(placementId);
             }
-            isExpressAd = ttAdManager.getAdRequetTypeByRit(mCodeId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
 
             /** obtain extra parameters */
             float[] adSize = PangleSharedUtil.getAdSizeSafely(localExtras, AD_WIDTH, AD_HEIGHT);
@@ -124,19 +125,10 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
         }
 
-
-        /** obtain adunit from server by mopub */
-        if (serverExtras != null) {
-            String adunit = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
-            if (!TextUtils.isEmpty(adunit)) {
-                this.mCodeId = adunit;
-            }
-            adm = serverExtras.get(DataKeys.ADM_KEY);
-        }
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + adWidth + "，adHeight=" + adHeight + ",mCodeId=" + mCodeId + ",isExpressAd=" + isExpressAd);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + adWidth + "，adHeight=" + adHeight + ",placementId=" + placementId + ",isExpressAd=" + isExpressAd);
 
         AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
-                .setCodeId(mCodeId)
+                .setCodeId(placementId)
                 .setSupportDeepLink(true)
                 .setAdCount(1)
                 .withBid(adm);
@@ -195,8 +187,8 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
         if (!mIsFullVideoAd) {
             if (isExpressAd) {
-                if (mExpressInterstitialLoader != null) {
-                    mExpressInterstitialLoader.showInterstitial(mActivity);
+                if (mExpressInterstitialLoader != null && mContext instanceof Activity) {
+                    mExpressInterstitialLoader.showInterstitial((Activity) mContext);
                 }
             } else {
                 if (mNativeInterstitialLoader != null && mNativeInterstitialLoader.isReady()) {
@@ -204,8 +196,8 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                 }
             }
         } else {
-            if (mFullVideoLoader != null) {
-                mFullVideoLoader.showFullVideo(mActivity);
+            if (mFullVideoLoader != null && mContext instanceof Activity) {
+                mFullVideoLoader.showFullVideo((Activity) mContext);
             }
         }
     }

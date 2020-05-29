@@ -7,8 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
+import com.bytedance.sdk.openadsdk.adapter.MopubAdapterUtil;
 import com.mopub.common.Preconditions;
 
 import java.util.ArrayList;
@@ -60,10 +60,6 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
     private void updateAdUI(PangleAdNativeViewHolder pangleAdNativeViewHolder, final PangleAdNative.PangolinNativeAd ad, View convertView) {
         if (ad == null || convertView == null) return;
 
-        if (pangleAdNativeViewHolder.dislike != null) {
-            pangleAdNativeViewHolder.dislike.setVisibility(View.GONE);
-        }
-
         if (!TextUtils.isEmpty(ad.getTitle()) && pangleAdNativeViewHolder.titleView != null) {
             pangleAdNativeViewHolder.titleView.setText(ad.getTitle());
         }
@@ -88,67 +84,19 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
             pangleAdNativeViewHolder.logoView.setImageBitmap(ad.getAdLogo());
         }
 
-        if (mViewBinder.layoutType == PangleAdViewBinder.IMAGE_MODE_LARGE_IMG) {//  big image
-            if (ad.getImageList() != null && !ad.getImageList().isEmpty()) {
-                TTImage image = ad.getImageList().get(0);
-                if (image != null && image.isValid()) {
-                    NativeImageHelper.loadImageView(image.getImageUrl(), pangleAdNativeViewHolder.mLargeImage);
-                }
-            }
-        } else if (mViewBinder.layoutType == PangleAdViewBinder.IMAGE_MODE_VIDEO) { // video
-            if (pangleAdNativeViewHolder.mediaView != null) {
-                View video = ad.getAdView();
-                if (video != null) {
-                    if (video.getParent() == null) {
-                        pangleAdNativeViewHolder.mediaView.removeAllViews();
-                        pangleAdNativeViewHolder.mediaView.addView(video, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                    }
-                }
-            }
-        } else if (mViewBinder.layoutType == PangleAdViewBinder.IMAGE_MODE_GROUP_IMG) {// 3 Image
-            if (ad.getImageList() != null && ad.getImageList().size() >= 3) {
-                TTImage image1 = ad.getImageList().get(0);
-                TTImage image2 = ad.getImageList().get(1);
-                TTImage image3 = ad.getImageList().get(2);
-
-                if (image1 != null && image1.isValid()) {
-                    NativeImageHelper.loadImageView(image1.getImageUrl(), pangleAdNativeViewHolder.mGroupImage1);
-                }
-
-                if (image2 != null && image2.isValid()) {
-                    NativeImageHelper.loadImageView(image2.getImageUrl(), pangleAdNativeViewHolder.mGroupImage2);
-                }
-
-                if (image3 != null && image3.isValid()) {
-                    NativeImageHelper.loadImageView(image3.getImageUrl(), pangleAdNativeViewHolder.mGroupImage3);
-                }
-            }
-
-        } else if (mViewBinder.layoutType == PangleAdViewBinder.IMAGE_MODE_SMALL_IMG) {/** small image */
-            if (ad.getImageList() != null && ad.getImageList().size() > 0) {
-                TTImage image = ad.getImageList().get(0);
-                if (image != null && image.isValid()) {
-                    NativeImageHelper.loadImageView(image.getImageUrl(), pangleAdNativeViewHolder.mSmallImage);
-                }
-            }
-        } else if (mViewBinder.layoutType == PangleAdViewBinder.IMAGE_MODE_VERTICAL_IMG) {/** vertical image */
-            if (ad.getImageList() != null && ad.getImageList().size() > 0) {
-                TTImage image = ad.getImageList().get(0);
-                if (image != null && image.isValid()) {
-                    NativeImageHelper.loadImageView(image.getImageUrl(), pangleAdNativeViewHolder.mVerticalImage);
-                }
-            }
-        }
-
+        /** add Native Feed Main View */
+        MopubAdapterUtil.addNativeFeedMainView(convertView.getContext(), ad.getImageMode(), pangleAdNativeViewHolder.mediaView, ad.getAdView(), ad.getImageList());
 
         /**  the views that can be clicked */
         List<View> clickViewList = new ArrayList<>();
         clickViewList.add(convertView);
+
         /** The views that can trigger the creative action (like download app) */
         List<View> creativeViewList = new ArrayList<>();
         if (pangleAdNativeViewHolder.callToActionView != null) {
             creativeViewList.add(pangleAdNativeViewHolder.callToActionView);
         }
+
         /**  notice! This involves advertising billing and must be called correctly. convertView must use ViewGroup. */
         ad.registerViewForInteraction((ViewGroup) convertView, clickViewList, creativeViewList, new TTNativeAd.AdInteractionListener() {
             @Override

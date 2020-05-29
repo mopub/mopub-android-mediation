@@ -3,32 +3,20 @@ package com.mopub.mobileads;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
+import com.bytedance.sdk.openadsdk.adapter.MopubAdapterUtil;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdDislike;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
-import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
 import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.nativeads.NativeImageHelper;
-import com.union_test.toutiao.R;
-import com.union_test.toutiao.utils.TToast;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,15 +31,9 @@ public class PangleAdBanner extends CustomEventBanner {
     protected static final String ADAPTER_NAME = "PangleAdBanner";
 
     /**
-     * Key to obtain Pangolin ad unit ID from the extras provided by MoPub.
-     */
-    public static final String KEY_EXTRA_AD_UNIT_ID = "adunit";
-
-
-    /**
      * pangolin network banner ad unit ID.
      */
-    private String mCodeId = null;
+    private String placementId = null;
 
     public final static String GDPR_RESULT = "gdpr_result";
     public final static String COPPA_VALUE = "coppa_value";
@@ -81,26 +63,46 @@ public class PangleAdBanner extends CustomEventBanner {
         /** cache data from server */
         mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
-        /** init pangolin SDK */
-        TTAdManager mTTAdManager = PangleSharedUtil.get();
 
+        TTAdManager adManager = null;
         String adm = null;
 
         boolean isExpressAd = false;
+
+        if (serverExtras != null) {
+            /** obtain adunit from server by mopub */
+            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
+            if (!TextUtils.isEmpty(adunit)) {
+                this.placementId = adunit;
+            }
+            adm = serverExtras.get(DataKeys.ADM_KEY);
+            /** init pangolin SDK */
+            String appId = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_ID_KEY);
+            String appName = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_NAME_KEY);
+            PangleAdapterConfiguration.pangleSdkInit(context, appId, appName);
+            adManager = PangleAdapterConfiguration.getPangleSdkManager();
+
+            mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+        }
+
 
         /** set GDPR */
         if (localExtras != null && !localExtras.isEmpty()) {
             if (localExtras.containsKey(GDPR_RESULT)) {
                 int gdpr = (int) localExtras.get(GDPR_RESULT);
-                mTTAdManager.setGdpr(gdpr);
+                if (adManager != null && (gdpr == 0 || gdpr == 1)) {
+                    adManager.setGdpr(gdpr);
+                }
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "banner receive gdpr=" + gdpr);
             }
 
-            if (localExtras.containsKey(KEY_EXTRA_AD_UNIT_ID)) {
-                mCodeId = (String) localExtras.get(KEY_EXTRA_AD_UNIT_ID);
+            if (placementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID)) {
+                placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
             }
 
-            isExpressAd = mTTAdManager.getAdRequetTypeByRit(mCodeId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
+            if (adManager != null) {
+                isExpressAd = adManager.getAdRequetTypeByRit(placementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
+            }
 
 
             if (isExpressAd) {
@@ -120,24 +122,16 @@ public class PangleAdBanner extends CustomEventBanner {
             }
             checkSize(isExpressAd);
 
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + bannerWidth + "，bannerHeight=" + bannerHeight + ",mCodeId=" + mCodeId);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + bannerWidth + "，bannerHeight=" + bannerHeight + ",placementId=" + placementId);
 
         }
 
-        /** obtain adunit from server by mopub */
-        if (serverExtras != null) {
-            String adunit = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
-            if (!TextUtils.isEmpty(adunit)) {
-                this.mCodeId = adunit;
-            }
-            adm = serverExtras.get(DataKeys.ADM_KEY);
-        }
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner method mCodeId：" + mCodeId);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner method placementId：" + placementId);
 
-        //create request parameters for AdSlot
+        /** create request parameters for AdSlot */
         AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
-                .setCodeId(mCodeId)
+                .setCodeId(placementId)
                 .setSupportDeepLink(true)
                 .setAdCount(1)
                 .setImageAcceptedSize((int) bannerWidth, (int) bannerHeight)
@@ -152,10 +146,10 @@ public class PangleAdBanner extends CustomEventBanner {
         /** request ad express banner */
         if (isExpressAd) {
             mAdExpressBannerLoader = new PangleAdBannerExpressLoader(mContext, customEventBannerListener);
-            mAdExpressBannerLoader.loadAdExpressBanner(adSlotBuilder.build(), mTTAdManager.createAdNative(mContext));
+            mAdExpressBannerLoader.loadAdExpressBanner(adSlotBuilder.build(), adManager.createAdNative(mContext));
         } else {
             mAdNativeBannerLoader = new PangleAdBannerNativeLoader(mContext, bannerWidth, bannerHeight, customEventBannerListener);
-            mAdNativeBannerLoader.loadAdNativeBanner(adSlotBuilder.build(), mTTAdManager.createAdNative(mContext));
+            mAdNativeBannerLoader.loadAdNativeBanner(adSlotBuilder.build(), adManager.createAdNative(mContext));
         }
 
     }
@@ -240,433 +234,20 @@ public class PangleAdBanner extends CustomEventBanner {
                 if (ads.get(0) == null) {
                     return;
                 }
-                View bannerView = null;
-                if (mBannerWidth / mBannerHeight < 4) {
-                    bannerView = LayoutInflater.from(mContext).inflate(R.layout.tt_pangle_ad_banner_layout_600_300, null, false);
-                } else {
-                    bannerView = LayoutInflater.from(mContext).inflate(R.layout.tt_pangle_ad_banner_layout_600_150, null, false);
-                }
 
-                if (bannerView == null) {
+                mBannerView = MopubAdapterUtil.setAdDataAndBuildBannerView(mContext, ads.get(0), mAdInteractionListener, mBannerWidth, mBannerHeight);
+
+                if (mBannerView == null) {
                     return;
                 }
 
-                mBannerView = bannerView;
-
-                //bind ad data and interaction
-                setAdData(bannerView, ads.get(0));
                 if (mCustomEventBannerListener != null) {
-                    //load success add view to mMoPubView
-                    mCustomEventBannerListener.onBannerLoaded(bannerView);
+                    /** load success add view to mMoPubView */
+                    mCustomEventBannerListener.onBannerLoaded(mBannerView);
                 }
 
             }
         };
-
-
-        private void setAdData(View nativeView, TTNativeAd nativeAd) {
-
-            TextView titleTv = nativeView.findViewById(R.id.tt_pangle_ad_title);
-            if (titleTv != null) {
-                titleTv.setText(nativeAd.getTitle());
-            }
-
-            TextView descriptionTv = nativeView.findViewById(R.id.tt_pangle_ad_content);
-            if (descriptionTv != null) {
-                descriptionTv.setText(nativeAd.getDescription());
-            }
-
-            Button creativeButton = nativeView.findViewById(R.id.tt_pangle_ad_btn);
-            ViewGroup mainImgLayout = nativeView.findViewById(R.id.tt_pangle_ad_image_layout);
-            ImageView mainImg = nativeView.findViewById(R.id.tt_pangle_ad_main_img);
-            ViewGroup adContentLayout = nativeView.findViewById(R.id.tt_pangle_ad_content_layout);
-            ImageView iconImage = nativeView.findViewById(R.id.tt_pangle_ad_icon_adapter);
-
-            /** set main image size */
-            ViewGroup.LayoutParams mainImgLp = null;
-            ViewGroup.LayoutParams mainImgLayoutLp = null;
-            ViewGroup.LayoutParams ctLp = null;
-            ViewGroup.LayoutParams btnLp = null;
-            ViewGroup.LayoutParams iconLp = null;
-
-            if (mainImgLayout != null) {
-                mainImgLayoutLp = mainImgLayout.getLayoutParams();
-            }
-
-            if (mainImg != null) {
-                mainImgLp = mainImg.getLayoutParams();
-            }
-
-            if (adContentLayout != null) {
-                ctLp = adContentLayout.getLayoutParams();
-            }
-
-            if (creativeButton != null) {
-                btnLp = creativeButton.getLayoutParams();
-            }
-
-            if (iconImage != null) {
-                iconLp = iconImage.getLayoutParams();
-            }
-
-
-            /** Dynamically set the width and height of mainImgLayout and other view */
-            if (nativeAd.getImageList() != null && !nativeAd.getImageList().isEmpty()) {
-                TTImage image = nativeAd.getImageList().get(0);
-                if (image != null && image.isValid()) {
-                    if (mainImg != null) {
-                        NativeImageHelper.loadImageView(image.getImageUrl(), mainImg);
-                    }
-                    int mainImgWidth = image.getWidth();
-                    int mainImgHeight = image.getHeight();
-
-                    int calculateImgWidth = 0;
-
-                    if (mBannerWidth / mBannerHeight >= 4) {
-                        TextView logo = nativeView.findViewById(R.id.tt_pangle_ad_logo);
-
-                        /** Dynamically adapter logo size */
-                        if (logo != null) {
-                            ViewGroup.LayoutParams logoLy = logo.getLayoutParams();
-                            logoLy.width = PangleSharedUtil.dp2px(mContext, 16);
-                            logoLy.height = PangleSharedUtil.dp2px(mContext, 6);
-                            logo.setLayoutParams(logoLy);
-                            logo.setPadding(2, 0, 0, 0);
-                            logo.setTextSize(4);
-                            Drawable img = ContextCompat.getDrawable(mContext, R.drawable.tt_ad_logo);
-                            if (img != null) {
-                                img.setBounds(0, 0, PangleSharedUtil.dp2px(mContext, 6), PangleSharedUtil.dp2px(mContext, 5));
-                                logo.setCompoundDrawables(img, null, null, null);
-                            }
-                        }
-
-                        /** Calculate the actual width of the picture */
-                        calculateImgWidth = (int) ((mBannerHeight * mainImgWidth) / mainImgHeight);
-                        if (mBannerWidth > PangleSharedUtil.getScreenWidth(mContext)) {
-                            mBannerWidth = PangleSharedUtil.getScreenWidth(mContext);
-                        }
-
-                        /** Dynamically set the width and height of mainImgLayout */
-                        if (mainImgLayoutLp != null) {
-                            mainImgLayoutLp.height = (int) mBannerHeight;
-                            mainImgLayoutLp.width = calculateImgWidth;
-                            mainImgLayout.setLayoutParams(mainImgLayoutLp);
-                        }
-
-                        /** Dynamically set the width and height of adContentLayout */
-                        int ctWidth = (int) (mBannerWidth - calculateImgWidth);
-                        if (ctLp != null) {
-                            ctLp.height = (int) mBannerHeight;
-                            ctLp.width = ctWidth;
-                            adContentLayout.setLayoutParams(ctLp);
-                        }
-
-                        /** 600 : 90 - 640 :100 */
-                        if (mBannerWidth / mBannerHeight >= 600f / 90f || mBannerWidth / mBannerHeight >= 600f / 100f) {
-                            float scale = mBannerHeight / 90f;
-
-                            if (titleTv != null) {
-                                titleTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 8 * scale);
-                            }
-
-                            if (descriptionTv != null) {
-                                descriptionTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 6 * scale);
-
-                                if (descriptionTv.getLayoutParams() != null) {
-                                    ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) descriptionTv.getLayoutParams();
-                                    vmlp.topMargin = PangleSharedUtil.dp2px(mContext, 2);
-                                    descriptionTv.setLayoutParams(vmlp);
-                                }
-                            }
-                        } else if (mBannerWidth / mBannerHeight >= 600f / 150f) {
-                            float scale = mBannerHeight / 150f;
-                            if (titleTv != null) {
-                                titleTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10 * scale);
-                            }
-
-                            if (descriptionTv != null) {
-                                descriptionTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 9 * scale);
-                            }
-                        }
-
-                    } else {
-                        int decrptionTvLyHeight = 0;
-                        ViewGroup.LayoutParams decrptionTvLy = null;
-                        if (descriptionTv != null) {
-                            decrptionTvLy = descriptionTv.getLayoutParams();
-                            decrptionTvLyHeight = decrptionTvLy.height;
-                        }
-                        int marginHeight = PangleSharedUtil.dp2px(mContext, 10);
-                        /** Calculate the actual height of the main picture */
-                        int calculateMainImgHeight = (int) (mBannerHeight - decrptionTvLyHeight - marginHeight);
-                        calculateImgWidth = (calculateMainImgHeight * mainImgWidth) / mainImgHeight;
-
-                        /** Calculate the width of leftBar */
-                        int leftbar = (int) (mBannerWidth / 3);
-
-                        if (mBannerWidth - calculateImgWidth > leftbar) {
-                            leftbar = (int) (mBannerWidth - calculateImgWidth);
-                        }
-
-                        /** set mainImg size */
-                        if (mainImgLp != null && mainImg != null) {
-                            mainImgLp.height = calculateMainImgHeight;
-                            mainImgLp.width = (int) (mBannerWidth - leftbar - PangleSharedUtil.dp2px(mContext, 12));
-                            mainImg.setLayoutParams(mainImgLp);
-                        }
-
-                        /** set mainImgLayout size */
-                        if (mainImgLayoutLp != null) {
-                            mainImgLayoutLp.height = calculateMainImgHeight;
-                            mainImgLayoutLp.width = (int) (mBannerWidth - leftbar);
-                            mainImgLayout.setLayoutParams(mainImgLayoutLp);
-                        }
-
-
-                        /** set adContentLayout size */
-                        if (ctLp != null) {
-                            ctLp.height = (int) mBannerHeight;
-                            ctLp.width = leftbar;
-                            adContentLayout.setLayoutParams(ctLp);
-                        }
-
-                        if (mBannerWidth / mBannerHeight <= 600f / 500f) {// 1.2f
-                            float scale = mBannerHeight / 500f;
-                            if (iconLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) iconLp;
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 5));
-                                iconImage.setLayoutParams(vmlp);
-                            }
-
-                            /** set mainImg size */
-                            if (mainImgLp != null && mainImg != null) {
-                                mainImgLp.height = (int) (mBannerHeight - decrptionTvLyHeight - PangleSharedUtil.dp2px(mContext, 43));
-                                mainImg.setLayoutParams(mainImgLp);
-                            }
-
-                            if (mainImgLayoutLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) mainImgLayoutLp;
-                                if (mainImgLp != null) {
-                                    vmlp.height = mainImgLp.height;
-                                }
-                                mainImgLayout.setLayoutParams(vmlp);
-                            }
-
-                            if (ctLp != null) {
-                                if (mainImgLp != null) {
-                                    ctLp.height = mainImgLp.height;
-                                }
-                                adContentLayout.setLayoutParams(ctLp);
-                            }
-
-                            if (descriptionTv != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) descriptionTv.getLayoutParams();
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 30));
-                                descriptionTv.setLayoutParams(vmlp);
-                            }
-
-
-                            if (btnLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) btnLp;
-                                vmlp.leftMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 10));
-                                vmlp.rightMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 10));
-                                creativeButton.setLayoutParams(vmlp);
-                            }
-
-                        } else if (mBannerWidth / mBannerHeight <= 640f / 400f) {// 1.6f
-                            float scale = mBannerHeight / 400f;
-
-                            if (titleTv != null) {
-                                titleTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10 * scale);
-                            }
-
-
-                            if (iconLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) iconLp;
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 5));
-                                iconImage.setLayoutParams(vmlp);
-                            }
-
-                            if (descriptionTv != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) descriptionTv.getLayoutParams();
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 10));
-                                descriptionTv.setLayoutParams(vmlp);
-                            }
-
-
-                            if (mainImgLp != null && mainImg != null) {
-                                mainImgLp.height = (int) (mBannerHeight - decrptionTvLyHeight - PangleSharedUtil.dp2px(mContext, 25));
-                                mainImg.setLayoutParams(mainImgLp);
-                            }
-
-                            if (mainImgLayoutLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) mainImgLayoutLp;
-                                if (mainImgLp != null) {
-                                    vmlp.height = mainImgLp.height;
-                                }
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 5));
-                                mainImgLayout.setLayoutParams(vmlp);
-                            }
-
-                            if (ctLp != null) {
-                                if (mainImgLp != null) {
-                                    ctLp.height = mainImgLp.height;
-                                }
-                                adContentLayout.setLayoutParams(ctLp);
-                            }
-
-
-                            if (btnLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) btnLp;
-                                vmlp.leftMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 10));
-                                vmlp.rightMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 10));
-                                vmlp.height = (int) (scale * PangleSharedUtil.dp2px(mContext, 20));
-                                creativeButton.setLayoutParams(vmlp);
-                                creativeButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, scale * 9);
-                            }
-
-                        } else if (mBannerWidth / mBannerHeight <= 690f / 388f) { //1.78
-                            float scale = mBannerHeight / 388f;
-
-                            if (iconLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) iconLp;
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 6));
-                                iconImage.setLayoutParams(vmlp);
-                            }
-
-
-                            if (titleTv != null) {
-                                titleTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10 * scale);
-                            }
-
-
-                            if (mainImgLayoutLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) mainImgLayoutLp;
-                                vmlp.rightMargin = 0;
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 8));
-                                mainImgLayout.setLayoutParams(vmlp);
-                            }
-
-                            if (btnLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) btnLp;
-                                vmlp.leftMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 8));
-                                vmlp.rightMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 8));
-                                vmlp.bottomMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 10));
-                                creativeButton.setLayoutParams(vmlp);
-                                creativeButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, scale * 8);
-                            }
-
-
-                            if (adContentLayout != null) {
-                                adContentLayout.setPadding(0, adContentLayout.getTop(), (int) (scale * PangleSharedUtil.dp2px(mContext, 10)), adContentLayout.getBottom());
-                            }
-                        } else if (mBannerWidth / mBannerHeight <= 600f / 300f) { // 2.0f
-                            float scale = mBannerHeight / 300f;
-
-                            if (iconLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) iconLp;
-                                vmlp.width = (int) (scale * PangleSharedUtil.dp2px(mContext, 35));
-                                vmlp.height = (int) (scale * PangleSharedUtil.dp2px(mContext, 35));
-                                iconImage.setLayoutParams(vmlp);
-                            }
-
-                            if (mainImgLayoutLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) mainImgLayoutLp;
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 5));
-                                mainImgLayout.setLayoutParams(vmlp);
-                            }
-
-                            if (titleTv != null) {
-                                titleTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 8 * scale);
-                            }
-
-                            if (btnLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) btnLp;
-                                vmlp.bottomMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 12));
-                                vmlp.leftMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 6));
-                                vmlp.rightMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 6));
-                                vmlp.height = (int) (scale * PangleSharedUtil.dp2px(mContext, 20));
-                                creativeButton.setLayoutParams(vmlp);
-                                creativeButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, scale * 8);
-                            }
-
-                        } else if (mBannerWidth / mBannerHeight <= 600f / 260f) { //600 * 260   2.3f
-                            float scale = mBannerHeight / 260f;
-
-                            if (titleTv != null) {
-                                titleTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 8 * scale);
-                            }
-
-                            if (iconLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) iconLp;
-                                vmlp.width = (int) (scale * PangleSharedUtil.dp2px(mContext, 30));
-                                vmlp.height = (int) (scale * PangleSharedUtil.dp2px(mContext, 30));
-                                iconImage.setLayoutParams(vmlp);
-                            }
-
-                            if (mainImgLayoutLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) mainImgLayoutLp;
-                                vmlp.topMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 8));
-                                mainImgLayout.setLayoutParams(vmlp);
-                            }
-
-                            if (btnLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) btnLp;
-                                vmlp.bottomMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 8));
-                                vmlp.leftMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 6));
-                                vmlp.rightMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 6));
-                                vmlp.height = (int) (scale * PangleSharedUtil.dp2px(mContext, 20));
-                                creativeButton.setLayoutParams(vmlp);
-                                creativeButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, scale * 6);
-                            }
-
-
-                        } else if (mBannerWidth / mBannerHeight <= 600f / 200f) { //3
-                            float scale = mBannerHeight / 200f;
-
-                            if (iconLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) iconLp;
-                                vmlp.topMargin = PangleSharedUtil.dp2px(mContext, 10);
-                                iconImage.setLayoutParams(vmlp);
-                            }
-
-                            if (btnLp != null) {
-                                ViewGroup.MarginLayoutParams vmlp = (ViewGroup.MarginLayoutParams) btnLp;
-                                vmlp.bottomMargin = (int) (scale * PangleSharedUtil.dp2px(mContext, 10));
-                                creativeButton.setLayoutParams(vmlp);
-                            }
-
-                        }
-
-                    }
-                }
-            }
-
-            TTImage icon = nativeAd.getIcon();
-            if (icon != null && icon.isValid()) {
-                if (iconImage != null) {
-                    NativeImageHelper.loadImageView(icon.getImageUrl(), iconImage);
-                }
-            }
-
-            if (creativeButton != null) {
-                creativeButton.setText(nativeAd.getButtonText());
-            }
-
-            /** the views that can be clicked */
-            List<View> clickViewList = new ArrayList<>();
-            clickViewList.add(nativeView);
-
-            /** The views that can trigger the creative action (like download app) */
-            List<View> creativeViewList = new ArrayList<>();
-            if (creativeButton != null) {
-                creativeViewList.add(creativeButton);
-            }
-
-            /** notice! This involves advertising billing and must be called correctly. convertView must use ViewGroup. */
-            nativeAd.registerViewForInteraction((ViewGroup) nativeView, clickViewList, creativeViewList, mAdInteractionListener);
-        }
-
 
         TTNativeAd.AdInteractionListener mAdInteractionListener = new TTNativeAd.AdInteractionListener() {
             @Override
