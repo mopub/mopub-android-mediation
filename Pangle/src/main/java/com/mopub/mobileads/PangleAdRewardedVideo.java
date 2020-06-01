@@ -1,8 +1,10 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import android.text.TextUtils;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
@@ -38,11 +40,6 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     private static AtomicBoolean sIsInitialized;
 
     /**
-     * Key to obtain Pangolin ad orientation from the extras provided by MoPub.
-     */
-    private static final String KEY_EXTRA_AD_ORIENTATION = "orientation";
-
-    /**
      * Flag to determine whether or not the Pangolin Rewarded Video Ad instance has loaded.
      */
     private boolean mIsLoaded;
@@ -51,8 +48,6 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
 
     private String mPlacementId;
-
-    private int mOrientation = -1;
 
     private WeakReference<Activity> mWeakActivity;
 
@@ -116,10 +111,6 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
         if (!sIsInitialized.getAndSet(true)) {
             if (serverExtras != null) {
-                /** obtain ad orientation from server by mopub */
-                if (!TextUtils.isEmpty(serverExtras.get(KEY_EXTRA_AD_ORIENTATION))) {
-                    mOrientation = Integer.valueOf(serverExtras.get(KEY_EXTRA_AD_ORIENTATION));
-                }
 
                 /** obtain adunit from server by mopub */
                 String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
@@ -131,7 +122,6 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
                 PangleAdapterConfiguration.pangleSdkInit(launcherActivity, appId);
                 mPangleAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
             }
-
 
 
             return true;
@@ -164,7 +154,6 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
                 .setRewardAmount(PangolinRewardMediationSettings.getRewardAmount())  /**The number of rewards in rewarded video ad */
                 .setUserID(PangolinRewardMediationSettings.getUserID()) /**User ID, a required parameter for rewarded video ads */
                 .setMediaExtra(PangolinRewardMediationSettings.getMediaExtra()) /** optional parameter */
-                .setOrientation(getOrientation()) /** Set how you wish the video ad to be displayed, choose from TTAdConstant.HORIZONTAL or TTAdConstant.VERTICAL */
                 .withBid(adm)
                 .build();
         /**load ad */
@@ -185,11 +174,6 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
             mTTRewardVideoAd = null;
         }
     }
-
-    private int getOrientation() {
-        return mOrientation != -1 ? mOrientation : PangolinRewardMediationSettings.getOrientation();
-    }
-
 
     private TTAdNative.RewardVideoAdListener mLoadRewardVideoAdListener = new TTAdNative.RewardVideoAdListener() {
 
