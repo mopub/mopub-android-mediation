@@ -70,13 +70,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
                 /** init pangle sdk */
                 pangleSdkInit(context, appId);
-                PersonalInfoManager personalInformationManager = MoPub.getPersonalInformationManager();
-                if (personalInformationManager != null && personalInformationManager.gdprApplies()) {
-                    boolean canCollect = MoPub.canCollectPersonalInformation();
-
-                    /** set gdpr to pangle sdk, 0 close GDRP Privacy protection ，1: open GDRP Privacy protection */
-                    getPangleSdkManager().setGdpr(canCollect ? 1 : 0);
-                }
                 networkInitializationSucceeded = true;
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Pangle has encountered " +
@@ -116,7 +109,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     .useTextureView(true)/*Use TextureView to play the video. The default setting is SurfaceView, when the context is in conflict with SurfaceView, you can use TextureView */
                     .appName(MOPUB_NETWORK_NAME)
                     .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_DARK)
-                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0)
+                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0)/*set gdpr to pangle sdk, 0 close GDRP Privacy protection ，1: open GDRP Privacy protection */
                     .allowShowPageWhenScreenLock(true) /* Allow or deny permission to display the landing page ad in the lock screen */
                     .debug(BuildConfig.DEBUG)/*Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
                     .supportMultiProcess(false) /* true for support multi-process environment,false for single-process */
