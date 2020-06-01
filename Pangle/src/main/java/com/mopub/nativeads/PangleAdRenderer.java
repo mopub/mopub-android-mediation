@@ -1,6 +1,5 @@
 package com.mopub.nativeads;
 
-
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,9 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
 
-/**
- * created by wuzejian on 2020/5/12
- */
 public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.PangolinNativeAd> {
 
     private final PangleAdViewBinder mViewBinder;

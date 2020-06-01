@@ -1,7 +1,7 @@
 package com.mopub.mobileads;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -21,21 +21,16 @@ import java.util.Map;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
-/**
- * created by wuzejian on 2019/4/14
- */
 public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
-    public static final String ADAPTER_VERSION = "3.0.0.0";
-    private static final String TAG = "PangleAdapterConfiguration";
+    private static final String ADAPTER_VERSION = "3.0.0.0.0";
+    private static final String ADAPTER_NAME = PangleAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = "pangle_network";
 
-
-    public static final String PANGLE_APP_ID_KEY = "app_id";
-    public static final String PANGLE_APP_NAME_KEY = "app_name";
     /**
-     * Key to obtain Pangolin ad unit ID from the extras provided by MoPub.
+     * Key to obtain Pangle ad unit ID from the extras provided by MoPub.
      */
-    public static final String KEY_EXTRA_AD_UNIT_ID = "ad_placement_id";
+    public static final String KEY_EXTRA_AD_PLACEMENT_ID = "ad_placement_id";
+    public static final String KEY_EXTRA_APP_ID = "app_id";
 
 
     @NonNull
@@ -50,54 +45,41 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         return getPangleSdkManager().getBiddingToken();
     }
 
-    /**
-     * returns a lowercase String that represents your ad network name. Use underscores if the String needs to contain spaces
-     *
-     * @return
-     */
     @NonNull
     @Override
     public String getMoPubNetworkName() {
         return MOPUB_NETWORK_NAME;
     }
 
-    /**
-     * returns the version number of your ad network SDK.
-     *
-     * @return
-     */
     @NonNull
     @Override
     public String getNetworkSdkVersion() {
         return getSDKVersion();
     }
 
-    @SuppressLint("LongLogTag")
     @Override
     public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String> configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
-        MoPubLog.log(CUSTOM, TAG, "PangleAdapterConfiguration#initializeNetwork....");
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleAdapterConfiguration initializeNetwork....");
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
         boolean networkInitializationSucceeded = false;
         synchronized (PangleAdapterConfiguration.class) {
-
             try {
 
-                String appId = configuration.get(PANGLE_APP_ID_KEY);
-                String appName = configuration.get(PANGLE_APP_NAME_KEY);
+                String appId = configuration.get(KEY_EXTRA_APP_ID);
 
                 /** init pangle sdk */
-                pangleSdkInit(context, appId, appName);
+                pangleSdkInit(context, appId);
                 PersonalInfoManager personalInformationManager = MoPub.getPersonalInformationManager();
                 if (personalInformationManager != null && personalInformationManager.gdprApplies()) {
                     boolean canCollect = MoPub.canCollectPersonalInformation();
 
                     /** set gdpr to pangle sdk, 0 close GDRP Privacy protection ，1: open GDRP Privacy protection */
-                    getPangleSdkManager().setGdpr(canCollect ? 0 : 1);
+                    getPangleSdkManager().setGdpr(canCollect ? 1 : 0);
                 }
                 networkInitializationSucceeded = true;
             } catch (Exception e) {
-                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing AdMob has encountered " +
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Pangle has encountered " +
                         "an exception.", e);
             }
         }
@@ -110,7 +92,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
     }
-
 
     private static boolean sInit;
 
@@ -127,17 +108,17 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     /* Initialize sdk */
-    public static void pangleSdkInit(Context context, String appId, String appName) {
+    public static void pangleSdkInit(Context context, String appId) {
         if (appId == null || context == null) return;
         if (!sInit) {
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
                     .useTextureView(true)/*Use TextureView to play the video. The default setting is SurfaceView, when the context is in conflict with SurfaceView, you can use TextureView */
-                    .appName(appName)
+                    .appName(MOPUB_NETWORK_NAME)
                     .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_DARK)
-                    .setGDPR(1)
+                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0)
                     .allowShowPageWhenScreenLock(true) /* Allow or deny permission to display the landing page ad in the lock screen */
-                    .debug(true)/*Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
+                    .debug(BuildConfig.DEBUG)/*Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
                     .supportMultiProcess(false) /* true for support multi-process environment,false for single-process */
                     //.httpStack(new MyOkStack3())/*optional,you can customize network library for sdk, the demo is based on the okhttp3 */
                     .coppa(0) /* Fields to indicate whether you are a child or an adult ，0:adult ，1:child */

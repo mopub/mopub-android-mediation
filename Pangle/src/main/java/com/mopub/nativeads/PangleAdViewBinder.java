@@ -6,9 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * created by wuzejian on 2020-05-12
- */
 public class PangleAdViewBinder {
 
     public final static class Builder {
@@ -50,7 +47,6 @@ public class PangleAdViewBinder {
             this.titleId = titleId;
             return this;
         }
-
 
 
         @NonNull
@@ -130,7 +126,6 @@ public class PangleAdViewBinder {
         this.extras = builder.extras;
         this.logoViewId = builder.logoViewId;
     }
-
 
 
 }

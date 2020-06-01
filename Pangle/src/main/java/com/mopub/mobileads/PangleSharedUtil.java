@@ -1,25 +1,12 @@
-// Copyright 2018-2019 Twitter, Inc.
-// Licensed under the MoPub SDK License Agreement
-// http://www.mopub.com/legal/sdk-license-agreement/
-
 package com.mopub.mobileads;
 
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
-import com.bytedance.sdk.openadsdk.TTAdManager;
-import com.bytedance.sdk.openadsdk.TTAdSdk;
-
 import java.util.Map;
 
-import static com.mopub.mobileads.PangleAdapterConfiguration.ADAPTER_VERSION;
-
 public class PangleSharedUtil {
-    static final String LOGTAG = "MoPub Sample App";
-
 
     public static final int CONTENT_TYPE = 40000;//# http conent_type
     public static final int REQUEST_PB_ERROR = 40001;//# http request pb
@@ -64,14 +51,6 @@ public class PangleSharedUtil {
         return adSize;
     }
 
-    public static void logToast(Context context, String message) {
-        Log.d(LOGTAG, message);
-
-        if (context != null && context.getApplicationContext() != null) {
-            Toast.makeText(context.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-        }
-    }
-
     public static int dp2px(Context context, float dipValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dipValue * scale + 0.5f);
@@ -108,8 +87,6 @@ public class PangleSharedUtil {
      * @return
      */
     public static float[] getBannerAdSizeAdapterSafely(Map<String, Object> params, String widthName, String heightName) {
-        //适配 600*300、600*400、600*500、600*260、600*90、600*150、640*100、690*388
-
         float[] adSize = new float[]{0, 0};
         if (params == null || widthName == null || heightName == null) {
             return adSize;
@@ -118,12 +95,12 @@ public class PangleSharedUtil {
         Object oHeight = params.get(heightName);
 
         if (oHeight != null) {
-            adSize[1] = (float) oHeight;
+            adSize[1] = (float) ((Integer) oHeight);
         }
 
         Object oWidth = params.get(widthName);
         if (oWidth != null) {
-            adSize[0] = (float) oWidth;
+            adSize[0] = (float) ((Integer) oWidth);
 
             if (adSize[0] > 0 && adSize[0] <= 600) {
                 adSize[0] = 600;
@@ -148,7 +125,6 @@ public class PangleSharedUtil {
                 adSize[1] = 388;
             }
         }
-
 
         return adSize;
     }

@@ -11,9 +11,6 @@ import com.mopub.common.logging.MoPubLog;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
-/**
- * created by wuzejian on 2020/5/12
- */
 public class PangleAdNativeViewHolder {
 
     @Nullable

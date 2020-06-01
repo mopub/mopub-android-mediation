@@ -1,6 +1,5 @@
 package com.mopub.mobileads;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
@@ -23,22 +22,14 @@ import java.util.Map;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 
-/**
- * created by wuzejian on 2019-11-29
- */
 public class PangleAdBanner extends CustomEventBanner {
 
-    protected static final String ADAPTER_NAME = "PangleAdBanner";
+    private static final String ADAPTER_NAME = PangleAdBanner.class.getSimpleName();
 
     /**
      * pangolin network banner ad unit ID.
      */
-    private String placementId = null;
-
-    public final static String GDPR_RESULT = "gdpr_result";
-    public final static String COPPA_VALUE = "coppa_value";
-    public final static String AD_BANNER_WIDTH = "ad_banner_width";
-    public final static String AD_BANNER_HEIGHT = "ad_banner_height";
+    private String mPlacementId = null;
 
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
 
@@ -71,67 +62,49 @@ public class PangleAdBanner extends CustomEventBanner {
 
         if (serverExtras != null) {
             /** obtain adunit from server by mopub */
-            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
+            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
             if (!TextUtils.isEmpty(adunit)) {
-                this.placementId = adunit;
+                this.mPlacementId = adunit;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
             /** init pangolin SDK */
-            String appId = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_ID_KEY);
-            String appName = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_NAME_KEY);
-            PangleAdapterConfiguration.pangleSdkInit(context, appId, appName);
+            String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+            PangleAdapterConfiguration.pangleSdkInit(context, appId);
             adManager = PangleAdapterConfiguration.getPangleSdkManager();
 
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
 
-        /** set GDPR */
-        if (localExtras != null && !localExtras.isEmpty()) {
-            if (localExtras.containsKey(GDPR_RESULT)) {
-                int gdpr = (int) localExtras.get(GDPR_RESULT);
-                if (adManager != null && (gdpr == 0 || gdpr == 1)) {
-                    adManager.setGdpr(gdpr);
-                }
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "banner receive gdpr=" + gdpr);
-            }
-
-            if (placementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID)) {
-                placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
-            }
-
-            if (adManager != null) {
-                isExpressAd = adManager.getAdRequetTypeByRit(placementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
-            }
-
-
-            if (isExpressAd) {
-                float[] bannerAdSizeAdapterSafely = PangleSharedUtil.getBannerAdSizeAdapterSafely(localExtras, AD_BANNER_WIDTH, AD_BANNER_HEIGHT);
-                bannerWidth = bannerAdSizeAdapterSafely[0];
-                bannerHeight = bannerAdSizeAdapterSafely[1];
-            } else {
-                /** obtain extra parameters */
-                if (localExtras.containsKey(AD_BANNER_WIDTH)) {
-                    bannerWidth = Float.valueOf(String.valueOf(localExtras.get(AD_BANNER_WIDTH)));
-                }
-
-                if (localExtras.containsKey(AD_BANNER_HEIGHT)) {
-                    bannerHeight = Float.valueOf(String.valueOf(localExtras.get(AD_BANNER_HEIGHT)));
-                }
-
-            }
-            checkSize(isExpressAd);
-
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + bannerWidth + "，bannerHeight=" + bannerHeight + ",placementId=" + placementId);
-
+        if (adManager != null) {
+            isExpressAd = adManager.getAdRequetTypeByRit(mPlacementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
         }
 
+        if (isExpressAd) {
+            float[] bannerAdSizeAdapterSafely = PangleSharedUtil.getBannerAdSizeAdapterSafely(localExtras, DataKeys.AD_WIDTH, DataKeys.AD_HEIGHT);
+            bannerWidth = bannerAdSizeAdapterSafely[0];
+            bannerHeight = bannerAdSizeAdapterSafely[1];
+        } else {
+            /** obtain extra parameters */
+            if (localExtras.containsKey(DataKeys.AD_WIDTH)) {
+                bannerWidth = Float.valueOf((Integer) localExtras.get(DataKeys.AD_WIDTH));
+            }
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner method placementId：" + placementId);
+            if (localExtras.containsKey(DataKeys.AD_HEIGHT)) {
+                bannerHeight = Float.valueOf((Integer) localExtras.get(DataKeys.AD_HEIGHT));
+            }
+
+        }
+        checkSize(isExpressAd);
+
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + bannerWidth + "，bannerHeight=" + bannerHeight + ",placementId=" + mPlacementId);
+
+
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner method placementId：" + mPlacementId);
 
         /** create request parameters for AdSlot */
         AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
-                .setCodeId(placementId)
+                .setCodeId(mPlacementId)
                 .setSupportDeepLink(true)
                 .setAdCount(1)
                 .setImageAcceptedSize((int) bannerWidth, (int) bannerHeight)
@@ -164,7 +137,6 @@ public class PangleAdBanner extends CustomEventBanner {
                 bannerHeight = 0;
             }
         } else {
-            /** default value */
             if (bannerWidth <= 0 || bannerHeight <= 0) {
                 bannerWidth = 320;
                 bannerHeight = 50;
@@ -188,7 +160,6 @@ public class PangleAdBanner extends CustomEventBanner {
 
 
     /**
-     * created by wuzejian on 2020/5/11
      * pangle native ad banner
      */
     public static class PangleAdBannerNativeLoader {
@@ -287,8 +258,7 @@ public class PangleAdBanner extends CustomEventBanner {
 
 
     /**
-     * created by wuzejian on 2020/5/11
-     * pangle express ad banner
+     * Express ad banner
      */
     public static class PangleAdBannerExpressLoader {
 
@@ -316,11 +286,7 @@ public class PangleAdBanner extends CustomEventBanner {
         }
 
 
-        /**
-         * banner 广告加载回调监听
-         */
         private TTAdNative.NativeExpressAdListener mTTNativeExpressAdListener = new TTAdNative.NativeExpressAdListener() {
-            @SuppressLint("LongLogTag")
             @Override
             public void onError(int code, String message) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "express banner ad  onBannerFailed.-code=" + code + "," + message);
@@ -347,7 +313,7 @@ public class PangleAdBanner extends CustomEventBanner {
         };
 
         private void bindDislike(TTNativeExpressAd ad) {
-            /** dislike function, maybe you can use custom dialog, please refer to the access document by yourself */
+            /** dislike function, maybe you can use custom dialog, please refer to the access document from Pangle */
             if (mContext instanceof Activity) {
                 ad.setDislikeCallback((Activity) mContext, new TTAdDislike.DislikeInteractionCallback() {
                     @Override
@@ -364,7 +330,7 @@ public class PangleAdBanner extends CustomEventBanner {
         }
 
         /**
-         * banner 渲染回调监听
+         * banner render callback
          */
         private TTNativeExpressAd.ExpressAdInteractionListener mExpressAdInteractionListener = new TTNativeExpressAd.ExpressAdInteractionListener() {
             @Override
@@ -408,7 +374,6 @@ public class PangleAdBanner extends CustomEventBanner {
                 mTTNativeExpressAd = null;
             }
 
-//            this.mContext = null;
             this.mCustomEventBannerListener = null;
             this.mExpressAdInteractionListener = null;
             this.mTTNativeExpressAdListener = null;

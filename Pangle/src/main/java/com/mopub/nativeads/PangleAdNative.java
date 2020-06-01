@@ -29,12 +29,8 @@ import java.util.Map;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 
-/**
- * created by wuzejian on 2020/5/12
- */
 public class PangleAdNative extends CustomEventNative {
-    private static final String ADAPTER_NAME = "PangleAdNative";
-
+    private static final String ADAPTER_NAME = PangleAdNative.class.getSimpleName();
     /**
      * gdpr
      */
@@ -82,15 +78,14 @@ public class PangleAdNative extends CustomEventNative {
 
         if (serverExtras != null) {
             /** obtain adunit from server by mopub */
-            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
+            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
             if (!TextUtils.isEmpty(adunit)) {
                 this.placementId = adunit;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
             /** init pangolin SDK */
-            String appId = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_ID_KEY);
-            String appName = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_NAME_KEY);
-            PangleAdapterConfiguration.pangleSdkInit(context, appId, appName);
+            String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+            PangleAdapterConfiguration.pangleSdkInit(context, appId);
             ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
 
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
@@ -98,8 +93,8 @@ public class PangleAdNative extends CustomEventNative {
 
 
         if (localExtras != null) {
-            if (placementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID)) {
-                placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
+            if (placementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID)) {
+                placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
             }
             /**set gdpr */
             if (localExtras.containsKey(GDPR_RESULT)) {

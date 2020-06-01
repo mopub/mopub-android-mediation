@@ -27,21 +27,8 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 
-/**
- * created by wuzejian on 2020/5/11
- */
 public class PangleAdInterstitial extends CustomEventInterstitial {
-    public static final String ADAPTER_NAME = "PangolinAdapterInterstitial";
-
-    /**
-     * GDRP value if need : 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
-     */
-    public final static String GDPR_RESULT = "gdpr_result";
-
-
-    public final static String COPPA_VALUE = "coppa_value";
-
-
+    private static final String ADAPTER_NAME = PangleAdInterstitial.class.getSimpleName();
     /**
      * ad size
      */
@@ -52,7 +39,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     /**
      * pangolin network Interstitial ad unit ID.
      */
-    private String placementId;
+    private String mPlacementId;
     private boolean mIsFullVideoAd;
     private Context mContext;
     private boolean isExpressAd = false;
@@ -87,33 +74,21 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
         if (serverExtras != null) {
             /** obtain adunit from server by mopub */
-            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
+            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
             if (!TextUtils.isEmpty(adunit)) {
-                this.placementId = adunit;
+                this.mPlacementId = adunit;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
             /** init pangolin SDK */
-            String appId = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_ID_KEY);
-            String appName = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_NAME_KEY);
-            PangleAdapterConfiguration.pangleSdkInit(context, appId, appName);
+            String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+            PangleAdapterConfiguration.pangleSdkInit(context, appId);
             ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
             ttAdNative = ttAdManager.createAdNative(context.getApplicationContext());
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
-        }
-
-        if (localExtras != null && !localExtras.isEmpty()) {
-            if (localExtras.containsKey(GDPR_RESULT)) {
-                int gdpr = (int) localExtras.get(GDPR_RESULT);
-                /** set GDPR */
-                if (ttAdManager != null && (gdpr == 0 || gdpr == 1)) {
-                    ttAdManager.setGdpr(gdpr);
-                }
-            }
-            this.placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
 
             if (ttAdManager != null) {
-                isExpressAd = ttAdManager.getAdRequetTypeByRit(placementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
-                mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(placementId);
+                isExpressAd = ttAdManager.getAdRequetTypeByRit(mPlacementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
+                mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(mPlacementId);
             }
 
             /** obtain extra parameters */
@@ -122,22 +97,20 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             adHeight = adSize[1];
 
             checkSize(isExpressAd);
-
         }
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + adWidth + "，adHeight=" + adHeight + ",placementId=" + placementId + ",isExpressAd=" + isExpressAd);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + adWidth + "，adHeight=" + adHeight + ",placementId=" + mPlacementId + ",isExpressAd=" + isExpressAd);
 
         AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
-                .setCodeId(placementId)
+                .setCodeId(mPlacementId)
                 .setSupportDeepLink(true)
                 .setAdCount(1)
                 .withBid(adm);
 
-
         if (!mIsFullVideoAd) {
             /** request Interstitial */
             if (isExpressAd) {
-                adSlotBuilder.setExpressViewAcceptedSize(adWidth, adHeight); //期望模板广告view的size
+                adSlotBuilder.setExpressViewAcceptedSize(adWidth, adHeight);
                 mExpressInterstitialLoader = new PangleAdInterstitialExpressLoader(mContext, customEventInterstitialListener);
                 mExpressInterstitialLoader.loadExpressInterstitialAd(adSlotBuilder.build(), ttAdNative);
             } else {
@@ -223,8 +196,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
 
     /**
-     * created by wuzejian on 2020/5/15
-     * pangle Native Interstitial Ad Loader
+     * Native Interstitial Ad Loader
      */
     public static class PangleAdInterstitialNativeLoader {
         private static final String TAG = "AdNativeInterLoader";
@@ -323,8 +295,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
 
     /**
-     * created by wuzejian on 2020/5/11
-     * pangle express interstitial ad
+     * Express interstitial ad
      */
     public static class PangleAdInterstitialExpressLoader {
         private Context mContext;
@@ -445,8 +416,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
 
     /**
-     * created by wuzejian on 2020/5/11
-     * pangle full-video ad
+     * Pangle full-video ad
      */
     public static class PangleAdInterstitialFullVideoLoader {
         private Context mContext;
@@ -553,6 +523,4 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
         };
 
     }
-
-
 }
