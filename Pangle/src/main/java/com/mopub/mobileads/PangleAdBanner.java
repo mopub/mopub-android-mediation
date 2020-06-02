@@ -6,13 +6,13 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.adapter.MopubAdapterUtil;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdDislike;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
+import com.bytedance.sdk.openadsdk.adapter.MediationAdapterUtil;
 import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 
@@ -206,7 +206,7 @@ public class PangleAdBanner extends CustomEventBanner {
                     return;
                 }
 
-                mBannerView = MopubAdapterUtil.setAdDataAndBuildBannerView(mContext, ads.get(0), mAdInteractionListener, mBannerWidth, mBannerHeight);
+                mBannerView = MediationAdapterUtil.setAdDataAndBuildBannerView(mContext, ads.get(0), mAdInteractionListener, mBannerWidth, mBannerHeight);
 
                 if (mBannerView == null) {
                     return;

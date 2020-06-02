@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bytedance.sdk.openadsdk.TTNativeAd;
-import com.bytedance.sdk.openadsdk.adapter.MopubAdapterUtil;
+import com.bytedance.sdk.openadsdk.adapter.MediationAdapterUtil;
 import com.mopub.common.Preconditions;
 
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
         }
 
         /** add Native Feed Main View */
-        MopubAdapterUtil.addNativeFeedMainView(convertView.getContext(), ad.getImageMode(), pangleAdNativeViewHolder.mediaView, ad.getAdView(), ad.getImageList());
+        MediationAdapterUtil.addNativeFeedMainView(convertView.getContext(), ad.getImageMode(), pangleAdNativeViewHolder.mediaView, ad.getAdView(), ad.getImageList());
 
         /**  the views that can be clicked */
         List<View> clickViewList = new ArrayList<>();

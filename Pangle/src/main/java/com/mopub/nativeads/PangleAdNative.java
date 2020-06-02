@@ -31,10 +31,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 
 public class PangleAdNative extends CustomEventNative {
     private static final String ADAPTER_NAME = PangleAdNative.class.getSimpleName();
-    /**
-     * gdpr
-     */
-    public final static String GDPR_RESULT = "gdpr_result";
 
     /**
      * request ad count
@@ -72,6 +68,7 @@ public class PangleAdNative extends CustomEventNative {
 
         TTAdManager ttAdManager = null;
         String adm = null;
+        /** default ad size */
         int feedWidth = 640;
         int feedHeight = 320;
 
@@ -95,12 +92,6 @@ public class PangleAdNative extends CustomEventNative {
         if (localExtras != null) {
             if (placementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID)) {
                 placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
-            }
-            /**set gdpr */
-            if (localExtras.containsKey(GDPR_RESULT)) {
-                int gdpr = (int) localExtras.get(GDPR_RESULT);
-                if (ttAdManager != null && (gdpr == 0 || gdpr == 1))
-                    ttAdManager.setGdpr(gdpr);
             }
 
             if (localExtras.containsKey(REQUEST_AD_COUNT)) {

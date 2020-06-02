@@ -49,6 +49,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     private PangleAdInterstitialExpressLoader mExpressInterstitialLoader;
     private PangleAdInterstitialNativeLoader mNativeInterstitialLoader;
     private PangleAdInterstitialFullVideoLoader mFullVideoLoader;
+    private CustomEventInterstitial.CustomEventInterstitialListener customEventInterstitialListener;
 
     public PangleAdInterstitial() {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
@@ -62,6 +63,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             final Map<String, Object> localExtras,
             final Map<String, String> serverExtras) {
         this.mContext = context;
+        this.customEventInterstitialListener = customEventInterstitialListener;
         int mOrientation = mContext.getResources().getConfiguration().orientation;
         mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         setAutomaticImpressionAndClickTracking(false);
@@ -158,20 +160,28 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     @Override
     protected void showInterstitial() {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        boolean hasShow = false;
         if (!mIsFullVideoAd) {
             if (isExpressAd) {
                 if (mExpressInterstitialLoader != null && mContext instanceof Activity) {
                     mExpressInterstitialLoader.showInterstitial((Activity) mContext);
+                    hasShow = true;
                 }
             } else {
                 if (mNativeInterstitialLoader != null && mNativeInterstitialLoader.isReady()) {
                     mNativeInterstitialLoader.showNativeInterstitialActiviy();
+                    hasShow = true;
                 }
             }
         } else {
             if (mFullVideoLoader != null && mContext instanceof Activity) {
                 mFullVideoLoader.showFullVideo((Activity) mContext);
+                hasShow = true;
             }
+        }
+
+        if (!hasShow && customEventInterstitialListener != null) {
+            customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.UNSPECIFIED);
         }
     }
 
