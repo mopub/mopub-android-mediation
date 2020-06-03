@@ -46,11 +46,8 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
 
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
-
     private String mPlacementId;
-
     private WeakReference<Activity> mWeakActivity;
-
     private TTRewardVideoAd mTTRewardVideoAd;
 
 

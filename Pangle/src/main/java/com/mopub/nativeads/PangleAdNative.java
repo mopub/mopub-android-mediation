@@ -35,19 +35,19 @@ public class PangleAdNative extends CustomEventNative {
     /**
      * request ad count
      */
-    public final static String REQUEST_AD_COUNT = "request_ad_count";
+    public static final String REQUEST_AD_COUNT = "request_ad_count";
 
 
     /**
      * ad size
      */
-    public final static String FEED_AD_WIDTH = "feed_ad_width";
-    public final static String FEED_AD_HEIGHT = "feed_ad_height";
+    public static final String FEED_AD_WIDTH = "feed_ad_width";
+    public static final String FEED_AD_HEIGHT = "feed_ad_height";
 
     /**
      * pangolin network native ad unit ID.
      */
-    private String placementId = "";
+    private String mPlacementId = "";
 
     private Context mContext;
     private CustomEventNativeListener mCustomEventNativeListener;
@@ -77,7 +77,7 @@ public class PangleAdNative extends CustomEventNative {
             /** obtain adunit from server by mopub */
             String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
             if (!TextUtils.isEmpty(adunit)) {
-                this.placementId = adunit;
+                this.mPlacementId = adunit;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
             /** init pangolin SDK */
@@ -90,8 +90,8 @@ public class PangleAdNative extends CustomEventNative {
 
 
         if (localExtras != null) {
-            if (placementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID)) {
-                placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
+            if (mPlacementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID)) {
+                mPlacementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
             }
 
             if (localExtras.containsKey(REQUEST_AD_COUNT)) {
@@ -111,7 +111,7 @@ public class PangleAdNative extends CustomEventNative {
         if (ttAdManager != null) {
             TTAdNative adNative = ttAdManager.createAdNative(mContext);
             AdSlot adSlot = new AdSlot.Builder()
-                    .setCodeId(placementId)
+                    .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
                     .setImageAcceptedSize(feedWidth, feedHeight)
                     .setAdCount(requestAdCount) /** ad count from 1 to 3 */

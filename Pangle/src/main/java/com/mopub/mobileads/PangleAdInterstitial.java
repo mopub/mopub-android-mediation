@@ -32,8 +32,8 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     /**
      * ad size
      */
-    public final static String AD_WIDTH = "ad_width";
-    public final static String AD_HEIGHT = "ad_height";
+    private static final String AD_WIDTH = "ad_width";
+    private static final String AD_HEIGHT = "ad_height";
 
 
     /**
@@ -42,9 +42,9 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     private String mPlacementId;
     private boolean mIsFullVideoAd;
     private Context mContext;
-    private boolean isExpressAd = false;
-    private float adWidth = 0;
-    private float adHeight = 0;
+    private boolean mIsExpressAd = false;
+    private float mAdWidth = 0;
+    private float mAdHeight = 0;
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
     private PangleAdInterstitialExpressLoader mExpressInterstitialLoader;
     private PangleAdInterstitialNativeLoader mNativeInterstitialLoader;
@@ -89,19 +89,19 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
             if (ttAdManager != null) {
-                isExpressAd = ttAdManager.getAdRequetTypeByRit(mPlacementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
+                mIsExpressAd = ttAdManager.getAdRequetTypeByRit(mPlacementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
                 mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(mPlacementId);
             }
 
             /** obtain extra parameters */
             float[] adSize = PangleSharedUtil.getAdSizeSafely(localExtras, AD_WIDTH, AD_HEIGHT);
-            adWidth = adSize[0];
-            adHeight = adSize[1];
+            mAdWidth = adSize[0];
+            mAdHeight = adSize[1];
 
-            checkSize(isExpressAd);
+            checkSize(mIsExpressAd);
         }
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + adWidth + "，adHeight=" + adHeight + ",placementId=" + mPlacementId + ",isExpressAd=" + isExpressAd);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + mAdWidth + "，adHeight=" + mAdHeight + ",placementId=" + mPlacementId + ",isExpressAd=" + mIsExpressAd);
 
         AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
@@ -111,22 +111,22 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
         if (!mIsFullVideoAd) {
             /** request Interstitial */
-            if (isExpressAd) {
-                adSlotBuilder.setExpressViewAcceptedSize(adWidth, adHeight);
+            if (mIsExpressAd) {
+                adSlotBuilder.setExpressViewAcceptedSize(mAdWidth, mAdHeight);
                 mExpressInterstitialLoader = new PangleAdInterstitialExpressLoader(mContext, customEventInterstitialListener);
                 mExpressInterstitialLoader.loadExpressInterstitialAd(adSlotBuilder.build(), ttAdNative);
             } else {
                 if (mOrientation == Configuration.ORIENTATION_PORTRAIT) {
                     /** ORIENTATION_PORTRAIT 2:3 */
-                    adWidth = PangleSharedUtil.getScreenWidth(mContext);
-                    adHeight = (3 * adWidth) / 2;
+                    mAdWidth = PangleSharedUtil.getScreenWidth(mContext);
+                    mAdHeight = (3 * mAdWidth) / 2;
                 } else {
                     /**  3:2 = w:h */
-                    adHeight = PangleSharedUtil.getScreenHeight(mContext);
-                    adWidth = (3 * adHeight) / 2;
+                    mAdHeight = PangleSharedUtil.getScreenHeight(mContext);
+                    mAdWidth = (3 * mAdHeight) / 2;
                 }
                 adSlotBuilder.setNativeAdType(AdSlot.TYPE_INTERACTION_AD);
-                adSlotBuilder.setImageAcceptedSize((int) adWidth, (int) adHeight);
+                adSlotBuilder.setImageAcceptedSize((int) mAdWidth, (int) mAdHeight);
                 mNativeInterstitialLoader = new PangleAdInterstitialNativeLoader(mContext, mOrientation, customEventInterstitialListener);
                 mNativeInterstitialLoader.loadAdNativeInterstitial(adSlotBuilder.build(), ttAdNative);
             }
@@ -141,17 +141,17 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
     private void checkSize(boolean isExpressAd) {
         if (isExpressAd) {
-            if (adWidth <= 0) {
-                adWidth = 300;
-                adWidth = 450;
+            if (mAdWidth <= 0) {
+                mAdWidth = 300;
+                mAdWidth = 450;
             }
-            if (adHeight < 0) {
-                adHeight = 0;
+            if (mAdHeight < 0) {
+                mAdHeight = 0;
             }
         } else {
-            if (adWidth <= 0 || adHeight <= 0) {
-                adWidth = 600;
-                adHeight = 900;
+            if (mAdWidth <= 0 || mAdHeight <= 0) {
+                mAdWidth = 600;
+                mAdHeight = 900;
             }
         }
     }
@@ -162,7 +162,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
         boolean hasShow = false;
         if (!mIsFullVideoAd) {
-            if (isExpressAd) {
+            if (mIsExpressAd) {
                 if (mExpressInterstitialLoader != null && mContext instanceof Activity) {
                     mExpressInterstitialLoader.showInterstitial((Activity) mContext);
                     hasShow = true;
@@ -188,7 +188,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     @Override
     protected void onInvalidate() {
         if (!mIsFullVideoAd) {
-            if (isExpressAd) {
+            if (mIsExpressAd) {
                 if (mExpressInterstitialLoader != null) {
                     mExpressInterstitialLoader.destroy();
                 }

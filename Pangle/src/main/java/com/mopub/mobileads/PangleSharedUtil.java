@@ -1,9 +1,6 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.util.Log;
-import android.widget.Toast;
-
 import java.util.Map;
 
 public class PangleSharedUtil {

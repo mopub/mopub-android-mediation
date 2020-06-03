@@ -38,8 +38,8 @@ public class PangleAdBanner extends CustomEventBanner {
     private PangleAdBannerExpressLoader mAdExpressBannerLoader;
     private PangleAdBannerNativeLoader mAdNativeBannerLoader;
 
-    private float bannerWidth;
-    private float bannerHeight;
+    private float mBannerWidth;
+    private float mBannerHeight;
 
 
     public PangleAdBanner() {
@@ -82,22 +82,22 @@ public class PangleAdBanner extends CustomEventBanner {
 
         if (isExpressAd) {
             float[] bannerAdSizeAdapterSafely = PangleSharedUtil.getBannerAdSizeAdapterSafely(localExtras, DataKeys.AD_WIDTH, DataKeys.AD_HEIGHT);
-            bannerWidth = bannerAdSizeAdapterSafely[0];
-            bannerHeight = bannerAdSizeAdapterSafely[1];
+            mBannerWidth = bannerAdSizeAdapterSafely[0];
+            mBannerHeight = bannerAdSizeAdapterSafely[1];
         } else {
             /** obtain extra parameters */
             if (localExtras.containsKey(DataKeys.AD_WIDTH)) {
-                bannerWidth = Float.valueOf((Integer) localExtras.get(DataKeys.AD_WIDTH));
+                mBannerWidth = Float.valueOf((Integer) localExtras.get(DataKeys.AD_WIDTH));
             }
 
             if (localExtras.containsKey(DataKeys.AD_HEIGHT)) {
-                bannerHeight = Float.valueOf((Integer) localExtras.get(DataKeys.AD_HEIGHT));
+                mBannerHeight = Float.valueOf((Integer) localExtras.get(DataKeys.AD_HEIGHT));
             }
 
         }
         checkSize(isExpressAd);
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + bannerWidth + "，bannerHeight=" + bannerHeight + ",placementId=" + mPlacementId);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + mBannerWidth + "，bannerHeight=" + mBannerHeight + ",placementId=" + mPlacementId);
 
 
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner method placementId：" + mPlacementId);
@@ -107,11 +107,11 @@ public class PangleAdBanner extends CustomEventBanner {
                 .setCodeId(mPlacementId)
                 .setSupportDeepLink(true)
                 .setAdCount(1)
-                .setImageAcceptedSize((int) bannerWidth, (int) bannerHeight)
+                .setImageAcceptedSize((int) mBannerWidth, (int) mBannerHeight)
                 .withBid(adm);
 
         if (isExpressAd) {
-            adSlotBuilder.setExpressViewAcceptedSize(bannerWidth, bannerHeight);
+            adSlotBuilder.setExpressViewAcceptedSize(mBannerWidth, mBannerHeight);
         } else {
             adSlotBuilder.setNativeAdType(AdSlot.TYPE_BANNER);
         }
@@ -121,7 +121,7 @@ public class PangleAdBanner extends CustomEventBanner {
             mAdExpressBannerLoader = new PangleAdBannerExpressLoader(mContext, customEventBannerListener);
             mAdExpressBannerLoader.loadAdExpressBanner(adSlotBuilder.build(), adManager.createAdNative(mContext));
         } else {
-            mAdNativeBannerLoader = new PangleAdBannerNativeLoader(mContext, bannerWidth, bannerHeight, customEventBannerListener);
+            mAdNativeBannerLoader = new PangleAdBannerNativeLoader(mContext, mBannerWidth, mBannerHeight, customEventBannerListener);
             mAdNativeBannerLoader.loadAdNativeBanner(adSlotBuilder.build(), adManager.createAdNative(mContext));
         }
 
@@ -129,17 +129,17 @@ public class PangleAdBanner extends CustomEventBanner {
 
     private void checkSize(boolean isExpressAd) {
         if (isExpressAd) {
-            if (bannerWidth <= 0) {
-                bannerWidth = 320;
-                bannerHeight = 0;
+            if (mBannerWidth <= 0) {
+                mBannerWidth = 320;
+                mBannerHeight = 0;
             }
-            if (bannerHeight < 0) {
-                bannerHeight = 0;
+            if (mBannerHeight < 0) {
+                mBannerHeight = 0;
             }
         } else {
-            if (bannerWidth <= 0 || bannerHeight <= 0) {
-                bannerWidth = 320;
-                bannerHeight = 50;
+            if (mBannerWidth <= 0 || mBannerHeight <= 0) {
+                mBannerWidth = 320;
+                mBannerHeight = 50;
             }
         }
     }
