@@ -59,7 +59,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
     @Override
     public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String> configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleAdapterConfiguration initializeNetwork....");
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
         boolean networkInitializationSucceeded = false;
@@ -102,18 +101,22 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
     /* Initialize sdk */
     public static void pangleSdkInit(Context context, String appId) {
-        if (appId == null || context == null) return;
+        if (appId == null || context == null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME,
+                    "Invalid Pangle app Id. Ensure the app id is valid on the MoPub dashboard.");
+            return;
+        }
         if (!sInit) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleSDK initialize with appId = " + appId);
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
-                    .useTextureView(true)/*Use TextureView to play the video. The default setting is SurfaceView, when the context is in conflict with SurfaceView, you can use TextureView */
+                    .useTextureView(true)
                     .appName(MOPUB_NETWORK_NAME)
                     .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_DARK)
-                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0)/*set gdpr to pangle sdk, 0 close GDRP Privacy protection ，1: open GDRP Privacy protection */
+                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0) /*set gdpr to Pangle sdk, 0 close GDPR Privacy protection ，1: open GDPR Privacy protection */
                     .allowShowPageWhenScreenLock(true) /* Allow or deny permission to display the landing page ad in the lock screen */
-                    .debug(BuildConfig.DEBUG)/*Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
+                    .debug(BuildConfig.DEBUG) /*Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
                     .supportMultiProcess(false) /* true for support multi-process environment,false for single-process */
-                    //.httpStack(new MyOkStack3())/*optional,you can customize network library for sdk, the demo is based on the okhttp3 */
                     .coppa(0) /* Fields to indicate whether you are a child or an adult ，0:adult ，1:child */
                     .build());
             sInit = true;

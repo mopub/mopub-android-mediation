@@ -76,13 +76,14 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
 
         if (serverExtras != null) {
-            /** obtain adunit from server by mopub */
+            /** Obtain ad placement id from MoPub UI */
             String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
             if (!TextUtils.isEmpty(adunit)) {
                 this.mPlacementId = adunit;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
-            /** init pangolin SDK */
+
+            /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
             ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();

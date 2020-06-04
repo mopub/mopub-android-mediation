@@ -25,24 +25,11 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
         this.mViewHolderMap = new WeakHashMap();
     }
 
-    /**
-     * create listView Item layout
-     *
-     * @param context
-     * @param parent
-     * @return
-     */
     @Override
     public View createAdView(Context context, ViewGroup parent) {
         return LayoutInflater.from(context).inflate(this.mViewBinder.mLayoutId, parent, false);
     }
 
-    /**
-     * listView item layout render
-     *
-     * @param view
-     * @param ad
-     */
     @Override
     public void renderAdView(View view, PangleAdNative.PangolinNativeAd ad) {
         PangleAdNativeViewHolder pangleAdNativeViewHolder = mViewHolderMap.get(view);
@@ -54,7 +41,9 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
     }
 
     private void updateAdUI(PangleAdNativeViewHolder pangleAdNativeViewHolder, final PangleAdNative.PangolinNativeAd ad, View convertView) {
-        if (ad == null || convertView == null) return;
+        if (ad == null || convertView == null) {
+            return;
+        }
 
         if (!TextUtils.isEmpty(ad.getTitle()) && pangleAdNativeViewHolder.mTitleView != null) {
             pangleAdNativeViewHolder.mTitleView.setText(ad.getTitle());
@@ -64,8 +53,8 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
             pangleAdNativeViewHolder.mAdvertiserNameView.setText(ad.getAdvertiserName());
         }
 
-        if (!TextUtils.isEmpty(ad.getDecriptionText()) && pangleAdNativeViewHolder.mDescription != null) {
-            pangleAdNativeViewHolder.mDescription.setText(ad.getDecriptionText());
+        if (!TextUtils.isEmpty(ad.getDescriptionText()) && pangleAdNativeViewHolder.mDescription != null) {
+            pangleAdNativeViewHolder.mDescription.setText(ad.getDescriptionText());
         }
 
         if (!TextUtils.isEmpty(ad.getCallToAction()) && pangleAdNativeViewHolder.mCallToActionView != null) {

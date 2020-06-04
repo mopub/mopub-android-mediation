@@ -3,8 +3,10 @@ package com.mopub.nativeads;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,39 +28,28 @@ import com.mopub.mobileads.PangleSharedUtil;
 import java.util.List;
 import java.util.Map;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.nativeads.NativeErrorCode.NETWORK_NO_FILL;
 
 public class PangleAdNative extends CustomEventNative {
     private static final String ADAPTER_NAME = PangleAdNative.class.getSimpleName();
 
-    /**
-     * request ad count
-     */
-    public static final String REQUEST_AD_COUNT = "request_ad_count";
+    public static final String KEY_EXTRA_MEDIA_VIEW_WIDTH = "media_view_width";
+    public static final String KEY_EXTRA_MEDIA_VIEW_HEIGHT = "media_view_height";
 
-
-    /**
-     * ad size
-     */
-    public static final String FEED_AD_WIDTH = "feed_ad_width";
-    public static final String FEED_AD_HEIGHT = "feed_ad_height";
-
-    /**
-     * pangolin network native ad unit ID.
-     */
-    private String mPlacementId = "";
-
+    private static String mPlacementId = "";
     private Context mContext;
     private CustomEventNativeListener mCustomEventNativeListener;
-    private int mRequestAdCount = 1;
-
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
 
     public PangleAdNative() {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
     }
-
 
     @Override
     protected void loadNativeAd(Context context, CustomEventNativeListener customEventNativeListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
@@ -68,19 +59,22 @@ public class PangleAdNative extends CustomEventNative {
 
         TTAdManager ttAdManager = null;
         String adm = null;
-        /** default ad size */
-        int feedWidth = 640;
-        int feedHeight = 320;
-
 
         if (serverExtras != null) {
-            /** obtain adunit from server by mopub */
-            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
-            if (!TextUtils.isEmpty(adunit)) {
-                this.mPlacementId = adunit;
+            /** Obtain ad placement id from MoPub UI */
+            mPlacementId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
+            if (TextUtils.isEmpty(mPlacementId)) {
+                if (customEventNativeListener != null) {
+                    customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME,
+                            "Invalid Pangle placement ID. Failing ad request. " +
+                                    "Ensure the ad placement id is valid on the MoPub dashboard.");
+                }
+                return;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
-            /** init pangolin SDK */
+
+            /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
             ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
@@ -88,77 +82,73 @@ public class PangleAdNative extends CustomEventNative {
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
 
-
+        /** default media view ad size */
+        int mediaViewWidth = 640;
+        int mediaViewHeight = 320;
         if (localExtras != null) {
-            if (mPlacementId == null && localExtras.containsKey(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID)) {
-                mPlacementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
+            if (localExtras.containsKey(KEY_EXTRA_MEDIA_VIEW_WIDTH)) {
+                mediaViewWidth = (int) localExtras.get(KEY_EXTRA_MEDIA_VIEW_WIDTH);
             }
-
-            if (localExtras.containsKey(REQUEST_AD_COUNT)) {
-                mRequestAdCount = (int) localExtras.get(REQUEST_AD_COUNT);
-            }
-
-            if (localExtras.containsKey(FEED_AD_WIDTH)) {
-                feedWidth = (int) localExtras.get(FEED_AD_WIDTH);
-            }
-            if (localExtras.containsKey(FEED_AD_HEIGHT)) {
-                feedHeight = (int) localExtras.get(FEED_AD_HEIGHT);
+            if (localExtras.containsKey(KEY_EXTRA_MEDIA_VIEW_HEIGHT)) {
+                mediaViewHeight = (int) localExtras.get(KEY_EXTRA_MEDIA_VIEW_HEIGHT);
             }
         }
 
-        if (TextUtils.isEmpty(mPlacementId)){
-            if (customEventNativeListener != null){
-                customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST);
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Third-party network placementId can not be null !!!!");
-            }
-            return;
-        }
-
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "serverExtras...... feedWidth.." + feedWidth + ",feedHeight=" + feedHeight);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "extras: mediaViewWidth=" + mediaViewWidth + ", mediaViewHeight=" + mediaViewHeight);
         if (ttAdManager != null) {
             TTAdNative adNative = ttAdManager.createAdNative(mContext);
             AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
-                    .setImageAcceptedSize(feedWidth, feedHeight)
-                    .setAdCount(mRequestAdCount) /** ad count from 1 to 3 */
+                    .setImageAcceptedSize(mediaViewWidth, mediaViewHeight)
+                    .setAdCount(1)
                     .withBid(adm)
                     .build();
 
 
             /** request ad */
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
             adNative.loadFeedAd(adSlot, new TTAdNative.FeedAdListener() {
                 @Override
-                public void onError(int code, String message) {
+                public void onError(int errorCode, String message) {
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, "Loading NativeAd encountered an error: "
+                            + mapErrorCode(errorCode).toString() + ",error message:" + message);
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                            mapErrorCode(errorCode).getIntCode(),
+                            mapErrorCode(errorCode));
                     if (mCustomEventNativeListener != null) {
-                        mCustomEventNativeListener.onNativeAdFailed(mapErrorCode(code));
+                        mCustomEventNativeListener.onNativeAdFailed(mapErrorCode(errorCode));
                     }
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, "Loading FeedAd encountered an error: " + mapErrorCode(code).toString() + ",error message:" + message);
                 }
 
                 @Override
                 public void onFeedAdLoad(List<TTFeedAd> ads) {
                     if (ads != null && ads.size() > 0) {
+                        MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                         if (mCustomEventNativeListener != null) {
                             for (TTFeedAd ad : ads) {
                                 mCustomEventNativeListener.onNativeAdLoaded(new PangolinNativeAd(ad));
                             }
                         }
                     } else {
-                        if (mCustomEventNativeListener != null)
+                        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                NETWORK_NO_FILL.getIntCode(), NETWORK_NO_FILL);
+                        if (mCustomEventNativeListener != null) {
                             mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
+                        }
                     }
                 }
             });
-        }else {
-            if (customEventNativeListener != null){
+        } else {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle sdk ttAdManagerLoader can not be created." +
+                    " Please make sure to pass the correct app id.");
+            if (customEventNativeListener != null) {
                 customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST);
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Third-party network pangle sdk ttAdManagerLoader can not be create !!!! Is it init ?");
             }
         }
     }
 
-    private String getAdNetworkId() {
+    private static String getAdNetworkId() {
         return mPlacementId;
     }
 
@@ -170,7 +160,6 @@ public class PangleAdNative extends CustomEventNative {
         PangolinNativeAd(TTFeedAd ad) {
             this.mTTFeedAd = ad;
         }
-
 
         @Override
         public void prepare(View view) {
@@ -186,16 +175,19 @@ public class PangleAdNative extends CustomEventNative {
 
         @Override
         public void onAdClicked(View view, TTNativeAd ad) {
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
             notifyAdClicked();
         }
 
         @Override
         public void onAdCreativeClick(View view, TTNativeAd ad) {
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
             notifyAdClicked();
         }
 
         @Override
         public void onAdShow(TTNativeAd ad) {
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
             notifyAdImpressed();
         }
 
@@ -214,7 +206,7 @@ public class PangleAdNative extends CustomEventNative {
             return null;
         }
 
-        public final String getDecriptionText() {
+        public final String getDescriptionText() {
             if (mTTFeedAd != null) {
                 return mTTFeedAd.getDescription();
             }

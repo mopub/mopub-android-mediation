@@ -53,7 +53,7 @@ public class PangleAdNativeViewHolder {
             adViewHolder.mMediaView = view.findViewById(pangleAdViewBinder.mMediaViewId);
             return adViewHolder;
         } catch (ClassCastException exception) {
-            MoPubLog.log(CUSTOM, "Could not cast from id in pangleAdViewBinder to expected View type",
+            MoPubLog.log(CUSTOM, "Could not cast from id in PangleAdViewBinder to expected View type",
                     exception);
             return EMPTY_VIEW_HOLDER;
         }

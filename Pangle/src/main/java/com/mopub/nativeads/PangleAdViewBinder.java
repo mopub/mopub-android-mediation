@@ -11,19 +11,12 @@ public class PangleAdViewBinder {
     public final static class Builder {
 
         private final int mLayoutId;
-
         private int mTitleId;
-
         private int mDecriptionTextId;
-
         private int mCallToActionId;
-
         private int mIconImageId;
-
         private int mMediaViewId;
-
         private int mSourceId;
-
         private int mLogoViewId;
 
 
