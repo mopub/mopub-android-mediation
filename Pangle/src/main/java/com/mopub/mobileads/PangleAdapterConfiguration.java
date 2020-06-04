@@ -27,7 +27,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String MOPUB_NETWORK_NAME = "pangle_network";
 
     /**
-     * Key to obtain Pangle ad unit ID from the extras provided by MoPub.
+     * Key to obtain Pangle ad unit ID from the mExtras provided by MoPub.
      */
     public static final String KEY_EXTRA_AD_PLACEMENT_ID = "ad_placement_id";
     public static final String KEY_EXTRA_APP_ID = "app_id";

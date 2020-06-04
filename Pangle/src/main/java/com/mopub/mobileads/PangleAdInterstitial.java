@@ -103,6 +103,27 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + mAdWidth + "，adHeight=" + mAdHeight + ",placementId=" + mPlacementId + ",isExpressAd=" + mIsExpressAd);
 
+
+        if (TextUtils.isEmpty(mPlacementId)) {
+            if (customEventInterstitialListener != null) {
+                customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.MISSING_AD_UNIT_ID);
+            }
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.MISSING_AD_UNIT_ID.getIntCode(),
+                    MoPubErrorCode.MISSING_AD_UNIT_ID);
+            return;
+        }
+
+        if (ttAdManager == null) {
+            if (customEventInterstitialListener != null) {
+                customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            }
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
+                    MoPubErrorCode.NETWORK_INVALID_STATE);
+            return;
+        }
+
         AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
                 .setSupportDeepLink(true)
@@ -224,6 +245,9 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
         void loadAdNativeInterstitial(AdSlot adSlot, TTAdNative ttAdNative) {
             if (ttAdNative == null || mContext == null || adSlot == null || TextUtils.isEmpty(adSlot.getCodeId())) {
+                if (mInterstitialListener != null) {
+                    mInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
                 return;
             }
             ttAdNative.loadNativeAd(adSlot, mNativeAdListener);
@@ -243,6 +267,9 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             public void onNativeAdLoad(List<TTNativeAd> ads) {
                 mIsLoading = true;
                 if (ads.get(0) == null) {
+                    if (mInterstitialListener != null) {
+                        mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NO_FILL);
+                    }
                     return;
                 }
                 mTTNativeAd = ads.get(0);
@@ -321,6 +348,9 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
 
         void loadExpressInterstitialAd(AdSlot adSlot, TTAdNative ttAdNative) {
             if (ttAdNative == null || mContext == null || adSlot == null || TextUtils.isEmpty(adSlot.getCodeId())) {
+                if (mInterstitialListener != null) {
+                    mInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
                 return;
             }
             ttAdNative.loadInteractionExpressAd(adSlot, mInterstitialAdExpressAdListener);
@@ -338,6 +368,9 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             @Override
             public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
                 if (ads == null || ads.size() == 0) {
+                    if (mInterstitialListener != null) {
+                        mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NO_FILL);
+                    }
                     return;
                 }
                 mTTInterstitialExpressAd = ads.get(0);

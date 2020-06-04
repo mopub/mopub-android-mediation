@@ -34,7 +34,7 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
      */
     @Override
     public View createAdView(Context context, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(this.mViewBinder.layoutId, parent, false);
+        return LayoutInflater.from(context).inflate(this.mViewBinder.mLayoutId, parent, false);
     }
 
     /**
@@ -56,32 +56,32 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
     private void updateAdUI(PangleAdNativeViewHolder pangleAdNativeViewHolder, final PangleAdNative.PangolinNativeAd ad, View convertView) {
         if (ad == null || convertView == null) return;
 
-        if (!TextUtils.isEmpty(ad.getTitle()) && pangleAdNativeViewHolder.titleView != null) {
-            pangleAdNativeViewHolder.titleView.setText(ad.getTitle());
+        if (!TextUtils.isEmpty(ad.getTitle()) && pangleAdNativeViewHolder.mTitleView != null) {
+            pangleAdNativeViewHolder.mTitleView.setText(ad.getTitle());
         }
 
-        if (!TextUtils.isEmpty(ad.getAdvertiserName()) && pangleAdNativeViewHolder.advertiserNameView != null) {
-            pangleAdNativeViewHolder.advertiserNameView.setText(ad.getAdvertiserName());
+        if (!TextUtils.isEmpty(ad.getAdvertiserName()) && pangleAdNativeViewHolder.mAdvertiserNameView != null) {
+            pangleAdNativeViewHolder.mAdvertiserNameView.setText(ad.getAdvertiserName());
         }
 
-        if (!TextUtils.isEmpty(ad.getDecriptionText()) && pangleAdNativeViewHolder.description != null) {
-            pangleAdNativeViewHolder.description.setText(ad.getDecriptionText());
+        if (!TextUtils.isEmpty(ad.getDecriptionText()) && pangleAdNativeViewHolder.mDescription != null) {
+            pangleAdNativeViewHolder.mDescription.setText(ad.getDecriptionText());
         }
 
-        if (!TextUtils.isEmpty(ad.getCallToAction()) && pangleAdNativeViewHolder.callToActionView != null) {
-            pangleAdNativeViewHolder.callToActionView.setText(ad.getCallToAction());
+        if (!TextUtils.isEmpty(ad.getCallToAction()) && pangleAdNativeViewHolder.mCallToActionView != null) {
+            pangleAdNativeViewHolder.mCallToActionView.setText(ad.getCallToAction());
         }
 
-        if (ad.getIcon() != null && !TextUtils.isEmpty(ad.getIcon().getImageUrl()) && pangleAdNativeViewHolder.icon != null) {
-            NativeImageHelper.loadImageView(ad.getIcon().getImageUrl(), pangleAdNativeViewHolder.icon);
+        if (ad.getIcon() != null && !TextUtils.isEmpty(ad.getIcon().getImageUrl()) && pangleAdNativeViewHolder.mIcon != null) {
+            NativeImageHelper.loadImageView(ad.getIcon().getImageUrl(), pangleAdNativeViewHolder.mIcon);
         }
 
-        if (ad.getAdLogo() != null && pangleAdNativeViewHolder.logoView != null) {
-            pangleAdNativeViewHolder.logoView.setImageBitmap(ad.getAdLogo());
+        if (ad.getAdLogo() != null && pangleAdNativeViewHolder.mLogoView != null) {
+            pangleAdNativeViewHolder.mLogoView.setImageBitmap(ad.getAdLogo());
         }
 
         /** add Native Feed Main View */
-        MediationAdapterUtil.addNativeFeedMainView(convertView.getContext(), ad.getImageMode(), pangleAdNativeViewHolder.mediaView, ad.getAdView(), ad.getImageList());
+        MediationAdapterUtil.addNativeFeedMainView(convertView.getContext(), ad.getImageMode(), pangleAdNativeViewHolder.mMediaView, ad.getAdView(), ad.getImageList());
 
         /**  the views that can be clicked */
         List<View> clickViewList = new ArrayList<>();
@@ -89,8 +89,8 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
 
         /** The views that can trigger the creative action (like download app) */
         List<View> creativeViewList = new ArrayList<>();
-        if (pangleAdNativeViewHolder.callToActionView != null) {
-            creativeViewList.add(pangleAdNativeViewHolder.callToActionView);
+        if (pangleAdNativeViewHolder.mCallToActionView != null) {
+            creativeViewList.add(pangleAdNativeViewHolder.mCallToActionView);
         }
 
         /**  notice! This involves advertising billing and must be called correctly. convertView must use ViewGroup. */

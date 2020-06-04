@@ -14,22 +14,23 @@ import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 public class PangleAdNativeViewHolder {
 
     @Nullable
-    public TextView titleView;
+    public TextView mTitleView;
     @Nullable
-    public TextView description;
+    public TextView mDescription;
     @Nullable
-    public ImageView icon;
+    public ImageView mIcon;
     @Nullable
-    public TextView advertiserNameView;
+    public TextView mAdvertiserNameView;
     @Nullable
-    public TextView callToActionView;
-
-    public ImageView logoView;
+    public TextView mCallToActionView;
+    @Nullable
+    public ImageView mLogoView;
 
     /**
      * video View
      */
-    public MediaView mediaView;
+    @Nullable
+    public MediaView mMediaView;
 
 
     private static PangleAdNativeViewHolder EMPTY_VIEW_HOLDER = new PangleAdNativeViewHolder();
@@ -43,13 +44,13 @@ public class PangleAdNativeViewHolder {
         try {
 
             /** common ui */
-            adViewHolder.titleView = view.findViewById(pangleAdViewBinder.titleId);
-            adViewHolder.description = view.findViewById(pangleAdViewBinder.descriptionTextId);
-            adViewHolder.callToActionView = view.findViewById(pangleAdViewBinder.callToActionId);
-            adViewHolder.advertiserNameView = view.findViewById(pangleAdViewBinder.sourceId);
-            adViewHolder.icon = view.findViewById(pangleAdViewBinder.iconImageId);
-            adViewHolder.logoView = view.findViewById(pangleAdViewBinder.logoViewId);
-            adViewHolder.mediaView = view.findViewById(pangleAdViewBinder.mediaViewId);
+            adViewHolder.mTitleView = view.findViewById(pangleAdViewBinder.mTitleId);
+            adViewHolder.mDescription = view.findViewById(pangleAdViewBinder.mDescriptionTextId);
+            adViewHolder.mCallToActionView = view.findViewById(pangleAdViewBinder.mCallToActionId);
+            adViewHolder.mAdvertiserNameView = view.findViewById(pangleAdViewBinder.mSourceId);
+            adViewHolder.mIcon = view.findViewById(pangleAdViewBinder.mIconImageId);
+            adViewHolder.mLogoView = view.findViewById(pangleAdViewBinder.mLogoViewId);
+            adViewHolder.mMediaView = view.findViewById(pangleAdViewBinder.mMediaViewId);
             return adViewHolder;
         } catch (ClassCastException exception) {
             MoPubLog.log(CUSTOM, "Could not cast from id in pangleAdViewBinder to expected View type",

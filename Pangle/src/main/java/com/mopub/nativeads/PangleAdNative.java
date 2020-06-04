@@ -51,7 +51,7 @@ public class PangleAdNative extends CustomEventNative {
 
     private Context mContext;
     private CustomEventNativeListener mCustomEventNativeListener;
-    private int requestAdCount = 1;
+    private int mRequestAdCount = 1;
 
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
 
@@ -95,7 +95,7 @@ public class PangleAdNative extends CustomEventNative {
             }
 
             if (localExtras.containsKey(REQUEST_AD_COUNT)) {
-                requestAdCount = (int) localExtras.get(REQUEST_AD_COUNT);
+                mRequestAdCount = (int) localExtras.get(REQUEST_AD_COUNT);
             }
 
             if (localExtras.containsKey(FEED_AD_WIDTH)) {
@@ -104,7 +104,14 @@ public class PangleAdNative extends CustomEventNative {
             if (localExtras.containsKey(FEED_AD_HEIGHT)) {
                 feedHeight = (int) localExtras.get(FEED_AD_HEIGHT);
             }
+        }
 
+        if (TextUtils.isEmpty(mPlacementId)){
+            if (customEventNativeListener != null){
+                customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST);
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Third-party network placementId can not be null !!!!");
+            }
+            return;
         }
 
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "serverExtras...... feedWidth.." + feedWidth + ",feedHeight=" + feedHeight);
@@ -114,7 +121,7 @@ public class PangleAdNative extends CustomEventNative {
                     .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
                     .setImageAcceptedSize(feedWidth, feedHeight)
-                    .setAdCount(requestAdCount) /** ad count from 1 to 3 */
+                    .setAdCount(mRequestAdCount) /** ad count from 1 to 3 */
                     .withBid(adm)
                     .build();
 
@@ -143,6 +150,11 @@ public class PangleAdNative extends CustomEventNative {
                     }
                 }
             });
+        }else {
+            if (customEventNativeListener != null){
+                customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST);
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Third-party network pangle sdk ttAdManagerLoader can not be create !!!! Is it init ?");
+            }
         }
     }
 

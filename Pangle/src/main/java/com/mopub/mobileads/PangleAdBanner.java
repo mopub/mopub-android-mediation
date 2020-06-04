@@ -98,9 +98,27 @@ public class PangleAdBanner extends CustomEventBanner {
         checkSize(isExpressAd);
 
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + mBannerWidth + "，bannerHeight=" + mBannerHeight + ",placementId=" + mPlacementId);
-
-
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner method placementId：" + mPlacementId);
+
+        if (TextUtils.isEmpty(mPlacementId)) {
+            if (customEventBannerListener != null) {
+                customEventBannerListener.onBannerFailed(MoPubErrorCode.MISSING_AD_UNIT_ID);
+            }
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.MISSING_AD_UNIT_ID.getIntCode(),
+                    MoPubErrorCode.MISSING_AD_UNIT_ID);
+            return;
+        }
+
+        if (adManager == null) {
+            if (customEventBannerListener != null) {
+                customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            }
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
+                    MoPubErrorCode.NETWORK_INVALID_STATE);
+            return;
+        }
 
         /** create request parameters for AdSlot */
         AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
@@ -183,8 +201,12 @@ public class PangleAdBanner extends CustomEventBanner {
 
 
         void loadAdNativeBanner(AdSlot adSlot, TTAdNative ttAdNative) {
-            if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId()))
+            if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId())){
+                if (mCustomEventBannerListener != null){
+                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
+                }
                 return;
+            }
             ttAdNative.loadNativeAd(adSlot, mNativeAdListener);
 
         }
@@ -203,12 +225,18 @@ public class PangleAdBanner extends CustomEventBanner {
             @Override
             public void onNativeAdLoad(List<TTNativeAd> ads) {
                 if (ads.get(0) == null) {
+                    if (mCustomEventBannerListener != null){
+                        mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
+                    }
                     return;
                 }
 
                 mBannerView = MediationAdapterUtil.setAdDataAndBuildBannerView(mContext, ads.get(0), mAdInteractionListener, mBannerWidth, mBannerHeight);
 
                 if (mBannerView == null) {
+                    if (mCustomEventBannerListener != null) {
+                        mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
+                    }
                     return;
                 }
 
@@ -280,8 +308,12 @@ public class PangleAdBanner extends CustomEventBanner {
          * @param adSlot
          */
         public void loadAdExpressBanner(AdSlot adSlot, TTAdNative ttAdNative) {
-            if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId()))
+            if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId())) {
+                if (mCustomEventBannerListener != null) {
+                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.CANCELLED);
+                }
                 return;
+            }
             ttAdNative.loadBannerExpressAd(adSlot, mTTNativeExpressAdListener);
         }
 
@@ -302,6 +334,9 @@ public class PangleAdBanner extends CustomEventBanner {
             @Override
             public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
                 if (ads == null || ads.size() == 0) {
+                    if (mCustomEventBannerListener != null) {
+                        mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
+                    }
                     return;
                 }
                 mTTNativeExpressAd = ads.get(0);

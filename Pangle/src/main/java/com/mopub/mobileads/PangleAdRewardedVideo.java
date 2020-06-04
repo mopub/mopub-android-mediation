@@ -88,7 +88,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     }
 
     /**
-     * obtain Pangolin extra parameters from the extras provided by MoPub server.
+     * obtain Pangolin extra parameters from the mExtras provided by MoPub server.
      *
      * @param launcherActivity
      * @param localExtras
@@ -136,6 +136,18 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
         if (PangolinRewardMediationSettings.getGdpr() != -1) {
             ttAdManager.setGdpr(PangolinRewardMediationSettings.getGdpr());
+        }
+
+        if (TextUtils.isEmpty(getAdNetworkId())) {
+            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
+                    PangleAdRewardedVideo.class,
+                    getAdNetworkId(), MoPubErrorCode.MISSING_AD_UNIT_ID);
+
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.MISSING_AD_UNIT_ID.getIntCode(),
+                    MoPubErrorCode.MISSING_AD_UNIT_ID);
+
+            return;
         }
 
         /** Create a parameter AdSlot for reward ad request type,
