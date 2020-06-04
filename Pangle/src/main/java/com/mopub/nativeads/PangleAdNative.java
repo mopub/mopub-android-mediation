@@ -158,6 +158,10 @@ public class PangleAdNative extends CustomEventNative {
         }
     }
 
+    private String getAdNetworkId() {
+        return mPlacementId;
+    }
+
 
     protected static class PangolinNativeAd extends BaseNativeAd implements TTNativeAd.AdInteractionListener {
 
@@ -170,7 +174,6 @@ public class PangleAdNative extends CustomEventNative {
 
         @Override
         public void prepare(View view) {
-
         }
 
         @Override
@@ -179,7 +182,6 @@ public class PangleAdNative extends CustomEventNative {
 
         @Override
         public void destroy() {
-
         }
 
         @Override

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 
 public class PangleAdBanner extends CustomEventBanner {
@@ -29,8 +30,7 @@ public class PangleAdBanner extends CustomEventBanner {
     /**
      * pangolin network banner ad unit ID.
      */
-    private String mPlacementId = null;
-
+    private static String mPlacementId;
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
 
     private Context mContext;
@@ -50,7 +50,6 @@ public class PangleAdBanner extends CustomEventBanner {
     @Override
     protected void loadBanner(Context context, CustomEventBannerListener customEventBannerListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
         mContext = context;
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner mContext =" + mContext);
         /** cache data from server */
         mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
@@ -97,14 +96,14 @@ public class PangleAdBanner extends CustomEventBanner {
         }
         checkSize(isExpressAd);
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "bannerWidth =" + mBannerWidth + "，bannerHeight=" + mBannerHeight + ",placementId=" + mPlacementId);
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadBanner method placementId：" + mPlacementId);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "bannerWidth =" + mBannerWidth + "，bannerHeight=" + mBannerHeight + ",placementId=" + mPlacementId);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadBanner method placementId：" + mPlacementId);
 
         if (TextUtils.isEmpty(mPlacementId)) {
             if (customEventBannerListener != null) {
                 customEventBannerListener.onBannerFailed(MoPubErrorCode.MISSING_AD_UNIT_ID);
             }
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.MISSING_AD_UNIT_ID.getIntCode(),
                     MoPubErrorCode.MISSING_AD_UNIT_ID);
             return;
@@ -114,7 +113,7 @@ public class PangleAdBanner extends CustomEventBanner {
             if (customEventBannerListener != null) {
                 customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
             }
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
                     MoPubErrorCode.NETWORK_INVALID_STATE);
             return;
@@ -136,13 +135,19 @@ public class PangleAdBanner extends CustomEventBanner {
 
         /** request ad express banner */
         if (isExpressAd) {
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
             mAdExpressBannerLoader = new PangleAdBannerExpressLoader(mContext, customEventBannerListener);
             mAdExpressBannerLoader.loadAdExpressBanner(adSlotBuilder.build(), adManager.createAdNative(mContext));
         } else {
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
             mAdNativeBannerLoader = new PangleAdBannerNativeLoader(mContext, mBannerWidth, mBannerHeight, customEventBannerListener);
             mAdNativeBannerLoader.loadAdNativeBanner(adSlotBuilder.build(), adManager.createAdNative(mContext));
         }
 
+    }
+
+    private static String getAdNetworkId() {
+        return mPlacementId;
     }
 
     private void checkSize(boolean isExpressAd) {
@@ -201,8 +206,8 @@ public class PangleAdBanner extends CustomEventBanner {
 
 
         void loadAdNativeBanner(AdSlot adSlot, TTAdNative ttAdNative) {
-            if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId())){
-                if (mCustomEventBannerListener != null){
+            if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId())) {
+                if (mCustomEventBannerListener != null) {
                     mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
                 }
                 return;
@@ -217,7 +222,7 @@ public class PangleAdBanner extends CustomEventBanner {
                 if (mCustomEventBannerListener != null) {
                     mCustomEventBannerListener.onBannerFailed(PangleSharedUtil.mapErrorCode(code));
                 }
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                         MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                         MoPubErrorCode.NETWORK_NO_FILL);
             }
@@ -225,7 +230,7 @@ public class PangleAdBanner extends CustomEventBanner {
             @Override
             public void onNativeAdLoad(List<TTNativeAd> ads) {
                 if (ads.get(0) == null) {
-                    if (mCustomEventBannerListener != null){
+                    if (mCustomEventBannerListener != null) {
                         mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
                     }
                     return;

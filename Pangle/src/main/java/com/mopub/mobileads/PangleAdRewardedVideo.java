@@ -38,15 +38,14 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
      * Flag to determine whether or not the adapter has been  initialized.
      */
     private static AtomicBoolean sIsInitialized;
+    private static String mPlacementId;
 
     /**
      * Flag to determine whether or not the Pangolin Rewarded Video Ad instance has loaded.
      */
     private boolean mIsLoaded;
 
-
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
-    private String mPlacementId;
     private WeakReference<Activity> mWeakActivity;
     private TTRewardVideoAd mTTRewardVideoAd;
 
@@ -88,7 +87,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     }
 
     /**
-     * obtain Pangolin extra parameters from the mExtras provided by MoPub server.
+     * obtain Pangolin extra parameters from the extras provided by MoPub server.
      *
      * @param launcherActivity
      * @param localExtras
