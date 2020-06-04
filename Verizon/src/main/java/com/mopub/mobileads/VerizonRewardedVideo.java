@@ -13,6 +13,7 @@ import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 import com.verizon.ads.ActivityStateManager;
+import com.verizon.ads.Bid;
 import com.verizon.ads.CreativeInfo;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.RequestMetadata;
@@ -21,6 +22,7 @@ import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
@@ -151,12 +153,28 @@ public class VerizonRewardedVideo extends CustomEventRewardedVideo {
         final InterstitialAdFactory interstitialAdFactory = new InterstitialAdFactory(activity,
                 placementId, new VerizonInterstitialFactoryListener());
 
-        final RequestMetadata requestMetadata = new RequestMetadata.Builder().setMediator
-                (VerizonAdapterConfiguration.MEDIATOR_ID)
-                .build();
+        final Bid bid = BidCache.get(placementId);
 
-        interstitialAdFactory.setRequestMetaData(requestMetadata);
-        interstitialAdFactory.load(new VerizonInterstitialListener());
+        if (bid == null) {
+            final RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder(VASAds.getRequestMetadata());
+            requestMetadataBuilder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID);
+
+            final String adContent = serverExtras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY);
+
+            if (!TextUtils.isEmpty(adContent)) {
+                final Map<String, Object> placementData = new HashMap<>();
+
+                placementData.put(VerizonAdapterConfiguration.REQUEST_METADATA_AD_CONTENT_KEY, adContent);
+                placementData.put("overrideWaterfallProvider", "waterfallprovider/sideloading");
+
+                requestMetadataBuilder.setPlacementData(placementData);
+            }
+
+            interstitialAdFactory.setRequestMetaData(requestMetadataBuilder.build());
+            interstitialAdFactory.load(new VerizonInterstitialListener());
+        } else {
+            interstitialAdFactory.load(bid, new VerizonInterstitialListener());
+        }
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }

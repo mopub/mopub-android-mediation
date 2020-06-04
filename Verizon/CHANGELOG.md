@@ -1,4 +1,10 @@
 ## Changelog
+  * 1.6.0.0
+    * Fix for VAST video ads timing out in interstitial placements.
+    * Enabled Rewarded Video support.
+    * General updates for Advance Bidding.
+    * This version of the adapters has been certified with Verizon 1.6.0.
+
   * 1.5.0.0
     * Compress the Advanced Bidding token to adhere to MoPub's spec.
     * This version of the adapters has been certified with Verizon 1.5.0 and MoPub 5.11.1.
