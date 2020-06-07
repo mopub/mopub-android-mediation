@@ -103,8 +103,8 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
             if (ttAdManager != null) {
-                mIsExpressAd = ttAdManager.getAdRequetTypeByRit(mPlacementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
-                mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(mPlacementId);
+                mIsExpressAd = ttAdManager.isExpressAd(mPlacementId, adm);
+                mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(mPlacementId, adm);
             }
 
             /** obtain traditional or express interstitial extra parameters */

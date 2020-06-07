@@ -86,7 +86,7 @@ public class PangleAdBanner extends CustomEventBanner {
 
 
         if (adManager != null) {
-            isExpressAd = adManager.getAdRequetTypeByRit(mPlacementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
+            isExpressAd = adManager.isExpressAd(mPlacementId, adm);
         }
 
         if (isExpressAd) {
