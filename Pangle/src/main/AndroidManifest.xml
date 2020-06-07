@@ -3,7 +3,6 @@
     package="com.mopub.mobileads.pangle">
 
     <!-- Required permissions -->
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- if use textureView for video ad，please add this permission -->

@@ -218,7 +218,7 @@ public class PangleAdBanner extends CustomEventBanner {
         void loadAdNativeBanner(AdSlot adSlot, TTAdNative ttAdNative) {
             if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId())) {
                 if (mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
+                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
                 return;
             }
@@ -320,7 +320,7 @@ public class PangleAdBanner extends CustomEventBanner {
         public void loadAdExpressBanner(AdSlot adSlot, TTAdNative ttAdNative) {
             if (mContext == null || adSlot == null || ttAdNative == null || TextUtils.isEmpty(adSlot.getCodeId())) {
                 if (mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.CANCELLED);
+                    mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
                 return;
             }
@@ -331,25 +331,25 @@ public class PangleAdBanner extends CustomEventBanner {
         private TTAdNative.NativeExpressAdListener mTTNativeExpressAdListener = new TTAdNative.NativeExpressAdListener() {
             @Override
             public void onError(int code, String message) {
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "express banner ad  onBannerFailed.-code=" + code + "," + message);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "express banner ad  onBannerFailed.-code=" + code + "," + message);
                 if (mCustomEventBannerListener != null) {
                     mCustomEventBannerListener.onBannerFailed(PangleSharedUtil.mapErrorCode(code));
                 }
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        MoPubErrorCode.NETWORK_NO_FILL);
             }
 
             @Override
             public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
                 if (ads == null || ads.size() == 0) {
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                            MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            MoPubErrorCode.NETWORK_NO_FILL);
                     if (mCustomEventBannerListener != null) {
                         mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NO_FILL);
                     }
                     return;
                 }
+                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                 mTTNativeExpressAd = ads.get(0);
-                mTTNativeExpressAd.setSlideIntervalTime(30 * 1000);
                 mTTNativeExpressAd.setExpressInteractionListener(mExpressAdInteractionListener);
                 bindDislike(mTTNativeExpressAd);
                 mTTNativeExpressAd.render();
@@ -362,12 +362,12 @@ public class PangleAdBanner extends CustomEventBanner {
                 ad.setDislikeCallback((Activity) mContext, new TTAdDislike.DislikeInteractionCallback() {
                     @Override
                     public void onSelected(int position, String value) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "DislikeInteractionCallback=click-value=" + value);
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallback click value=" + value);
                     }
 
                     @Override
                     public void onCancel() {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "DislikeInteractionCallbac Cancel click=");
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallbac cancel click...");
                     }
                 });
             }
