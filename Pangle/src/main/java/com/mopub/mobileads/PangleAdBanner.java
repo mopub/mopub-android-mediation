@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdDislike;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
@@ -239,7 +238,7 @@ public class PangleAdBanner extends CustomEventBanner {
 
             @Override
             public void onNativeAdLoad(List<TTNativeAd> ads) {
-                if (ads.get(0) == null) {
+                if (ads == null || ads.get(0) == null) {
                     MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                             MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                             MoPubErrorCode.NETWORK_NO_FILL);
