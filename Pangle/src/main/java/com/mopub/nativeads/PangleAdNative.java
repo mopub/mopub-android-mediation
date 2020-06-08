@@ -54,7 +54,7 @@ public class PangleAdNative extends CustomEventNative {
 
     @Override
     protected void loadNativeAd(Context context, CustomEventNativeListener customEventNativeListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "loadNativeAd...... has been create ....");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadNativeAd...... has been create ....");
         this.mContext = context;
         this.mCustomEventNativeListener = customEventNativeListener;
 
@@ -67,7 +67,7 @@ public class PangleAdNative extends CustomEventNative {
             if (TextUtils.isEmpty(mPlacementId)) {
                 if (customEventNativeListener != null) {
                     customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME,
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                             "Invalid Pangle placement ID. Failing ad request. " +
                                     "Ensure the ad placement id is valid on the MoPub dashboard.");
                 }

@@ -83,7 +83,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             if (TextUtils.isEmpty(mPlacementId)) {
                 if (customEventInterstitialListener != null) {
                     customEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME,
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                             "Invalid Pangle placement ID. Failing ad request. " +
                                     "Ensure the ad placement id is valid on the MoPub dashboard.");
                 }
@@ -267,7 +267,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             @Override
             public void onError(int code, String message) {
                 mIsLoading = false;
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, PangleSharedUtil.mapErrorCode(code), message);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, PangleSharedUtil.mapErrorCode(code), message);
                 if (mInterstitialListener != null) {
                     mInterstitialListener.onInterstitialFailed(PangleSharedUtil.mapErrorCode(code));
                 }
@@ -277,7 +277,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             public void onNativeAdLoad(List<TTNativeAd> ads) {
                 mIsLoading = true;
                 if (ads == null || ads.get(0) == null) {
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                             MoPubErrorCode.NETWORK_NO_FILL);
                     if (mInterstitialListener != null) {
                         mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NO_FILL);

@@ -68,7 +68,7 @@ public class PangleAdBanner extends CustomEventBanner {
             if (TextUtils.isEmpty(mPlacementId)) {
                 if (customEventBannerListener != null) {
                     customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME,
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                             "Invalid Pangle placement ID. Failing ad request. " +
                                     "Ensure the ad placement id is valid on the MoPub dashboard.");
                 }
@@ -362,12 +362,12 @@ public class PangleAdBanner extends CustomEventBanner {
                 ad.setDislikeCallback((Activity) mContext, new TTAdDislike.DislikeInteractionCallback() {
                     @Override
                     public void onSelected(int position, String value) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallback click value=" + value);
+                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallback click value=" + value);
                     }
 
                     @Override
                     public void onCancel() {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallbac cancel click...");
+                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallbac cancel click...");
                     }
                 });
             }
