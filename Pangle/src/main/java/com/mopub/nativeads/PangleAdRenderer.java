@@ -69,10 +69,10 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
             pangleAdNativeViewHolder.mLogoView.setImageBitmap(ad.getAdLogo());
         }
 
-        /** add Native Feed Main View */
+        /** Add Native Feed Main View */
         MediationAdapterUtil.addNativeFeedMainView(convertView.getContext(), ad.getImageMode(), pangleAdNativeViewHolder.mMediaView, ad.getAdView(), ad.getImageList());
 
-        /**  the views that can be clicked */
+        /** The views that can be clicked */
         List<View> clickViewList = new ArrayList<>();
         clickViewList.add(convertView);
 
@@ -82,7 +82,7 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
             creativeViewList.add(pangleAdNativeViewHolder.mCallToActionView);
         }
 
-        /**  notice! This involves advertising billing and must be called correctly. convertView must use ViewGroup. */
+        /** Notice! This involves advertising billing and must be called correctly. convertView must use ViewGroup. */
         ad.registerViewForInteraction((ViewGroup) convertView, clickViewList, creativeViewList, new TTNativeAd.AdInteractionListener() {
             @Override
             public void onAdClicked(View view, TTNativeAd pangolinAd) {

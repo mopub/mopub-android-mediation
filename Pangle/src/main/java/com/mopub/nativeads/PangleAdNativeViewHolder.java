@@ -42,8 +42,6 @@ public class PangleAdNativeViewHolder {
                                                    @NonNull final PangleAdViewBinder pangleAdViewBinder) {
         final PangleAdNativeViewHolder adViewHolder = new PangleAdNativeViewHolder();
         try {
-
-            /** common ui */
             adViewHolder.mTitleView = view.findViewById(pangleAdViewBinder.mTitleId);
             adViewHolder.mDescription = view.findViewById(pangleAdViewBinder.mDescriptionTextId);
             adViewHolder.mCallToActionView = view.findViewById(pangleAdViewBinder.mCallToActionId);

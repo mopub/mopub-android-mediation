@@ -19,7 +19,6 @@ public class PangleAdViewBinder {
         private int mSourceId;
         private int mLogoViewId;
 
-
         @NonNull
         private Map<String, Integer> mExtras;
 
@@ -27,7 +26,6 @@ public class PangleAdViewBinder {
             this.mLayoutId = mLayoutId;
             this.mExtras = new HashMap<String, Integer>();
         }
-
 
         @NonNull
         public final Builder logoViewId(final int logoViewId) {
@@ -40,7 +38,6 @@ public class PangleAdViewBinder {
             this.mTitleId = titleId;
             return this;
         }
-
 
         @NonNull
         public final Builder sourceId(final int sourceId) {
@@ -76,7 +73,6 @@ public class PangleAdViewBinder {
             return this;
         }
 
-
         @NonNull
         public final Builder addExtras(final Map<String, Integer> resourceIds) {
             this.mExtras = new HashMap<String, Integer>(resourceIds);
@@ -104,7 +100,6 @@ public class PangleAdViewBinder {
     public final int mSourceId;
     public final int mLogoViewId;
 
-
     @NonNull
     public final Map<String, Integer> mExtras;
 
@@ -119,6 +114,5 @@ public class PangleAdViewBinder {
         this.mExtras = builder.mExtras;
         this.mLogoViewId = builder.mLogoViewId;
     }
-
 
 }
