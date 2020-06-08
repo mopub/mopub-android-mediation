@@ -276,7 +276,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             @Override
             public void onNativeAdLoad(List<TTNativeAd> ads) {
                 mIsLoading = true;
-                if (ads.get(0) == null) {
+                if (ads == null || ads.get(0) == null) {
                     MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                             MoPubErrorCode.NETWORK_NO_FILL);
                     if (mInterstitialListener != null) {
