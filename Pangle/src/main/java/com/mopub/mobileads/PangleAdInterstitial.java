@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
@@ -34,15 +33,12 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLI
 
 public class PangleAdInterstitial extends CustomEventInterstitial {
     private static final String ADAPTER_NAME = PangleAdInterstitial.class.getSimpleName();
-    /**
-     * ad size
-     */
-    private static final String AD_WIDTH = "ad_width";
-    private static final String AD_HEIGHT = "ad_height";
+    private static final String KEY_EXTRA_AD_WIDTH = "ad_width";
+    private static final String KEY_EXTRA_AD_HEIGHT = "ad_height";
 
 
     /**
-     * pangolin network Interstitial ad unit ID.
+     * Pangle network Interstitial ad unit ID.
      */
     private static String mPlacementId;
     private boolean mIsFullVideoAd;
@@ -52,13 +48,13 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
     private float mAdHeight = 0;
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
     private PangleAdInterstitialExpressLoader mExpressInterstitialLoader;
-    private PangleAdInterstitialNativeLoader mNativeInterstitialLoader;
+    private PangleAdInterstitialNativeLoader mTraditionalInterstitialLoader;
     private PangleAdInterstitialFullVideoLoader mFullVideoLoader;
     private CustomEventInterstitial.CustomEventInterstitialListener customEventInterstitialListener;
 
     public PangleAdInterstitial() {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "PangolinAdapterInterstitial has been create ....");
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "PangleAdInterstitial has been create ....");
     }
 
     @Override
@@ -107,9 +103,9 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                 mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(mPlacementId, adm);
             }
 
-            /** obtain traditional or express interstitial extra parameters */
+            /** Obtain traditional or express interstitial extra parameters */
             if (!mIsFullVideoAd) {
-                float[] adSize = PangleSharedUtil.getAdSizeSafely(localExtras, AD_WIDTH, AD_HEIGHT);
+                float[] adSize = PangleSharedUtil.getAdSizeSafely(localExtras, KEY_EXTRA_AD_WIDTH, KEY_EXTRA_AD_HEIGHT);
                 mAdWidth = adSize[0];
                 mAdHeight = adSize[1];
             }
@@ -135,6 +131,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                 .setAdCount(1)
                 .withBid(adm);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
+
         if (!mIsFullVideoAd) {
             /** request Interstitial */
             if (mIsExpressAd) {
@@ -155,8 +152,8 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                 MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME, "Loading Pangle traditional interstitial ad");
                 adSlotBuilder.setNativeAdType(AdSlot.TYPE_INTERACTION_AD);
                 adSlotBuilder.setImageAcceptedSize((int) mAdWidth, (int) mAdHeight);
-                mNativeInterstitialLoader = new PangleAdInterstitialNativeLoader(mContext, mOrientation, customEventInterstitialListener);
-                mNativeInterstitialLoader.loadAdNativeInterstitial(adSlotBuilder.build(), ttAdNative);
+                mTraditionalInterstitialLoader = new PangleAdInterstitialNativeLoader(mContext, mOrientation, customEventInterstitialListener);
+                mTraditionalInterstitialLoader.loadAdNativeInterstitial(adSlotBuilder.build(), ttAdNative);
             }
         } else {
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME, "Loading Pangle FullVideoAd ad");
@@ -197,8 +194,8 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                     hasShow = true;
                 }
             } else {
-                if (mNativeInterstitialLoader != null && mNativeInterstitialLoader.isReady()) {
-                    mNativeInterstitialLoader.showNativeInterstitialActiviy();
+                if (mTraditionalInterstitialLoader != null && mTraditionalInterstitialLoader.isReady()) {
+                    mTraditionalInterstitialLoader.showTraditionalInterstitialActivity();
                     hasShow = true;
                 }
             }
@@ -227,8 +224,8 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                     mExpressInterstitialLoader.destroy();
                 }
             } else {
-                if (mNativeInterstitialLoader != null) {
-                    mNativeInterstitialLoader.destroy();
+                if (mTraditionalInterstitialLoader != null) {
+                    mTraditionalInterstitialLoader.destroy();
                 }
             }
         } else {
@@ -299,7 +296,7 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
             return mIsLoading;
         }
 
-        private void showNativeInterstitialActiviy() {
+        private void showTraditionalInterstitialActivity() {
             PangleAdInterstitialActivity.showAd(mContext, mTTNativeAd, mOrientation == Configuration.ORIENTATION_PORTRAIT ? PangleAdInterstitialActivity.INTENT_TYPE_IMAGE_2_3 : PangleAdInterstitialActivity.INTENT_TYPE_IMAGE_3_2, new com.bytedance.sdk.openadsdk.CustomEventInterstitialListener() {
                 @Override
                 public void onInterstitialShown() {

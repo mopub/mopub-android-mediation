@@ -15,6 +15,7 @@ import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
 
@@ -24,24 +25,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     private static final String ADAPTER_NAME = PangleAdRewardedVideo.class.getSimpleName();
 
     /**
-     * Flag to determine whether or not the adapter has been  initialized.
+     * Flag to determine whether or not the adapter has been initialized.
      */
-    private static AtomicBoolean sIsInitialized;
+    private static AtomicBoolean mIsSDKInitialized;
     private static String mPlacementId;
 
     /**
-     * Flag to determine whether or not the Pangolin Rewarded Video Ad instance has loaded.
+     * Flag to determine whether or not the Pangle Rewarded Video Ad instance has loaded.
      */
     private boolean mIsLoaded;
 
@@ -51,7 +55,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
 
     public PangleAdRewardedVideo() {
-        sIsInitialized = new AtomicBoolean(false);
+        mIsSDKInitialized = new AtomicBoolean(false);
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleAdRewardedVideo has been create ....");
     }
@@ -86,26 +90,9 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
         return null;
     }
 
-    /**
-     * obtain Pangolin extra parameters from the extras provided by MoPub server.
-     *
-     * @param launcherActivity
-     * @param localExtras
-     * @param serverExtras
-     * @return
-     * @throws Exception
-     */
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
-
-        if (MoPubLog.getLogLevel() == MoPubLog.LogLevel.DEBUG) {
-            Set<Map.Entry<String, String>> set2 = serverExtras.entrySet();
-            for (Map.Entry<String, String> entry : set2) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "serverExtras => key=" + entry.getKey() + ",value=" + entry.getValue());
-            }
-        }
-
-        if (!sIsInitialized.getAndSet(true)) {
+        if (!mIsSDKInitialized.getAndSet(true)) {
             if (serverExtras != null) {
 
                 /** obtain adunit from server by mopub */
@@ -119,7 +106,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
                     return false;
                 }
-                /** init pangolin SDK */
+
                 String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
                 PangleAdapterConfiguration.pangleSdkInit(launcherActivity, appId);
                 mPangleAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
@@ -144,7 +131,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
         }
 
         if (TextUtils.isEmpty(getAdNetworkId())) {
-            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
+            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
                     PangleAdRewardedVideo.class,
                     getAdNetworkId(), MoPubErrorCode.MISSING_AD_UNIT_ID);
 
@@ -193,9 +180,8 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onError(int code, String message) {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "Loading Rewarded Video creative encountered an error: " + mapErrorCode(code).toString() + ",error message:" + message);
             MoPubRewardedVideoManager.onRewardedVideoLoadFailure(PangleAdRewardedVideo.class, getAdNetworkId(), mapErrorCode(code));
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, "Loading Rewarded Video creative encountered an error: " + mapErrorCode(code).toString() + ",error message:" + message);
         }
 
         @Override
@@ -204,7 +190,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
             if (ad != null) {
                 mIsLoaded = true;
                 mTTRewardVideoAd = ad;
-                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                 MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
                         PangleAdRewardedVideo.class,
                         getAdNetworkId());
@@ -223,13 +209,13 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
     private TTRewardVideoAd.RewardAdInteractionListener mRewardAdInteractionListener = new TTRewardVideoAd.RewardAdInteractionListener() {
         @Override
         public void onAdShow() {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd onAdShow...");
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
             MoPubRewardedVideoManager.onRewardedVideoStarted(PangleAdRewardedVideo.class, getAdNetworkId());
         }
 
         @Override
         public void onAdVideoBarClick() {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd onAdVideoBarClick...");
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
             MoPubRewardedVideoManager.onRewardedVideoClicked(PangleAdRewardedVideo.class, getAdNetworkId());
         }
 
@@ -242,7 +228,8 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
         @Override
         public void onVideoComplete() {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd onVideoComplete...");
-            MoPubRewardedVideoManager.onRewardedVideoCompleted(PangleAdRewardedVideo.class, getAdNetworkId(), MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.DEFAULT_REWARD_AMOUNT));
+            MoPubRewardedVideoManager.onRewardedVideoCompleted(PangleAdRewardedVideo.class, getAdNetworkId(),
+                    MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.DEFAULT_REWARD_AMOUNT));
         }
 
         @Override
@@ -253,12 +240,13 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd onRewardVerify...rewardVerify："
+                    + rewardVerify + "，rewardAmount=" + rewardAmount + "，rewardName=" + rewardName);
+            MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, rewardAmount, rewardName);
             MoPubRewardedVideoManager.onRewardedVideoCompleted(
                     PangleAdRewardedVideo.class,
                     getAdNetworkId(),
                     MoPubReward.success(rewardName, rewardAmount));
-
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd onRewardVerify...rewardVerify：" + rewardVerify + "，rewardAmount=" + rewardAmount + "，rewardName=" + rewardName);
         }
 
         @Override

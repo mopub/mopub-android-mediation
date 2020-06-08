@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdDislike;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
@@ -33,7 +32,7 @@ public class PangleAdBanner extends CustomEventBanner {
     private static final String ADAPTER_NAME = PangleAdBanner.class.getSimpleName();
 
     /**
-     * pangolin network banner ad unit ID.
+     * Pangle network banner ad unit ID.
      */
     private static String mPlacementId;
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
@@ -49,6 +48,7 @@ public class PangleAdBanner extends CustomEventBanner {
 
     public PangleAdBanner() {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleAdBanner has been create ....");
     }
 
 

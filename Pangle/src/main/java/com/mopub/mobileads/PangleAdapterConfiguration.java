@@ -14,7 +14,6 @@ import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.Map;
 
@@ -32,6 +31,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     public static final String KEY_EXTRA_AD_PLACEMENT_ID = "ad_placement_id";
     public static final String KEY_EXTRA_APP_ID = "app_id";
 
+    private static boolean sIsSDKInitialized;
 
     @NonNull
     @Override
@@ -67,7 +67,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
                 String appId = configuration.get(KEY_EXTRA_APP_ID);
 
-                /** init pangle sdk */
                 pangleSdkInit(context, appId);
                 networkInitializationSucceeded = true;
             } catch (Exception e) {
@@ -85,15 +84,16 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    private static boolean sInit;
-
-    public static String getSDKVersion() {
-        if (!sInit) return ADAPTER_VERSION;
+    public String getSDKVersion() {
+        if (!sIsSDKInitialized) {
+            final String adapterVersion = getAdapterVersion();
+            return adapterVersion.substring(0, adapterVersion.lastIndexOf('.'));
+        }
         return TTAdSdk.getAdManager().getSDKVersion();
     }
 
     public static TTAdManager getPangleSdkManager() {
-        if (!sInit) {
+        if (!sIsSDKInitialized) {
             throw new RuntimeException("TTAdSdk is not init, please check.");
         }
         return TTAdSdk.getAdManager();
@@ -106,7 +106,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     "Invalid Pangle app Id. Ensure the app id is valid on the MoPub dashboard.");
             return;
         }
-        if (!sInit) {
+        if (!sIsSDKInitialized) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleSDK initialize with appId = " + appId);
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
@@ -119,7 +119,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     .supportMultiProcess(false) /* true for support multi-process environment,false for single-process */
                     .coppa(0) /* Fields to indicate whether you are a child or an adult ，0:adult ，1:child */
                     .build());
-            sInit = true;
+            sIsSDKInitialized = true;
         }
     }
 }

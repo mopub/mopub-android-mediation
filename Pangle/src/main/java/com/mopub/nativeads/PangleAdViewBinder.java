@@ -21,7 +21,7 @@ public class PangleAdViewBinder {
 
 
         @NonNull
-        private Map<String, Integer> mExtras = Collections.emptyMap();
+        private Map<String, Integer> mExtras;
 
         public Builder(final int mLayoutId) {
             this.mLayoutId = mLayoutId;

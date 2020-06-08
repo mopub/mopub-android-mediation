@@ -49,6 +49,7 @@ public class PangleAdNative extends CustomEventNative {
 
     public PangleAdNative() {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleAdNative has been create ....");
     }
 
     @Override
