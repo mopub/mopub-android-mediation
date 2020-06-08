@@ -163,7 +163,7 @@ public class PangleAdBanner extends CustomEventBanner {
     private void checkSize(boolean isExpressAd) {
         if (isExpressAd) {
             if (mBannerWidth <= 0) {
-                mBannerWidth = 320;
+                mBannerWidth = 600;
                 mBannerHeight = 0;
             }
             if (mBannerHeight < 0) {
@@ -171,8 +171,8 @@ public class PangleAdBanner extends CustomEventBanner {
             }
         } else {
             if (mBannerWidth <= 0 || mBannerHeight <= 0) {
-                mBannerWidth = 320;
-                mBannerHeight = 50;
+                mBannerWidth = 600;
+                mBannerHeight = 90;
             }
         }
     }
