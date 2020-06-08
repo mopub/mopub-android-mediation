@@ -67,6 +67,12 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
 
         if (ad.getAdLogo() != null && pangleAdNativeViewHolder.mLogoView != null) {
             pangleAdNativeViewHolder.mLogoView.setImageBitmap(ad.getAdLogo());
+            pangleAdNativeViewHolder.mLogoView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ad.showPrivacyActivity();
+                }
+            });
         }
 
         /** Add Native Feed Main View */

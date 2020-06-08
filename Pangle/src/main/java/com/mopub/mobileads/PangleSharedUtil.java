@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+
 import java.util.Map;
 
 public class PangleSharedUtil {
@@ -86,6 +87,7 @@ public class PangleSharedUtil {
     public static float[] getBannerAdSizeAdapterSafely(Map<String, Object> params, String widthName, String heightName) {
         float[] adSize = new float[]{0, 0};
         if (params == null || widthName == null || heightName == null) {
+            adSize = new float[]{600, 90};
             return adSize;
         }
 

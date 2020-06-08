@@ -89,19 +89,10 @@ public class PangleAdBanner extends CustomEventBanner {
             isExpressAd = adManager.isExpressAd(mPlacementId, adm);
         }
 
-        if (isExpressAd) {
-            float[] bannerAdSizeAdapterSafely = PangleSharedUtil.getBannerAdSizeAdapterSafely(localExtras, DataKeys.AD_WIDTH, DataKeys.AD_HEIGHT);
-            mBannerWidth = bannerAdSizeAdapterSafely[0];
-            mBannerHeight = bannerAdSizeAdapterSafely[1];
-        } else {
-            /** obtain extra parameters */
-            if (localExtras.containsKey(DataKeys.AD_WIDTH)) {
-                mBannerWidth = Float.valueOf((Integer) localExtras.get(DataKeys.AD_WIDTH));
-            }
-            if (localExtras.containsKey(DataKeys.AD_HEIGHT)) {
-                mBannerHeight = Float.valueOf((Integer) localExtras.get(DataKeys.AD_HEIGHT));
-            }
-        }
+        float[] bannerAdSizeAdapterSafely = PangleSharedUtil.getBannerAdSizeAdapterSafely(localExtras, DataKeys.AD_WIDTH, DataKeys.AD_HEIGHT);
+        mBannerWidth = bannerAdSizeAdapterSafely[0];
+        mBannerHeight = bannerAdSizeAdapterSafely[1];
+
 
         checkSize(isExpressAd);
 

@@ -235,6 +235,12 @@ public class PangleAdNative extends CustomEventNative {
             return null;
         }
 
+        public void showPrivacyActivity(){
+            if (mTTFeedAd != null) {
+                mTTFeedAd.showPrivacyActivity();
+            }
+        }
+
         public Bitmap getAdLogo() {
             if (mTTFeedAd != null) {
                 return mTTFeedAd.getAdLogo();
