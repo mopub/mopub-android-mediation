@@ -91,7 +91,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
-        if (!mIsSDKInitialized.getAndSet(true)) {
+        if (!mIsSDKInitialized.get()) {
             if (serverExtras != null) {
                 String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
 
@@ -104,6 +104,7 @@ public class PangleAdRewardedVideo extends CustomEventRewardedVideo {
                 }
                 PangleAdapterConfiguration.pangleSdkInit(launcherActivity, appId);
                 mPangleAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
+                mIsSDKInitialized.set(true);
             }
 
             return true;

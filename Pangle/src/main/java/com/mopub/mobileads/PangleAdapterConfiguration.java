@@ -30,8 +30,10 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
      */
     public static final String KEY_EXTRA_AD_PLACEMENT_ID = "ad_placement_id";
     public static final String KEY_EXTRA_APP_ID = "app_id";
+    public static final String KEY_EXTRA_SUPPORT_MULTIPROCESS = "support_multiprocess";
 
     private static boolean sIsSDKInitialized;
+    private static boolean sSupporMultiprocess;
 
     @NonNull
     @Override
@@ -66,7 +68,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
             try {
 
                 String appId = configuration.get(KEY_EXTRA_APP_ID);
-
+                sSupporMultiprocess = configuration.get(KEY_EXTRA_SUPPORT_MULTIPROCESS) != null ? Boolean.valueOf(configuration.get(KEY_EXTRA_SUPPORT_MULTIPROCESS)) : false;
                 pangleSdkInit(context, appId);
                 networkInitializationSucceeded = true;
             } catch (Exception e) {
@@ -116,8 +118,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0) /*set gdpr to Pangle sdk, 0 close GDPR Privacy protection ，1: open GDPR Privacy protection */
                     .allowShowPageWhenScreenLock(true) /* Allow or deny permission to display the landing page ad in the lock screen */
                     .debug(BuildConfig.DEBUG) /*Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
-                    .supportMultiProcess(false) /* true for support multi-process environment,false for single-process */
-                    .coppa(0) /* Fields to indicate whether you are a child or an adult ，0:adult ，1:child */
+                    .supportMultiProcess(sSupporMultiprocess) /* true for support multi-process environment,false for single-process */
                     .build());
             sIsSDKInitialized = true;
         }
