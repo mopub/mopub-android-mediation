@@ -26,9 +26,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String ADAPTER_NAME = PangleAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = "pangle_network";
 
-    /**
-     * Key to obtain Pangle ad unit ID from the extras provided by MoPub.
-     */
     public static final String KEY_EXTRA_AD_PLACEMENT_ID = "ad_placement_id";
     public static final String KEY_EXTRA_APP_ID = "app_id";
 
@@ -61,7 +58,12 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     @NonNull
     @Override
     public String getNetworkSdkVersion() {
-        return getSDKVersion();
+        if (sIsSDKInitialized) {
+            return TTAdSdk.getAdManager().getSDKVersion();
+        } else {
+            final String adapterVersion = getAdapterVersion();
+            return adapterVersion.substring(0, adapterVersion.lastIndexOf('.'));
+        }
     }
 
     @Override
@@ -72,7 +74,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         synchronized (PangleAdapterConfiguration.class) {
             try {
 
-                String appId = configuration.get(KEY_EXTRA_APP_ID);
+                final String appId = configuration.get(KEY_EXTRA_APP_ID);
 
                 SIsSupportMultiProcess = configuration.get(KEY_EXTRA_SUPPORT_MULTIPROCESS) != null ?
                         Boolean.valueOf(configuration.get(KEY_EXTRA_SUPPORT_MULTIPROCESS)) : false;
@@ -94,14 +96,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    public String getSDKVersion() {
-        if (!sIsSDKInitialized) {
-            final String adapterVersion = getAdapterVersion();
-            return adapterVersion.substring(0, adapterVersion.lastIndexOf('.'));
-        }
-        return TTAdSdk.getAdManager().getSDKVersion();
-    }
-
     public static TTAdManager getPangleSdkManager() {
         if (!sIsSDKInitialized) {
             throw new RuntimeException("TTAdSdk is not init, please check.");
@@ -109,7 +103,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         return TTAdSdk.getAdManager();
     }
 
-    /* Initialize sdk */
     public static void pangleSdkInit(Context context, String appId) {
         if (appId == null || context == null) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME,

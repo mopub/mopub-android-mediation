@@ -58,7 +58,6 @@ public class PangleAdRewardedVideo extends BaseAd {
     public PangleAdRewardedVideo() {
         mIsSDKInitialized = new AtomicBoolean(false);
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleAdRewardedVideo has been create ....");
     }
 
 
@@ -79,15 +78,16 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         final Map<String, String> extras = adData.getExtras();
         if (!mIsSDKInitialized.get()) {
-            if (extras != null) {
-                String appId = adData.getExtras().get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+            if (extras != null && !extras.isEmpty()) {
+                final String appId = adData.getExtras().get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+
                 if (TextUtils.isEmpty(appId)) {
                     if (mLoadListener != null) {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                     }
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                             "Invalid Pangle app ID. Failing Pangle sdk init. " +
-                                    "Ensure the ad placement id is valid on the MoPub dashboard.");
+                                    "Ensure the ad placement ID is valid on the MoPub dashboard.");
                     return false;
                 }
                 PangleAdapterConfiguration.pangleSdkInit(activity, appId);
@@ -102,12 +102,13 @@ public class PangleAdRewardedVideo extends BaseAd {
     protected void load(@NonNull final Context context, @NonNull final AdData adData) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(adData);
+
         mWeakActivity = new WeakReference<>((Activity) context);
         setAutomaticImpressionAndClickTracking(false);
 
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangolinRewardMediationSettings.getCodeId() + ",getOrientation=" + PangolinRewardMediationSettings.getOrientation());
-        TTAdManager ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
-        TTAdNative ttAdNative = ttAdManager.createAdNative(context.getApplicationContext());
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangleRewardMediationSettings.getCodeId() + ",getOrientation=" + PangleRewardMediationSettings.getOrientation());
+        TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
+        TTAdNative adInstance = adManager.createAdNative(context.getApplicationContext());
 
         /** obtain adunit from server by mopub */
         final Map<String, String> extras = adData.getExtras();
@@ -119,37 +120,33 @@ public class PangleAdRewardedVideo extends BaseAd {
             }
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                     "Invalid Pangle placement ID. Failing ad request. " +
-                            "Ensure the ad placement id is valid on the MoPub dashboard.");
+                            "Ensure the ad placement ID is valid on the MoPub dashboard.");
             return;
         }
 
-        /** Create a parameter AdSlot for reward ad request type,
-         refer to the document for meanings of specific parameters */
         final String adm = extras.get(DataKeys.ADM_KEY);
 
-        /** create AdSlot and set request parameters */
-        AdSlot adSlot = new AdSlot.Builder()
+        final AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(getAdNetworkId())
                 .setSupportDeepLink(true)
                 .setImageAcceptedSize(1080, 1920)
-                .setRewardName(PangolinRewardMediationSettings.getRewardName()) /** Parameter for rewarded video ad requests, name of the reward */
-                .setRewardAmount(PangolinRewardMediationSettings.getRewardAmount())  /**The number of rewards in rewarded video ad */
-                .setUserID(PangolinRewardMediationSettings.getUserID()) /**User ID, a optional parameter for rewarded video ads */
-                .setMediaExtra(PangolinRewardMediationSettings.getMediaExtra()) /** optional parameter */
+                .setRewardName(PangleRewardMediationSettings.getRewardName()) /** Parameter for rewarded video ad requests, name of the reward */
+                .setRewardAmount(PangleRewardMediationSettings.getRewardAmount())  /**The number of rewards in rewarded video ad */
+                .setUserID(PangleRewardMediationSettings.getUserID()) /**User ID, a optional parameter for rewarded video ads */
+                .setMediaExtra(PangleRewardMediationSettings.getMediaExtra()) /** optional parameter */
                 .withBid(adm)
                 .build();
 
-        /**load ad */
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-        ttAdNative.loadRewardVideoAd(adSlot, mLoadRewardVideoAdListener);
+        adInstance.loadRewardVideoAd(adSlot, mLoadRewardVideoAdListener);
     }
 
     @Override
     protected void show() {
-        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         if (hasVideoAvailable() && mWeakActivity != null && mWeakActivity.get() != null) {
             mTTRewardVideoAd.setRewardAdInteractionListener(mRewardAdInteractionListener);
             mTTRewardVideoAd.showRewardVideoAd(mWeakActivity.get());
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         } else {
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
@@ -268,7 +265,7 @@ public class PangleAdRewardedVideo extends BaseAd {
     /**
      * obtain extra parameters from MediationSettings
      */
-    public static class PangolinRewardMediationSettings implements MediationSettings {
+    public static class PangleRewardMediationSettings implements MediationSettings {
         private static String mCodeId;
         private static int mOrientation = TTAdConstant.VERTICAL;
         private static String mRewardName;
@@ -276,7 +273,7 @@ public class PangleAdRewardedVideo extends BaseAd {
         private static String mMediaExtra;
         private static String mUserID;
 
-        private PangolinRewardMediationSettings() {
+        private PangleRewardMediationSettings() {
         }
 
         public static String getCodeId() {
@@ -342,14 +339,14 @@ public class PangleAdRewardedVideo extends BaseAd {
                 return this;
             }
 
-            public PangolinRewardMediationSettings builder() {
-                PangolinRewardMediationSettings settings = new PangolinRewardMediationSettings();
-                PangolinRewardMediationSettings.mCodeId = this.mCodeId;
-                PangolinRewardMediationSettings.mOrientation = this.mOrientation;
-                PangolinRewardMediationSettings.mRewardName = this.mRewardName;
-                PangolinRewardMediationSettings.mRewardAmount = this.mRewardAmount;
-                PangolinRewardMediationSettings.mMediaExtra = this.mMediaExtra;
-                PangolinRewardMediationSettings.mUserID = this.mUserID;
+            public PangleRewardMediationSettings builder() {
+                PangleRewardMediationSettings settings = new PangleRewardMediationSettings();
+                PangleRewardMediationSettings.mCodeId = this.mCodeId;
+                PangleRewardMediationSettings.mOrientation = this.mOrientation;
+                PangleRewardMediationSettings.mRewardName = this.mRewardName;
+                PangleRewardMediationSettings.mRewardAmount = this.mRewardAmount;
+                PangleRewardMediationSettings.mMediaExtra = this.mMediaExtra;
+                PangleRewardMediationSettings.mUserID = this.mUserID;
                 return settings;
             }
         }

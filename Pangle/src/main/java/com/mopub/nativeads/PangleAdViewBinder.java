@@ -66,7 +66,6 @@ public class PangleAdViewBinder {
             return this;
         }
 
-
         @NonNull
         public final Builder iconImageId(final int iconImageId) {
             this.mIconImageId = iconImageId;
@@ -114,5 +113,4 @@ public class PangleAdViewBinder {
         this.mExtras = builder.mExtras;
         this.mLogoViewId = builder.mLogoViewId;
     }
-
 }

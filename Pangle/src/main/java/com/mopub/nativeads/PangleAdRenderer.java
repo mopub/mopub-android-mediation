@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
 
-public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.PangolinNativeAd> {
+public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.PangleNativeAd> {
 
     private final PangleAdViewBinder mViewBinder;
 
@@ -31,7 +31,7 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
     }
 
     @Override
-    public void renderAdView(View view, PangleAdNative.PangolinNativeAd ad) {
+    public void renderAdView(View view, PangleAdNative.PangleNativeAd ad) {
         PangleAdNativeViewHolder pangleAdNativeViewHolder = mViewHolderMap.get(view);
         if (pangleAdNativeViewHolder == null) {
             pangleAdNativeViewHolder = PangleAdNativeViewHolder.fromViewBinder(view, mViewBinder);
@@ -40,7 +40,7 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
         this.updateAdUI(pangleAdNativeViewHolder, ad, view);
     }
 
-    private void updateAdUI(PangleAdNativeViewHolder pangleAdNativeViewHolder, final PangleAdNative.PangolinNativeAd ad, View convertView) {
+    private void updateAdUI(PangleAdNativeViewHolder pangleAdNativeViewHolder, final PangleAdNative.PangleNativeAd ad, View convertView) {
         if (ad == null || convertView == null) {
             return;
         }
@@ -88,35 +88,28 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.Pangolin
             creativeViewList.add(pangleAdNativeViewHolder.mCallToActionView);
         }
 
-        /** Notice! This involves advertising billing and must be called correctly. convertView must use ViewGroup. */
         ad.registerViewForInteraction((ViewGroup) convertView, clickViewList, creativeViewList, new TTNativeAd.AdInteractionListener() {
             @Override
-            public void onAdClicked(View view, TTNativeAd pangolinAd) {
-                ad.onAdClicked(view, pangolinAd);
+            public void onAdClicked(View view, TTNativeAd pangleAd) {
+                ad.onAdClicked(view, pangleAd);
             }
 
             @Override
-            public void onAdCreativeClick(View view, TTNativeAd pangolinAd) {
-                ad.onAdCreativeClick(view, pangolinAd);
-
+            public void onAdCreativeClick(View view, TTNativeAd pangleAd) {
+                ad.onAdCreativeClick(view, pangleAd);
             }
 
             @Override
-            public void onAdShow(TTNativeAd pangolinAd) {
-                ad.onAdShow(pangolinAd);
-
+            public void onAdShow(TTNativeAd pangleAd) {
+                ad.onAdShow(pangleAd);
             }
         });
 
-
     }
-
 
     @Override
     public boolean supports(BaseNativeAd nativeAd) {
         Preconditions.checkNotNull(nativeAd);
-        return nativeAd instanceof PangleAdNative.PangolinNativeAd;
+        return nativeAd instanceof PangleAdNative.PangleNativeAd;
     }
-
-
 }

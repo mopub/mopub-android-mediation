@@ -49,34 +49,33 @@ public class PangleAdNative extends CustomEventNative {
 
     public PangleAdNative() {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleAdNative has been create ....");
     }
 
     @Override
     protected void loadNativeAd(Context context, CustomEventNativeListener customEventNativeListener, Map<String, Object> localExtras, Map<String, String> serverExtras) {
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadNativeAd...... has been create ....");
         this.mContext = context;
         this.mCustomEventNativeListener = customEventNativeListener;
 
         TTAdManager ttAdManager = null;
         String adm = null;
 
-        if (serverExtras != null) {
+        if (serverExtras != null  && !serverExtras.isEmpty()) {
             /** Obtain ad placement id from MoPub UI */
             mPlacementId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
+
             if (TextUtils.isEmpty(mPlacementId)) {
                 if (customEventNativeListener != null) {
                     customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
-                            "Invalid Pangle placement ID. Failing ad request. " +
-                                    "Ensure the ad placement id is valid on the MoPub dashboard.");
                 }
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                        "Invalid Pangle placement ID. Failing ad request. " +
+                                "Ensure the ad placement ID is valid on the MoPub dashboard.");
                 return;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
 
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
-            String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+            final String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
             ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
 
@@ -86,7 +85,7 @@ public class PangleAdNative extends CustomEventNative {
         /** default media view ad size */
         int mediaViewWidth = 640;
         int mediaViewHeight = 320;
-        if (localExtras != null) {
+        if (localExtras != null && !localExtras.isEmpty()) {
             if (localExtras.containsKey(KEY_EXTRA_MEDIA_VIEW_WIDTH)) {
                 mediaViewWidth = (int) localExtras.get(KEY_EXTRA_MEDIA_VIEW_WIDTH);
             }
@@ -97,8 +96,8 @@ public class PangleAdNative extends CustomEventNative {
 
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "extras: mediaViewWidth=" + mediaViewWidth + ", mediaViewHeight=" + mediaViewHeight);
         if (ttAdManager != null) {
-            TTAdNative adNative = ttAdManager.createAdNative(mContext);
-            AdSlot adSlot = new AdSlot.Builder()
+            final TTAdNative adNative = ttAdManager.createAdNative(mContext);
+            final AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
                     .setImageAcceptedSize(mediaViewWidth, mediaViewHeight)
@@ -106,8 +105,6 @@ public class PangleAdNative extends CustomEventNative {
                     .withBid(adm)
                     .build();
 
-
-            /** request ad */
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
             adNative.loadFeedAd(adSlot, new TTAdNative.FeedAdListener() {
                 @Override
@@ -128,7 +125,7 @@ public class PangleAdNative extends CustomEventNative {
                         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                         if (mCustomEventNativeListener != null) {
                             for (TTFeedAd ad : ads) {
-                                mCustomEventNativeListener.onNativeAdLoaded(new PangolinNativeAd(ad));
+                                mCustomEventNativeListener.onNativeAdLoaded(new PangleNativeAd(ad));
                             }
                         }
                     } else {
@@ -141,7 +138,7 @@ public class PangleAdNative extends CustomEventNative {
                 }
             });
         } else {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle sdk ttAdManagerLoader can not be created." +
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "The ad manager cannot be created." +
                     " Please make sure to pass the correct app id.");
             if (customEventNativeListener != null) {
                 customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST);
@@ -154,11 +151,11 @@ public class PangleAdNative extends CustomEventNative {
     }
 
 
-    protected static class PangolinNativeAd extends BaseNativeAd implements TTNativeAd.AdInteractionListener {
+    protected static class PangleNativeAd extends BaseNativeAd implements TTNativeAd.AdInteractionListener {
 
         private TTFeedAd mTTFeedAd;
 
-        PangolinNativeAd(TTFeedAd ad) {
+        PangleNativeAd(TTFeedAd ad) {
             this.mTTFeedAd = ad;
         }
 
@@ -319,27 +316,34 @@ public class PangleAdNative extends CustomEventNative {
             return null;
         }
 
-        public void registerViewForInteraction(@NonNull ViewGroup container, @NonNull View clickView, TTNativeAd.AdInteractionListener listener) {
+        public void registerViewForInteraction(@NonNull ViewGroup container,
+                                               @NonNull View clickView,
+                                               TTNativeAd.AdInteractionListener listener) {
             if (mTTFeedAd != null) {
                 mTTFeedAd.registerViewForInteraction(container, clickView, listener);
             }
         }
 
 
-        public void registerViewForInteraction(@NonNull ViewGroup container, @NonNull List<View> clickViews, @Nullable List<View> creativeViews, TTNativeAd.AdInteractionListener listener) {
+        public void registerViewForInteraction(@NonNull ViewGroup container,
+                                               @NonNull List<View> clickViews,
+                                               @Nullable List<View> creativeViews,
+                                               TTNativeAd.AdInteractionListener listener) {
             if (mTTFeedAd != null) {
                 mTTFeedAd.registerViewForInteraction(container, clickViews, creativeViews, listener);
             }
         }
 
 
-        public void registerViewForInteraction(@NonNull ViewGroup container, @NonNull List<View> clickViews, @Nullable List<View> creativeViews, @Nullable View dislikeView, TTNativeAd.AdInteractionListener listener) {
+        public void registerViewForInteraction(@NonNull ViewGroup container,
+                                               @NonNull List<View> clickViews,
+                                               @Nullable List<View> creativeViews,
+                                               @Nullable View dislikeView,
+                                               TTNativeAd.AdInteractionListener listener) {
             if (mTTFeedAd != null) {
                 mTTFeedAd.registerViewForInteraction(container, clickViews, creativeViews, dislikeView, listener);
             }
         }
-
-
     }
 
     private static NativeErrorCode mapErrorCode(int error) {
@@ -356,5 +360,4 @@ public class PangleAdNative extends CustomEventNative {
                 return NativeErrorCode.UNSPECIFIED;
         }
     }
-
 }

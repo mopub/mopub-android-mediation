@@ -28,24 +28,23 @@ public class PangleSharedUtil {
     }
 
     public static float[] getAdSizeSafely(Map<String, String> params, String widthName, String heightName) {
-        float[] adSize = new float[]{0, 0};
+        final float[] adSize = new float[]{0, 0};
         if (params == null || widthName == null || heightName == null) {
             return adSize;
         }
 
-        Object oWidth = params.get(widthName);
+        final Object oWidth = params.get(widthName);
         if (oWidth != null) {
             String w = String.valueOf(oWidth);
             adSize[0] = Float.valueOf(w);
         }
 
-        Object oHeight = params.get(heightName);
+        final Object oHeight = params.get(heightName);
 
         if (oHeight != null) {
             String h = String.valueOf(oHeight);
             adSize[1] = Float.valueOf(h);
         }
-
         return adSize;
     }
 
@@ -64,7 +63,6 @@ public class PangleSharedUtil {
         return (float) context.getResources().getDisplayMetrics().heightPixels;
     }
 
-
     public static int pxtosp(Context context, float pxValue) {
         final float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
         return (int) (pxValue / fontScale + 0.5f);
@@ -76,26 +74,26 @@ public class PangleSharedUtil {
     }
 
     /**
-     * pangle banner support size ：
+     * Pangle banner support size and ratio  ：
      * 600*300、600*400、600*500、600*260、600*90、600*150、640*100、690*388
      *
      * @param params
      * @return
      */
-    public static float[] getBannerAdSizeAdapterSafely(AdData params) {
+    public static float[] getBannerAdSizeAdapter(AdData params) {
         float[] adSize = new float[]{0, 0};
         if (params == null) {
             adSize = new float[]{600, 90};
             return adSize;
         }
 
-        Object oHeight = params.getAdHeight();
+        final Object oHeight = params.getAdHeight();
 
         if (oHeight != null) {
             adSize[1] = (float) ((Integer) oHeight);
         }
 
-        Object oWidth = params.getAdWidth();
+        final Object oWidth = params.getAdWidth();
         if (oWidth != null) {
             adSize[0] = (float) ((Integer) oWidth);
 
@@ -125,5 +123,4 @@ public class PangleSharedUtil {
 
         return adSize;
     }
-
 }
