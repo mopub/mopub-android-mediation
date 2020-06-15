@@ -319,6 +319,11 @@ public class PangleAdInterstitial extends BaseAd {
                         }
 
                         @Override
+                        public void onInterstitialShowFail() {
+                            MoPubLog.log(getAdNetworkId(), MoPubLog.AdLogEvent.SHOW_FAILED, ADAPTER_NAME);
+                        }
+
+                        @Override
                         public void onInterstitialClicked() {
                             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
                             if (mInteractionListener != null) {
