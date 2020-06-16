@@ -1,6 +1,9 @@
 package com.mopub.mobileads;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -113,7 +116,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangleSDK initialize with appId = " + appId);
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
-                    .useTextureView(true)
+                    .useTextureView(isUseTextureView(context))
                     .appName(MOPUB_NETWORK_NAME)
                     .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_DARK)
                     .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0) /*set gdpr to Pangle sdk, 0 close GDPR Privacy protection ，1: open GDPR Privacy protection */
@@ -123,5 +126,24 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     .build());
             sIsSDKInitialized = true;
         }
+    }
+
+    private static boolean isUseTextureView(Context context) {
+        try {
+            String pkgName = context.getPackageName();
+            PackageManager pkg = context.getPackageManager();
+            PackageInfo packageInfo = pkg.getPackageInfo(pkgName, PackageManager.GET_PERMISSIONS);
+            String[] requestedPermissions = packageInfo.requestedPermissions;
+            String PER = Manifest.permission.WAKE_LOCK;
+            if (requestedPermissions != null && requestedPermissions.length > 0) {
+                for (String per : requestedPermissions) {
+                    if (PER.equalsIgnoreCase(per)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignore) {
+        }
+        return false;
     }
 }
