@@ -1,4 +1,8 @@
 ## Changelog
+ * 6.16.1.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
  * 6.16.1.0
     * This version of the adapters has been certified with ironSource 6.16.1 and MoPub SDK 5.12.0.
 

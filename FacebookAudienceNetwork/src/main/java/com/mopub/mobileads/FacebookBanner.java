@@ -1,7 +1,9 @@
 package com.mopub.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,12 +15,12 @@ import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
 import com.facebook.ads.AudienceNetworkAds;
 import com.mopub.common.DataKeys;
+import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.facebook.ads.AdError.BROKEN_MEDIA_ERROR_CODE;
 import static com.facebook.ads.AdError.CACHE_ERROR_CODE;
@@ -33,8 +35,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.CANCELLED;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
@@ -43,82 +43,63 @@ import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 import static com.mopub.mobileads.MoPubErrorCode.VIDEO_CACHE_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
-public class FacebookBanner extends CustomEventBanner implements AdListener {
+public class FacebookBanner extends BaseAd implements AdListener {
     private static final String PLACEMENT_ID_KEY = "placement_id";
     private static final String ADAPTER_NAME = FacebookBanner.class.getSimpleName();
-    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     private AdView mFacebookBanner;
-    private CustomEventBannerListener mBannerListener;
     @NonNull
     private FacebookAdapterConfiguration mFacebookAdapterConfiguration;
-    private static String mPlacementId;
-
-    /**
-     * CustomEventBanner implementation
-     */
+    private String mPlacementId;
 
     public FacebookBanner() {
         mFacebookAdapterConfiguration = new FacebookAdapterConfiguration();
     }
 
     @Override
-    protected void loadBanner(final Context context,
-                              final CustomEventBannerListener customEventBannerListener,
-                              final Map<String, Object> localExtras,
-                              final Map<String, String> serverExtras) {
-        if (!sIsInitialized.getAndSet(true)) {
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
+
+        if (!AudienceNetworkAds.isInitialized(context)) {
             AudienceNetworkAds.initialize(context);
         }
 
         setAutomaticImpressionAndClickTracking(false);
 
-        mBannerListener = customEventBannerListener;
-
-        if (serverExtrasAreValid(serverExtras)) {
-            mPlacementId = serverExtras.get(PLACEMENT_ID_KEY);
-            mFacebookAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+        final Map<String, String> extras = adData.getExtras();
+        if (extrasAreValid(extras)) {
+            mPlacementId = extras.get(PLACEMENT_ID_KEY);
+            mFacebookAdapterConfiguration.setCachedInitializationParameters(context, extras);
         } else {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-            if (mBannerListener != null) {
-                mBannerListener.onBannerFailed(NETWORK_NO_FILL);
-            }
-            return;
-        }
-        
-        int height = 0;
-
-        if (localExtrasAreValid(localExtras)) {
-            Object heightObj = localExtras.get(DataKeys.AD_HEIGHT);
-
-            if (heightObj instanceof Integer) {
-                height = (Integer) heightObj;
-            }
-        } else {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-            if (mBannerListener != null) {
-                mBannerListener.onBannerFailed(NETWORK_NO_FILL);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(NETWORK_NO_FILL);
             }
             return;
         }
 
-        AdSize adSize = calculateAdSize(height);
+        final AdSize adSize = calculateAdSize(adData.getAdHeight() == null ? 0 : adData.getAdHeight());
 
         mFacebookBanner = new AdView(context, mPlacementId, adSize);
 
         AdView.AdViewLoadConfigBuilder bannerConfigBuilder = mFacebookBanner.buildLoadAdConfig()
                 .withAdListener(this);
 
-        final String adm = serverExtras.get(DataKeys.ADM_KEY);
-        if (!TextUtils.isEmpty(adm)) {
-            mFacebookBanner.loadAd(bannerConfigBuilder.withBid(adm).build());
+        final String adMarkup = extras.get(DataKeys.ADM_KEY);
+        if (!TextUtils.isEmpty(adMarkup)) {
+            mFacebookBanner.loadAd(bannerConfigBuilder.withBid(adMarkup).build());
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
             mFacebookBanner.loadAd(bannerConfigBuilder.build());
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         }
+    }
+
+    @Override
+    public View getAdView() {
+        return mFacebookBanner;
     }
 
     @Override
@@ -130,6 +111,12 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         }
     }
 
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
+    }
+
     /**
      * AdListener implementation
      */
@@ -139,11 +126,9 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Facebook banner ad loaded " +
                 "successfully. Showing ad...");
 
-        if (mBannerListener != null) {
-            mBannerListener.onBannerLoaded(mFacebookBanner);
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoaded();
             MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
-            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
-            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
         }
     }
 
@@ -184,38 +169,33 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
 
         MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 
-        if (mBannerListener != null) {
-            mBannerListener.onBannerFailed(errorCode);
+        if (mInteractionListener == null && mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(errorCode);
+        } else if (mInteractionListener != null) {
+            mInteractionListener.onAdFailed(errorCode);
         }
     }
 
     @Override
     public void onAdClicked(Ad ad) {
-        if (mBannerListener != null) {
-            mBannerListener.onBannerClicked();
-            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdClicked();
         }
+        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
     }
 
     @Override
     public void onLoggingImpression(Ad ad) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Facebook banner ad logged " +
                 "impression.");
-        if (mBannerListener != null) {
-            mBannerListener.onBannerImpression();
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdImpression();
         }
     }
 
-    private boolean serverExtrasAreValid(final Map<String, String> serverExtras) {
-        final String placementId = serverExtras.get(PLACEMENT_ID_KEY);
+    private boolean extrasAreValid(final Map<String, String> extras) {
+        final String placementId = extras.get(PLACEMENT_ID_KEY);
         return (placementId != null && placementId.length() > 0);
-    }
-
-    private boolean localExtrasAreValid(@NonNull final Map<String, Object> localExtras) {
-        Preconditions.checkNotNull(localExtras);
-
-        return localExtras.get(DataKeys.AD_WIDTH) instanceof Integer
-                && localExtras.get(DataKeys.AD_HEIGHT) instanceof Integer;
     }
 
     @Nullable
@@ -230,7 +210,13 @@ public class FacebookBanner extends CustomEventBanner implements AdListener {
         }
     }
 
-    private static String getAdNetworkId() {
-        return mPlacementId;
+    @NonNull
+    public String getAdNetworkId() {
+        return mPlacementId == null ? "" : mPlacementId;
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) {
+        return false;
     }
 }

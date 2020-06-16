@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.facebook.ads.AdError.CACHE_ERROR_CODE;
 import static com.facebook.ads.AdError.LOAD_TOO_FREQUENTLY_ERROR_CODE;
@@ -48,11 +47,10 @@ import static com.mopub.nativeads.NativeErrorCode.UNEXPECTED_RESPONSE_CODE;
 import static com.mopub.nativeads.NativeErrorCode.UNSPECIFIED;
 
 public class FacebookNative extends CustomEventNative {
-    public static final String NATIVE_BANNER_KEY = "native_banner";
-
     private static final String PLACEMENT_ID_KEY = "placement_id";
     private static final String ADAPTER_NAME = FacebookNative.class.getSimpleName();
-    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
+    private static final String NATIVE_BANNER_KEY = "native_banner";
+
     private Boolean isNativeBanner;
     private static String mPlacementId;
 
@@ -74,9 +72,10 @@ public class FacebookNative extends CustomEventNative {
         Preconditions.checkNotNull(localExtras);
         Preconditions.checkNotNull(serverExtras);
 
-        if (!sIsInitialized.getAndSet(true)) {
+        if (!AudienceNetworkAds.isInitialized(context)) {
             AudienceNetworkAds.initialize(context);
         }
+
         final String placementId;
         if (extrasAreValid(serverExtras)) {
             placementId = serverExtras.get(PLACEMENT_ID_KEY);

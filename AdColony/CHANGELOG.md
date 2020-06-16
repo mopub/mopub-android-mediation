@@ -1,4 +1,8 @@
 ## Changelog
+  * 4.1.4.2
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   * 4.1.4.1
     * Update `onReward` callback logic to prevent calling reward callback `onRewardedVideoCompleted()` with an empty reward for unwatched videos. Previously it was returning a empty reward with 0 amount.
     * Fixed empty all zone ids error message during initialization.

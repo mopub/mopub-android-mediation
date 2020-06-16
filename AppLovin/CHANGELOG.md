@@ -1,4 +1,8 @@
 ## Changelog
+ * 9.12.6.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+    
  * 9.12.6.0
     * This version of the adapters has been certified with AppLovin 9.12.6 and MoPub SDK 5.12.0.
 

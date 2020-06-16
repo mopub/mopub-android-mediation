@@ -65,7 +65,6 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-
         if (!VASAds.isInitialized()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to getBiddingToken.  Verizon SDK must first be initialized.");
 

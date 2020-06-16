@@ -1,4 +1,10 @@
 ## Changelog
+  * 14.0.01.0
+    * This version of the adapters has been certified with Mintegral 14.0.01 and MoPub 5.13.0.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * Fix bugs related to ad request timeouts.
+
   * 13.1.11.0
     * This version of the adapters has been certified with Mintegral 13.1.11 and MoPub 5.12.0.
     * Add support for placement ID.
