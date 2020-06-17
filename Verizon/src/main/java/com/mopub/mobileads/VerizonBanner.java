@@ -5,11 +5,14 @@ import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -41,23 +44,21 @@ import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
 import static com.mopub.mobileads.VerizonAdapterConfiguration.convertErrorInfoToMoPub;
 
-public class VerizonBanner extends CustomEventBanner {
+public class VerizonBanner extends BaseAd {
 
     private static final String ADAPTER_NAME = VerizonBanner.class.getSimpleName();
 
     private static final String PLACEMENT_ID_KEY = "placementId";
     private static final String SITE_ID_KEY = "siteId";
-    private static final String HEIGHT_KEY = "com_mopub_ad_height";
-    private static final String WIDTH_KEY = "com_mopub_ad_width";
     private static final String HEIGHT_LEGACY_KEY = "adHeight";
     private static final String WIDTH_LEGACY_KEY = "adWidth";
 
     private InlineAdView verizonInlineAd;
-    private CustomEventBannerListener bannerListener;
     private FrameLayout internalView;
 
     private int adWidth, adHeight;
-    private static String mPlacementId;
+    @Nullable
+    private String mPlacementId;
 
     @NonNull
     private VerizonAdapterConfiguration verizonAdapterConfiguration;
@@ -67,27 +68,25 @@ public class VerizonBanner extends CustomEventBanner {
     }
 
     @Override
-    protected void loadBanner(final Context context,
-                              final CustomEventBannerListener customEventBannerListener,
-                              final Map<String, Object> localExtras,
-                              final Map<String, String> serverExtras) {
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
 
-        bannerListener = customEventBannerListener;
-
-        if (serverExtras == null || serverExtras.isEmpty()) {
+        final Map<String, String> extras = adData.getExtras();
+        if (extras.isEmpty()) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Ad request to Verizon " +
-                    "failed because serverExtras is null or empty");
+                    "failed because server data is null or empty");
 
-            logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
+            logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, true);
 
             return;
         }
 
-        // Cache serverExtras so siteId can be used to initalizate VAS early at next launch
-        verizonAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+        // Cache server data so siteId can be used to initalizate VAS early at next launch
+        verizonAdapterConfiguration.setCachedInitializationParameters(context, extras);
 
-        String siteId = serverExtras.get(getSiteIdKey());
-        mPlacementId = serverExtras.get(getPlacementIdKey());
+        final String siteId = extras.get(SITE_ID_KEY);
+        mPlacementId = extras.get(PLACEMENT_ID_KEY);
 
         if (!VASAds.isInitialized()) {
             Application application = null;
@@ -99,34 +98,27 @@ public class VerizonBanner extends CustomEventBanner {
             }
 
             if (!StandardEdition.initialize(application, siteId)) {
-
-                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
+                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, true);
             }
         }
 
         // The current activity must be set as resumed so VAS can track ad visibility
-        ActivityStateManager activityStateManager = VASAds.getActivityStateManager();
+        final ActivityStateManager activityStateManager = VASAds.getActivityStateManager();
         if (activityStateManager != null && context instanceof Activity) {
             activityStateManager.setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
         }
 
-        if (localExtras == null || localExtras.isEmpty()) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "localExtras is null. " +
-                    "Unable to extract banner sizes from localExtras.  Will attempt to extract from " +
-                    "serverExtras");
-        } else {
-            if (localExtras.get(getWidthKey()) != null) {
-                adWidth = (int) localExtras.get(getWidthKey());
-            }
-            if (localExtras.get(getHeightKey()) != null) {
-                adHeight = (int) localExtras.get(getHeightKey());
-            }
+        if (adData.getAdWidth() != null) {
+            adWidth = adData.getAdWidth();
+        }
+        if (adData.getAdHeight() != null) {
+            adHeight = adData.getAdHeight();
         }
 
         if (adHeight <= 0 || adWidth <= 0) {
-            // Fall back to serverExtras for legacy custom event integrations
-            final String widthString = serverExtras.get(WIDTH_LEGACY_KEY);
-            final String heightString = serverExtras.get(HEIGHT_LEGACY_KEY);
+            // Fall back to server data for legacy custom event integrations
+            final String widthString = extras.get(WIDTH_LEGACY_KEY);
+            final String heightString = extras.get(HEIGHT_LEGACY_KEY);
 
             try {
                 if (widthString != null) {
@@ -137,9 +129,9 @@ public class VerizonBanner extends CustomEventBanner {
                 }
             } catch (NumberFormatException e) {
                 MoPubLog.log(getAdNetworkId(), CUSTOM_WITH_THROWABLE, "Unable to parse banner " +
-                        "sizes from serverExtras.", e);
+                        "sizes from server data.", e);
 
-                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR);
+                logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, true);
 
                 return;
             }
@@ -150,14 +142,14 @@ public class VerizonBanner extends CustomEventBanner {
                     "Ad request to Verizon failed because either the placement ID is empty, or width " +
                             "and/or height is <= 0");
 
-            logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR);
+            logAndNotifyBannerFailed(LOAD_FAILED, INTERNAL_ERROR, true);
 
             return;
         }
 
         internalView = new FrameLayout(context);
 
-        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        final LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.CENTER_HORIZONTAL;
         internalView.setLayoutParams(lp);
 
@@ -169,10 +161,11 @@ public class VerizonBanner extends CustomEventBanner {
                 new VerizonInlineAdFactoryListener());
 
         if (bid == null) {
-            final RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder(VASAds.getRequestMetadata());
+            final RequestMetadata.Builder requestMetadataBuilder = new RequestMetadata.Builder(
+                    VASAds.getRequestMetadata());
             requestMetadataBuilder.setMediator(VerizonAdapterConfiguration.MEDIATOR_ID);
 
-            final String adContent = serverExtras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY);
+            final String adContent = extras.get(VerizonAdapterConfiguration.SERVER_EXTRAS_AD_CONTENT_KEY);
 
             if (!TextUtils.isEmpty(adContent)) {
                 final Map<String, Object> placementData = new HashMap<>();
@@ -199,10 +192,10 @@ public class VerizonBanner extends CustomEventBanner {
      * @param requestMetadata    a {@link RequestMetadata} instance for the request or null
      * @param bidRequestListener an instance of {@link BidRequestListener}. Cannot be null.
      */
-    public static void requestBid(final Context context, final String placementId,
-                                  final List<AdSize> adSizes,
-                                  final RequestMetadata requestMetadata,
-                                  final BidRequestListener bidRequestListener) {
+    public void requestBid(final Context context, final String placementId,
+                           final List<AdSize> adSizes,
+                           final RequestMetadata requestMetadata,
+                           final BidRequestListener bidRequestListener) {
 
         Preconditions.checkNotNull(context, "Super auction bid skipped because the " +
                 "context is null");
@@ -248,13 +241,17 @@ public class VerizonBanner extends CustomEventBanner {
     }
 
     @Override
+    @Nullable
+    public View getAdView() {
+        return internalView;
+    }
+
+    @Override
     protected void onInvalidate() {
         VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-                bannerListener = null;
-
                 // Destroy any hanging references
                 if (verizonInlineAd != null) {
                     verizonInlineAd.destroy();
@@ -264,38 +261,37 @@ public class VerizonBanner extends CustomEventBanner {
         });
     }
 
-    protected String getPlacementIdKey() {
-        return PLACEMENT_ID_KEY;
-    }
-
-    protected String getSiteIdKey() {
-        return SITE_ID_KEY;
-    }
-
-    protected String getWidthKey() {
-        return WIDTH_KEY;
-    }
-
-    protected String getHeightKey() {
-        return HEIGHT_KEY;
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
     }
 
     private void logAndNotifyBannerFailed(final MoPubLog.AdapterLogEvent event,
-                                          final MoPubErrorCode errorCode) {
+                                          final MoPubErrorCode errorCode,
+                                          final boolean isLoad) {
 
         MoPubLog.log(getAdNetworkId(), event, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
 
-        if (bannerListener != null) {
-            bannerListener.onBannerFailed(errorCode);
+        if (isLoad && mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(errorCode);
+        } else if (!isLoad && mInteractionListener != null) {
+            mInteractionListener.onAdFailed(errorCode);
         }
     }
 
-    private static String getAdNetworkId() {
-        return mPlacementId;
+    @NonNull
+    public String getAdNetworkId() {
+        return mPlacementId != null ? mPlacementId : "";
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull final Activity activity,
+                                            @NonNull final AdData adData) {
+        return false;
     }
 
     private class VerizonInlineAdFactoryListener implements InlineAdFactory.InlineAdFactoryListener {
-        final CustomEventBannerListener listener = bannerListener;
 
         @Override
         public void onLoaded(final InlineAdFactory inlineAdFactory, final InlineAdView inlineAdView) {
@@ -307,7 +303,8 @@ public class VerizonBanner extends CustomEventBanner {
 
                 @Override
                 public void run() {
-                    final CreativeInfo creativeInfo = verizonInlineAd == null ? null : verizonInlineAd.getCreativeInfo();
+                    final CreativeInfo creativeInfo = verizonInlineAd == null ? null :
+                            verizonInlineAd.getCreativeInfo();
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Verizon creative " +
                             "info: " + creativeInfo);
 
@@ -315,8 +312,8 @@ public class VerizonBanner extends CustomEventBanner {
                         internalView.addView(verizonInlineAd);
                     }
 
-                    if (listener != null) {
-                        listener.onBannerLoaded(internalView);
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoaded();
                     }
                 }
             });
@@ -340,14 +337,13 @@ public class VerizonBanner extends CustomEventBanner {
 
                 @Override
                 public void run() {
-                    logAndNotifyBannerFailed(LOAD_FAILED, convertErrorInfoToMoPub(errorInfo));
+                    logAndNotifyBannerFailed(LOAD_FAILED, convertErrorInfoToMoPub(errorInfo), true);
                 }
             });
         }
     }
 
     private class VerizonInlineAdListener implements InlineAdView.InlineAdListener {
-        final CustomEventBannerListener listener = bannerListener;
 
         @Override
         public void onError(final InlineAdView inlineAdView, final ErrorInfo errorInfo) {
@@ -358,7 +354,7 @@ public class VerizonBanner extends CustomEventBanner {
 
                 @Override
                 public void run() {
-                    logAndNotifyBannerFailed(SHOW_FAILED, convertErrorInfoToMoPub(errorInfo));
+                    logAndNotifyBannerFailed(SHOW_FAILED, convertErrorInfoToMoPub(errorInfo), false);
                 }
             });
         }
@@ -378,8 +374,8 @@ public class VerizonBanner extends CustomEventBanner {
 
                 @Override
                 public void run() {
-                    if (listener != null) {
-                        listener.onBannerExpanded();
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdExpanded();
                     }
                 }
             });
@@ -393,8 +389,8 @@ public class VerizonBanner extends CustomEventBanner {
 
                 @Override
                 public void run() {
-                    if (listener != null) {
-                        listener.onBannerCollapsed();
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdCollapsed();
                     }
                 }
             });
@@ -408,8 +404,8 @@ public class VerizonBanner extends CustomEventBanner {
 
                 @Override
                 public void run() {
-                    if (listener != null) {
-                        listener.onBannerClicked();
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdClicked();
                     }
                 }
             });

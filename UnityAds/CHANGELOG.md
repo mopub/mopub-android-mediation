@@ -1,9 +1,16 @@
 ## Changelog
+  * 3.4.2.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
+  * 3.4.2.0
+    * This version of the adapters has been certified with Unity Ads 3.4.2.
+
   * 3.4.0.1
     * Log the Unity Ads placement ID in ad lifecycle events.
 
   * 3.4.0.0
-    * This version of the adapters has been certified with Untiy Ads 3.4.0.
+    * This version of the adapters has been certified with Unity Ads 3.4.0.
 
   * 3.3.0.1
     * Update adapter to handle Unity Ads load behaviors seamlessly for fullscreen ads.

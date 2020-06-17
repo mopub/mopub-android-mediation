@@ -1,7 +1,9 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,10 +17,10 @@ import com.adcolony.sdk.AdColonyReward;
 import com.adcolony.sdk.AdColonyRewardListener;
 import com.adcolony.sdk.AdColonyZone;
 import com.mopub.common.BaseLifecycleListener;
-import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Json;
 
@@ -37,7 +39,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
-public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
+public class AdColonyRewardedVideo extends BaseAd {
 
     private static final String ADAPTER_NAME = AdColonyRewardedVideo.class.getSimpleName();
 
@@ -48,15 +50,21 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
 
     private AdColonyInterstitial mAd;
-    @NonNull
-    private String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
-    private AdColonyListener mAdColonyListener;
     private AdColonyAdOptions mAdColonyAdOptions = new AdColonyAdOptions();
     private String mAdColonyClientOptions = "";
     private static WeakHashMap<String, AdColonyInterstitial> sZoneIdToAdMap = new WeakHashMap<>();
     @NonNull
     private String mAdUnitId = "";
     private boolean mIsLoading = false;
+
+    @NonNull
+    private static String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
+
+    @NonNull
+    @Override
+    public String getAdNetworkId() {
+        return mZoneId;
+    }
 
     private AdColonyAppOptions mAdColonyAppOptions;
 
@@ -72,20 +80,8 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
     @Nullable
     @Override
-    public CustomEventRewardedVideoListener getVideoListenerForSdk() {
-        return mAdColonyListener;
-    }
-
-    @Nullable
-    @Override
     public LifecycleListener getLifecycleListener() {
         return sLifecycleListener;
-    }
-
-    @NonNull
-    @Override
-    public String getAdNetworkId() {
-        return mZoneId;
     }
 
     @Override
@@ -95,27 +91,28 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         if (ad != null) {
             ad.destroy();
             sZoneIdToAdMap.remove(mZoneId);
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColony rewarded video destroyed");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColony rewarded video destroyed");
         }
     }
 
     @Override
     public boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
-                                         @NonNull final Map<String, Object> localExtras,
-                                         @NonNull final Map<String, String> serverExtras) throws Exception {
+                                         @NonNull final AdData adData) {
         synchronized (AdColonyRewardedVideo.class) {
             if (sInitialized) {
                 return false;
             }
 
-            String clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+            final Map<String, String> extras = adData.getExtras();
+
+            String clientOptions = extras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
             if (clientOptions == null)
                 clientOptions = "";
 
-            final String appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
+            final String appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, extras);
 
             String[] allZoneIds;
-            String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+            String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, extras);
             if (allZoneIdsString != null) {
                 allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
             } else {
@@ -150,11 +147,16 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
     }
 
     @Override
-    protected void loadWithSdkInitialized(@NonNull final Activity activity,
-                                          @NonNull final Map<String, Object> localExtras,
-                                          @NonNull final Map<String, String> serverExtras) throws Exception {
+    protected void load(@NonNull final Context context,
+                        @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
 
-        mAdColonyAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
+        setAutomaticImpressionAndClickTracking(false);
+
+        final Map<String, String> extras = adData.getExtras();
+
+        mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, extras);
 
         String clientOptions;
         String appId;
@@ -162,15 +164,15 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         String[] allZoneIds;
 
         // Set optional parameters
-        clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+        clientOptions = extras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
         if (clientOptions == null)
             clientOptions = "";
 
         // Set mandatory parameters
-        appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
-        zoneId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY, serverExtras);
+        appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, extras);
+        zoneId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY, extras);
 
-        String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+        String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, extras);
         if (allZoneIdsString != null) {
             allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
         } else {
@@ -195,7 +197,7 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         }
 
         AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(
-                activity,
+                context,
                 clientOptions,
                 appId,
                 allZoneIds
@@ -203,26 +205,25 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
         setUpGlobalSettings();
 
-        Object adUnitObject = localExtras.get(DataKeys.AD_UNIT_ID_KEY);
-        if (adUnitObject instanceof String) {
-            mAdUnitId = (String) adUnitObject;
+        final String adUnitId = adData.getAdUnit();
+        if (!TextUtils.isEmpty(adUnitId)) {
+            mAdUnitId = adUnitId;
         }
 
         sZoneIdToAdMap.put(mZoneId, null);
         setUpAdOptions();
-        mAdColonyListener = new AdColonyListener(mAdColonyAdOptions);
+        final AdColonyListener mAdColonyListener = new AdColonyListener(mAdColonyAdOptions);
         AdColony.setRewardListener(mAdColonyListener);
         AdColony.requestInterstitial(mZoneId, mAdColonyListener, mAdColonyAdOptions);
         scheduleOnVideoReady();
-        MoPubLog.log(mZoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     private void abortRequestForIncorrectParameter(String parameterName) {
         AdColonyAdapterConfiguration.logAndFail("rewarded video request", parameterName);
-        MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
-                AdColonyRewardedVideo.class,
-                mZoneId,
-                MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        }
     }
 
     private void setUpAdOptions() {
@@ -230,22 +231,18 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         mAdColonyAdOptions.enableResultsDialog(getResultsDialogFromSettings());
     }
 
-    @Override
-    public boolean hasVideoAvailable() {
+    private boolean hasVideoAvailable() {
         return mAd != null && !mAd.isExpired();
     }
 
     @Override
-    public void showVideo() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+    public void show() {
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         if (this.hasVideoAvailable()) {
             mAd.show();
-        } else {
-            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
-                    AdColonyRewardedVideo.class,
-                    mZoneId,
-                    MoPubErrorCode.NETWORK_NO_FILL);
-            MoPubLog.log(SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+        } else if (mInteractionListener != null) {
+            mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
         }
     }
 
@@ -287,17 +284,18 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
+                            if (mLoadListener == null) {
+                                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                        MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
+                                        MoPubErrorCode.NETWORK_INVALID_STATE);
+                                return;
+                            }
                             if (hasVideoAvailable()) {
-                                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-                                MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(
-                                        AdColonyRewardedVideo.class,
-                                        mZoneId);
+                                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+                                mLoadListener.onAdLoaded();
                             } else {
-                                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-                                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
-                                        AdColonyRewardedVideo.class,
-                                        mZoneId,
-                                        MoPubErrorCode.NETWORK_NO_FILL);
+                                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+                                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
                             }
                         }
                     });
@@ -315,32 +313,35 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
         return sZoneIdToAdMap.get(zoneId) != null;
     }
 
-    private static class AdColonyListener extends AdColonyInterstitialListener
-            implements AdColonyRewardListener, CustomEventRewardedVideoListener {
+    private class AdColonyListener extends AdColonyInterstitialListener implements AdColonyRewardListener {
         private AdColonyAdOptions mAdOptions;
 
         AdColonyListener(AdColonyAdOptions adOptions) {
             mAdOptions = adOptions;
         }
 
+        @NonNull
+        private String getAdNetworkId() {
+            return mZoneId;
+        }
+
         @Override
         public void onReward(@NonNull AdColonyReward a) {
             MoPubReward reward;
             if (a.success()) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColonyReward name - " + a.getRewardName());
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColonyReward amount - " + a.getRewardAmount());
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColonyReward name - " + a.getRewardName());
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColonyReward amount - " + a.getRewardAmount());
                 reward = MoPubReward.success(a.getRewardName(), a.getRewardAmount());
 
-                MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, a.getRewardAmount(), a.getRewardName());
+                MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, a.getRewardAmount(), a.getRewardName());
             } else {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColonyReward failed");
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColonyReward failed");
                 reward = MoPubReward.failure();
             }
 
-            MoPubRewardedVideoManager.onRewardedVideoCompleted(
-                    AdColonyRewardedVideo.class,
-                    a.getZoneID(),
-                    reward);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdComplete(reward);
+            }
         }
 
         @Override
@@ -350,41 +351,45 @@ public class AdColonyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onRequestNotFilled(@NonNull AdColonyZone zone) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdColony rewarded ad has no fill");
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
-                    AdColonyRewardedVideo.class,
-                    zone.getZoneID(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "AdColony rewarded ad has no fill");
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
         }
 
         @Override
         public void onClosed(@NonNull AdColonyInterstitial ad) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Adcolony rewarded ad has been dismissed");
-            MoPubRewardedVideoManager.onRewardedVideoClosed(
-                    AdColonyRewardedVideo.class,
-                    ad.getZoneID());
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Adcolony rewarded ad has been dismissed");
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdDismissed();
+            }
         }
 
         @Override
         public void onOpened(@NonNull AdColonyInterstitial ad) {
-            MoPubRewardedVideoManager.onRewardedVideoStarted(
-                    AdColonyRewardedVideo.class,
-                    ad.getZoneID());
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdShown();
+                mInteractionListener.onAdImpression();
+            }
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
         public void onExpiring(@NonNull AdColonyInterstitial ad) {
-            AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
+            Preconditions.checkNotNull(ad);
+
+            if (ad.getListener() != null) {
+                AdColony.requestInterstitial(ad.getZoneID(), ad.getListener(), mAdOptions);
+            }
         }
 
         @Override
         public void onClicked(@NonNull AdColonyInterstitial ad) {
-            MoPubRewardedVideoManager.onRewardedVideoClicked(
-                    AdColonyRewardedVideo.class,
-                    ad.getZoneID());
-            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdClicked();
+            }
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
         }
     }
 

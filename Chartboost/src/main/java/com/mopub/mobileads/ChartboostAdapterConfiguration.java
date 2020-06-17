@@ -1,6 +1,5 @@
 package com.mopub.mobileads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -76,9 +75,9 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
 
         synchronized (ChartboostAdapterConfiguration.class) {
             try {
-                if (configuration != null && context instanceof Activity) {
+                if (configuration != null && !configuration.isEmpty()) {
 
-                    ChartboostShared.initializeSdk((Activity) context, configuration);
+                    ChartboostShared.initializeSdk(context, configuration);
 
                     final String appId = configuration.get(APP_ID_KEY);
                     final String appSignature = configuration.get(APP_SIGNATURE_KEY);
@@ -90,19 +89,16 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
                                 "are populated on the MoPub dashboard. Note that initialization on " +
                                 "the first app launch is a no-op.");
                     } else {
-                        Chartboost.startWithAppId((Activity) context, appId, appSignature);
+                        Chartboost.startWithAppId(context, appId, appSignature);
                     }
 
-                    Chartboost.setMediation(Chartboost.CBMediation.CBMediationMoPub, MoPub.SDK_VERSION);
+                    Chartboost.setMediation(Chartboost.CBMediation.CBMediationMoPub, MoPub.SDK_VERSION, BuildConfig.VERSION_NAME);
                     Chartboost.setDelegate(sDelegate);
-                    Chartboost.setShouldRequestInterstitialsInFirstSession(true);
                     Chartboost.setAutoCacheAds(false);
-                    Chartboost.setShouldDisplayLoadingViewForMoreApps(false);
-
                     networkInitializationSucceeded = true;
-                } else if (!(context instanceof Activity)) {
+                } else {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost's initialization via " +
-                            ADAPTER_NAME + " not started. An Activity Context is needed.");
+                            ADAPTER_NAME + " not started as the context calling it is missing or null.");
                 }
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Chartboost has encountered " +
@@ -132,6 +128,21 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
                 return CBLogging.Level.ALL;
             default:
                 return CBLogging.Level.NONE;
+        }
+    }
+
+    public static void logChartboostError(@NonNull String chartboostLocation,
+                                          @NonNull String adapterName,
+                                          @NonNull MoPubLog.AdapterLogEvent event,
+                                          String chartboostErrorName,
+                                          Integer chartboostErrorCode) {
+        if (chartboostErrorName != null && chartboostErrorCode != null) {
+            MoPubLog.log(chartboostLocation, CUSTOM, adapterName,
+                    "Chartboost " + event + " resulted in a Chartboost error: " + chartboostErrorName +
+                            " with code: " + chartboostErrorCode);
+        } else {
+            MoPubLog.log(chartboostLocation, CUSTOM, adapterName,
+                    "Chartboost " + event + " resulted in an error");
         }
     }
 }

@@ -16,7 +16,7 @@
         android:paddingTop="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp"
+        android:textSize="@dimen/small_text_size"
         android:textStyle="bold" />
 
     <TextView
@@ -29,7 +29,7 @@
         android:paddingStart="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorSecondary"
-        android:textSize="14sp"
+        android:textSize="@dimen/small_text_size"
         android:textStyle="normal" />
 
     <EditText
@@ -44,13 +44,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginBottom="4dp"
         android:orientation="horizontal">
 
         <EditText
             android:id="@+id/user_data_keywords_field"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
+            android:layout_weight="16"
             android:hint="@string/user_data_keywords"
             android:imeOptions="actionDone"
             android:inputType="text|textFilter|textShortMessage"
@@ -58,20 +60,20 @@
 
         <Button
             android:id="@+id/load_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginRight="2dp"
             android:text="@string/load_ad" />
 
         <Button
             android:id="@+id/switch_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginRight="2dp"
             android:text="@string/switch_layout" />
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/native_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

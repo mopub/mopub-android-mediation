@@ -1,4 +1,29 @@
 ## Changelog
+ * 5.9.0.2
+   * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+   * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+   
+ * 5.9.0.1
+   * Add support for Facebook native banner rendering via [templates](https://developers.facebook.com/docs/audience-network/guides/ad-formats/native/android-template/#native-banner-ad).
+
+ * 5.9.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.9.0 and MoPub 5.12.0.
+
+ * 5.8.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.8.0 and MoPub 5.11.1.
+
+ * 5.7.1.1
+   * Fix duplicate firing of `onRewardedVideoClosed()`. 
+
+ * 5.7.1.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.7.1.
+
+ * 5.7.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.7.0.
+
+ * 5.6.1.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.6.1.
+ 
  * 5.6.0.1
     * Log the Facebook placement name in ad lifecycle events.
     * Map additional error codes for failure cases.

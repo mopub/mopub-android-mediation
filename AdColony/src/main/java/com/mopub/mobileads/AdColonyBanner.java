@@ -3,14 +3,17 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.view.View;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAdSize;
 import com.adcolony.sdk.AdColonyAdView;
 import com.adcolony.sdk.AdColonyAdViewListener;
 import com.adcolony.sdk.AdColonyZone;
-import com.mopub.common.DataKeys;
+import com.mopub.common.LifecycleListener;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Json;
 
@@ -23,19 +26,29 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 
-public class AdColonyBanner extends CustomEventBanner {
+public class AdColonyBanner extends BaseAd {
 
     private static final String ADAPTER_NAME = AdColonyBanner.class.getSimpleName();
 
-    private CustomEventBannerListener mCustomEventBannerListener;
     private AdColonyAdViewListener mAdColonyBannerListener;
     private final Handler mHandler;
 
     @NonNull
     private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
-    private AdColonyAdSize adSize;
-    private AdColonyAdSize defaultAdSize = AdColonyAdSize.BANNER;
     private AdColonyAdView mAdColonyAdView;
+
+    @NonNull
+    private String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
+
+    @NonNull
+    public String getAdNetworkId() {
+        return mZoneId;
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) {
+        return false;
+    }
 
     public AdColonyBanner() {
         mHandler = new Handler();
@@ -43,37 +56,38 @@ public class AdColonyBanner extends CustomEventBanner {
     }
 
     @Override
-    protected void loadBanner(@NonNull Context context,
-                              @NonNull CustomEventBannerListener customEventBannerListener,
-                              @NonNull Map<String, Object> localExtras,
-                              @NonNull Map<String, String> serverExtras) {
+    protected void load(@NonNull final Context context,
+                        @NonNull final AdData adData) {
         if (!(context instanceof Activity)) {
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Aborting Ad Colony banner load request as the context calling it is not an instance of Activity.");
-            customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
             return;
         }
 
-        mCustomEventBannerListener = customEventBannerListener;
-
-        adSize = getAdSize(localExtras);
+        AdColonyAdSize adSize = getAdSize(adData);
         if (adSize == null) {
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(), MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Aborting Ad Colony banner load request as the adSize requested is invalid");
-            customEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
             return;
         }
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requested ad size is: w: " + adSize.getWidth() + " h: " + adSize.getHeight());
 
-        String clientOptions = serverExtras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
+        final Map<String, String> extras = adData.getExtras();
+        String clientOptions = extras.get(AdColonyAdapterConfiguration.CLIENT_OPTIONS_KEY);
         if (clientOptions == null)
             clientOptions = "";
 
-        final String appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, serverExtras);
-        final String zoneId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY, serverExtras);
+        final String appId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.APP_ID_KEY, extras);
+        final String zoneId = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ZONE_ID_KEY, extras);
 
         String[] allZoneIds;
-        String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, serverExtras);
+        String allZoneIdsString = AdColonyAdapterConfiguration.getAdColonyParameter(AdColonyAdapterConfiguration.ALL_ZONE_IDS_KEY, extras);
         if (allZoneIdsString != null) {
             allZoneIds = Json.jsonArrayToStringArray(allZoneIdsString);
         } else {
@@ -90,27 +104,44 @@ public class AdColonyBanner extends CustomEventBanner {
             return;
         }
 
-        mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+        mZoneId = zoneId;
+
+        mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, extras);
         mAdColonyBannerListener = getAdColonyBannerListener();
 
         AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(context, clientOptions, appId, allZoneIds);
         AdColony.requestAdView(zoneId, mAdColonyBannerListener, adSize);
-        MoPubLog.log(zoneId, LOAD_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
+    }
+
+    @Nullable
+    @Override
+    protected View getAdView() {
+        return mAdColonyAdView;
     }
 
     private void abortRequestForIncorrectParameter(String parameterName) {
         AdColonyAdapterConfiguration.logAndFail("banner request", parameterName);
-        mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        }
     }
 
     @Override
     protected void onInvalidate() {
         if (mAdColonyAdView != null) {
             mAdColonyAdView.destroy();
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Banner destroyed");
             mAdColonyAdView = null;
         }
 
         mAdColonyBannerListener = null;
+    }
+
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
     }
 
     private AdColonyAdViewListener getAdColonyBannerListener() {
@@ -125,8 +156,10 @@ public class AdColonyBanner extends CustomEventBanner {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            mCustomEventBannerListener.onBannerLoaded(adColonyAdView);
-                            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+                            if (mLoadListener != null) {
+                                mLoadListener.onAdLoaded();
+                            }
+                            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                         }
                     });
                 }
@@ -137,8 +170,10 @@ public class AdColonyBanner extends CustomEventBanner {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            mCustomEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                            if (mLoadListener != null) {
+                                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                            }
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                                     MoPubErrorCode.NETWORK_NO_FILL);
                         }
                     });
@@ -147,52 +182,57 @@ public class AdColonyBanner extends CustomEventBanner {
                 @Override
                 public void onClicked(AdColonyAdView ad) {
                     super.onClicked(ad);
-                    mCustomEventBannerListener.onBannerClicked();
-                    MoPubLog.log(CLICKED, ADAPTER_NAME);
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdClicked();
+                    }
+                    MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
                 }
 
                 @Override
                 public void onLeftApplication(AdColonyAdView ad) {
                     super.onLeftApplication(ad);
-                    MoPubLog.log(WILL_LEAVE_APPLICATION, ADAPTER_NAME);
+                    MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
                 }
 
                 @Override
                 public void onOpened(AdColonyAdView ad) {
                     super.onOpened(ad);
-                    mCustomEventBannerListener.onBannerExpanded();
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Banner opened fullscreen");
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdExpanded();
+                    }
                 }
 
                 @Override
                 public void onClosed(AdColonyAdView ad) {
                     super.onClosed(ad);
-                    mCustomEventBannerListener.onBannerCollapsed();
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Banner closed fullscreen");
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdCollapsed();
+                    }
                 }
             };
         }
     }
 
-    private AdColonyAdSize getAdSize(Map<String, Object> localExtras) {
-        if (localExtras != null && !localExtras.isEmpty()) {
-            Object adWidthObject = localExtras.get(DataKeys.AD_WIDTH);
-            Object adHeightObject = localExtras.get(DataKeys.AD_HEIGHT);
+    @Nullable
+    private AdColonyAdSize getAdSize(@NonNull final AdData adData) {
+        final Integer width = adData.getAdWidth();
+        final Integer height = adData.getAdHeight();
 
-            if (adWidthObject instanceof Integer && adHeightObject instanceof Integer) {
-                int width = (Integer) adWidthObject;
-                int height = (Integer) adHeightObject;
+        if (width != null && height != null) {
 
-                if (height >= AdColonyAdSize.SKYSCRAPER.getHeight() && width >= AdColonyAdSize.SKYSCRAPER.getWidth()) {
-                    return AdColonyAdSize.SKYSCRAPER;
-                } else if (height >= AdColonyAdSize.MEDIUM_RECTANGLE.getHeight() && width >= AdColonyAdSize.MEDIUM_RECTANGLE.getWidth()) {
-                    return AdColonyAdSize.MEDIUM_RECTANGLE;
-                } else if (height >= AdColonyAdSize.LEADERBOARD.getHeight() && width >= AdColonyAdSize.LEADERBOARD.getWidth()) {
-                    return AdColonyAdSize.LEADERBOARD;
-                } else if (height >= AdColonyAdSize.BANNER.getHeight() && width >= AdColonyAdSize.BANNER.getWidth()) {
-                    return AdColonyAdSize.BANNER;
-                } else {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requested ad size doesn't fit to any banner size supported by AdColony, will abort request.");
-                    return null;
-                }
+            if (height >= AdColonyAdSize.SKYSCRAPER.getHeight() && width >= AdColonyAdSize.SKYSCRAPER.getWidth()) {
+                return AdColonyAdSize.SKYSCRAPER;
+            } else if (height >= AdColonyAdSize.MEDIUM_RECTANGLE.getHeight() && width >= AdColonyAdSize.MEDIUM_RECTANGLE.getWidth()) {
+                return AdColonyAdSize.MEDIUM_RECTANGLE;
+            } else if (height >= AdColonyAdSize.LEADERBOARD.getHeight() && width >= AdColonyAdSize.LEADERBOARD.getWidth()) {
+                return AdColonyAdSize.LEADERBOARD;
+            } else if (height >= AdColonyAdSize.BANNER.getHeight() && width >= AdColonyAdSize.BANNER.getWidth()) {
+                return AdColonyAdSize.BANNER;
+            } else {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requested ad size doesn't fit to any banner size supported by AdColony, will abort request.");
+                return null;
             }
         }
 
