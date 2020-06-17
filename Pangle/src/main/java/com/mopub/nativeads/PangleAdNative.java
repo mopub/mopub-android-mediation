@@ -23,7 +23,6 @@ import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.PangleAdapterConfiguration;
-import com.mopub.mobileads.PangleSharedUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -348,13 +347,13 @@ public class PangleAdNative extends CustomEventNative {
 
     private static NativeErrorCode mapErrorCode(int error) {
         switch (error) {
-            case PangleSharedUtil.CONTENT_TYPE:
-            case PangleSharedUtil.REQUEST_PB_ERROR:
+            case PangleAdapterConfiguration.CONTENT_TYPE:
+            case PangleAdapterConfiguration.REQUEST_PB_ERROR:
                 return NativeErrorCode.CONNECTION_ERROR;
-            case PangleSharedUtil.NO_AD:
+            case PangleAdapterConfiguration.NO_AD:
                 return NativeErrorCode.NETWORK_NO_FILL;
-            case PangleSharedUtil.ADSLOT_EMPTY:
-            case PangleSharedUtil.ADSLOT_ID_ERROR:
+            case PangleAdapterConfiguration.ADSLOT_EMPTY:
+            case PangleAdapterConfiguration.ADSLOT_ID_ERROR:
                 return NativeErrorCode.NETWORK_INVALID_REQUEST;
             default:
                 return NativeErrorCode.UNSPECIFIED;

@@ -33,6 +33,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class PangleAdBanner extends BaseAd {
+
     private static final String ADAPTER_NAME = PangleAdBanner.class.getSimpleName();
 
     private static String mPlacementId;
@@ -98,7 +99,7 @@ public class PangleAdBanner extends BaseAd {
             return;
         }
 
-        float[] bannerAdSizeAdapterSafely = PangleSharedUtil.getBannerAdSizeAdapter(adData);
+        float[] bannerAdSizeAdapterSafely = PangleAdapterConfiguration.getBannerAdSizeAdapter(adData);
         mBannerWidth = bannerAdSizeAdapterSafely[0];
         mBannerHeight = bannerAdSizeAdapterSafely[1];
 
@@ -184,7 +185,6 @@ public class PangleAdBanner extends BaseAd {
 
     @Override
     public View getAdView() {
-        //TODO: A new interface need to be handled when the banner ad view is returned.
         return mBannerView;
     }
 
@@ -221,7 +221,7 @@ public class PangleAdBanner extends BaseAd {
                         MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                         MoPubErrorCode.NETWORK_NO_FILL);
                 if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(PangleSharedUtil.mapErrorCode(code));
+                    mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
                 }
             }
 
@@ -314,7 +314,7 @@ public class PangleAdBanner extends BaseAd {
             public void onError(int code, String message) {
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "express banner ad  onAdLoadFailed.-code=" + code + "," + message);
                 if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(PangleSharedUtil.mapErrorCode(code));
+                    mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
                 }
             }
 

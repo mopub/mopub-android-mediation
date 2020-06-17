@@ -356,13 +356,13 @@ public class PangleAdRewardedVideo extends BaseAd {
 
     private static MoPubErrorCode mapErrorCode(int error) {
         switch (error) {
-            case PangleSharedUtil.CONTENT_TYPE:
-            case PangleSharedUtil.REQUEST_PB_ERROR:
+            case PangleAdapterConfiguration.CONTENT_TYPE:
+            case PangleAdapterConfiguration.REQUEST_PB_ERROR:
                 return MoPubErrorCode.NO_CONNECTION;
-            case PangleSharedUtil.NO_AD:
+            case PangleAdapterConfiguration.NO_AD:
                 return MoPubErrorCode.NETWORK_NO_FILL;
-            case PangleSharedUtil.ADSLOT_EMPTY:
-            case PangleSharedUtil.ADSLOT_ID_ERROR:
+            case PangleAdapterConfiguration.ADSLOT_EMPTY:
+            case PangleAdapterConfiguration.ADSLOT_ID_ERROR:
                 return MoPubErrorCode.MISSING_AD_UNIT_ID;
             default:
                 return MoPubErrorCode.UNSPECIFIED;

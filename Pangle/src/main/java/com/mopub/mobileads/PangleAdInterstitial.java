@@ -102,7 +102,7 @@ public class PangleAdInterstitial extends BaseAd {
 
             /** Obtain traditional or express interstitial extra parameters */
             if (!mIsFullVideoAd) {
-                final float[] adSize = PangleSharedUtil.getAdSizeSafely(extras, KEY_EXTRA_AD_WIDTH, KEY_EXTRA_AD_HEIGHT);
+                final float[] adSize = PangleAdapterConfiguration.getAdSizeSafely(extras, KEY_EXTRA_AD_WIDTH, KEY_EXTRA_AD_HEIGHT);
                 mAdWidth = adSize[0];
                 mAdHeight = adSize[1];
             }
@@ -140,11 +140,11 @@ public class PangleAdInterstitial extends BaseAd {
             } else {
                 if (mOrientation == Configuration.ORIENTATION_PORTRAIT) {
                     /** ORIENTATION_PORTRAIT 2:3 */
-                    mAdWidth = PangleSharedUtil.getScreenWidth(mContext);
+                    mAdWidth = PangleAdapterConfiguration.getScreenWidth(mContext);
                     mAdHeight = (3 * mAdWidth) / 2;
                 } else {
                     /**  3:2 = w:h */
-                    mAdHeight = PangleSharedUtil.getScreenHeight(mContext);
+                    mAdHeight = PangleAdapterConfiguration.getScreenHeight(mContext);
                     mAdWidth = (3 * mAdHeight) / 2;
                 }
                 MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME, "Loading Pangle traditional interstitial ad");
@@ -275,9 +275,9 @@ public class PangleAdInterstitial extends BaseAd {
             @Override
             public void onError(int code, String message) {
                 mIsLoading = false;
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, PangleSharedUtil.mapErrorCode(code), message);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, PangleAdapterConfiguration.mapErrorCode(code), message);
                 if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(PangleSharedUtil.mapErrorCode(code));
+                    mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
                 }
             }
 
@@ -389,9 +389,9 @@ public class PangleAdInterstitial extends BaseAd {
         private TTAdNative.NativeExpressAdListener mInterstitialAdExpressAdListener = new TTAdNative.NativeExpressAdListener() {
             @Override
             public void onError(int code, String message) {
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, PangleSharedUtil.mapErrorCode(code), message);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, PangleAdapterConfiguration.mapErrorCode(code), message);
                 if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(PangleSharedUtil.mapErrorCode(code));
+                    mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
                 }
             }
 
@@ -527,9 +527,9 @@ public class PangleAdInterstitial extends BaseAd {
         private TTAdNative.FullScreenVideoAdListener mLoadFullVideoAdListener = new TTAdNative.FullScreenVideoAdListener() {
             @Override
             public void onError(int code, String message) {
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "Loading Full Video creative encountered an error: " + PangleSharedUtil.mapErrorCode(code).toString() + ",error message:" + message);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "Loading Full Video creative encountered an error: " + PangleAdapterConfiguration.mapErrorCode(code).toString() + ",error message:" + message);
                 if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(PangleSharedUtil.mapErrorCode(code));
+                    mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
                 }
             }
 
