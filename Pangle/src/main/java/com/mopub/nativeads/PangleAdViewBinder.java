@@ -1,4 +1,4 @@
-package com.mopub.nativeads;
+package mopub.nativeads;
 
 import androidx.annotation.NonNull;
 

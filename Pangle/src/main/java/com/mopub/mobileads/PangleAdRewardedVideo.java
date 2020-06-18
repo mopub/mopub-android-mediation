@@ -1,12 +1,11 @@
-package com.mopub.mobileads;
+package mopub.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import android.content.Context;
-import android.text.TextUtils;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdManager;
@@ -17,7 +16,9 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-
+import com.mopub.mobileads.AdData;
+import com.mopub.mobileads.BaseAd;
+import com.mopub.mobileads.MoPubErrorCode;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -104,7 +105,7 @@ public class PangleAdRewardedVideo extends BaseAd {
         mWeakActivity = new WeakReference<>((Activity) context);
         setAutomaticImpressionAndClickTracking(false);
 
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangleAdapterConfiguration.getCodeId() + ",getOrientation=" + PangleAdapterConfiguration.getOrientation());
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangleAdapterConfiguration.getPlacementId() + ",getOrientation=" + PangleAdapterConfiguration.getOrientation());
         TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
         TTAdNative adInstance = adManager.createAdNative(context.getApplicationContext());
 
@@ -130,9 +131,8 @@ public class PangleAdRewardedVideo extends BaseAd {
                 .setImageAcceptedSize(1080, 1920)
                 .setRewardName(PangleAdapterConfiguration.getRewardName())
                 .setRewardAmount(PangleAdapterConfiguration.getRewardAmount())
-                //TODO: Move all this to adapterConfiguration
-//                .setUserID(PangleRewardMediationSettings.getUserID()) /**User ID, a optional parameter for rewarded video ads */
-//                .setMediaExtra(PangleRewardMediationSettings.getMediaExtra()) /** optional parameter */
+                .setUserID(PangleAdapterConfiguration.getUserID()) /**User ID, a optional parameter for rewarded video ads */
+                .setMediaExtra(PangleAdapterConfiguration.getMediaExtra()) /** optional parameter */
                 .withBid(adm)
                 .build();
 
@@ -264,79 +264,4 @@ public class PangleAdRewardedVideo extends BaseAd {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd skipped video...");
         }
     };
-
-//    /**
-//     * obtain extra parameters from MediationSettings
-//     */
-//    public static class PangleRewardMediationSettings implements MediationSettings {
-//        private static String mCodeId;
-//        private static int mOrientation = TTAdConstant.VERTICAL;
-//        private static String mRewardName;
-//        private static int mRewardAmount;
-//        private static String mMediaExtra;
-//        private static String mUserID;
-//
-//        private PangleRewardMediationSettings() {
-//        }
-//
-//        public static String getCodeId() {
-//            return mCodeId;
-//        }
-//
-//        public static int getOrientation() {
-//            return mOrientation;
-//        }
-//
-
-//
-//        public static String getMediaExtra() {
-//            return mMediaExtra;
-//        }
-//
-//        public static String getUserID() {
-//            return mUserID;
-//        }
-//
-//        public static class Builder {
-//            private String mCodeId;
-//            private int mOrientation = TTAdConstant.VERTICAL;
-//            private String mRewardName;
-//            private int mRewardAmount;
-//            private String mMediaExtra;
-//            private String mUserID;
-//
-//
-//            public Builder setCodeId(String codeId) {
-//                mCodeId = codeId;
-//                return this;
-//            }
-//
-//            public Builder setOrientation(int orientation) {
-//                mOrientation = orientation;
-//                return this;
-//            }
-//
-//
-//            public Builder setMediaExtra(String mediaExtra) {
-//                this.mMediaExtra = mediaExtra;
-//                return this;
-//            }
-//
-//            public Builder setUserID(String userID) {
-//                this.mUserID = userID;
-//                return this;
-//            }
-//
-//            public PangleRewardMediationSettings builder() {
-//                PangleRewardMediationSettings settings = new PangleRewardMediationSettings();
-//                PangleRewardMediationSettings.mCodeId = this.mCodeId;
-//                PangleRewardMediationSettings.mOrientation = this.mOrientation;
-//                PangleRewardMediationSettings.mRewardName = this.mRewardName;
-//                PangleRewardMediationSettings.mRewardAmount = this.mRewardAmount;
-//                PangleRewardMediationSettings.mMediaExtra = this.mMediaExtra;
-//                PangleRewardMediationSettings.mUserID = this.mUserID;
-//                return settings;
-//            }
-//        }
-//    }
 }

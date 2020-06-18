@@ -1,4 +1,4 @@
-package com.mopub.mobileads;
+package mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,6 +19,9 @@ import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.AdData;
+import com.mopub.mobileads.BaseAd;
+import com.mopub.mobileads.MoPubErrorCode;
 
 import java.util.List;
 import java.util.Map;
@@ -165,32 +168,84 @@ public class PangleAdBanner extends BaseAd {
             adSize[1] = (Integer) oHeight;
         }
 
-        // TODO: Please update the ratio for the adapter banner size
-        if (adSize[0] > 0 && adSize[0] <= 600) {
-            adSize[0] = 600;
-            if (adSize[1] <= 100) {
-                adSize[1] = 90;
-            } else if (adSize[1] <= 150) {
-                adSize[1] = 150;
-            } else if (adSize[1] <= 260) {
-                adSize[1] = 260;
-            } else if (adSize[1] <= 300) {
-                adSize[1] = 300;
-            } else if (adSize[1] <= 450) {
-                adSize[1] = 400;
-            } else {
-                adSize[1] = 500;
+        if (oWidth != null) {
+            float s = adSize[0] / adSize[1];
+
+            if (s == 600f / 500f || s == 600f / 400f ||
+                    s == 690f / 388f || s == 600f / 300f ||
+                    s == 600f / 260f || s == 600f / 150f ||
+                    s == 640f / 100f || s == 600f / 90f
+            ) {
+                return adSize;
             }
-        } else if (adSize[0] > 600 && adSize[0] <= 640) {
-            adSize[0] = 640;
-            adSize[1] = 100;
-        } else {
-            adSize[0] = 690;
-            adSize[1] = 388;
+
+            float fac = 0.25f;
+            float ratdioWidth = adSize[0] / 600f;
+            //assume width = 600f
+            if (ratdioWidth <= 0.5f + fac) {
+                ratdioWidth = 0.5f;
+            } else if (ratdioWidth <= 1f + fac) {
+                ratdioWidth = 1f;
+            } else if (ratdioWidth <= 1.5f + fac) {
+                ratdioWidth = 1.5f;
+            } else {
+                ratdioWidth = 2f;
+            }
+
+
+            if (s < 600f / 500f) { //1.2f
+                adSize[0] = (int) (600f * ratdioWidth);
+                adSize[1] = (int) (500f * ratdioWidth);
+            } else if (s < 600f / 400f) {//1.5f
+                adSize[0] = (int) (600f * ratdioWidth);
+                adSize[1] = (int) (400f * ratdioWidth);
+            } else if (s < 690f / 388f) { //1.77f
+                ratdioWidth = adSize[0] / 690f;
+                //assume width = 690f
+                if (ratdioWidth < 0.5f + fac) {
+                    ratdioWidth = 0.5f;
+                } else if (ratdioWidth < 1f + fac) {
+                    ratdioWidth = 1f;
+                } else if (ratdioWidth < 1.5f + fac) {
+                    ratdioWidth = 1.5f;
+                } else {
+                    ratdioWidth = 2f;
+                }
+                adSize[0] = (int) (690f * ratdioWidth);
+                adSize[1] = (int) (388f * ratdioWidth);
+            } else if (s < 600f / 300f) { // 2f
+                adSize[0] = (int) (600f * ratdioWidth);
+                adSize[1] = (int) (300f * ratdioWidth);
+            } else if (s < 600f / 260f) {//2.3f
+                adSize[0] = (int) (600f * ratdioWidth);
+                adSize[1] = (int) (260f * ratdioWidth);
+            } else if (s < 600f / 150f) {// 4.0f
+                adSize[0] = (int) (600f * ratdioWidth);
+                adSize[1] = (int) (150f * ratdioWidth);
+            } else if (s < 640f / 100f) { //6.4f
+                ratdioWidth = adSize[0] / 640f;
+                //assume width = 690f
+                if (ratdioWidth < 0.5f + fac) {
+                    ratdioWidth = 0.5f;
+                } else if (ratdioWidth < 1f + fac) {
+                    ratdioWidth = 1f;
+                } else if (ratdioWidth < 1.5f + fac) {
+                    ratdioWidth = 1.5f;
+                } else {
+                    ratdioWidth = 2f;
+                }
+                adSize[0] = (int) (640f * ratdioWidth);
+                adSize[1] = (int) (100f * ratdioWidth);
+
+            } else if (s < 600f / 90f || s > 600f / 90f) {//6.67f
+                adSize[0] = (int) (600f * ratdioWidth);
+                adSize[1] = (int) (90f * ratdioWidth);
+            }
         }
 
         return adSize;
     }
+
 
     private void resolveAdSize(boolean isExpressAd) {
         if (isExpressAd) {

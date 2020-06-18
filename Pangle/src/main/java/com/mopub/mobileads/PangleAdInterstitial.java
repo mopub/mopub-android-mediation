@@ -1,4 +1,4 @@
-package com.mopub.mobileads;
+package mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,6 +20,9 @@ import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.AdData;
+import com.mopub.mobileads.BaseAd;
+import com.mopub.mobileads.MoPubErrorCode;
 
 import java.util.List;
 import java.util.Map;
@@ -86,10 +89,6 @@ public class PangleAdInterstitial extends BaseAd {
 
             adm = extras.get(DataKeys.ADM_KEY);
 
-            if (adManager != null) {
-                mIsExpressAd = adManager.isExpressAd(mPlacementId, adm);
-                mIsFullVideoAd = adManager.isFullScreenVideoAd(mPlacementId, adm);
-            }
 
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             final String appId = extras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
@@ -97,6 +96,11 @@ public class PangleAdInterstitial extends BaseAd {
             adManager = PangleAdapterConfiguration.getPangleSdkManager();
             adInstance = adManager.createAdNative(context.getApplicationContext());
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, extras);
+
+            if (adManager != null) {
+                mIsExpressAd = adManager.isExpressAd(mPlacementId, adm);
+                mIsFullVideoAd = adManager.isFullScreenVideoAd(mPlacementId, adm);
+            }
 
             /** Obtain traditional or express interstitial extra parameters */
             if (!mIsFullVideoAd) {

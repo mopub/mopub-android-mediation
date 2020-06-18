@@ -1,10 +1,11 @@
-package com.mopub.nativeads;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import android.view.View;
+package mopub.nativeads;
 
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.adapter.MediaView;
 import com.mopub.common.logging.MoPubLog;
