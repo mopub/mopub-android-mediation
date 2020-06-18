@@ -22,7 +22,6 @@ dependencies {
                    project(':AppLovin'),
                    project(':Chartboost'),
                    project(':FacebookAudienceNetwork'),
-                   project(':Flurry'),
                    project(':IronSource'),
                    project(':Mintegral'),
                    project(':Tapjoy'),
