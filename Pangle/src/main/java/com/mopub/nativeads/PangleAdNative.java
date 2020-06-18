@@ -58,7 +58,7 @@ public class PangleAdNative extends CustomEventNative {
         TTAdManager ttAdManager = null;
         String adm = null;
 
-        if (serverExtras != null  && !serverExtras.isEmpty()) {
+        if (serverExtras != null && !serverExtras.isEmpty()) {
             /** Obtain ad placement id from MoPub UI */
             mPlacementId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
 
@@ -172,12 +172,20 @@ public class PangleAdNative extends CustomEventNative {
 
         @Override
         public void onAdClicked(View view, TTNativeAd ad) {
+            /**
+             * onAdClicked() happened when user click the adView.
+             * onAdClicked() and onAdCreativeClick() will only trigger either one when ad shows.
+             **/
             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
             notifyAdClicked();
         }
 
         @Override
         public void onAdCreativeClick(View view, TTNativeAd ad) {
+            /**
+             * onAdCreativeClick() happened when user click the CTA button.
+             * onAdClicked() and onAdCreativeClick() will only trigger either one when ad shows.
+             **/
             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
             notifyAdClicked();
         }
@@ -231,7 +239,7 @@ public class PangleAdNative extends CustomEventNative {
             return null;
         }
 
-        public void showPrivacyActivity(){
+        public void showPrivacyActivity() {
             if (mTTFeedAd != null) {
                 mTTFeedAd.showPrivacyActivity();
             }
@@ -347,13 +355,14 @@ public class PangleAdNative extends CustomEventNative {
 
     private static NativeErrorCode mapErrorCode(int error) {
         switch (error) {
-            case PangleAdapterConfiguration.CONTENT_TYPE:
-            case PangleAdapterConfiguration.REQUEST_PB_ERROR:
+            case PangleAdapterConfiguration.CONTENT_TYPE_ERROR:
                 return NativeErrorCode.CONNECTION_ERROR;
+            case PangleAdapterConfiguration.REQUEST_PARAMETER_ERROR:
+                return NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR;
             case PangleAdapterConfiguration.NO_AD:
                 return NativeErrorCode.NETWORK_NO_FILL;
-            case PangleAdapterConfiguration.ADSLOT_EMPTY:
-            case PangleAdapterConfiguration.ADSLOT_ID_ERROR:
+            case PangleAdapterConfiguration.PLACEMENT_EMPTY_ERROR:
+            case PangleAdapterConfiguration.PLACEMENT_ERROR:
                 return NativeErrorCode.NETWORK_INVALID_REQUEST;
             default:
                 return NativeErrorCode.UNSPECIFIED;

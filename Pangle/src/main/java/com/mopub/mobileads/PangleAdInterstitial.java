@@ -38,8 +38,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLI
 
 public class PangleAdInterstitial extends BaseAd {
     private static final String ADAPTER_NAME = PangleAdInterstitial.class.getSimpleName();
-    private static final String KEY_EXTRA_AD_WIDTH = "ad_width";
-    private static final String KEY_EXTRA_AD_HEIGHT = "ad_height";
 
     private static String mPlacementId;
     private Context mContext;
@@ -102,12 +100,11 @@ public class PangleAdInterstitial extends BaseAd {
 
             /** Obtain traditional or express interstitial extra parameters */
             if (!mIsFullVideoAd) {
-                final float[] adSize = PangleAdapterConfiguration.getAdSizeSafely(extras, KEY_EXTRA_AD_WIDTH, KEY_EXTRA_AD_HEIGHT);
-                mAdWidth = adSize[0];
-                mAdHeight = adSize[1];
+                mAdWidth = PangleAdapterConfiguration.getAdWidth();
+                mAdHeight = PangleAdapterConfiguration.getAdHeight();
             }
 
-            resolveIntersititalAdSize(mIsExpressAd);
+            resolveAdSize(mIsExpressAd);
         }
 
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "adWidth =" + mAdWidth + "，adHeight="
@@ -131,7 +128,6 @@ public class PangleAdInterstitial extends BaseAd {
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
         if (!mIsFullVideoAd) {
-            /** request Interstitial */
             if (mIsExpressAd) {
                 MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME, "Loading Pangle express interstitial ad");
                 adSlotBuilder.setExpressViewAcceptedSize(mAdWidth, mAdHeight);
@@ -155,14 +151,13 @@ public class PangleAdInterstitial extends BaseAd {
             }
         } else {
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME, "Loading Pangle FullVideoAd ad");
-            /**  request FullVideoAd */
             adSlotBuilder.setImageAcceptedSize(1080, 1920);
             mFullVideoLoader = new PangleAdInterstitialFullVideoLoader(mContext);
             mFullVideoLoader.loadAdFullVideoListener(adSlotBuilder.build(), adInstance);
         }
     }
 
-    private void resolveIntersititalAdSize(boolean isExpressAd) {
+    private void resolveAdSize(boolean isExpressAd) {
         if (isExpressAd) {
             if (mAdWidth <= 0) {
                 mAdWidth = 300;
@@ -321,6 +316,9 @@ public class PangleAdInterstitial extends BaseAd {
                         @Override
                         public void onInterstitialShowFail() {
                             MoPubLog.log(getAdNetworkId(), MoPubLog.AdLogEvent.SHOW_FAILED, ADAPTER_NAME);
+                            if (mInteractionListener != null) {
+                                mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+                            }
                         }
 
                         @Override
@@ -429,7 +427,7 @@ public class PangleAdInterstitial extends BaseAd {
                     public void onRenderFail(View view, String msg, int code) {
                         MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, "Express Ad onRenderFail msg = " + msg + "，code=" + code);
                         if (mInteractionListener != null) {
-                            mInteractionListener.onAdFailed(MoPubErrorCode.INTERNAL_ERROR);
+                            mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
                         }
                     }
 

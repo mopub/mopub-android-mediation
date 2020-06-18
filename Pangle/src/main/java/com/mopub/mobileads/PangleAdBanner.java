@@ -44,8 +44,8 @@ public class PangleAdBanner extends BaseAd {
     private PangleAdBannerExpressLoader mAdExpressBannerLoader;
     private PangleAdBannerTraditionalLoader mAdTraditionalBannerLoader;
 
-    private float mBannerWidth;
-    private float mBannerHeight;
+    private int mBannerWidth;
+    private int mBannerHeight;
     private View mBannerView;
 
     public PangleAdBanner() {
@@ -99,11 +99,11 @@ public class PangleAdBanner extends BaseAd {
             return;
         }
 
-        float[] bannerAdSizeAdapterSafely = PangleAdapterConfiguration.getBannerAdSizeAdapter(adData);
+        int[] bannerAdSizeAdapterSafely = getAdSize(adData);
         mBannerWidth = bannerAdSizeAdapterSafely[0];
         mBannerHeight = bannerAdSizeAdapterSafely[1];
 
-        resolveBannerAdSize(isExpressAd);
+        resolveAdSize(isExpressAd);
 
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "BannerWidth =" + mBannerWidth + "，bannerHeight=" + mBannerHeight + ",placementId=" + mPlacementId);
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "LoadBanner method placementId：" + mPlacementId);
@@ -112,11 +112,11 @@ public class PangleAdBanner extends BaseAd {
                 .setCodeId(mPlacementId)
                 .setSupportDeepLink(true)
                 .setAdCount(1) /* Mediation doesn't support multiple ad responses within the single ad request. */
-                .setImageAcceptedSize((int) mBannerWidth, (int) mBannerHeight)
+                .setImageAcceptedSize(mBannerWidth, mBannerHeight)
                 .withBid(adm);
 
         if (isExpressAd) {
-            adSlotBuilder.setExpressViewAcceptedSize(mBannerWidth, mBannerHeight);
+            adSlotBuilder.setExpressViewAcceptedSize((float) mBannerWidth, (float) mBannerHeight);
         } else {
             adSlotBuilder.setNativeAdType(AdSlot.TYPE_BANNER);
         }
@@ -141,7 +141,58 @@ public class PangleAdBanner extends BaseAd {
         return mPlacementId == null ? "" : mPlacementId;
     }
 
-    private void resolveBannerAdSize(boolean isExpressAd) {
+    /**
+     * Pangle banner support size and ratio  ：
+     * 600*300、600*400、600*500、600*260、600*90、600*150、640*100、690*388
+     *
+     * @param params
+     * @return
+     */
+    public static int[] getAdSize(AdData params) {
+        int[] adSize = new int[]{0, 0};
+        if (params == null) {
+            adSize = new int[]{600, 90};
+            return adSize;
+        }
+
+        final Object oWidth = params.getAdWidth();
+        if (oWidth instanceof Integer) {
+            adSize[0] = (Integer) oWidth;
+        }
+
+        final Object oHeight = params.getAdHeight();
+        if (oHeight instanceof Integer) {
+            adSize[1] = (Integer) oHeight;
+        }
+
+        // TODO: Please update the ratio for the adapter banner size
+        if (adSize[0] > 0 && adSize[0] <= 600) {
+            adSize[0] = 600;
+            if (adSize[1] <= 100) {
+                adSize[1] = 90;
+            } else if (adSize[1] <= 150) {
+                adSize[1] = 150;
+            } else if (adSize[1] <= 260) {
+                adSize[1] = 260;
+            } else if (adSize[1] <= 300) {
+                adSize[1] = 300;
+            } else if (adSize[1] <= 450) {
+                adSize[1] = 400;
+            } else {
+                adSize[1] = 500;
+            }
+        } else if (adSize[0] > 600 && adSize[0] <= 640) {
+            adSize[0] = 640;
+            adSize[1] = 100;
+        } else {
+            adSize[0] = 690;
+            adSize[1] = 388;
+        }
+
+        return adSize;
+    }
+
+    private void resolveAdSize(boolean isExpressAd) {
         if (isExpressAd) {
             if (mBannerWidth <= 0) {
                 mBannerWidth = 600;
@@ -195,10 +246,10 @@ public class PangleAdBanner extends BaseAd {
     public class PangleAdBannerTraditionalLoader {
 
         private Context mContext;
-        private float mBannerWidth;
-        private float mBannerHeight;
+        private int mBannerWidth;
+        private int mBannerHeight;
 
-        PangleAdBannerTraditionalLoader(Context context, float bannerWidth, float bannerHeight) {
+        PangleAdBannerTraditionalLoader(Context context, int bannerWidth, int bannerHeight) {
             this.mContext = context;
             this.mBannerWidth = bannerWidth;
             this.mBannerHeight = bannerHeight;
@@ -237,7 +288,7 @@ public class PangleAdBanner extends BaseAd {
                     return;
                 }
 
-                mBannerView = MediationAdapterUtil.setAdDataAndBuildBannerView(mContext, ads.get(0), mAdInteractionListener, mBannerWidth, mBannerHeight);
+                mBannerView = MediationAdapterUtil.setAdDataAndBuildBannerView(mContext, ads.get(0), mAdInteractionListener, (float) mBannerWidth, (float) mBannerHeight);
 
                 if (mBannerView == null) {
                     if (mLoadListener != null) {

@@ -9,13 +9,11 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
-import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -106,7 +104,7 @@ public class PangleAdRewardedVideo extends BaseAd {
         mWeakActivity = new WeakReference<>((Activity) context);
         setAutomaticImpressionAndClickTracking(false);
 
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangleRewardMediationSettings.getCodeId() + ",getOrientation=" + PangleRewardMediationSettings.getOrientation());
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangleAdapterConfiguration.getCodeId() + ",getOrientation=" + PangleAdapterConfiguration.getOrientation());
         TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
         TTAdNative adInstance = adManager.createAdNative(context.getApplicationContext());
 
@@ -130,10 +128,11 @@ public class PangleAdRewardedVideo extends BaseAd {
                 .setCodeId(getAdNetworkId())
                 .setSupportDeepLink(true)
                 .setImageAcceptedSize(1080, 1920)
-                .setRewardName(PangleRewardMediationSettings.getRewardName()) /** Parameter for rewarded video ad requests, name of the reward */
-                .setRewardAmount(PangleRewardMediationSettings.getRewardAmount())  /**The number of rewards in rewarded video ad */
-                .setUserID(PangleRewardMediationSettings.getUserID()) /**User ID, a optional parameter for rewarded video ads */
-                .setMediaExtra(PangleRewardMediationSettings.getMediaExtra()) /** optional parameter */
+                .setRewardName(PangleAdapterConfiguration.getRewardName())
+                .setRewardAmount(PangleAdapterConfiguration.getRewardAmount())
+                //TODO: Move all this to adapterConfiguration
+//                .setUserID(PangleRewardMediationSettings.getUserID()) /**User ID, a optional parameter for rewarded video ads */
+//                .setMediaExtra(PangleRewardMediationSettings.getMediaExtra()) /** optional parameter */
                 .withBid(adm)
                 .build();
 
@@ -176,9 +175,13 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         @Override
         public void onError(int code, String message) {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "Loading Rewarded Video creative encountered an error: " + mapErrorCode(code).toString() + ",error message:" + message);
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    "Loading Rewarded Video creative encountered an error: "
+                            + PangleAdapterConfiguration.mapErrorCode(code).toString()
+                            + ",error message:"
+                            + message);
             if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(mapErrorCode(code));
+                mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
             }
         }
 
@@ -262,110 +265,78 @@ public class PangleAdRewardedVideo extends BaseAd {
         }
     };
 
-    /**
-     * obtain extra parameters from MediationSettings
-     */
-    public static class PangleRewardMediationSettings implements MediationSettings {
-        private static String mCodeId;
-        private static int mOrientation = TTAdConstant.VERTICAL;
-        private static String mRewardName;
-        private static int mRewardAmount;
-        private static String mMediaExtra;
-        private static String mUserID;
+//    /**
+//     * obtain extra parameters from MediationSettings
+//     */
+//    public static class PangleRewardMediationSettings implements MediationSettings {
+//        private static String mCodeId;
+//        private static int mOrientation = TTAdConstant.VERTICAL;
+//        private static String mRewardName;
+//        private static int mRewardAmount;
+//        private static String mMediaExtra;
+//        private static String mUserID;
+//
+//        private PangleRewardMediationSettings() {
+//        }
+//
+//        public static String getCodeId() {
+//            return mCodeId;
+//        }
+//
+//        public static int getOrientation() {
+//            return mOrientation;
+//        }
+//
 
-        private PangleRewardMediationSettings() {
-        }
-
-        public static String getCodeId() {
-            return mCodeId;
-        }
-
-        public static int getOrientation() {
-            return mOrientation;
-        }
-
-        public static String getRewardName() {
-            return mRewardName;
-        }
-
-        public static int getRewardAmount() {
-            return mRewardAmount;
-        }
-
-        public static String getMediaExtra() {
-            return mMediaExtra;
-        }
-
-        public static String getUserID() {
-            return mUserID;
-        }
-
-        public static class Builder {
-            private String mCodeId;
-            private int mOrientation = TTAdConstant.VERTICAL;
-            private String mRewardName;
-            private int mRewardAmount;
-            private String mMediaExtra;
-            private String mUserID;
-
-
-            public Builder setCodeId(String codeId) {
-                mCodeId = codeId;
-                return this;
-            }
-
-            public Builder setOrientation(int orientation) {
-                mOrientation = orientation;
-                return this;
-            }
-
-            public Builder setRewardName(String rewardName) {
-                this.mRewardName = rewardName;
-                return this;
-            }
-
-            public Builder setRewardAmount(int rewardAmount) {
-                this.mRewardAmount = rewardAmount;
-                return this;
-            }
-
-            public Builder setMediaExtra(String mediaExtra) {
-                this.mMediaExtra = mediaExtra;
-                return this;
-            }
-
-            public Builder setUserID(String userID) {
-                this.mUserID = userID;
-                return this;
-            }
-
-            public PangleRewardMediationSettings builder() {
-                PangleRewardMediationSettings settings = new PangleRewardMediationSettings();
-                PangleRewardMediationSettings.mCodeId = this.mCodeId;
-                PangleRewardMediationSettings.mOrientation = this.mOrientation;
-                PangleRewardMediationSettings.mRewardName = this.mRewardName;
-                PangleRewardMediationSettings.mRewardAmount = this.mRewardAmount;
-                PangleRewardMediationSettings.mMediaExtra = this.mMediaExtra;
-                PangleRewardMediationSettings.mUserID = this.mUserID;
-                return settings;
-            }
-        }
-
-
-    }
-
-    private static MoPubErrorCode mapErrorCode(int error) {
-        switch (error) {
-            case PangleAdapterConfiguration.CONTENT_TYPE:
-            case PangleAdapterConfiguration.REQUEST_PB_ERROR:
-                return MoPubErrorCode.NO_CONNECTION;
-            case PangleAdapterConfiguration.NO_AD:
-                return MoPubErrorCode.NETWORK_NO_FILL;
-            case PangleAdapterConfiguration.ADSLOT_EMPTY:
-            case PangleAdapterConfiguration.ADSLOT_ID_ERROR:
-                return MoPubErrorCode.MISSING_AD_UNIT_ID;
-            default:
-                return MoPubErrorCode.UNSPECIFIED;
-        }
-    }
+//
+//        public static String getMediaExtra() {
+//            return mMediaExtra;
+//        }
+//
+//        public static String getUserID() {
+//            return mUserID;
+//        }
+//
+//        public static class Builder {
+//            private String mCodeId;
+//            private int mOrientation = TTAdConstant.VERTICAL;
+//            private String mRewardName;
+//            private int mRewardAmount;
+//            private String mMediaExtra;
+//            private String mUserID;
+//
+//
+//            public Builder setCodeId(String codeId) {
+//                mCodeId = codeId;
+//                return this;
+//            }
+//
+//            public Builder setOrientation(int orientation) {
+//                mOrientation = orientation;
+//                return this;
+//            }
+//
+//
+//            public Builder setMediaExtra(String mediaExtra) {
+//                this.mMediaExtra = mediaExtra;
+//                return this;
+//            }
+//
+//            public Builder setUserID(String userID) {
+//                this.mUserID = userID;
+//                return this;
+//            }
+//
+//            public PangleRewardMediationSettings builder() {
+//                PangleRewardMediationSettings settings = new PangleRewardMediationSettings();
+//                PangleRewardMediationSettings.mCodeId = this.mCodeId;
+//                PangleRewardMediationSettings.mOrientation = this.mOrientation;
+//                PangleRewardMediationSettings.mRewardName = this.mRewardName;
+//                PangleRewardMediationSettings.mRewardAmount = this.mRewardAmount;
+//                PangleRewardMediationSettings.mMediaExtra = this.mMediaExtra;
+//                PangleRewardMediationSettings.mUserID = this.mUserID;
+//                return settings;
+//            }
+//        }
+//    }
 }
