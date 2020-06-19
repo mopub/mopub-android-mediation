@@ -1,4 +1,4 @@
-package mopub.mobileads;
+package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,9 +19,6 @@ import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.AdData;
-import com.mopub.mobileads.BaseAd;
-import com.mopub.mobileads.MoPubErrorCode;
 
 import java.util.List;
 import java.util.Map;
@@ -145,8 +142,10 @@ public class PangleAdBanner extends BaseAd {
     }
 
     /**
-     * Pangle banner support size and ratio  ：
-     * 600*300、600*400、600*500、600*260、600*90、600*150、640*100、690*388
+     * Pangle banner support size:
+     * 600*300, 600*400, 600*500, 600*260, 600*90, 600*150, 640*100, 690*388
+     * which will respect the following size
+     * 300*150, 300*200, 300*250, 300*130, 300*45, 300*75, 320*50, 345*194
      *
      * @param params
      * @return
@@ -169,83 +168,78 @@ public class PangleAdBanner extends BaseAd {
         }
 
         if (oWidth != null) {
-            float s = adSize[0] / adSize[1];
+            float ratio = adSize[0] / adSize[1];
 
-            if (s == 600f / 500f || s == 600f / 400f ||
-                    s == 690f / 388f || s == 600f / 300f ||
-                    s == 600f / 260f || s == 600f / 150f ||
-                    s == 640f / 100f || s == 600f / 90f
+            if (ratio == 600f / 500f || ratio == 600f / 400f ||
+                    ratio == 690f / 388f || ratio == 600f / 300f ||
+                    ratio == 600f / 260f || ratio == 600f / 150f ||
+                    ratio == 640f / 100f || ratio == 600f / 90f
             ) {
                 return adSize;
             }
 
-            float fac = 0.25f;
-            float ratdioWidth = adSize[0] / 600f;
-            //assume width = 600f
-            if (ratdioWidth <= 0.5f + fac) {
-                ratdioWidth = 0.5f;
-            } else if (ratdioWidth <= 1f + fac) {
-                ratdioWidth = 1f;
-            } else if (ratdioWidth <= 1.5f + fac) {
-                ratdioWidth = 1.5f;
+            float factor = 0.25f;
+            float widthRatio = adSize[0] / 600f;
+            if (widthRatio <= 0.5f + factor) {
+                widthRatio = 0.5f;
+            } else if (widthRatio <= 1f + factor) {
+                widthRatio = 1f;
+            } else if (widthRatio <= 1.5f + factor) {
+                widthRatio = 1.5f;
             } else {
-                ratdioWidth = 2f;
+                widthRatio = 2f;
             }
 
-
-            if (s < 600f / 500f) { //1.2f
-                adSize[0] = (int) (600f * ratdioWidth);
-                adSize[1] = (int) (500f * ratdioWidth);
-            } else if (s < 600f / 400f) {//1.5f
-                adSize[0] = (int) (600f * ratdioWidth);
-                adSize[1] = (int) (400f * ratdioWidth);
-            } else if (s < 690f / 388f) { //1.77f
-                ratdioWidth = adSize[0] / 690f;
-                //assume width = 690f
-                if (ratdioWidth < 0.5f + fac) {
-                    ratdioWidth = 0.5f;
-                } else if (ratdioWidth < 1f + fac) {
-                    ratdioWidth = 1f;
-                } else if (ratdioWidth < 1.5f + fac) {
-                    ratdioWidth = 1.5f;
+            if (ratio < 600f / 500f) { //1.2f
+                adSize[0] = (int) (600f * widthRatio);
+                adSize[1] = (int) (500f * widthRatio);
+            } else if (ratio < 600f / 400f) {//1.5f
+                adSize[0] = (int) (600f * widthRatio);
+                adSize[1] = (int) (400f * widthRatio);
+            } else if (ratio < 690f / 388f) { //1.77f
+                widthRatio = adSize[0] / 690f;
+                if (widthRatio < 0.5f + factor) {
+                    widthRatio = 0.5f;
+                } else if (widthRatio < 1f + factor) {
+                    widthRatio = 1f;
+                } else if (widthRatio < 1.5f + factor) {
+                    widthRatio = 1.5f;
                 } else {
-                    ratdioWidth = 2f;
+                    widthRatio = 2f;
                 }
-                adSize[0] = (int) (690f * ratdioWidth);
-                adSize[1] = (int) (388f * ratdioWidth);
-            } else if (s < 600f / 300f) { // 2f
-                adSize[0] = (int) (600f * ratdioWidth);
-                adSize[1] = (int) (300f * ratdioWidth);
-            } else if (s < 600f / 260f) {//2.3f
-                adSize[0] = (int) (600f * ratdioWidth);
-                adSize[1] = (int) (260f * ratdioWidth);
-            } else if (s < 600f / 150f) {// 4.0f
-                adSize[0] = (int) (600f * ratdioWidth);
-                adSize[1] = (int) (150f * ratdioWidth);
-            } else if (s < 640f / 100f) { //6.4f
-                ratdioWidth = adSize[0] / 640f;
-                //assume width = 690f
-                if (ratdioWidth < 0.5f + fac) {
-                    ratdioWidth = 0.5f;
-                } else if (ratdioWidth < 1f + fac) {
-                    ratdioWidth = 1f;
-                } else if (ratdioWidth < 1.5f + fac) {
-                    ratdioWidth = 1.5f;
+                adSize[0] = (int) (690f * widthRatio);
+                adSize[1] = (int) (388f * widthRatio);
+            } else if (ratio < 600f / 300f) { // 2f
+                adSize[0] = (int) (600f * widthRatio);
+                adSize[1] = (int) (300f * widthRatio);
+            } else if (ratio < 600f / 260f) {//2.3f
+                adSize[0] = (int) (600f * widthRatio);
+                adSize[1] = (int) (260f * widthRatio);
+            } else if (ratio < 600f / 150f) {// 4.0f
+                adSize[0] = (int) (600f * widthRatio);
+                adSize[1] = (int) (150f * widthRatio);
+            } else if (ratio < 640f / 100f) { //6.4f
+                widthRatio = adSize[0] / 640f;
+                if (widthRatio < 0.5f + factor) {
+                    widthRatio = 0.5f;
+                } else if (widthRatio < 1f + factor) {
+                    widthRatio = 1f;
+                } else if (widthRatio < 1.5f + factor) {
+                    widthRatio = 1.5f;
                 } else {
-                    ratdioWidth = 2f;
+                    widthRatio = 2f;
                 }
-                adSize[0] = (int) (640f * ratdioWidth);
-                adSize[1] = (int) (100f * ratdioWidth);
+                adSize[0] = (int) (640f * widthRatio);
+                adSize[1] = (int) (100f * widthRatio);
 
-            } else if (s < 600f / 90f || s > 600f / 90f) {//6.67f
-                adSize[0] = (int) (600f * ratdioWidth);
-                adSize[1] = (int) (90f * ratdioWidth);
+            } else if (ratio < 600f / 90f || ratio > 600f / 90f) {//6.67f
+                adSize[0] = (int) (600f * widthRatio);
+                adSize[1] = (int) (90f * widthRatio);
             }
         }
 
         return adSize;
     }
-
 
     private void resolveAdSize(boolean isExpressAd) {
         if (isExpressAd) {
@@ -263,7 +257,6 @@ public class PangleAdBanner extends BaseAd {
             }
         }
     }
-
 
     @Override
     protected void onInvalidate() {
@@ -293,7 +286,6 @@ public class PangleAdBanner extends BaseAd {
     public View getAdView() {
         return mBannerView;
     }
-
 
     /**
      * Pangle traditional banner callback interface
@@ -391,7 +383,6 @@ public class PangleAdBanner extends BaseAd {
         }
     }
 
-
     /**
      * Pangle express banner callback interface
      */
@@ -413,7 +404,6 @@ public class PangleAdBanner extends BaseAd {
             }
             adInstance.loadBannerExpressAd(adSlot, mTTNativeExpressAdListener);
         }
-
 
         private TTAdNative.NativeExpressAdListener mTTNativeExpressAdListener = new TTAdNative.NativeExpressAdListener() {
             @Override

@@ -1,4 +1,4 @@
-package mopub.mobileads;
+package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,9 +16,6 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.AdData;
-import com.mopub.mobileads.BaseAd;
-import com.mopub.mobileads.MoPubErrorCode;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -131,8 +128,8 @@ public class PangleAdRewardedVideo extends BaseAd {
                 .setImageAcceptedSize(1080, 1920)
                 .setRewardName(PangleAdapterConfiguration.getRewardName())
                 .setRewardAmount(PangleAdapterConfiguration.getRewardAmount())
-                .setUserID(PangleAdapterConfiguration.getUserID()) /**User ID, a optional parameter for rewarded video ads */
-                .setMediaExtra(PangleAdapterConfiguration.getMediaExtra()) /** optional parameter */
+                .setUserID(PangleAdapterConfiguration.getUserID())
+                .setMediaExtra(PangleAdapterConfiguration.getMediaExtra())
                 .withBid(adm)
                 .build();
 

@@ -1,4 +1,4 @@
-package mopub.mobileads;
+package com.mopub.mobileads;
 
 import android.Manifest;
 import android.content.Context;
@@ -16,8 +16,6 @@ import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.BuildConfig;
-import com.mopub.mobileads.MoPubErrorCode;
 
 import java.util.Map;
 
@@ -231,37 +229,35 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         return mRewardAmount;
     }
 
+    public static void setPlacementId(String placementId) {
+        mPlacementId = placementId;
+    }
 
     public static String getPlacementId() {
         return mPlacementId;
     }
 
-    public static void setPlacementId(String placementId) {
-        PangleAdapterConfiguration.mPlacementId = placementId;
+    public static void setUserID(String userID) {
+        mUserID = userID;
     }
 
     public static String getUserID() {
         return mUserID;
     }
 
-    public static void setUserID(String userID) {
-        PangleAdapterConfiguration.mUserID = userID;
+    public static void setOrientation(int orientation) {
+        mOrientation = orientation;
     }
 
     public static int getOrientation() {
         return mOrientation;
     }
 
-    public static void setOrientation(int orientation) {
-        PangleAdapterConfiguration.mOrientation = orientation;
+    public static void setMediaExtra(String mediaExtra) {
+        mMediaExtra = mediaExtra;
     }
-
 
     public static String getMediaExtra() {
         return mMediaExtra;
-    }
-
-    public static void setMediaExtra(String mediaExtra) {
-        PangleAdapterConfiguration.mMediaExtra = mediaExtra;
     }
 }

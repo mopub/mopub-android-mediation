@@ -1,4 +1,4 @@
-package mopub.nativeads;
+package com.mopub.nativeads;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -9,9 +9,6 @@ import android.view.ViewGroup;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.bytedance.sdk.openadsdk.adapter.MediationAdapterUtil;
 import com.mopub.common.Preconditions;
-import com.mopub.nativeads.BaseNativeAd;
-import com.mopub.nativeads.MoPubAdRenderer;
-import com.mopub.nativeads.NativeImageHelper;
 
 import java.util.ArrayList;
 import java.util.List;

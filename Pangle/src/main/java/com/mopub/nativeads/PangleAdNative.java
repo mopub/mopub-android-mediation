@@ -1,4 +1,4 @@
-package mopub.nativeads;
+package com.mopub.nativeads;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,14 +21,10 @@ import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
 import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.nativeads.BaseNativeAd;
-import com.mopub.nativeads.CustomEventNative;
-import com.mopub.nativeads.NativeErrorCode;
+import com.mopub.mobileads.PangleAdapterConfiguration;
 
 import java.util.List;
 import java.util.Map;
-
-import mopub.mobileads.PangleAdapterConfiguration;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;

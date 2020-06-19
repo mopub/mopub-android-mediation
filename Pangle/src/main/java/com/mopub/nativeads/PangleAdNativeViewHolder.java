@@ -1,4 +1,4 @@
-package mopub.nativeads;
+package com.mopub.nativeads;
 
 import android.view.View;
 import android.widget.ImageView;

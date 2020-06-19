@@ -1,4 +1,4 @@
-package mopub.mobileads;
+package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,9 +20,6 @@ import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.AdData;
-import com.mopub.mobileads.BaseAd;
-import com.mopub.mobileads.MoPubErrorCode;
 
 import java.util.List;
 import java.util.Map;
@@ -69,8 +66,6 @@ public class PangleAdInterstitial extends BaseAd {
         mPangleAdapterConfiguration.setCachedInitializationParameters(context, extras);
 
         String adm = null;
-
-        TTAdManager adManager = null;
         TTAdNative adInstance = null;
 
         if (extras != null && !extras.isEmpty()) {
@@ -89,18 +84,25 @@ public class PangleAdInterstitial extends BaseAd {
 
             adm = extras.get(DataKeys.ADM_KEY);
 
-
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             final String appId = extras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
-            adManager = PangleAdapterConfiguration.getPangleSdkManager();
-            adInstance = adManager.createAdNative(context.getApplicationContext());
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, extras);
 
-            if (adManager != null) {
-                mIsExpressAd = adManager.isExpressAd(mPlacementId, adm);
-                mIsFullVideoAd = adManager.isFullScreenVideoAd(mPlacementId, adm);
+            final TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
+            if (adManager == null) {
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+                }
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
+                        MoPubErrorCode.NETWORK_INVALID_STATE);
+                return;
             }
+
+            mIsExpressAd = adManager.isExpressAd(mPlacementId, adm);
+            mIsFullVideoAd = adManager.isFullScreenVideoAd(mPlacementId, adm);
+            adInstance = adManager.createAdNative(context.getApplicationContext());
 
             /** Obtain traditional or express interstitial extra parameters */
             if (!mIsFullVideoAd) {
@@ -113,16 +115,6 @@ public class PangleAdInterstitial extends BaseAd {
 
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "adWidth =" + mAdWidth + "，adHeight="
                 + mAdHeight + ",placementId=" + mPlacementId + ",isExpressAd=" + mIsExpressAd);
-
-        if (adManager == null) {
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
-            }
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
-                    MoPubErrorCode.NETWORK_INVALID_STATE);
-            return;
-        }
 
         final AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
@@ -244,7 +236,6 @@ public class PangleAdInterstitial extends BaseAd {
         return null;
     }
 
-
     /**
      * Traditional Interstitial Ad Loader
      */
@@ -364,7 +355,6 @@ public class PangleAdInterstitial extends BaseAd {
         }
     }
 
-
     /**
      * Express interstitial ad
      */
@@ -463,7 +453,6 @@ public class PangleAdInterstitial extends BaseAd {
                     }
                 };
 
-
         public void showInterstitial(Activity activity) {
             if (mTTInterstitialExpressAd != null && isRenderLoaded.get()) {
                 mTTInterstitialExpressAd.showInteractionExpressAd(activity);
@@ -524,7 +513,6 @@ public class PangleAdInterstitial extends BaseAd {
             mLoadFullVideoAdListener = null;
             mFullScreenVideoAdInteractionListener = null;
         }
-
 
         private TTAdNative.FullScreenVideoAdListener mLoadFullVideoAdListener = new TTAdNative.FullScreenVideoAdListener() {
             @Override
