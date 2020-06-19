@@ -80,7 +80,7 @@ public class VungleMediationConfiguration implements MediationSettings {
         if (extras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
             final String isStartMuted = extras.get(Builder.EXTRA_START_MUTED_KEY);
             adConfig.setMuted(Boolean.parseBoolean(isStartMuted));
-        } else {
+        } else if (extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY)) {
             final String isSoundEnabled = extras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
             adConfig.setMuted(!Boolean.parseBoolean(isSoundEnabled));
         }

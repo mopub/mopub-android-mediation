@@ -63,7 +63,7 @@ public class VungleRouter {
                 VungleAdapterConfiguration.ADAPTER_VERSION.replace('.', '_'));
     }
 
-    static VungleRouter getInstance() {
+    public static VungleRouter getInstance() {
         return sInstance;
     }
 
@@ -270,14 +270,55 @@ public class VungleRouter {
 
     private final PlayAdCallback playAdCallback = new PlayAdCallback() {
         @Override
+        @Deprecated
         public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);
+            //Deprecated event
+        }
 
+        @Override
+        public void onAdEnd(String id) {
+            MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + id);
             VungleRouterListener targetListener = sVungleRouterListeners.get(id);
             if (targetListener != null) {
-                targetListener.onAdEnd(id, completed, isCTAClicked);
+                targetListener.onAdEnd(id);
             } else {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdEnd - VungleRouterListener is not found for " +
+                        "Placement ID: " + id);
+            }
+        }
+
+        @Override
+        public void onAdClick(String id) {
+            MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdClick - Placement ID: " + id);
+            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            if (targetListener != null) {
+                targetListener.onAdClick(id);
+            } else {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdClick - VungleRouterListener is not found for " +
+                        "Placement ID: " + id);
+            }
+        }
+
+        @Override
+        public void onAdRewarded(String id) {
+            MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdRewarded - Placement ID: " + id);
+            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            if (targetListener != null) {
+                targetListener.onAdRewarded(id);
+            } else {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdRewarded - VungleRouterListener is not found for " +
+                        "Placement ID: " + id);
+            }
+        }
+
+        @Override
+        public void onAdLeftApplication(String id) {
+            MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdLeftApplication - Placement ID: " + id);
+            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            if (targetListener != null) {
+                targetListener.onAdLeftApplication(id);
+            } else {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdLeftApplication - VungleRouterListener is not found for " +
                         "Placement ID: " + id);
             }
         }
@@ -333,4 +374,35 @@ public class VungleRouter {
             }
         }
     };
+
+    // might be called on pubs side with header bidding and pre init Vungle sdk
+    public VungleSettings applyVungleNetworkSettings(Map<String, String> configuration) {
+        if (configuration == null || configuration.isEmpty()) {
+            return VungleNetworkSettings.getVungleSettings();
+        }
+        long minSpaceInit;
+        try {
+            minSpaceInit = Long.parseLong(configuration.get("VNG_MIN_SPACE_INIT"));
+        } catch (NumberFormatException e) {
+            //51 mb
+            minSpaceInit = 51 << 20;
+        }
+
+        long minSpaceLoadAd;
+        try {
+            minSpaceLoadAd = Long.parseLong(configuration.get("VNG_MIN_SPACE_LOAD_AD"));
+        } catch (NumberFormatException e) {
+            //50 mb
+            minSpaceLoadAd = 50 << 20;
+        }
+
+        boolean isAndroidIdOpted = Boolean.parseBoolean(configuration.get("VNG_DEVICE_ID_OPT_OUT"));
+
+        //Apply settings.
+        VungleNetworkSettings.setMinSpaceForInit(minSpaceInit);
+        VungleNetworkSettings.setMinSpaceForAdLoad(minSpaceLoadAd);
+        VungleNetworkSettings.setAndroidIdOptOut(isAndroidIdOpted);
+
+        return VungleNetworkSettings.getVungleSettings();
+    }
 }

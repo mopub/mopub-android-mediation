@@ -42,7 +42,10 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return null;
+        // MoPub not allowed super token bytes length larger than 1KB.
+        String bidToken = Vungle.getAvailableBidTokens(10);
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "get bidding token: " + bidToken);
+        return bidToken;
     }
 
     @NonNull
@@ -63,7 +66,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
-        applyVungleNetworkSettings(configuration);
+        VungleRouter.getInstance().applyVungleNetworkSettings(configuration);
 
         boolean networkInitializationSucceeded = false;
 
@@ -99,33 +102,5 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
             listener.onNetworkInitializationFinished(this.getClass(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
-    }
-
-    private void applyVungleNetworkSettings(Map<String, String> configuration) {
-        if (configuration == null || configuration.isEmpty()) {
-            return;
-        }
-        long minSpaceInit;
-        try {
-            minSpaceInit = Long.parseLong(configuration.get("VNG_MIN_SPACE_INIT"));
-        } catch (NumberFormatException e) {
-            //51 mb
-            minSpaceInit = 51 << 20;
-        }
-
-        long minSpaceLoadAd;
-        try {
-            minSpaceLoadAd = Long.parseLong(configuration.get("VNG_MIN_SPACE_LOAD_AD"));
-        } catch (NumberFormatException e) {
-            //50 mb
-            minSpaceLoadAd = 50 << 20;
-        }
-
-        boolean isAndroidIdOpted = Boolean.parseBoolean(configuration.get("VNG_DEVICE_ID_OPT_OUT"));
-
-        //Apply settings.
-        VungleNetworkSettings.setMinSpaceForInit(minSpaceInit);
-        VungleNetworkSettings.setMinSpaceForAdLoad(minSpaceLoadAd);
-        VungleNetworkSettings.setAndroidIdOptOut(isAndroidIdOpted);
     }
 }
