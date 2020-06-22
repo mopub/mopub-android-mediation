@@ -31,11 +31,11 @@ public class InterstitialDetailFragment extends Fragment implements Interstitial
     private CallbacksAdapter mCallbacksAdapter;
 
     private enum InterstitialCallbacks {
-        LOADED("onInterstitialLoaded"),
-        FAILED("onInterstitialFailed"),
-        SHOWN("onInterstitialShown"),
-        CLICKED("onInterstitialClicked"),
-        DISMISSED("onInterstitialDismissed");
+        LOADED("onAdLoaded"),
+        FAILED("onAdFailed"),
+        SHOWN("onAdShown"),
+        CLICKED("onAdClicked"),
+        DISMISSED("onAdDismissed");
 
         InterstitialCallbacks(@NonNull final String name) {
             this.name = name;

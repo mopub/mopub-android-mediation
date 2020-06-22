@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
@@ -29,7 +31,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
-public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements ISDemandOnlyRewardedVideoListener {
+public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewardedVideoListener {
 
     /**
      * private vars
@@ -87,33 +89,32 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
     }
 
     @Override
-    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
+    protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
+                                            @NonNull final AdData adData) throws IllegalStateException {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "checkAndInitializeSdk");
 
         // Pass the user consent from the MoPub SDK to ironSource as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         IronSource.setConsent(canCollectPersonalInfo);
+        final Map<String, String> extras = adData.getExtras();
         try {
             String applicationKey = "";
-            if(serverExtras == null) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "serverExtras is null. Make sure you have entered ironSource's application and instance keys on the MoPub dashboard");
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, mInstanceId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-                return false;
-            }
-
-            if(TextUtils.isEmpty(serverExtras.get(APPLICATION_KEY))){
+            if(TextUtils.isEmpty(extras.get(APPLICATION_KEY))) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource didn't perform initRewardedVideo- null or empty appkey");
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, mInstanceId,
-                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-                return false;
-            }
-            if (!TextUtils.isEmpty(serverExtras.get(INSTANCE_ID_KEY))) {
-                mInstanceId = serverExtras.get(INSTANCE_ID_KEY);
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
+                throw new IllegalStateException("IronSource initialization failure.");
             }
 
-            applicationKey = serverExtras.get(APPLICATION_KEY);
+            final String instanceId = extras.get(INSTANCE_ID_KEY);
+            if (!TextUtils.isEmpty(instanceId)) {
+                mInstanceId = instanceId;
+            }
+
+            applicationKey = extras.get(APPLICATION_KEY);
 
             IronSource.setISDemandOnlyRewardedVideoListener(this);
             IronSource.setMediationType(MEDIATION_TYPE + IronSourceAdapterConfiguration.IRONSOURCE_ADAPTER_VERSION + "SDK" + IronSourceAdapterConfiguration.getMoPubSdkVersion());
@@ -124,25 +125,33 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
         } catch (Exception e) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE, e);
 
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, mInstanceId,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
 
-            return false;
+            throw new IllegalStateException("IronSource initialization failure.", e);
         }
     }
 
     @Override
-    protected void loadWithSdkInitialized(@NonNull Activity activity, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) throws Exception {
-        if (!TextUtils.isEmpty(serverExtras.get(INSTANCE_ID_KEY))) {
-            mInstanceId = serverExtras.get(INSTANCE_ID_KEY);
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
+
+        setAutomaticImpressionAndClickTracking(false);
+
+        final Map<String, String> extras = adData.getExtras();
+
+        final String instanceId = extras.get(INSTANCE_ID_KEY);
+        if (!TextUtils.isEmpty(instanceId)) {
+            mInstanceId = instanceId;
         }
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-        mIronSourceAdapterConfiguration.setCachedInitializationParameters(activity, serverExtras);
+        mIronSourceAdapterConfiguration.setCachedInitializationParameters(context, extras);
         IronSource.loadISDemandOnlyRewardedVideo(mInstanceId);
     }
 
-    @Override
     protected boolean hasVideoAvailable() {
         boolean isVideoAvailable = IronSource.isISDemandOnlyRewardedVideoAvailable(mInstanceId);
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "IronSource hasVideoAvailable returned " + isVideoAvailable);
@@ -151,7 +160,7 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
     }
 
     @Override
-    protected void showVideo() {
+    protected void show() {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         IronSource.showISDemandOnlyRewardedVideo(mInstanceId);
@@ -167,14 +176,19 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video opened ad for instance " + instanceId + " (current instance: " + getAdNetworkId() + " )");
         MoPubLog.log(instanceId, SHOW_SUCCESS, ADAPTER_NAME);
 
-        MoPubRewardedVideoManager.onRewardedVideoStarted(IronSourceRewardedVideo.class, instanceId);
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdShown();
+            mInteractionListener.onAdImpression();
+        }
     }
 
     //Invoked when the user is about to return to the application after closing the RewardedVideo ad.
     @Override
     public void onRewardedVideoAdClosed(String instanceId) {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video closed ad for instance " + instanceId + " (current instance: " + getAdNetworkId() + " )");
-        MoPubRewardedVideoManager.onRewardedVideoClosed(IronSourceRewardedVideo.class, instanceId);
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdDismissed();
+        }
         MoPubLog.log(instanceId, DID_DISAPPEAR, ADAPTER_NAME);
     }
 
@@ -189,7 +203,9 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
                 MoPubReward.NO_REWARD_LABEL,
                 MoPubReward.DEFAULT_REWARD_AMOUNT);
 
-        MoPubRewardedVideoManager.onRewardedVideoCompleted(IronSourceRewardedVideo.class, instanceId, reward);
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdComplete(reward);
+        }
     }
 
     //Invoked when an Ad failed to display.
@@ -201,8 +217,9 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError).getIntCode(),
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
 
-        MoPubRewardedVideoManager.onRewardedVideoPlaybackError(IronSourceRewardedVideo.class, instanceId, IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
-
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdFailed(IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
+        }
     }
 
     //Invoked when the video ad was clicked by the user.
@@ -211,7 +228,9 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video clicked for instance " + instanceId + " (current instance: " + getAdNetworkId() + " )");
         MoPubLog.log(instanceId, CLICKED, ADAPTER_NAME);
 
-        MoPubRewardedVideoManager.onRewardedVideoClicked(IronSourceRewardedVideo.class, instanceId);
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdClicked();
+        }
     }
 
     //Invoked when the video ad load succeeded.
@@ -220,7 +239,9 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video loaded successfully for instance " + instanceId + " (current instance: " + getAdNetworkId() + " )");
         MoPubLog.log(instanceId, LOAD_SUCCESS, ADAPTER_NAME);
 
-        MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(IronSourceRewardedVideo.class, instanceId);
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoaded();
+        }
     }
 
     //Invoked when the video ad load failed.
@@ -231,6 +252,8 @@ public class IronSourceRewardedVideo extends CustomEventRewardedVideo implements
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError).getIntCode(),
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
 
-        MoPubRewardedVideoManager.onRewardedVideoLoadFailure(IronSourceRewardedVideo.class, instanceId, IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
+        }
     }
 }

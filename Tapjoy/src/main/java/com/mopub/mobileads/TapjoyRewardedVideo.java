@@ -1,6 +1,7 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -37,7 +38,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
-public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
+public class TapjoyRewardedVideo extends BaseAd {
     private static final String TJC_MOPUB_NETWORK_CONSTANT = "mopub";
     private static final String TJC_MOPUB_ADAPTER_VERSION_NUMBER = "4.1.0";
     private static final String TAPJOY_AD_NETWORK_CONSTANT = "tapjoy_id";
@@ -47,15 +48,14 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
     private static final String DEBUG_ENABLED = "debugEnabled";
     private static final String PLACEMENT_NAME = "name";
     private static final String ADAPTER_NAME = TapjoyRewardedVideo.class.getSimpleName();
-    private static final String ADM_KEY = "adm";
-    public static final String CONNECT_FLAGS = "connectFlags";
+    private static final String AD_MARKUP_KEY = "adm";
 
     private String sdkKey;
     private Hashtable<String, Object> connectFlags;
     private TJPlacement tjPlacement;
     private boolean isAutoConnect = false;
-    private static String sPlacementName;
-    private static TapjoyRewardedVideoListener sTapjoyListener = new TapjoyRewardedVideoListener();
+    private String mPlacementName;
+    private TapjoyRewardedVideoListener mTapjoyListener = new TapjoyRewardedVideoListener();
     @NonNull
     private TapjoyAdapterConfiguration mTapjoyAdapterConfiguration;
 
@@ -84,35 +84,38 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
     }
 
     @Override
-    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity,
-                                            @NonNull Map<String, Object> localExtras,
-                                            @NonNull Map<String, String> serverExtras)
-            throws Exception {
+    protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
+                                            @NonNull final AdData adData) {
 
-        sPlacementName = serverExtras.get(PLACEMENT_NAME);
-        if (TextUtils.isEmpty(sPlacementName)) {
-            MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video loaded with empty 'name' field. Request will fail.");
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT, MoPubErrorCode.NETWORK_NO_FILL);
-            MoPubLog.log(sPlacementName, LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+        final Map<String, String> extras = adData.getExtras();
+        mPlacementName = extras.get(PLACEMENT_NAME);
+        if (TextUtils.isEmpty(mPlacementName)) {
+            MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video loaded with empty 'name' field. Request will fail.");
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
+            MoPubLog.log(mPlacementName, LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+            throw new IllegalStateException("Tapjoy failed to load. No Placement name.");
         }
 
-        final String adm = serverExtras.get(ADM_KEY);
+        final String adMarkup = extras.get(AD_MARKUP_KEY);
         if (!Tapjoy.isConnected()) {
-            checkAndInitMediationSettings(localExtras);
-            mTapjoyAdapterConfiguration.setCachedInitializationParameters(launcherActivity, serverExtras);
+            setupWithMediationSetting();
 
-            boolean enableDebug = Boolean.valueOf(serverExtras.get(DEBUG_ENABLED));
+            mTapjoyAdapterConfiguration.setCachedInitializationParameters(launcherActivity, extras);
+
+            boolean enableDebug = Boolean.valueOf(extras.get(DEBUG_ENABLED));
             Tapjoy.setDebugEnabled(enableDebug);
 
-            sdkKey = serverExtras.get(SDK_KEY);
+            sdkKey = extras.get(SDK_KEY);
             if (!TextUtils.isEmpty(sdkKey)) {
-                MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Connecting to Tapjoy via MoPub dashboard settings...");
-                connectToTapjoy(launcherActivity, adm);
+                MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Connecting to Tapjoy via MoPub dashboard settings...");
+                connectToTapjoy(launcherActivity, adMarkup);
 
                 isAutoConnect = true;
                 return true;
             } else {
-                MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video is initialized with empty 'sdkKey'. You must call Tapjoy.connect()");
+                MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video is initialized with empty 'sdkKey'. You must call Tapjoy.connect()");
                 isAutoConnect = false;
             }
         }
@@ -120,40 +123,38 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
     }
 
     @Override
-    protected void loadWithSdkInitialized(@NonNull Activity activity,
-                                          @NonNull Map<String, Object> localExtras,
-                                          @NonNull Map<String, String> serverExtras)
-            throws Exception {
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
         fetchMoPubGDPRSettings();
-        final String adm = serverExtras.get(ADM_KEY);
-        createPlacement(activity, adm);
+        setAutomaticImpressionAndClickTracking(false);
+        final String adMarkup = adData.getExtras().get(AD_MARKUP_KEY);
+        createPlacement((Activity) context, adMarkup);
     }
 
-    private void connectToTapjoy(final Activity launcherActivity, final String adm) {
+    private void connectToTapjoy(final Activity launcherActivity, final String adMarkup) {
         Tapjoy.connect(launcherActivity, sdkKey, connectFlags, new TJConnectListener() {
             @Override
             public void onConnectSuccess() {
-                MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy connected successfully");
-                createPlacement(launcherActivity, adm);
+                MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy connected successfully");
+                createPlacement(launcherActivity, adMarkup);
             }
 
             @Override
             public void onConnectFailure() {
-                MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy connect failed");
+                MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy connect failed");
             }
         });
     }
 
     private void createPlacement(Activity activity, final String adm) {
-        if (!TextUtils.isEmpty(sPlacementName)) {
+        if (!TextUtils.isEmpty(mPlacementName)) {
             if (isAutoConnect && !Tapjoy.isConnected()) {
                 // If adapter is making the Tapjoy.connect() call on behalf of the pub, wait for it to
                 // succeed before making a placement request.
-                MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy is still connecting. Please wait for this to finish before making a placement request");
+                MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy is still connecting. Please wait for this to finish before making a placement request");
                 return;
             }
 
-            tjPlacement = new TJPlacement(activity, sPlacementName, sTapjoyListener);
+            tjPlacement = new TJPlacement(activity, mPlacementName, mTapjoyListener);
             tjPlacement.setMediationName(TJC_MOPUB_NETWORK_CONSTANT);
             tjPlacement.setAdapterVersion(TJC_MOPUB_ADAPTER_VERSION_NUMBER);
 
@@ -162,19 +163,18 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
                     Map<String, String> auctionData = Json.jsonStringToMap(adm);
                     tjPlacement.setAuctionData(new HashMap<>(auctionData));
                 } catch (JSONException e) {
-                    MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Unable to parse auction data.");
+                    MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Unable to parse auction data.");
                 }
             }
-            tjPlacement.setVideoListener(sTapjoyListener);
+            tjPlacement.setVideoListener(mTapjoyListener);
             tjPlacement.requestContent();
-            MoPubLog.log(sPlacementName, LOAD_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(mPlacementName, LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
-            MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy placementName is empty. Unable to create TJPlacement.");
+            MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy placementName is empty. Unable to create TJPlacement.");
         }
     }
 
-    @Override
-    protected boolean hasVideoAvailable() {
+    private boolean hasVideoAvailable() {
         if (tjPlacement == null) {
             return false;
         }
@@ -182,31 +182,13 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
     }
 
     @Override
-    protected void showVideo() {
-        MoPubLog.log(sPlacementName, SHOW_ATTEMPTED, ADAPTER_NAME);
+    protected void show() {
+        MoPubLog.log(mPlacementName, SHOW_ATTEMPTED, ADAPTER_NAME);
         if (hasVideoAvailable()) {
             tjPlacement.showContent();
         } else {
-            MoPubLog.log(sPlacementName, SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(mPlacementName, SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
         }
-    }
-
-    private void checkAndInitMediationSettings(@NonNull Map<String, Object> localExtras) {
-
-        final Object connectFlagsObject = localExtras.get(CONNECT_FLAGS);
-
-        if (connectFlagsObject instanceof Map) {
-            try {
-                Map<String, Object> connectFlagsLocalExtras = (Map<String, Object>) connectFlagsObject;
-                connectFlags = new Hashtable<>();
-                connectFlags.putAll(connectFlagsLocalExtras);
-                return;
-            } catch (Exception e) {
-                // fail over to use mediation settings
-            }
-        }
-
-        setupWithMediationSetting();
     }
 
     private void setupWithMediationSetting() {
@@ -214,7 +196,7 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
                 MoPubRewardedVideoManager.getGlobalMediationSettings(TapjoyMediationSettings.class);
 
         if (globalMediationSettings != null) {
-            MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Reading connectFlags from Tapjoy mediation settings");
+            MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Reading connectFlags from Tapjoy mediation settings");
 
             Map<String, Object> connectFlagsMediationSettings = globalMediationSettings.getConnectFlags();
             if (connectFlagsMediationSettings != null) {
@@ -247,42 +229,55 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
         }
     }
 
-    private static class TapjoyRewardedVideoListener implements TJPlacementListener, CustomEventRewardedVideoListener, TJPlacementVideoListener {
+    private class TapjoyRewardedVideoListener implements TJPlacementListener, TJPlacementVideoListener {
         @Override
         public void onRequestSuccess(TJPlacement placement) {
             if (!placement.isContentAvailable()) {
-                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT, MoPubErrorCode.NETWORK_NO_FILL);
-                MoPubLog.log(sPlacementName, LOAD_FAILED, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                }
+                MoPubLog.log(mPlacementName, LOAD_FAILED, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             }
         }
 
         @Override
         public void onContentReady(TJPlacement placement) {
-            MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
-            MoPubLog.log(sPlacementName, LOAD_SUCCESS, ADAPTER_NAME);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoaded();
+            }
+            MoPubLog.log(mPlacementName, LOAD_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
         public void onRequestFailure(TJPlacement placement, TJError error) {
-            MoPubRewardedVideoManager.onRewardedVideoLoadFailure(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT, MoPubErrorCode.NETWORK_NO_FILL);
-            MoPubLog.log(sPlacementName, LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
+            MoPubLog.log(mPlacementName, LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
         }
 
         @Override
         public void onContentShow(TJPlacement placement) {
-            MoPubRewardedVideoManager.onRewardedVideoStarted(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
-            MoPubLog.log(sPlacementName, SHOW_SUCCESS, ADAPTER_NAME);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdShown();
+                mInteractionListener.onAdImpression();
+            }
+            MoPubLog.log(mPlacementName, SHOW_SUCCESS, ADAPTER_NAME);
         }
 
         @Override
         public void onContentDismiss(TJPlacement placement) {
-            MoPubRewardedVideoManager.onRewardedVideoClosed(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdDismissed();
+            }
         }
 
         @Override
         public void onClick(TJPlacement placement) {
-            MoPubLog.log(sPlacementName, CLICKED, ADAPTER_NAME);
-            MoPubRewardedVideoManager.onRewardedVideoClicked(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT);
+            MoPubLog.log(mPlacementName, CLICKED, ADAPTER_NAME);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdClicked();
+            }
         }
 
         @Override
@@ -297,24 +292,25 @@ public class TapjoyRewardedVideo extends CustomEventRewardedVideo {
 
         @Override
         public void onVideoStart(TJPlacement tjPlacement) {
-            MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video started for placement " +
+            MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video started for placement " +
                     tjPlacement + ".");
 
         }
 
         @Override
         public void onVideoError(TJPlacement tjPlacement, String message) {
-            MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video failed for placement " +
+            MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video failed for placement " +
                     tjPlacement + "with error" + message);
 
         }
 
         @Override
         public void onVideoComplete(TJPlacement tjPlacement) {
-            MoPubLog.log(sPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video completed");
-            MoPubRewardedVideoManager.onRewardedVideoCompleted(TapjoyRewardedVideo.class, TAPJOY_AD_NETWORK_CONSTANT, MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.NO_REWARD_AMOUNT));
-            MoPubLog.log(sPlacementName, SHOULD_REWARD, ADAPTER_NAME, MoPubReward.NO_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
-
+            MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video completed");
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.DEFAULT_REWARD_AMOUNT));
+            }
+            MoPubLog.log(mPlacementName, SHOULD_REWARD, ADAPTER_NAME, MoPubReward.NO_REWARD_AMOUNT, MoPubReward.DEFAULT_REWARD_AMOUNT);
         }
     }
 

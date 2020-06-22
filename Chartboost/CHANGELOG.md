@@ -1,4 +1,10 @@
 ## Changelog
+  * 8.0.3.0
+    * This version of the adapters has been certified with Chartboost 8.0.3 and MoPub 5.13.0.
+    * Fix a bug where rewarded videos fail to show due to the activity presenting it is set to null.
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   * 8.0.2.1
     * Set Chartboost delegation on each load request for interstitials and rewarded videos.
 

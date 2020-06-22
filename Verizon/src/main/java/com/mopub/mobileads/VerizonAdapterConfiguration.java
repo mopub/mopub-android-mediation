@@ -62,6 +62,8 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
+        Preconditions.checkNotNull(context);
+
         if (biddingToken == null) {
             final String token = getToken();
             biddingToken = getCompressedToken(token);

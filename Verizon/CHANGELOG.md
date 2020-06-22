@@ -1,4 +1,8 @@
 ## Changelog
+  * 1.5.0.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   * 1.5.0.0
     * Compress the Advanced Bidding token to adhere to MoPub's spec.
     * This version of the adapters has been certified with Verizon 1.5.0 and MoPub 5.11.1.

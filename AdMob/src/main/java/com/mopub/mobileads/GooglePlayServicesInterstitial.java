@@ -1,15 +1,19 @@
 package com.mopub.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.mopub.common.LifecycleListener;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Collections;
@@ -29,7 +33,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
-public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
+public class GooglePlayServicesInterstitial extends BaseAd {
     /*
      * These keys are intended for MoPub internal use. Do not modify.
      */
@@ -42,37 +46,33 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     @NonNull
     private static final String ADAPTER_NAME = GooglePlayServicesInterstitial.class.getSimpleName();
     private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
-    private CustomEventInterstitialListener mInterstitialListener;
     private InterstitialAd mGoogleInterstitialAd;
-    private static String mAdUnitId;
+    @Nullable
+    private String mAdUnitId;
 
     public GooglePlayServicesInterstitial() {
         mGooglePlayServicesAdapterConfiguration = new GooglePlayServicesAdapterConfiguration();
     }
 
     @Override
-    protected void loadInterstitial(
-            final Context context,
-            final CustomEventInterstitialListener customEventInterstitialListener,
-            final Map<String, Object> localExtras,
-            final Map<String, String> serverExtras) {
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
 
-        MobileAds.initialize(context);
         setAutomaticImpressionAndClickTracking(false);
 
-        mInterstitialListener = customEventInterstitialListener;
+        final Map<String, String> extras = adData.getExtras();
+        if (extrasAreValid(extras)) {
+            mAdUnitId = extras.get(AD_UNIT_ID_KEY);
 
-        if (extrasAreValid(serverExtras)) {
-            mAdUnitId = serverExtras.get(AD_UNIT_ID_KEY);
-
-            mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+            mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(context, extras);
         } else {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
             }
 
             return;
@@ -82,11 +82,11 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         mGoogleInterstitialAd.setAdListener(new InterstitialAdListener());
         mGoogleInterstitialAd.setAdUnitId(mAdUnitId);
 
-        AdRequest.Builder builder = new AdRequest.Builder();
+        final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubInterstitial.setLocalExtras() call.
-        final String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
+        final String contentUrl = extras.get(CONTENT_URL_KEY);
 
         if (!TextUtils.isEmpty(contentUrl)) {
             builder.setContentUrl(contentUrl);
@@ -97,7 +97,7 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
 
         // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
-        final String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+        final String testDeviceId = extras.get(TEST_DEVICES_KEY);
 
         if (!TextUtils.isEmpty(testDeviceId)) {
             requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
@@ -105,10 +105,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
-        final Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+        final String childDirected = extras.get(TAG_FOR_CHILD_DIRECTED_KEY);
 
         if (childDirected != null) {
-            if (childDirected) {
+            if (Boolean.parseBoolean(childDirected)) {
                 requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE);
             } else {
                 requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE);
@@ -119,10 +119,10 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
 
         // Publishers may want to mark their requests to receive treatment for users in the
         // European Economic Area (EEA) under the age of consent.
-        final Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+        final String underAgeOfConsent = extras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
 
         if (underAgeOfConsent != null) {
-            if (underAgeOfConsent) {
+            if (Boolean.parseBoolean(underAgeOfConsent)) {
                 requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
             } else {
                 requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
@@ -135,25 +135,13 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         MobileAds.setRequestConfiguration(requestConfiguration);
 
         final AdRequest adRequest = builder.build();
+        mGoogleInterstitialAd.loadAd(adRequest);
 
-        try {
-            mGoogleInterstitialAd.loadAd(adRequest);
-
-            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-        } catch (NoClassDefFoundError e) {
-            // This can be thrown by Play Services on Honeycomb.
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
-            }
-        }
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     @Override
-    protected void showInterstitial() {
+    protected void show() {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (mGoogleInterstitialAd.isLoaded()) {
@@ -163,8 +151,8 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
             }
         }
     }
@@ -173,15 +161,29 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
     protected void onInvalidate() {
         if (mGoogleInterstitialAd != null) {
             mGoogleInterstitialAd.setAdListener(null);
+            mGoogleInterstitialAd = null;
         }
     }
 
-    private boolean extrasAreValid(Map<String, String> serverExtras) {
-        return serverExtras.containsKey(AD_UNIT_ID_KEY);
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
     }
 
-    private static String getAdNetworkId() {
-        return mAdUnitId;
+    private boolean extrasAreValid(Map<String, String> extras) {
+        return extras.containsKey(AD_UNIT_ID_KEY);
+    }
+
+    @NonNull
+    public String getAdNetworkId() {
+        return mAdUnitId == null ? "" : mAdUnitId;
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity,
+                                            @NonNull AdData adData) {
+        return false;
     }
 
     private class InterstitialAdListener extends AdListener {
@@ -190,8 +192,8 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
          */
         @Override
         public void onAdClosed() {
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialDismissed();
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdDismissed();
             }
         }
 
@@ -201,15 +203,15 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
                     getMoPubErrorCode(errorCode).getIntCode(),
                     getMoPubErrorCode(errorCode));
 
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialFailed(getMoPubErrorCode(errorCode));
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdFailed(getMoPubErrorCode(errorCode));
             }
         }
 
         @Override
         public void onAdLeftApplication() {
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialClicked();
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdClicked();
             }
         }
 
@@ -217,8 +219,8 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         public void onAdLoaded() {
             MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialLoaded();
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoaded();
             }
         }
 
@@ -226,9 +228,9 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
         public void onAdOpened() {
             MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
-            if (mInterstitialListener != null) {
-                mInterstitialListener.onInterstitialShown();
-                mInterstitialListener.onInterstitialImpression();
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdShown();
+                mInteractionListener.onAdImpression();
             }
         }
 
@@ -240,24 +242,18 @@ public class GooglePlayServicesInterstitial extends CustomEventInterstitial {
          * code.
          */
         private MoPubErrorCode getMoPubErrorCode(int error) {
-            MoPubErrorCode errorCode;
             switch (error) {
                 case AdRequest.ERROR_CODE_INTERNAL_ERROR:
-                    errorCode = MoPubErrorCode.INTERNAL_ERROR;
-                    break;
+                    return MoPubErrorCode.INTERNAL_ERROR;
                 case AdRequest.ERROR_CODE_INVALID_REQUEST:
-                    errorCode = MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
-                    break;
+                    return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
                 case AdRequest.ERROR_CODE_NETWORK_ERROR:
-                    errorCode = MoPubErrorCode.NO_CONNECTION;
-                    break;
+                    return MoPubErrorCode.NO_CONNECTION;
                 case AdRequest.ERROR_CODE_NO_FILL:
-                    errorCode = MoPubErrorCode.NO_FILL;
-                    break;
+                    return MoPubErrorCode.NO_FILL;
                 default:
-                    errorCode = MoPubErrorCode.UNSPECIFIED;
+                    return MoPubErrorCode.UNSPECIFIED;
             }
-            return errorCode;
         }
     }
 }

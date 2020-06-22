@@ -1,5 +1,5 @@
-
-project.version = '6.5.3.0'
+project.version = '6.5.3.1'
+project.ext.networkName = 'vungle'
 
 apply from: '../shared-build.gradle'
 

@@ -9,6 +9,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.VerizonAdapterConfiguration;
 import com.verizon.ads.VideoPlayerView;
@@ -51,6 +52,8 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
     @Override
     public void renderAdView(@NonNull final View view,
                              @NonNull final VerizonNative.VerizonStaticNativeAd verizonStaticNativeAd) {
+        Preconditions.checkNotNull(view);
+        Preconditions.checkNotNull(verizonStaticNativeAd);
 
         VerizonNativeViewHolder verizonNativeViewHolder = viewHolderMap.get(view);
         if (verizonNativeViewHolder == null) {
@@ -65,11 +68,14 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
 
     @Override
     public boolean supports(@NonNull final BaseNativeAd nativeAd) {
+        Preconditions.checkNotNull(nativeAd);
         return nativeAd instanceof VerizonNative.VerizonStaticNativeAd;
     }
 
     private void updateViews(@NonNull final VerizonNativeViewHolder verizonNativeViewHolder,
                              @NonNull final VerizonNative.VerizonStaticNativeAd nativeAd) {
+        Preconditions.checkNotNull(verizonNativeViewHolder);
+        Preconditions.checkNotNull(nativeAd);
 
         NativeRendererHelper.addTextView(verizonNativeViewHolder.titleView, nativeAd.getTitle());
         NativeRendererHelper.addTextView(verizonNativeViewHolder.textView, nativeAd.getText());
@@ -82,6 +88,8 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
     private void updateVideoView(@NonNull final VerizonNativeViewHolder verizonNativeViewHolder,
                                  @Nullable final Map<String, Object> extras) {
         try {
+            Preconditions.checkNotNull(verizonNativeViewHolder);
+
             if (videoPlayerView != null) {
                 videoPlayerView.unload(); //stops multiple videos from playing.
             }
