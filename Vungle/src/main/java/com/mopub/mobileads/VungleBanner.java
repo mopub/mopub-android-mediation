@@ -310,7 +310,7 @@ public class VungleBanner extends BaseAd {
         @Override
         public void onAdLeftApplication(String placementId) {
             //Nothing to do. If we invoke mCustomEventBannerListener.onLeaveApplication() it will cause
-            // onBannerClicked() event be called twice.
+            // onBannerClicked() event to be called twice.
         }
 
         @Override
@@ -349,10 +349,17 @@ public class VungleBanner extends BaseAd {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                        MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                                MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                                MoPubErrorCode.NETWORK_NO_FILL);
+                        if (mInteractionListener == null && mLoadListener != null) {
+                            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                    MoPubErrorCode.NETWORK_NO_FILL);
+                        } else if (mInteractionListener != null) {
+                            mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
+                                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                    MoPubErrorCode.NETWORK_NO_FILL);
+                        }
                     }
                 });
             }

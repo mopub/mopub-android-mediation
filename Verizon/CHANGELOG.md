@@ -1,4 +1,9 @@
 ## Changelog
+  * 1.6.0.0
+    * This version of the adapters has been certified with Verizon 1.6.0 and MoPub 5.13.0.
+    * Fix interstitial timeouts.
+    * Enable Advanced Bidding support for rewarded video.
+
   * 1.5.0.1
     * Refactor non-native adapter classes to use the new consolidated API from MoPub.
     * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.

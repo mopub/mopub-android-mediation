@@ -302,7 +302,8 @@ public class VungleRouter {
         @Override
         public void onAdRewarded(String id) {
             MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdRewarded - Placement ID: " + id);
-            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            final VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+
             if (targetListener != null) {
                 targetListener.onAdRewarded(id);
             } else {
@@ -314,7 +315,7 @@ public class VungleRouter {
         @Override
         public void onAdLeftApplication(String id) {
             MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdLeftApplication - Placement ID: " + id);
-            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            final VungleRouterListener targetListener = sVungleRouterListeners.get(id);
             if (targetListener != null) {
                 targetListener.onAdLeftApplication(id);
             } else {
@@ -380,6 +381,7 @@ public class VungleRouter {
         if (configuration == null || configuration.isEmpty()) {
             return VungleNetworkSettings.getVungleSettings();
         }
+
         long minSpaceInit;
         try {
             minSpaceInit = Long.parseLong(configuration.get("VNG_MIN_SPACE_INIT"));

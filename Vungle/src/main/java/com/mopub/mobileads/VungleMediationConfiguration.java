@@ -82,7 +82,9 @@ public class VungleMediationConfiguration implements MediationSettings {
             adConfig.setMuted(Boolean.parseBoolean(isStartMuted));
         } else if (extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY)) {
             final String isSoundEnabled = extras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
-            adConfig.setMuted(!Boolean.parseBoolean(isSoundEnabled));
+            if (!TextUtils.isEmpty(isSoundEnabled)) {
+                adConfig.setMuted(!Boolean.parseBoolean(isSoundEnabled));
+            }
         }
 
         final String flexViewCloseTimeInSec = extras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);

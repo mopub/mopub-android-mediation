@@ -23,6 +23,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 
 /**
  * A custom event for showing Vungle Interstitial.
@@ -244,8 +245,9 @@ public class VungleInterstitial extends BaseAd {
 
         @Override
         public void onAdLeftApplication(String placementId) {
-            //Nothing to do. If we call mCustomEventInterstitialListener.onLeaveApplication() it will cause
-            // onInterstitialClicked() event be called twice.
+            // Only logging this event. No need to call interstitialListener.onLeaveApplication()
+            // because it's an alias for interstitialListener.onInterstitialClicked()
+            MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
         }
 
         @Override
