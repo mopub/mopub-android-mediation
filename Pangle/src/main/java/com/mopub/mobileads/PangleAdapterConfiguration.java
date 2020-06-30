@@ -4,11 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.TTAdConfig;
+import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.mopub.common.BaseAdapterConfiguration;
@@ -40,28 +42,26 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String ADAPTER_NAME = PangleAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = "pangle_network";
 
-    public static final String KEY_EXTRA_AD_PLACEMENT_ID = "ad_placement_id";
-    public static final String KEY_EXTRA_APP_ID = "app_id";
+    public static final String AD_PLACEMENT_ID_EXTRA_KEY = "ad_placement_id";
+    public static final String APP_ID_EXTRA_KEY = "app_id";
 
     /**
      * Key for publisher to set on to initialize Pangle SDK. (Optional)
      */
-    public static final String KEY_EXTRA_SUPPORT_MULTIPROCESS = "support_multiprocess";
-    public static final String KEY_EXTRA_ALLOW_AD_IN_LOCK_SCREEN = "allow_lock_screen";
+    public static final String SUPPORT_MULTIPROCESS_EXTRA_KEY = "support_multiprocess";
+    public static final String ALLOW_AD_IN_LOCK_SCREEN_EXTRA_KEY = "allow_lock_screen";
 
     private static boolean sIsSDKInitialized;
     private static boolean sIsSupportMultiProcess;
     private static boolean sIsAllowAdShowInLockScreen;
 
-    private static float mAdWidth;
-    private static float mAdHeight;
     private static String mRewardName;
     private static int mRewardAmount;
     private static String mPlacementId;
     private static String mUserID;
-    private static int mOrientation;
     private static String mMediaExtra;
-
+    private static int mMediaViewWidth;
+    private static int mMediaViewHeight;
 
     @NonNull
     @Override
@@ -96,18 +96,21 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String> configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
+
         boolean networkInitializationSucceeded = false;
         synchronized (PangleAdapterConfiguration.class) {
             try {
-                final String appId = configuration.get(KEY_EXTRA_APP_ID);
+                if (configuration != null && !configuration.isEmpty()) {
+                    final String appId = configuration.get(APP_ID_EXTRA_KEY);
 
-                sIsSupportMultiProcess = configuration.get(KEY_EXTRA_SUPPORT_MULTIPROCESS) != null ?
-                        Boolean.valueOf(configuration.get(KEY_EXTRA_SUPPORT_MULTIPROCESS)) : false;
-                sIsAllowAdShowInLockScreen = configuration.get(KEY_EXTRA_ALLOW_AD_IN_LOCK_SCREEN) != null ?
-                        Boolean.valueOf(configuration.get(KEY_EXTRA_ALLOW_AD_IN_LOCK_SCREEN)) : false;
+                    sIsSupportMultiProcess = configuration.get(SUPPORT_MULTIPROCESS_EXTRA_KEY) != null ?
+                            Boolean.valueOf(configuration.get(SUPPORT_MULTIPROCESS_EXTRA_KEY)) : false;
+                    sIsAllowAdShowInLockScreen = configuration.get(ALLOW_AD_IN_LOCK_SCREEN_EXTRA_KEY) != null ?
+                            Boolean.valueOf(configuration.get(ALLOW_AD_IN_LOCK_SCREEN_EXTRA_KEY)) : false;
 
-                pangleSdkInit(context, appId);
-                networkInitializationSucceeded = true;
+                    pangleSdkInit(context, appId);
+                    networkInitializationSucceeded = true;
+                }
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Pangle has encountered " +
                         "an exception.", e);
@@ -126,27 +129,31 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     public static TTAdManager getPangleSdkManager() {
         if (!sIsSDKInitialized) {
             throw new RuntimeException("Pangle SDK is not initialized, " +
-                    "please check whether app ID would be empty or null");
+                    "please check whether app ID is empty or null");
         }
         return TTAdSdk.getAdManager();
     }
 
     public static void pangleSdkInit(Context context, String appId) {
-        if (appId == null || context == null) {
+        if (TextUtils.isEmpty(appId) || context == null) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME,
-                    "Invalid Pangle app Id. Ensure the app id is valid on the MoPub dashboard.");
+                    "Invalid Pangle app ID. Ensure the app id is valid on the MoPub dashboard.");
             return;
         }
+
         if (!sIsSDKInitialized) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle SDK initialize with appId = " + appId);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle SDK initializes with app ID: " + appId);
+
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
                     .useTextureView(hasWakeLockPermission(context))
                     .appName(MOPUB_NETWORK_NAME)
-                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0) /* set gdpr to Pangle sdk, 0 close GDPR Privacy protection, 1: open GDPR Privacy protection */
-                    .allowShowPageWhenScreenLock(sIsAllowAdShowInLockScreen) /* Allow or deny permission to display the landing page ad in the lock screen */
-                    .debug(BuildConfig.DEBUG) /* Turn it on during the testing phase, you can troubleshoot with the log, remove it after launching the app */
-                    .supportMultiProcess(sIsSupportMultiProcess) /* true for support multi-process environment, false for single-process */
+                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0)
+                    .allowShowPageWhenScreenLock(sIsAllowAdShowInLockScreen)
+                    /* Allow or deny permission to display the landing page ad in the lock screen */
+                    .debug(MoPubLog.getLogLevel() == MoPubLog.LogLevel.DEBUG)
+                    .supportMultiProcess(sIsSupportMultiProcess)
+                    /* true for support multi-process environment, false for single-process */
                     .build());
             sIsSDKInitialized = true;
         }
@@ -187,32 +194,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    public static float getScreenWidth(Context context) {
-        if (context == null) return -1;
-        return (float) context.getResources().getDisplayMetrics().widthPixels;
-    }
-
-    public static float getScreenHeight(Context context) {
-        if (context == null) return -1;
-        return (float) context.getResources().getDisplayMetrics().heightPixels;
-    }
-
-    public static void setAdWidth(float adWidth) {
-        mAdWidth = adWidth;
-    }
-
-    public static float getAdWidth() {
-        return mAdWidth;
-    }
-
-    public static void setAdHeight(float adHeight) {
-        mAdHeight = adHeight;
-    }
-
-    public static float getAdHeight() {
-        return mAdHeight;
-    }
-
     public static void setRewardName(String rewardName) {
         mRewardName = rewardName;
     }
@@ -229,14 +210,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         return mRewardAmount;
     }
 
-    public static void setPlacementId(String placementId) {
-        mPlacementId = placementId;
-    }
-
-    public static String getPlacementId() {
-        return mPlacementId;
-    }
-
     public static void setUserID(String userID) {
         mUserID = userID;
     }
@@ -245,19 +218,27 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         return mUserID;
     }
 
-    public static void setOrientation(int orientation) {
-        mOrientation = orientation;
-    }
-
-    public static int getOrientation() {
-        return mOrientation;
-    }
-
     public static void setMediaExtra(String mediaExtra) {
         mMediaExtra = mediaExtra;
     }
 
     public static String getMediaExtra() {
         return mMediaExtra;
+    }
+
+    public static int getMediaViewWidth() {
+        return mMediaViewWidth;
+    }
+
+    public static void setMediaViewWidth(int mediaViewWidth) {
+        mMediaViewWidth = mediaViewWidth;
+    }
+
+    public static int getMediaViewHeight() {
+        return mMediaViewHeight;
+    }
+
+    public static void setMediaViewHeight(int mediaViewHeight) {
+        mMediaViewHeight = mediaViewHeight;
     }
 }

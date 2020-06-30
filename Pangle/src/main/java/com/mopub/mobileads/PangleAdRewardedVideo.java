@@ -56,7 +56,6 @@ public class PangleAdRewardedVideo extends BaseAd {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
     }
 
-
     private boolean hasVideoAvailable() {
         return mTTRewardVideoAd != null && mIsLoaded;
     }
@@ -75,12 +74,13 @@ public class PangleAdRewardedVideo extends BaseAd {
         final Map<String, String> extras = adData.getExtras();
         if (!mIsSDKInitialized.get()) {
             if (extras != null && !extras.isEmpty()) {
-                final String appId = adData.getExtras().get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+                final String appId = adData.getExtras().get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
 
                 if (TextUtils.isEmpty(appId)) {
                     if (mLoadListener != null) {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                     }
+
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                             "Invalid Pangle app ID. Failing Pangle sdk init. " +
                                     "Ensure the ad placement ID is valid on the MoPub dashboard.");
@@ -102,13 +102,12 @@ public class PangleAdRewardedVideo extends BaseAd {
         mWeakActivity = new WeakReference<>((Activity) context);
         setAutomaticImpressionAndClickTracking(false);
 
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "loadWithSdkInitialized method execute ......getCodeId=" + PangleAdapterConfiguration.getPlacementId() + ",getOrientation=" + PangleAdapterConfiguration.getOrientation());
         TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
-        TTAdNative adInstance = adManager.createAdNative(context.getApplicationContext());
+        final TTAdNative adInstance = adManager.createAdNative(context.getApplicationContext());
 
         /** obtain adunit from server by mopub */
         final Map<String, String> extras = adData.getExtras();
-        mPlacementId = extras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
+        mPlacementId = extras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
         if (TextUtils.isEmpty(mPlacementId)) {
             if (mLoadListener != null) {
@@ -147,7 +146,9 @@ public class PangleAdRewardedVideo extends BaseAd {
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show an Pangle rewarded video before one was loaded");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show an Pangle rewarded video." +
+                    " A video might not have been loaded");
+
             if (mInteractionListener != null) {
                 mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
@@ -163,7 +164,8 @@ public class PangleAdRewardedVideo extends BaseAd {
     @Override
     protected void onInvalidate() {
         if (mTTRewardVideoAd != null) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Performing cleanup tasks...");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Performing cleanup tasks.");
+
             mTTRewardVideoAd = null;
         }
     }
@@ -175,8 +177,9 @@ public class PangleAdRewardedVideo extends BaseAd {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     "Loading Rewarded Video creative encountered an error: "
                             + PangleAdapterConfiguration.mapErrorCode(code).toString()
-                            + ",error message:"
+                            + " ,error message:"
                             + message);
+
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
             }
@@ -184,7 +187,8 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         @Override
         public void onRewardVideoAdLoad(TTRewardVideoAd ad) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVideoAdLoad method execute ......ad = " + ad);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVideoAdLoad");
+
             if (ad != null) {
                 mIsLoaded = true;
                 mTTRewardVideoAd = ad;
@@ -197,13 +201,13 @@ public class PangleAdRewardedVideo extends BaseAd {
                 if (mLoadListener != null) {
                     mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 }
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, " RewardVideoAd is null !");
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "Rewarded Video is null.");
             }
         }
 
         @Override
         public void onRewardVideoCached() {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle RewardVideoAd onRewardVideoCached...");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVideoCached.");
         }
     };
 
@@ -211,6 +215,7 @@ public class PangleAdRewardedVideo extends BaseAd {
         @Override
         public void onAdShow() {
             MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
             if (mInteractionListener != null) {
                 mInteractionListener.onAdShown();
             }
@@ -219,6 +224,7 @@ public class PangleAdRewardedVideo extends BaseAd {
         @Override
         public void onAdVideoBarClick() {
             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+
             if (mInteractionListener != null) {
                 mInteractionListener.onAdClicked();
             }
@@ -227,7 +233,8 @@ public class PangleAdRewardedVideo extends BaseAd {
         @Override
         public void onAdClose() {
             MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle RewardVideoAd onAdClose...");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdClose.");
+
             if (mInteractionListener != null) {
                 mInteractionListener.onAdDismissed();
             }
@@ -235,12 +242,13 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         @Override
         public void onVideoComplete() {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle RewardVideoAd onVideoComplete...");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoComplete.");
         }
 
         @Override
         public void onVideoError() {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle RewardVideoAd onVideoError...");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoError.");
+
             if (mInteractionListener != null) {
                 mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
@@ -248,9 +256,10 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         @Override
         public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd onRewardVerify...rewardVerify："
-                    + rewardVerify + "，rewardAmount=" + rewardAmount + "，rewardName=" + rewardName);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVerify(): "
+                    + rewardVerify + ", rewardAmount = " + rewardAmount + ", rewardName = " + rewardName);
             MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, rewardAmount, rewardName);
+
             if (mInteractionListener != null) {
                 mInteractionListener.onAdComplete(MoPubReward.success(rewardName, rewardAmount));
             }
@@ -258,7 +267,7 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         @Override
         public void onSkippedVideo() {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle TTRewardVideoAd skipped video...");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onSkippedVideo.");
         }
     };
 }

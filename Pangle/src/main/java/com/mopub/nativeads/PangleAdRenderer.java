@@ -104,7 +104,6 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.PangleNa
                 ad.onAdShow(pangleAd);
             }
         });
-
     }
 
     @Override

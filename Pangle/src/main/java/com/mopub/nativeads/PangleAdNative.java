@@ -37,9 +37,6 @@ import static com.mopub.nativeads.NativeErrorCode.NETWORK_NO_FILL;
 public class PangleAdNative extends CustomEventNative {
     private static final String ADAPTER_NAME = PangleAdNative.class.getSimpleName();
 
-    public static final String KEY_EXTRA_MEDIA_VIEW_WIDTH = "media_view_width";
-    public static final String KEY_EXTRA_MEDIA_VIEW_HEIGHT = "media_view_height";
-
     private static String mPlacementId = "";
     private Context mContext;
     private CustomEventNativeListener mCustomEventNativeListener;
@@ -59,7 +56,7 @@ public class PangleAdNative extends CustomEventNative {
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
             /** Obtain ad placement id from MoPub UI */
-            mPlacementId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_PLACEMENT_ID);
+            mPlacementId = serverExtras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
             if (TextUtils.isEmpty(mPlacementId)) {
                 if (customEventNativeListener != null) {
@@ -73,7 +70,7 @@ public class PangleAdNative extends CustomEventNative {
             adm = serverExtras.get(DataKeys.ADM_KEY);
 
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
-            final String appId = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_APP_ID);
+            final String appId = serverExtras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
             ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
 
@@ -84,22 +81,23 @@ public class PangleAdNative extends CustomEventNative {
         int mediaViewWidth = 640;
         int mediaViewHeight = 320;
         if (localExtras != null && !localExtras.isEmpty()) {
-            if (localExtras.containsKey(KEY_EXTRA_MEDIA_VIEW_WIDTH)) {
-                mediaViewWidth = (int) localExtras.get(KEY_EXTRA_MEDIA_VIEW_WIDTH);
+            if (PangleAdapterConfiguration.getMediaViewWidth() > 0) {
+                mediaViewWidth = PangleAdapterConfiguration.getMediaViewWidth();
             }
-            if (localExtras.containsKey(KEY_EXTRA_MEDIA_VIEW_HEIGHT)) {
-                mediaViewHeight = (int) localExtras.get(KEY_EXTRA_MEDIA_VIEW_HEIGHT);
+            if (PangleAdapterConfiguration.getMediaViewHeight() > 0) {
+                mediaViewHeight = PangleAdapterConfiguration.getMediaViewHeight();
             }
         }
 
-        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "extras: mediaViewWidth=" + mediaViewWidth + ", mediaViewHeight=" + mediaViewHeight);
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                "extras: mediaViewWidth=" + mediaViewWidth
+                        + ", mediaViewHeight=" + mediaViewHeight);
         if (ttAdManager != null) {
             final TTAdNative adNative = ttAdManager.createAdNative(mContext);
             final AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
                     .setImageAcceptedSize(mediaViewWidth, mediaViewHeight)
-                    .setAdCount(1)
                     .withBid(adm)
                     .build();
 
