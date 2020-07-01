@@ -1,4 +1,8 @@
 ## Changelog
+
+ * 5.10.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.10.0 and MoPub 5.13.0.
+
  * 5.9.1.1
    * Fix interstitial load listener usage.
 
