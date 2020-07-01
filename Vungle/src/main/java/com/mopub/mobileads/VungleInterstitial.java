@@ -23,6 +23,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 
 /**
  * A custom event for showing Vungle Interstitial.
@@ -203,24 +204,14 @@ public class VungleInterstitial extends BaseAd {
      */
     private class VungleInterstitialRouterListener implements VungleRouterListener {
         @Override
-        public void onAdEnd(@NonNull String placementReferenceId, final boolean wasSuccessfulView,
-                            final boolean wasCallToActionClicked) {
-            if (mPlacementId.equals(placementReferenceId)) {
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " +
-                        placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView +
-                        ", wasCallToActionClicked: " + wasCallToActionClicked);
+        public void onAdEnd(String placementId) {
+            if (mPlacementId.equals(placementId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementId);
                 mIsPlaying = false;
 
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (wasCallToActionClicked) {
-                            if (mInteractionListener != null) {
-                                mInteractionListener.onAdClicked();
-                            }
-
-                            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
-                        }
                         if (mInteractionListener != null) {
                             mInteractionListener.onAdDismissed();
                         }
@@ -228,6 +219,35 @@ public class VungleInterstitial extends BaseAd {
                 });
                 sVungleRouter.removeRouterListener(mPlacementId);
             }
+        }
+
+        @Override
+        public void onAdClick(String placementId) {
+            if (mPlacementId.equals(placementId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdClick - Placement ID: " + placementId);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdClicked();
+                        }
+
+                        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onAdRewarded(String placementId) {
+            //nothing to do
+        }
+
+        @Override
+        public void onAdLeftApplication(String placementId) {
+            // Only logging this event. No need to call interstitialListener.onLeaveApplication()
+            // because it's an alias for interstitialListener.onInterstitialClicked()
+            MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
         }
 
         @Override

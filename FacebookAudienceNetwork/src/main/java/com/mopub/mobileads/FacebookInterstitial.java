@@ -66,11 +66,11 @@ public class FacebookInterstitial extends BaseAd implements InterstitialAdExtend
         mAdExpiration = new Runnable() {
             @Override
             public void run() {
-                if (mLoadListener != null) {
+                if (mInteractionListener != null) {
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Expiring unused " +
                             "Facebook Interstitial ad due to Facebook's 60-minute expiration policy.");
-                    mLoadListener.onAdLoadFailed(EXPIRED);
-                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    mInteractionListener.onAdFailed(EXPIRED);
+                    MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                             MoPubErrorCode.EXPIRED.getIntCode(), MoPubErrorCode.EXPIRED);
 
                     /* Can't get a direct handle to adFailed() to set the interstitial's state to

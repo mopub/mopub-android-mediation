@@ -23,6 +23,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 
 /**
  * A custom event for showing Vungle rewarded videos.
@@ -236,34 +237,10 @@ public class VungleRewardedVideo extends BaseAd {
      */
     private class VungleRewardedRouterListener implements VungleRouterListener {
         @Override
-        public void onAdEnd(@NonNull String placementReferenceId, final boolean wasSuccessfulView,
-                            final boolean wasCallToActionClicked) {
-            if (mPlacementId.equals(placementReferenceId)) {
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " +
-                        placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView +
-                        ", wasCallToActionClicked: " + wasCallToActionClicked);
+        public void onAdEnd(String placementId) {
+            if (mPlacementId.equals(placementId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " + placementId);
                 mIsPlaying = false;
-
-                if (wasSuccessfulView) {
-                    MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, MoPubReward.NO_REWARD_AMOUNT,
-                            MoPubReward.NO_REWARD_LABEL);
-                    // Vungle does not provide a callback when a user should be rewarded.
-                    // You will need to provide your own reward logic if you receive a reward with
-                    // "NO_REWARD_LABEL" && "NO_REWARD_AMOUNT"
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdComplete(MoPubReward.success(
-                                MoPubReward.NO_REWARD_LABEL,
-                                MoPubReward.NO_REWARD_AMOUNT));
-                    }
-                }
-
-                if (wasCallToActionClicked) {
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdClicked();
-                    }
-
-                    MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
-                }
 
                 if (mInteractionListener != null) {
                     mInteractionListener.onAdDismissed();
@@ -271,6 +248,37 @@ public class VungleRewardedVideo extends BaseAd {
 
                 sVungleRouter.removeRouterListener(mPlacementId);
             }
+        }
+
+        @Override
+        public void onAdClick(String placementId) {
+            if (mPlacementId.equals(placementId)) {
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdClicked();
+                }
+
+                MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+            }
+        }
+
+        @Override
+        public void onAdRewarded(String placementId) {
+            if (mPlacementId.equals(placementId)) {
+                MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, MoPubReward.NO_REWARD_AMOUNT,
+                        MoPubReward.NO_REWARD_LABEL);
+                // Vungle does not provide a callback when a user should be rewarded.
+                // You will need to provide your own reward logic if you receive a reward with
+                // "NO_REWARD_LABEL" && "NO_REWARD_AMOUNT"
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
+                            MoPubReward.NO_REWARD_AMOUNT));
+                }
+            }
+        }
+
+        @Override
+        public void onAdLeftApplication(String placementId) {
+            //nothing to do
         }
 
         @Override
@@ -301,8 +309,8 @@ public class VungleRewardedVideo extends BaseAd {
                     mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
                 }
 
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        MoPubErrorCode.NETWORK_NO_FILL);
+                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                        MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
         }
 
