@@ -18,9 +18,7 @@ final class BidCache {
 
     static void put(final String placementId, final Bid bid) {
 
-        final long timeLimit = (long) Configuration.getInt(DOMAIN,
-                CACHE_TIMEOUT_KEY,
-                TEN_MINUTES_MILLIS);
+        final long timeLimit = Configuration.getInt(DOMAIN, CACHE_TIMEOUT_KEY, TEN_MINUTES_MILLIS);
 
         bidTimedMemoryCache.add(placementId, bid, timeLimit);
     }

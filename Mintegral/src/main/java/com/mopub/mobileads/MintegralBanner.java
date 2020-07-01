@@ -1,21 +1,25 @@
 package com.mopub.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mintegral.msdk.out.BannerAdListener;
 import com.mintegral.msdk.out.BannerSize;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MTGBannerView;
+import com.mopub.common.LifecycleListener;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
 import static com.mopub.common.DataKeys.ADM_KEY;
-import static com.mopub.common.DataKeys.AD_HEIGHT;
-import static com.mopub.common.DataKeys.AD_WIDTH;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
@@ -27,26 +31,24 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLI
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 
-public class MintegralBanner extends CustomEventBanner implements BannerAdListener {
+public class MintegralBanner extends BaseAd implements BannerAdListener {
 
     private final String ADAPTER_NAME = this.getClass().getSimpleName();
 
-    private CustomEventBannerListener mBannerListener;
     private MTGBannerView mBannerAd;
-
-    private static String mAdUnitId;
-    private static String mPlacementId;
+    private String mAdUnitId;
+    private String mPlacementId;
     private int mAdWidth, mAdHeight;
 
     @Override
-    protected void loadBanner(final Context context,
-                              final CustomEventBannerListener customEventBannerListener,
-                              final Map<String, Object> localExtras, Map<String, String> serverExtras) {
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
 
         setAutomaticImpressionAndClickTracking(false);
-        mBannerListener = customEventBannerListener;
 
-        if (!serverDataIsValid(serverExtras, context)) {
+        final Map<String, String> extras = adData.getExtras();
+        if (!serverDataIsValid(extras, context)) {
             failAdapter(ADAPTER_CONFIGURATION_ERROR, "One or " +
                     "more keys used for Mintegral's ad requests are empty. Failing adapter. Please " +
                     "ensure you have populated all the required keys on the MoPub dashboard.");
@@ -54,7 +56,7 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
             return;
         }
 
-        if (!adSizesAreValid(localExtras)) {
+        if (!adSizesAreValid(adData)) {
             failAdapter(ADAPTER_CONFIGURATION_ERROR, "Either the ad width " +
                     "or the ad height is less than or equal to 0. Failing adapter. Please ensure " +
                     "you have supplied the MoPub SDK non-zero ad width and height.");
@@ -86,11 +88,11 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         MintegralAdapterConfiguration.addChannel();
         MintegralAdapterConfiguration.setTargeting(MIntegralSDKFactory.getMIntegralSDK());
 
-        final String adm = serverExtras.get(ADM_KEY);
-        if (TextUtils.isEmpty(adm)) {
+        final String adMarkup = extras.get(ADM_KEY);
+        if (TextUtils.isEmpty(adMarkup)) {
             mBannerAd.load();
         } else {
-            mBannerAd.loadFromBid(adm);
+            mBannerAd.loadFromBid(adMarkup);
         }
 
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Requesting Mintegral banner " +
@@ -108,38 +110,29 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
             mBannerAd.release();
             mBannerAd = null;
         }
-
-        mBannerListener = null;
     }
 
-    private boolean adSizesAreValid(Map<String, Object> localExtras) {
-        if (localExtras != null && !localExtras.isEmpty()) {
-            final Object widthObj = localExtras.get(AD_WIDTH);
-
-            if (widthObj instanceof Integer) {
-                mAdWidth = (int) widthObj;
-            }
-
-            final Object heightObj = localExtras.get(AD_HEIGHT);
-
-            if (heightObj instanceof Integer) {
-                mAdHeight = (int) heightObj;
-            }
-
-            return mAdWidth > 0 && mAdHeight > 0;
-        }
-
-        return false;
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
     }
 
-    private boolean serverDataIsValid(final Map<String, String> serverExtras, Context context) {
+    private boolean adSizesAreValid(@NonNull final AdData adData) {
+        mAdWidth = adData.getAdWidth() != null ? adData.getAdWidth() : 0;
+        mAdHeight = adData.getAdHeight() != null ? adData.getAdHeight() : 0;
 
-        if (serverExtras != null && !serverExtras.isEmpty()) {
-            mAdUnitId = serverExtras.get(MintegralAdapterConfiguration.UNIT_ID_KEY);
-            mPlacementId = serverExtras.get(MintegralAdapterConfiguration.PLACEMENT_ID_KEY);
+        return mAdWidth > 0 && mAdHeight > 0;
+    }
 
-            final String appId = serverExtras.get(MintegralAdapterConfiguration.APP_ID_KEY);
-            final String appKey = serverExtras.get(MintegralAdapterConfiguration.APP_KEY);
+    private boolean serverDataIsValid(final Map<String, String> extras, Context context) {
+
+        if (extras != null && !extras.isEmpty()) {
+            mAdUnitId = extras.get(MintegralAdapterConfiguration.UNIT_ID_KEY);
+            mPlacementId = extras.get(MintegralAdapterConfiguration.PLACEMENT_ID_KEY);
+
+            final String appId = extras.get(MintegralAdapterConfiguration.APP_ID_KEY);
+            final String appKey = extras.get(MintegralAdapterConfiguration.APP_KEY);
 
             if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appKey) && !TextUtils.isEmpty(mAdUnitId)) {
                 MintegralAdapterConfiguration.configureMintegral(appId, appKey, context);
@@ -158,9 +151,10 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, errorMsg);
         }
 
-        if (mBannerListener != null) {
-            mBannerListener.onBannerFailed(errorCode);
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(errorCode);
         }
+
     }
 
     private static int dip2px(Context context, float dipValue) {
@@ -169,8 +163,15 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         return (int) (dipValue * scale + 0.5f);
     }
 
-    private static String getAdNetworkId() {
-        return mAdUnitId;
+    @NonNull
+    public String getAdNetworkId() {
+        return mAdUnitId != null ? mAdUnitId : "";
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull final Activity activity,
+                                            @NonNull final AdData adData) {
+        return false;
     }
 
     @Override
@@ -183,8 +184,8 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Mintegral banner ad loaded " +
                 "successfully. Showing ad...");
 
-        if (mBannerListener != null && mBannerAd != null) {
-            mBannerListener.onBannerLoaded(mBannerAd);
+        if (mLoadListener != null && mBannerAd != null) {
+            mLoadListener.onAdLoaded();
             mBannerAd.setVisibility(View.VISIBLE);
 
             MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
@@ -193,9 +194,14 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
     }
 
     @Override
+    protected View getAdView() {
+        return mBannerAd;
+    }
+
+    @Override
     public void onLogImpression() {
-        if (mBannerListener != null) {
-            mBannerListener.onBannerImpression();
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdImpression();
         }
 
         MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
@@ -204,8 +210,8 @@ public class MintegralBanner extends CustomEventBanner implements BannerAdListen
 
     @Override
     public void onClick() {
-        if (mBannerListener != null) {
-            mBannerListener.onBannerClicked();
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdClicked();
         }
 
         MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);

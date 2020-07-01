@@ -1,4 +1,15 @@
 ## Changelog
+ * 5.9.1.1
+   * Fix interstitial load listener usage.
+
+ * 5.9.1.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.9.1 and MoPub 5.13.0.
+   * Fix rewarded video click not tracked for certain creative templates.
+
+ * 5.9.0.2
+   * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+   * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+   
  * 5.9.0.1
    * Add support for Facebook native banner rendering via [templates](https://developers.facebook.com/docs/audience-network/guides/ad-formats/native/android-template/#native-banner-ad).
 

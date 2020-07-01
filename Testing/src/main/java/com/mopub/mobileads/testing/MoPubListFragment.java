@@ -57,7 +57,7 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
     private MoPubSampleListAdapter mAdapter;
     private AdUnitDataSource mAdUnitDataSource;
     private EditText mSearchBar;
-    private Button mSearchBarClearButton;
+    private View mSearchBarClearButton;
 
     private static final AdType[] adTypes = AdType.values();
 

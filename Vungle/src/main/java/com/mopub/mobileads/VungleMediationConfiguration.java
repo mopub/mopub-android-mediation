@@ -1,5 +1,7 @@
 package com.mopub.mobileads;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -72,45 +74,55 @@ public class VungleMediationConfiguration implements MediationSettings {
         return mExtras;
     }
 
-    static void adConfigWithLocalExtras(AdConfig adConfig, Map<String, Object> localExtras) {
+    static void adConfigWithExtras(@NonNull final AdConfig adConfig,
+                                   @NonNull final Map<String, String> extras) {
 
-        if (localExtras != null && !localExtras.isEmpty()) {
-
-            if (localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
-                final Object isStartMuted = localExtras.get(Builder.EXTRA_START_MUTED_KEY);
-
-                if (isStartMuted instanceof Boolean) {
-                    adConfig.setMuted((Boolean) isStartMuted);
-                }
-            } else {
-                final Object isSoundEnabled = localExtras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
-                if (isSoundEnabled instanceof Boolean) {
-                    adConfig.setMuted(!(Boolean) isSoundEnabled);
-                }
+        if (extras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
+            final String isStartMuted = extras.get(Builder.EXTRA_START_MUTED_KEY);
+            adConfig.setMuted(Boolean.parseBoolean(isStartMuted));
+        } else if (extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY)) {
+            final String isSoundEnabled = extras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
+            if (!TextUtils.isEmpty(isSoundEnabled)) {
+                adConfig.setMuted(!Boolean.parseBoolean(isSoundEnabled));
             }
+        }
 
-            final Object flexViewCloseTimeInSec = localExtras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
+        final String flexViewCloseTimeInSec = extras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
 
-            if (flexViewCloseTimeInSec instanceof Integer) {
-                adConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
+        if (!TextUtils.isEmpty(flexViewCloseTimeInSec)) {
+            try {
+                adConfig.setFlexViewCloseTime(Integer.parseInt(flexViewCloseTimeInSec));
+
+            } catch (NumberFormatException e) {
+                // ignore and don't set flex view close time
             }
-            final Object ordinalViewCount = localExtras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
+        }
+        final String ordinalViewCount = extras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
 
-            if (ordinalViewCount instanceof Integer) {
-                adConfig.setOrdinal((Integer) ordinalViewCount);
+        if (!TextUtils.isEmpty(ordinalViewCount)) {
+            try {
+                adConfig.setOrdinal(Integer.parseInt(ordinalViewCount));
+
+            } catch (NumberFormatException e) {
+                // ignore and don't set ordinal view count
             }
+        }
 
-            final Object adOrientation = localExtras.get(Builder.EXTRA_ORIENTATION_KEY);
+        final String adOrientation = extras.get(Builder.EXTRA_ORIENTATION_KEY);
 
-            if (adOrientation instanceof Integer) {
-                adConfig.setAdOrientation((Integer) adOrientation);
+        if (!TextUtils.isEmpty(adOrientation)) {
+            try {
+                adConfig.setAdOrientation(Integer.parseInt(adOrientation));
+
+            } catch (NumberFormatException e) {
+                // ignore and don't set ad orientation
             }
         }
     }
 
-    static boolean isStartMutedNotConfigured(Map<String, Object> localExtras) {
-        return !localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY) &&
-                !localExtras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
+    static boolean isStartMutedNotConfigured(@NonNull final Map<String, String> extras) {
+        return !extras.containsKey(Builder.EXTRA_START_MUTED_KEY) &&
+                !extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
     }
 
     public static class Builder {

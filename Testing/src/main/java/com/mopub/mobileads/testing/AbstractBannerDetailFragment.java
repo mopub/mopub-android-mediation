@@ -239,7 +239,7 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
 
     // BannerAdListener
     @Override
-    public void onBannerLoaded(MoPubView banner) {
+    public void onBannerLoaded(@NonNull MoPubView banner) {
         if (mCallbacksAdapter == null) {
             logToast(getActivity(), getName() + " loaded.");
             return;

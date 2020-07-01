@@ -30,15 +30,16 @@ import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_FAILED;
 import static com.verizon.ads.VASAds.ERROR_AD_REQUEST_TIMED_OUT;
 import static com.verizon.ads.VASAds.ERROR_NO_FILL;
 
 public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
-
+    private static final String ADAPTER_NAME = VerizonAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String BIDDING_TOKEN_VERSION = "1.0";
+    private static final String BIDDING_TOKEN_VERSION = "1.1";
     private static final String EDITION_NAME_KEY = "editionName";
     private static final String EDITION_VERSION_KEY = "editionVersion";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
@@ -62,6 +63,13 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
+        if (!VASAds.isInitialized()) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to compute a bidding token. " +
+                    "Verizon SDK must be initialized first.");
+
+            return null;
+        }
+
         if (biddingToken == null) {
             final String token = getToken();
             biddingToken = getCompressedToken(token);
@@ -219,7 +227,7 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
             deflaterOutputStream.flush();
             deflaterOutputStream.close();
 
-            return Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
+            return Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
         } catch (Exception e) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE, "Unable to compress bidding token.", e);
         }

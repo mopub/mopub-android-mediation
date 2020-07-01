@@ -42,6 +42,7 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
     @NonNull
     @Override
     public View createAdView(@NonNull final Context context, @Nullable final ViewGroup parent) {
+        Preconditions.checkNotNull(context);
 
         Preconditions.checkNotNull(context);
 
@@ -52,6 +53,9 @@ public class MintegralAdRenderer implements MoPubAdRenderer<MintegralNative.Mint
 
     @Override
     public void renderAdView(@NonNull View view, @NonNull MintegralNative.MintegralNativeAd ad) {
+        Preconditions.checkNotNull(view);
+        Preconditions.checkNotNull(ad);
+
         MintegralNativeViewHolder mintegralNativeViewHolder = mViewHolderMap.get(view);
 
         if (mintegralNativeViewHolder == null) {
