@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Model.CBError;
+import com.chartboost.sdk.Privacy.model.CCPA;
+import com.chartboost.sdk.Privacy.model.GDPR;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
@@ -71,20 +73,12 @@ public class ChartboostShared {
         final boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
-
             if (shouldAllowLegitimateInterest) {
-                if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
-                        || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
-                    Chartboost.setPIDataUseConsent(context,
-                            Chartboost.CBPIDataUseConsent.NO_BEHAVIORAL);
-                } else {
-                    Chartboost.setPIDataUseConsent(context,
-                            Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL);
-                }
+                boolean explicitNoConsent = personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
+                        || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT;
+                addPrivacyConsent(context, !explicitNoConsent);
             } else {
-                Chartboost.setPIDataUseConsent(context,
-                        canCollectPersonalInfo ? Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL :
-                                Chartboost.CBPIDataUseConsent.NO_BEHAVIORAL);
+                addPrivacyConsent(context, canCollectPersonalInfo);
             }
         }
 
@@ -129,6 +123,20 @@ public class ChartboostShared {
         return true;
     }
 
+    private static void addPrivacyConsent(Context context, boolean canCollectPersonalInfo) {
+        if(context == null) {
+            return;
+        }
+
+        if(canCollectPersonalInfo) {
+            Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
+            Chartboost.addDataUseConsent(context, new CCPA(CCPA.CCPA_CONSENT.OPT_IN_SALE));
+        } else {
+            Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
+            Chartboost.addDataUseConsent(context, new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE));
+        }
+    }
+    
     @NonNull
     public static ChartboostSingletonDelegate getDelegate() {
         return sDelegate;
@@ -243,6 +251,11 @@ public class ChartboostShared {
             mRewardedVideoLocationsToLoad.remove(location);
         }
 
+        private void invalidateLocation(String location) {
+            unregisterLoadListener(location);
+            unregisterInteractionListener(location);
+        }
+
         @NonNull
         public AdLifecycleListener.LoadListener getLoadListener(@NonNull String location) {
             final AdLifecycleListener.LoadListener listener = mLoadListenersForLocation.get(location);
@@ -314,6 +327,7 @@ public class ChartboostShared {
             }
 
             getLoadListener(location).onAdLoadFailed(errorCode);
+            invalidateLocation(location);
         }
 
         @Override
@@ -325,6 +339,7 @@ public class ChartboostShared {
         @Override
         public void didCloseInterstitial(String location) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost interstitial ad closed.");
+            invalidateLocation(location);
         }
 
         @Override
