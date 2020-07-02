@@ -136,7 +136,7 @@ public class ChartboostShared {
             Chartboost.addDataUseConsent(context, new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE));
         }
     }
-    
+
     @NonNull
     public static ChartboostSingletonDelegate getDelegate() {
         return sDelegate;
@@ -334,12 +334,12 @@ public class ChartboostShared {
         public void didDismissInterstitial(String location) {
             // Note that this method is fired before didCloseInterstitial and didClickInterstitial.
             getInteractionListener(location).onAdDismissed();
+            invalidateLocation(location);
         }
 
         @Override
         public void didCloseInterstitial(String location) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost interstitial ad closed.");
-            invalidateLocation(location);
         }
 
         @Override
