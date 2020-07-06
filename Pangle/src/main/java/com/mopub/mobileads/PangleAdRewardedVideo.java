@@ -77,19 +77,19 @@ public class PangleAdRewardedVideo extends BaseAd {
                 final String appId = adData.getExtras().get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
 
                 if (TextUtils.isEmpty(appId)) {
-                    if (mLoadListener != null) {
-                        mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                    }
-
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                             "Invalid Pangle app ID. Failing Pangle sdk init. " +
                                     "Ensure the ad placement ID is valid on the MoPub dashboard.");
+
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                    }
                     return false;
                 }
                 PangleAdapterConfiguration.pangleSdkInit(activity, appId);
                 mPangleAdapterConfiguration.setCachedInitializationParameters(activity, extras);
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -98,6 +98,16 @@ public class PangleAdRewardedVideo extends BaseAd {
     protected void load(@NonNull final Context context, @NonNull final AdData adData) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(adData);
+
+        if (!(context instanceof Activity)) {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Context passed to load " +
+                    "was not an Activity. Failing the request.");
+
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
+            return;
+        }
 
         mWeakActivity = new WeakReference<>((Activity) context);
         setAutomaticImpressionAndClickTracking(false);
@@ -110,12 +120,13 @@ public class PangleAdRewardedVideo extends BaseAd {
         mPlacementId = extras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
         if (TextUtils.isEmpty(mPlacementId)) {
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                     "Invalid Pangle placement ID. Failing ad request. " +
                             "Ensure the ad placement ID is valid on the MoPub dashboard.");
+
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
             return;
         }
 
@@ -133,20 +144,22 @@ public class PangleAdRewardedVideo extends BaseAd {
                 .build();
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
+
         adInstance.loadRewardVideoAd(adSlot, mLoadRewardVideoAdListener);
     }
 
     @Override
     protected void show() {
         if (hasVideoAvailable() && mWeakActivity != null && mWeakActivity.get() != null) {
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+
             mTTRewardVideoAd.setRewardAdInteractionListener(mRewardAdInteractionListener);
             mTTRewardVideoAd.showRewardVideoAd(mWeakActivity.get());
-            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
         } else {
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show an Pangle rewarded video." +
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show a Pangle rewarded video." +
                     " A video might not have been loaded");
 
             if (mInteractionListener != null) {
@@ -187,27 +200,27 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         @Override
         public void onRewardVideoAdLoad(TTRewardVideoAd ad) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVideoAdLoad");
-
             if (ad != null) {
                 mIsLoaded = true;
                 mTTRewardVideoAd = ad;
 
                 MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+
                 if (mLoadListener != null) {
                     mLoadListener.onAdLoaded();
                 }
             } else {
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "Rewarded Video is null.");
+
                 if (mLoadListener != null) {
                     mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 }
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, "Rewarded Video is null.");
             }
         }
 
         @Override
         public void onRewardVideoCached() {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVideoCached.");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVideoCached: The rewarded video is cached.");
         }
     };
 
@@ -218,6 +231,7 @@ public class PangleAdRewardedVideo extends BaseAd {
 
             if (mInteractionListener != null) {
                 mInteractionListener.onAdShown();
+                mInteractionListener.onAdImpression();
             }
         }
 
@@ -256,12 +270,24 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         @Override
         public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVerify(): "
-                    + rewardVerify + ", rewardAmount = " + rewardAmount + ", rewardName = " + rewardName);
-            MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, rewardAmount, rewardName);
+            if (!TextUtils.isEmpty(rewardName)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVerify(): "
+                        + rewardVerify + ", rewardAmount = " + rewardAmount +
+                        ", rewardName = " + rewardName);
+                MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, rewardAmount,
+                        rewardName);
 
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdComplete(MoPubReward.success(rewardName, rewardAmount));
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdComplete(MoPubReward.success(rewardName, rewardAmount));
+                }
+            } else {
+                MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
+                        MoPubReward.DEFAULT_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
+                            MoPubReward.DEFAULT_REWARD_AMOUNT));
+                }
             }
         }
 

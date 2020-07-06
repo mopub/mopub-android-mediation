@@ -55,13 +55,14 @@ public class PangleAdInterstitial extends BaseAd {
             mPlacementId = extras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
             if (TextUtils.isEmpty(mPlacementId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                        "Invalid Pangle placement ID. Failing ad request. " +
+                                "Ensure the ad placement ID is valid on the MoPub dashboard.");
+
                 if (mLoadListener != null) {
                     mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
 
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
-                        "Invalid Pangle placement ID. Failing ad request. " +
-                                "Ensure the ad placement ID is valid on the MoPub dashboard.");
                 return;
             }
 
@@ -75,23 +76,23 @@ public class PangleAdInterstitial extends BaseAd {
 
         final TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
         if (adManager == null) {
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
-            }
-
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
                     MoPubErrorCode.NETWORK_INVALID_STATE);
+
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            }
             return;
         }
 
         if (!adManager.isFullScreenVideoAd(mPlacementId, adm)) {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid Pangle placement ID." +
+                    " Make sure the ad placement ID is Full Screen Video format in Pangle UI.");
+
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
-
-            MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid Pangle placement ID." +
-                    " Make sure the ad placement ID is Full Screen Video format in Pangle UI.");
             return;
         }
 
@@ -111,15 +112,15 @@ public class PangleAdInterstitial extends BaseAd {
     @Override
     protected void show() {
         if (mFullVideoLoader != null && mContext instanceof Activity) {
-            mFullVideoLoader.showFullVideo((Activity) mContext);
-
             MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+
+            mFullVideoLoader.showFullVideo((Activity) mContext);
         } else {
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+
             if (mInteractionListener != null) {
                 mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
             }
-
-            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
         }
     }
 
@@ -171,6 +172,12 @@ public class PangleAdInterstitial extends BaseAd {
         void showFullVideo(Activity activity) {
             if (mTTFullScreenVideoAd != null && mIsLoaded) {
                 mTTFullScreenVideoAd.showFullScreenVideoAd(activity);
+            } else {
+                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+                }
             }
         }
 
@@ -187,7 +194,7 @@ public class PangleAdInterstitial extends BaseAd {
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                         "Loading Full Video creative encountered an error: "
                                 + PangleAdapterConfiguration.mapErrorCode(code).toString()
-                                + ",error message:" + message);
+                                + ", error message:" + message);
 
                 if (mLoadListener != null) {
                     mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
@@ -200,24 +207,24 @@ public class PangleAdInterstitial extends BaseAd {
                     mIsLoaded = true;
                     mTTFullScreenVideoAd = ad;
                     mTTFullScreenVideoAd.setFullScreenVideoAdInteractionListener(mFullScreenVideoAdInteractionListener);
-                    if (mLoadListener != null) {
-                        mLoadListener.onAdLoaded();
-                    }
 
                     MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoaded();
+                    }
                 } else {
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
+
                     if (mLoadListener != null) {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
                     }
-
-                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
                 }
             }
 
             @Override
             public void onFullScreenVideoCached() {
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, " Pangle onFullScreenVideoCached invoke.");
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onFullScreenVideoCached: The full screen video is cached.");
             }
         };
 

@@ -59,12 +59,13 @@ public class PangleAdNative extends CustomEventNative {
             mPlacementId = serverExtras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
             if (TextUtils.isEmpty(mPlacementId)) {
-                if (customEventNativeListener != null) {
-                    customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
-                }
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                         "Invalid Pangle placement ID. Failing ad request. " +
                                 "Ensure the ad placement ID is valid on the MoPub dashboard.");
+
+                if (customEventNativeListener != null) {
+                    customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
+                }
                 return;
             }
             adm = serverExtras.get(DataKeys.ADM_KEY);
@@ -80,18 +81,17 @@ public class PangleAdNative extends CustomEventNative {
         /** default media view ad size */
         int mediaViewWidth = 640;
         int mediaViewHeight = 320;
-        if (localExtras != null && !localExtras.isEmpty()) {
-            if (PangleAdapterConfiguration.getMediaViewWidth() > 0) {
-                mediaViewWidth = PangleAdapterConfiguration.getMediaViewWidth();
-            }
-            if (PangleAdapterConfiguration.getMediaViewHeight() > 0) {
-                mediaViewHeight = PangleAdapterConfiguration.getMediaViewHeight();
-            }
+        if (PangleAdapterConfiguration.getMediaViewWidth() > 0) {
+            mediaViewWidth = PangleAdapterConfiguration.getMediaViewWidth();
+        }
+        if (PangleAdapterConfiguration.getMediaViewHeight() > 0) {
+            mediaViewHeight = PangleAdapterConfiguration.getMediaViewHeight();
         }
 
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                 "extras: mediaViewWidth=" + mediaViewWidth
                         + ", mediaViewHeight=" + mediaViewHeight);
+
         if (ttAdManager != null) {
             final TTAdNative adNative = ttAdManager.createAdNative(mContext);
             final AdSlot adSlot = new AdSlot.Builder()
@@ -110,6 +110,7 @@ public class PangleAdNative extends CustomEventNative {
                     MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                             mapErrorCode(errorCode).getIntCode(),
                             mapErrorCode(errorCode));
+
                     if (mCustomEventNativeListener != null) {
                         mCustomEventNativeListener.onNativeAdFailed(mapErrorCode(errorCode));
                     }
@@ -119,6 +120,7 @@ public class PangleAdNative extends CustomEventNative {
                 public void onFeedAdLoad(List<TTFeedAd> ads) {
                     if (ads != null && ads.size() > 0) {
                         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+
                         if (mCustomEventNativeListener != null) {
                             for (TTFeedAd ad : ads) {
                                 mCustomEventNativeListener.onNativeAdLoaded(new PangleNativeAd(ad));
@@ -127,6 +129,7 @@ public class PangleAdNative extends CustomEventNative {
                     } else {
                         MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                                 NETWORK_NO_FILL.getIntCode(), NETWORK_NO_FILL);
+
                         if (mCustomEventNativeListener != null) {
                             mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
                         }
@@ -136,6 +139,7 @@ public class PangleAdNative extends CustomEventNative {
         } else {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "The ad manager cannot be created." +
                     " Please make sure to pass the correct app id.");
+
             if (customEventNativeListener != null) {
                 customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST);
             }
@@ -174,6 +178,7 @@ public class PangleAdNative extends CustomEventNative {
              * onAdClicked() and onAdCreativeClick() will only trigger either one when ad shows.
              **/
             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+
             notifyAdClicked();
         }
 
@@ -184,12 +189,14 @@ public class PangleAdNative extends CustomEventNative {
              * onAdClicked() and onAdCreativeClick() will only trigger either one when ad shows.
              **/
             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+
             notifyAdClicked();
         }
 
         @Override
         public void onAdShow(TTNativeAd ad) {
             MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
             notifyAdImpressed();
         }
 

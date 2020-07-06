@@ -64,13 +64,13 @@ public class PangleAdBanner extends BaseAd {
             mPlacementId = extras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
             if (TextUtils.isEmpty(mPlacementId)) {
-                if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                }
-
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                         "Invalid Pangle placement ID. Failing ad request. " +
                                 "Ensure the ad placement ID is valid on the MoPub dashboard.");
+
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
                 return;
             }
 
@@ -85,22 +85,22 @@ public class PangleAdBanner extends BaseAd {
 
         if (adManager != null) {
             if (!adManager.isExpressAd(mPlacementId, adm)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid Pangle placement ID. " +
+                        "Make sure the ad placement ID is Express format in Pangle UI.");
+
                 if (mLoadListener != null) {
                     mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
-
-                MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid Pangle placement ID. " +
-                        "Make sure the ad placement ID is Express format in Pangle UI.");
                 return;
             }
         } else {
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
-            }
-
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
                     MoPubErrorCode.NETWORK_INVALID_STATE);
+
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+            }
             return;
         }
 
@@ -134,8 +134,8 @@ public class PangleAdBanner extends BaseAd {
     /**
      * Pangle banner support size:
      * 600*300, 600*400, 600*500, 600*260, 600*90, 600*150, 640*100, 690*388
-     * which will respect the following size
-     * 300*150, 300*200, 300*250, 300*130, 300*45, 300*75, 320*50, 345*194
+     * Please refer to our documentation for Pangle size mapping.
+     * https://developers.mopub.com//publishers/mediation/networks/pangle/#set-up-banner-express-ad-size-in-pangle-ui
      *
      * @param adData for the banner information
      * @return Array of desire banner size in safe area.
@@ -307,6 +307,7 @@ public class PangleAdBanner extends BaseAd {
                     MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                             MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                             MoPubErrorCode.NETWORK_NO_FILL);
+
                     if (mLoadListener != null) {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
                     }
@@ -358,6 +359,7 @@ public class PangleAdBanner extends BaseAd {
                         MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
                         if (mInteractionListener != null) {
+                            mInteractionListener.onAdShown();
                             mInteractionListener.onAdImpression();
                         }
                     }
@@ -394,6 +396,7 @@ public class PangleAdBanner extends BaseAd {
 
             this.mExpressAdInteractionListener = null;
             this.mTTNativeExpressAdListener = null;
+            mBannerView = null;
         }
     }
 }
