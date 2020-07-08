@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Model.CBError;
-import com.chartboost.sdk.Privacy.model.CCPA;
 import com.chartboost.sdk.Privacy.model.GDPR;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
@@ -130,10 +129,8 @@ public class ChartboostShared {
 
         if(canCollectPersonalInfo) {
             Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
-            Chartboost.addDataUseConsent(context, new CCPA(CCPA.CCPA_CONSENT.OPT_IN_SALE));
         } else {
             Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
-            Chartboost.addDataUseConsent(context, new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE));
         }
     }
 
