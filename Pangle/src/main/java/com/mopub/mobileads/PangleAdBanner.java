@@ -139,6 +139,11 @@ public class PangleAdBanner extends BaseAd {
      *
      * @param adData for the banner information
      * @return Array of desire banner size in safe area.
+     *
+     * Banner size mapping according to the incoming size in adapter
+     * and selected size on Pangle platform.
+     * Pangle will return the banner ads with appropriate size.
+     *
      */
     public static int[] getAdSize(AdData adData) {
         int[] adSize = new int[]{0, 0};
