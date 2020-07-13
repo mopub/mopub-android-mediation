@@ -79,17 +79,7 @@ public class PangleAdBanner extends BaseAd {
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, extras);
         }
 
-        if (adManager != null) {
-            if (!adManager.isExpressAd(mPlacementId, null)) {
-                MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid Pangle placement ID. " +
-                        "Make sure the ad placement ID is Express format in Pangle UI.");
-
-                if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                }
-                return;
-            }
-        } else {
+        if (adManager == null) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
                     MoPubErrorCode.NETWORK_INVALID_STATE);
@@ -129,7 +119,7 @@ public class PangleAdBanner extends BaseAd {
     /**
      * Banner size mapping according to the incoming size in adapter and selected size on Pangle platform.
      * Pangle will return the banner ads with appropriate size.
-     *
+     * <p>
      * Please refer to our documentation for Pangle size mapping.
      * https://developers.mopub.com//publishers/mediation/networks/pangle/#set-up-banner-express-ad-size-in-pangle-ui
      *

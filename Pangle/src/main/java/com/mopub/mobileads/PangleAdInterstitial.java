@@ -82,16 +82,6 @@ public class PangleAdInterstitial extends BaseAd {
             return;
         }
 
-        if (!adManager.isFullScreenVideoAd(mPlacementId, null)) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid Pangle placement ID." +
-                    " Make sure the ad placement ID is Full Screen Video format in Pangle UI.");
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
-            return;
-        }
-
         final AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
                 .setSupportDeepLink(true);
