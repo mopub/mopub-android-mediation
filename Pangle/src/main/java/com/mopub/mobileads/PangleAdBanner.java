@@ -132,18 +132,14 @@ public class PangleAdBanner extends BaseAd {
     }
 
     /**
-     * Pangle banner support size:
-     * 600*300, 600*400, 600*500, 600*260, 600*90, 600*150, 640*100, 690*388
+     * Banner size mapping according to the incoming size in adapter and selected size on Pangle platform.
+     * Pangle will return the banner ads with appropriate size.
+     *
      * Please refer to our documentation for Pangle size mapping.
      * https://developers.mopub.com//publishers/mediation/networks/pangle/#set-up-banner-express-ad-size-in-pangle-ui
      *
      * @param adData for the banner information
      * @return Array of desire banner size in safe area.
-     *
-     * Banner size mapping according to the incoming size in adapter
-     * and selected size on Pangle platform.
-     * Pangle will return the banner ads with appropriate size.
-     *
      */
     public static int[] getAdSize(AdData adData) {
         int[] adSize = new int[]{0, 0};
@@ -329,7 +325,9 @@ public class PangleAdBanner extends BaseAd {
         };
 
         private void bindDislike(TTNativeExpressAd ad) {
-            /** dislike function, maybe you can use custom dialog, please refer to the access document from Pangle */
+            /** dislike function, it is an optional method that you can use custom dialog.
+             * please refer to the access document from Pangle
+             */
             if (mContext instanceof Activity) {
                 ad.setDislikeCallback((Activity) mContext, new TTAdDislike.DislikeInteractionCallback() {
                     @Override
