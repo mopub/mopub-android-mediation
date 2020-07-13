@@ -72,7 +72,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return getPangleSdkManager().getBiddingToken();
+        return null;
     }
 
     @NonNull

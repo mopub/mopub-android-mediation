@@ -56,8 +56,6 @@ public class PangleAdBanner extends BaseAd {
         mContext = context;
         setAutomaticImpressionAndClickTracking(false);
         TTAdManager adManager = null;
-        String adm = null;
-
         final Map<String, String> extras = adData.getExtras();
 
         if (extras != null && !extras.isEmpty()) {
@@ -74,8 +72,6 @@ public class PangleAdBanner extends BaseAd {
                 return;
             }
 
-            adm = extras.get(DataKeys.ADM_KEY);
-
             /** Init Pangle SDK if fail to initialize in the PangleAdapterConfiguration */
             final String appId = extras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
@@ -84,7 +80,7 @@ public class PangleAdBanner extends BaseAd {
         }
 
         if (adManager != null) {
-            if (!adManager.isExpressAd(mPlacementId, adm)) {
+            if (!adManager.isExpressAd(mPlacementId, null)) {
                 MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid Pangle placement ID. " +
                         "Make sure the ad placement ID is Express format in Pangle UI.");
 
@@ -116,8 +112,7 @@ public class PangleAdBanner extends BaseAd {
         final AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
                 .setSupportDeepLink(true)
-                .setImageAcceptedSize(mBannerWidth, mBannerHeight)
-                .withBid(adm);
+                .setImageAcceptedSize(mBannerWidth, mBannerHeight);
 
         adSlotBuilder.setExpressViewAcceptedSize((float) mBannerWidth, (float) mBannerHeight);
 
