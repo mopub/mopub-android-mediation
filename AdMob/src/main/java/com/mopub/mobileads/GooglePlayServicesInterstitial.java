@@ -203,8 +203,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
                     getMoPubErrorCode(errorCode).getIntCode(),
                     getMoPubErrorCode(errorCode));
 
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(getMoPubErrorCode(errorCode));
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(getMoPubErrorCode(errorCode));
             }
         }
 

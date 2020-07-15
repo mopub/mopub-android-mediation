@@ -276,29 +276,41 @@ public class VungleBanner extends BaseAd {
     private class VungleBannerRouterListener implements VungleRouterListener {
 
         @Override
-        public void onAdEnd(@NonNull String placementReferenceId, boolean wasSuccessfulView,
-                            final boolean wasCallToActionClicked) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd placement id" + placementReferenceId);
-            if (mPlacementId.equals(placementReferenceId)) {
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd - Placement ID: " +
-                        placementReferenceId + ", wasSuccessfulView: " + wasSuccessfulView +
-                        ", wasCallToActionClicked: " + wasCallToActionClicked);
+        public void onAdEnd(String placementId) {
+            if (mPlacementId.equals(placementId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnd placement id: " + placementId);
                 mIsPlaying = false;
                 sVungleRouter.removeRouterListener(mPlacementId);
                 mVungleRouterListener = null;
+            }
+        }
+
+        @Override
+        public void onAdClick(String placementId) {
+            if (mPlacementId.equals(placementId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdClick placement id: " + placementId);
                 mHandler.post(new Runnable() {
 
                     @Override
                     public void run() {
-                        if (wasCallToActionClicked) {
-                            if (mInteractionListener != null) {
-                                mInteractionListener.onAdClicked();
-                            }
-                            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdClicked();
                         }
+                        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
                     }
                 });
             }
+        }
+
+        @Override
+        public void onAdRewarded(String placementId) {
+            //nothing to do
+        }
+
+        @Override
+        public void onAdLeftApplication(String placementId) {
+            //Nothing to do. If we invoke mCustomEventBannerListener.onLeaveApplication() it will cause
+            // onBannerClicked() event to be called twice.
         }
 
         @Override
@@ -337,10 +349,17 @@ public class VungleBanner extends BaseAd {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                        MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                                MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                                MoPubErrorCode.NETWORK_NO_FILL);
+                        if (mInteractionListener == null && mLoadListener != null) {
+                            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                    MoPubErrorCode.NETWORK_NO_FILL);
+                        } else if (mInteractionListener != null) {
+                            mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
+                                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                    MoPubErrorCode.NETWORK_NO_FILL);
+                        }
                     }
                 });
             }

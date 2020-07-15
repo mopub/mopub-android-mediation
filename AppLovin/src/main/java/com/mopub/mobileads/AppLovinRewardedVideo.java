@@ -126,6 +126,8 @@ public class AppLovinRewardedVideo extends BaseAd implements AppLovinAdLoadListe
             return;
         }
 
+        setAutomaticImpressionAndClickTracking(false);
+
         final String adMarkup = extras.get(DataKeys.ADM_KEY);
         final boolean hasAdMarkup = !TextUtils.isEmpty(adMarkup);
 
@@ -273,6 +275,7 @@ public class AppLovinRewardedVideo extends BaseAd implements AppLovinAdLoadListe
     public void adDisplayed(final AppLovinAd ad) {
         if (mInteractionListener != null) {
             mInteractionListener.onAdShown();
+            mInteractionListener.onAdImpression();
         }
 
         MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);

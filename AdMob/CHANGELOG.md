@@ -1,4 +1,10 @@
 ## Changelog
+  * 19.2.0.1
+    * Fix interstitial load listener usage.
+
+  * 19.2.0.0
+    * This version of the adapters has been certified with AdMob 19.2.0 and MoPub 5.13.0.
+
   * 19.1.0.1
     * Refactor non-native adapter classes to use the new consolidated API from MoPub.
     * Remove banner size mapping checks to fully take advantage of adaptive banner. 

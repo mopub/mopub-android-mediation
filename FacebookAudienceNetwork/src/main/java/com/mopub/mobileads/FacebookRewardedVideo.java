@@ -40,7 +40,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.CANCELLED;
-import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 import static com.mopub.mobileads.MoPubErrorCode.NO_CONNECTION;
@@ -72,8 +71,8 @@ public class FacebookRewardedVideo extends BaseAd implements RewardedVideoAdExte
             public void run() {
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Expiring unused " +
                         "Facebook Rewarded Video ad due to Facebook's 60-minute expiration policy.");
-                if (mInteractionListener != null) {
-                    mInteractionListener.onAdFailed(EXPIRED);
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(VIDEO_PLAYBACK_ERROR);
                 }
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                         MoPubErrorCode.EXPIRED.getIntCode(), MoPubErrorCode.EXPIRED);
