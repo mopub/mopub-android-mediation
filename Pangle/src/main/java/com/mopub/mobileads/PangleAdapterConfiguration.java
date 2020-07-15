@@ -148,7 +148,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     .appId(appId)
                     .useTextureView(hasWakeLockPermission(context))
                     .appName(MOPUB_NETWORK_NAME)
-                    .setGDPR(MoPub.canCollectPersonalInformation() ? 1 : 0)
+                    .setGDPR(MoPub.canCollectPersonalInformation() ? 0 : 1)
                     .allowShowPageWhenScreenLock(sIsAllowAdShowInLockScreen)
                     /* Allow or deny permission to display the landing page ad in the lock screen */
                     .debug(MoPubLog.getLogLevel() == MoPubLog.LogLevel.DEBUG)

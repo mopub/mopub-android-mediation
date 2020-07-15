@@ -24,6 +24,7 @@ dependencies {
                    project(':FacebookAudienceNetwork'),
                    project(':IronSource'),
                    project(':Mintegral'),
+                   project(':Pangle'),
                    project(':Tapjoy'),
                    project(':UnityAds'),
                    project(':Verizon'),
