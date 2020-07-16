@@ -57,7 +57,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static String mRewardName;
     private static int mRewardAmount;
-    private static String mPlacementId;
     private static String mUserID;
     private static String mMediaExtra;
     private static int mMediaViewWidth;
@@ -110,6 +109,9 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
                     pangleSdkInit(context, appId);
                     networkInitializationSucceeded = true;
+                } else {
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME,
+                            "Pangle SDK is not initialized, please check whether app ID is empty or null in sdkConfiguration.");
                 }
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Pangle has encountered " +
@@ -144,9 +146,14 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
         if (!sIsSDKInitialized) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Pangle SDK initializes with app ID: " + appId);
 
+            boolean hasWakeLockPermission = hasWakeLockPermission(context);
+            if (!hasWakeLockPermission) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "For video ads to work in Pangle Ad TextureView, " +
+                        "declare the android.permission.WAKE_LOCK permission in your AndroidManifest.");
+            }
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
-                    .useTextureView(hasWakeLockPermission(context))
+                    .useTextureView(hasWakeLockPermission)
                     .appName(MOPUB_NETWORK_NAME)
                     .setGDPR(MoPub.canCollectPersonalInformation() ? 0 : 1)
                     .allowShowPageWhenScreenLock(sIsAllowAdShowInLockScreen)

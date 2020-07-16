@@ -19,7 +19,6 @@ import com.bytedance.sdk.openadsdk.TTDislikeDialogAbstract;
 import com.bytedance.sdk.openadsdk.TTFeedAd;
 import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
-import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.PangleAdapterConfiguration;
 
@@ -37,7 +36,7 @@ import static com.mopub.nativeads.NativeErrorCode.NETWORK_NO_FILL;
 public class PangleAdNative extends CustomEventNative {
     private static final String ADAPTER_NAME = PangleAdNative.class.getSimpleName();
 
-    private static String mPlacementId = "";
+    private String mPlacementId = "";
     private Context mContext;
     private CustomEventNativeListener mCustomEventNativeListener;
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
@@ -143,12 +142,12 @@ public class PangleAdNative extends CustomEventNative {
         }
     }
 
-    private static String getAdNetworkId() {
+    private String getAdNetworkId() {
         return mPlacementId;
     }
 
 
-    protected static class PangleNativeAd extends BaseNativeAd implements TTNativeAd.AdInteractionListener {
+    protected class PangleNativeAd extends BaseNativeAd implements TTNativeAd.AdInteractionListener {
 
         private TTFeedAd mTTFeedAd;
 
@@ -171,8 +170,7 @@ public class PangleAdNative extends CustomEventNative {
         @Override
         public void onAdClicked(View view, TTNativeAd ad) {
             /**
-             * onAdClicked() happened when user click the adView.
-             * onAdClicked() and onAdCreativeClick() will only trigger either one when ad shows.
+             * onAdClicked() and onAdCreativeClick() will only trigger either one when ad clicked.
              **/
             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
@@ -182,8 +180,7 @@ public class PangleAdNative extends CustomEventNative {
         @Override
         public void onAdCreativeClick(View view, TTNativeAd ad) {
             /**
-             * onAdCreativeClick() happened when user click the CTA button.
-             * onAdClicked() and onAdCreativeClick() will only trigger either one when ad shows.
+             * onAdClicked() and onAdCreativeClick() will only trigger either one when ad clicked.
              **/
             MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
@@ -354,7 +351,7 @@ public class PangleAdNative extends CustomEventNative {
         }
     }
 
-    private static NativeErrorCode mapErrorCode(int error) {
+    private NativeErrorCode mapErrorCode(int error) {
         switch (error) {
             case PangleAdapterConfiguration.CONTENT_TYPE_ERROR:
                 return NativeErrorCode.CONNECTION_ERROR;

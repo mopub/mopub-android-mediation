@@ -31,7 +31,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 public class PangleAdInterstitial extends BaseAd {
     private static final String ADAPTER_NAME = PangleAdInterstitial.class.getSimpleName();
 
-    private static String mPlacementId;
+    private String mPlacementId;
     private Context mContext;
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
     private PangleAdInterstitialFullVideoLoader mFullVideoLoader;
@@ -88,6 +88,7 @@ public class PangleAdInterstitial extends BaseAd {
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
+        /** Default value for Full Screen Video */
         adSlotBuilder.setImageAcceptedSize(1080, 1920);
         mFullVideoLoader = new PangleAdInterstitialFullVideoLoader(mContext);
         mFullVideoLoader.loadAdFullVideoListener(adSlotBuilder.build(),

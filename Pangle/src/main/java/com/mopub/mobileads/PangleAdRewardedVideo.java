@@ -39,7 +39,6 @@ public class PangleAdRewardedVideo extends BaseAd {
      * Flag to determine whether or not the adapter has been initialized.
      */
     private static AtomicBoolean mIsSDKInitialized;
-    private static String mPlacementId;
 
     /**
      * Flag to determine whether or not the Pangle Rewarded Video Ad instance has loaded.
@@ -49,6 +48,7 @@ public class PangleAdRewardedVideo extends BaseAd {
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
     private WeakReference<Activity> mWeakActivity;
     private TTRewardVideoAd mTTRewardVideoAd;
+    private String mPlacementId;
 
 
     public PangleAdRewardedVideo() {
