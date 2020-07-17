@@ -157,18 +157,18 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
         adColonyAppOptions.setMediationNetwork("MoPub", ADAPTER_VERSION);
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
-            adColonyAppOptions.setGDPRRequired(true);
+            adColonyAppOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.GDPR, true);
             if (shouldAllowLegitimateInterest) {
                 if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
                         || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
-                    adColonyAppOptions.setGDPRConsentString("0");
+                    adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR,"0");
                 } else {
-                    adColonyAppOptions.setGDPRConsentString("1");
+                    adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR,"1");
                 }
             } else if (canCollectPersonalInfo) {
-                adColonyAppOptions.setGDPRConsentString("1");
+                adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR,"1");
             } else {
-                adColonyAppOptions.setGDPRConsentString("0");
+                adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR,"0");
             }
         }
         return adColonyAppOptions;
