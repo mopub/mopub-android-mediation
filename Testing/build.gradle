@@ -29,6 +29,7 @@ dependencies {
                    project(':UnityAds'),
                    project(':Verizon'),
                    project(':Vungle')
+
     // If any of the adapters have locally committed lib dependencies, include them in the apk.
     runtimeOnly fileTree(dir: rootProject.projectDir,
                          includes: ['*/libs/*.aar', '*/libs/*.jar'],

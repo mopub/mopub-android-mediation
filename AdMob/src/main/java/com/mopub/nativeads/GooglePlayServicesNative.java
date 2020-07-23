@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -419,9 +420,17 @@ public class GooglePlayServicesNative extends CustomEventNative {
                         }
 
                         @Override
-                        public void onAdFailedToLoad(int errorCode) {
-                            super.onAdFailedToLoad(errorCode);
-                            switch (errorCode) {
+                        public void onAdFailedToLoad(LoadAdError loadAdError) {
+                            super.onAdFailedToLoad(loadAdError);
+
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                    NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                    NativeErrorCode.NETWORK_NO_FILL);
+                            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to " +
+                                    "load Google native ad with message: " + loadAdError.getMessage() +
+                                    ". Caused by: " + loadAdError.getCause());
+
+                            switch (loadAdError.getCode()) {
                                 case AdRequest.ERROR_CODE_INTERNAL_ERROR:
                                     mCustomEventNativeListener.onNativeAdFailed(
                                             NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
@@ -512,7 +521,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
          * orientation constants, {@code false} otherwise.
          */
         private boolean isValidOrientationExtra(Object extra) {
-            if (extra == null || !(extra instanceof Integer)) {
+            if (!(extra instanceof Integer)) {
                 return false;
             }
             Integer preference = (Integer) extra;
@@ -530,7 +539,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
          * AdChoices icon placement constants, {@code false} otherwise.
          */
         private boolean isValidAdChoicesPlacementExtra(Object extra) {
-            if (extra == null || !(extra instanceof Integer)) {
+            if (!(extra instanceof Integer)) {
                 return false;
             }
             Integer placement = (Integer) extra;

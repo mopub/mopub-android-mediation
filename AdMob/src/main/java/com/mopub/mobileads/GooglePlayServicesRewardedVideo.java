@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
@@ -315,17 +316,6 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                 mLoadListener.onAdLoaded();
             }
         }
-
-        @Override
-        public void onRewardedAdFailedToLoad(int error) {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    getMoPubRequestErrorCode(error).getIntCode(),
-                    getMoPubRequestErrorCode(error));
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(getMoPubRequestErrorCode(error));
-            }
-        }
     };
 
     private RewardedAdCallback mRewardedAdCallback = new RewardedAdCallback() {
@@ -360,11 +350,14 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
         }
 
         @Override
-        public void onRewardedAdFailedToShow(int error) {
+        public void onRewardedAdFailedToShow(AdError error) {
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Google " +
+                    "rewarded video with message: " + error.getMessage() + ". Caused by: " +
+                    error.getCause());
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(getMoPubShowErrorCode(error));
+                mInteractionListener.onAdFailed(getMoPubShowErrorCode(error.getCode()));
             }
         }
     };

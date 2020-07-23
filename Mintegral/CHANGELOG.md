@@ -1,4 +1,10 @@
 ## Changelog
+  * 14.2.61.0
+    * This version of the adapters has been certified with Mintegral 14.2.61 and MoPub 5.13.1.
+
+  * 14.2.51.0
+    * This version of the adapters has been certified with Mintegral 14.2.51 and MoPub 5.13.1.
+
   * 14.2.31.0
     * This version of the adapters has been certified with Mintegral 14.2.31 and MoPub 5.13.1.
 

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.mopub.common.LifecycleListener;
@@ -25,6 +26,7 @@ import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRE
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
@@ -198,13 +200,16 @@ public class GooglePlayServicesInterstitial extends BaseAd {
         }
 
         @Override
-        public void onAdFailedToLoad(int errorCode) {
+        public void onAdFailedToLoad(LoadAdError loadAdError) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    getMoPubErrorCode(errorCode).getIntCode(),
-                    getMoPubErrorCode(errorCode));
+                    getMoPubErrorCode(loadAdError.getCode()).getIntCode(),
+                    getMoPubErrorCode(loadAdError.getCode()));
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Google " +
+                    "interstitial with message: " + loadAdError.getMessage() + ". Caused by: " +
+                    loadAdError.getCause());
 
             if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(getMoPubErrorCode(errorCode));
+                mLoadListener.onAdLoadFailed(getMoPubErrorCode(loadAdError.getCode()));
             }
         }
 

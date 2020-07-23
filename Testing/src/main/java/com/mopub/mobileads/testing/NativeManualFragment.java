@@ -25,6 +25,8 @@ import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.MoPubVideoNativeAdRenderer;
 import com.mopub.nativeads.NativeAd;
 import com.mopub.nativeads.NativeErrorCode;
+import com.mopub.nativeads.PangleAdRenderer;
+import com.mopub.nativeads.PangleAdViewBinder;
 import com.mopub.nativeads.RequestParameters;
 import com.mopub.nativeads.VerizonNativeAdRenderer;
 import com.mopub.nativeads.ViewBinder;
@@ -188,6 +190,16 @@ public class NativeManualFragment extends Fragment {
                         .adChoicesId(R.id.native_privacy_information_icon_image)
                         .build());
 
+        // Set up a renderer for Pangle ads.
+        final PangleAdRenderer pangleAdRenderer = new PangleAdRenderer(
+                new PangleAdViewBinder.Builder(R.layout.native_ad_pangle_list_item)
+                        .callToActionId(R.id.native_cta)
+                        .decriptionTextId(R.id.native_text)
+                        .iconImageId(R.id.native_icon_image)
+                        .titleId(R.id.native_title)
+                        .mediaViewIdId(R.id.native_main_image)
+                        .build());
+
         // The first renderer that can handle a particular native ad gets used.
         // We are prioritizing network renderers.
 
@@ -195,6 +207,7 @@ public class NativeManualFragment extends Fragment {
         mMoPubNative.registerAdRenderer(facebookAdRenderer);
         mMoPubNative.registerAdRenderer(googlePlayServicesAdRenderer);
         mMoPubNative.registerAdRenderer(verizonNativeAdRenderer);
+        mMoPubNative.registerAdRenderer(pangleAdRenderer);
         mMoPubNative.registerAdRenderer(moPubStaticNativeAdRenderer);
         mMoPubNative.registerAdRenderer(moPubVideoNativeAdRenderer);
 
