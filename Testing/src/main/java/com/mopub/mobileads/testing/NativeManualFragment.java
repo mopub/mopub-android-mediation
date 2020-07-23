@@ -17,6 +17,8 @@ import androidx.fragment.app.Fragment;
 
 import com.mopub.nativeads.AdapterHelper;
 import com.mopub.nativeads.FacebookAdRenderer;
+import com.mopub.nativeads.FlurryNativeAdRenderer;
+import com.mopub.nativeads.FlurryViewBinder;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
 import com.mopub.nativeads.MediaViewBinder;
 import com.mopub.nativeads.MintegralAdRenderer;
@@ -157,6 +159,17 @@ public class NativeManualFragment extends Fragment {
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
 
+        // Set up a renderer for Flurry video and static native ads.
+        final FlurryNativeAdRenderer flurryAdRenderer = new FlurryNativeAdRenderer(
+                new FlurryViewBinder.Builder(new ViewBinder.Builder(R.layout.native_ad_flurry_list_item)
+                        .titleId(R.id.flurry_native_title)
+                        .textId(R.id.flurry_native_text)
+                        .mainImageId(R.id.flurry_native_main_image)
+                        .iconImageId(R.id.flurry_native_icon_image)
+                        .callToActionId(R.id.flurry_native_cta)
+                        .privacyInformationIconImageId(R.id.flurry_native_privacy_information_icon_image)
+                        .build()).videoViewId(R.id.flurry_native_video_view).build());
+
         // Set up a renderer for AdMob ads.
         final GooglePlayServicesAdRenderer googlePlayServicesAdRenderer = new GooglePlayServicesAdRenderer(
                 new MediaViewBinder.Builder(R.layout.video_ad_list_item)
@@ -205,6 +218,7 @@ public class NativeManualFragment extends Fragment {
 
         mMoPubNative.registerAdRenderer(mintegralAdRenderer);
         mMoPubNative.registerAdRenderer(facebookAdRenderer);
+        mMoPubNative.registerAdRenderer(flurryAdRenderer);
         mMoPubNative.registerAdRenderer(googlePlayServicesAdRenderer);
         mMoPubNative.registerAdRenderer(verizonNativeAdRenderer);
         mMoPubNative.registerAdRenderer(pangleAdRenderer);

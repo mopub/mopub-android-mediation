@@ -145,10 +145,17 @@ public final class FlurryCustomEventNative extends CustomEventNative {
         FlurryAdNativeAsset iconImageAsset = flurryAdNative.getAsset(ASSET_SEC_IMAGE);
 
         if (coverImageAsset != null && !TextUtils.isEmpty(coverImageAsset.getValue())) {
-            mopubSupportedAd.setMainImageUrl(coverImageAsset.getValue());
+            String mainImageUrl = coverImageAsset.getValue();
+            if (!mainImageUrl.startsWith("file:")) {
+                mopubSupportedAd.setMainImageUrl(mainImageUrl);
+            }
         }
         if (iconImageAsset != null && !TextUtils.isEmpty(iconImageAsset.getValue())) {
-            mopubSupportedAd.setIconImageUrl(iconImageAsset.getValue());
+            String iconImageUrl = iconImageAsset.getValue();
+            if (!iconImageUrl.startsWith("file:")) {
+                mopubSupportedAd.setIconImageUrl(iconImageUrl);
+            }
+
         }
 
         mopubSupportedAd.setTitle(flurryAdNative.getAsset(ASSET_HEADLINE).getValue());

@@ -1,4 +1,7 @@
 ## Changelog
+ * 12.5.0
+    * This version of the adapters has been certified with Flurry 12.5.0.
+
  * 12.0.3.1
     * Log Flurry ad space name in ad lifecycle events.
     * Map additional error codes for failure cases.
