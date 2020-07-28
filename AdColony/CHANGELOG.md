@@ -1,4 +1,7 @@
 ## Changelog
+  * 4.2.0.1
+    * Added support of AdColony collect signal api for Advance Bidding.
+    
   * 4.2.0.0
     * This version of the adapters has been certified with AdColony 4.2.0 and MoPub 5.13.1.
 
