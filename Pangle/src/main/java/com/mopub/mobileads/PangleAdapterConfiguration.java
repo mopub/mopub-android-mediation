@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,7 +39,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     public static final int PLACEMENT_EMPTY_ERROR = 40004;
     public static final int PLACEMENT_ERROR = 40006;
 
-    private static final String ADAPTER_VERSION = "3.1.0.1.0";
+    private static final String ADAPTER_VERSION = "3.1.0.1.1";
     private static final String ADAPTER_NAME = PangleAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = "pangle_network";
 
@@ -71,7 +72,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return null;
+        return getPangleSdkManager().getBiddingToken();
     }
 
     @NonNull
