@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
@@ -26,6 +28,7 @@ public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String CONFIG_KEY_APPLOVIN_SDK_KEY = "sdk_key";
     private static final String MANIFEST_KEY_APPLOVIN_SDK_KEY = "applovin.sdk.key";
 
+    private static String sdkKey;
     static final String APPLOVIN_PLUGIN_VERSION = "MoPub-" + ADAPTER_VERSION;
 
     @Nullable
@@ -83,12 +86,15 @@ public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
 
     @Nullable
     private AppLovinSdk getSdkFromConfiguration(@Nullable Map<String, String> configuration, @NonNull Context context) {
-        // If there is a configuration cached with SDK key already from any of the custom events, use that instead
-        final Map<String, String> cachedConfiguration = getCachedInitializationParameters(context);
-        final Map<String, String> configurationToUse = cachedConfiguration.containsKey(CONFIG_KEY_APPLOVIN_SDK_KEY) ? cachedConfiguration : configuration;
+        String key = null;
 
-        final String key = (configurationToUse != null) ? configurationToUse.get(CONFIG_KEY_APPLOVIN_SDK_KEY) : "";
+        if (configuration != null && !configuration.isEmpty()) {
+            key = configuration.get(CONFIG_KEY_APPLOVIN_SDK_KEY);
+        }
+
         if (!TextUtils.isEmpty(key)) {
+            setSdkKey(key);
+
             return AppLovinSdk.getInstance(key, new AppLovinSdkSettings(context), context);
         } else {
             final boolean androidManifestContainsValidSdkKey = androidManifestContainsValidSdkKey(context);
@@ -100,7 +106,30 @@ public class AppLovinAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    private boolean androidManifestContainsValidSdkKey(final Context context) {
+    private static void setSdkKey(String key) {
+        sdkKey = key;
+    }
+
+    public static String getSdkKey() {
+        return sdkKey;
+    }
+
+    public static MoPubErrorCode getMoPubErrorCode(final int error) {
+        switch (error) {
+            case AppLovinErrorCodes.NO_FILL:
+                return MoPubErrorCode.NETWORK_NO_FILL;
+            case AppLovinErrorCodes.NO_NETWORK:
+                return MoPubErrorCode.NO_CONNECTION;
+            case AppLovinErrorCodes.FETCH_AD_TIMEOUT:
+                return MoPubErrorCode.NETWORK_TIMEOUT;
+            case AppLovinErrorCodes.INVALID_ZONE:
+                return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
+            default:
+                return MoPubErrorCode.UNSPECIFIED;
+        }
+    }
+
+    static boolean androidManifestContainsValidSdkKey(final Context context) {
         try {
             final PackageManager pm = context.getPackageManager();
             final ApplicationInfo ai = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);

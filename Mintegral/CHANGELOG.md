@@ -1,0 +1,69 @@
+## Changelog
+  * 14.3.01.0
+    * This version of the adapters has been certified with Mintegral 14.3.01 and MoPub 5.13.1.
+
+  * 14.2.61.0
+    * This version of the adapters has been certified with Mintegral 14.2.61 and MoPub 5.13.1.
+
+  * 14.2.51.0
+    * This version of the adapters has been certified with Mintegral 14.2.51 and MoPub 5.13.1.
+
+  * 14.2.31.0
+    * This version of the adapters has been certified with Mintegral 14.2.31 and MoPub 5.13.1.
+
+  * 14.2.01.0
+    * This version of the adapters has been certified with Mintegral 14.2.01 and MoPub 5.13.0.
+    * Implement initialization success and fail callbacks.
+
+  * 14.1.01.0
+    * This version of the adapters has been certified with Mintegral 14.1.01 and MoPub 5.13.0.
+
+  * 14.0.01.0
+    * This version of the adapters has been certified with Mintegral 14.0.01 and MoPub 5.13.0.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * Fix bugs related to ad request timeouts.
+
+  * 13.1.11.0
+    * This version of the adapters has been certified with Mintegral 13.1.11 and MoPub 5.12.0.
+    * Add support for placement ID.
+
+  * 13.0.41.0
+    * This version of the adapters has been certified with Mintegral 13.0.41 and MoPub 5.11.1.
+    * MoPub now collects GDPR consent on behalf of Mintegral.
+
+  * 13.0.31.0
+    * This version of the adapters has been certified with Mintegral 13.0.31 and MoPub 5.11.1.
+    * Fix `EXCEPTION_SERVICE_REQUEST_OS_VERSION_REQUIRED` and `NumberFormatException` at initialization.
+
+  * 13.0.11.1
+    * Add dedicated impression and click callback for interstitial.
+
+  * 13.0.11.0
+    * This version of the adapters has been certified with Mintegral 13.0.11 and MoPub 5.11.1.
+    * Disable automatic impression and click tracking for banner.
+
+  * 12.2.31.0
+    * This version of the adapters has been certified with Mintegral 12.2.31.
+    * Add a mute API for interstitial and rewarded video. Unless muted via `MintegralAdapterConfiguration.setMute(true)`, creatives play unmuted by default. 
+
+  * 12.2.11.0
+    * This version of the adapters has been certified with Mintegral 12.2.11.
+    * Implement `onAdCloseWithIVReward()` for interstitial.
+
+  * 12.1.51.1
+    * Use `this.getClass()` instead of hard-coding class names to allow for extension.
+
+  * 12.1.51.0
+    * This version of the adapters has been certified with Mintegral 12.1.51.
+    * Add `onCloseBanner()` in `MintegralBanner`.
+    * Stop notifying MoPub of `onLeaveApplication()` from Mintegral's `onLeaveApp()` to avoid duplicate click tracking.
+
+  * 12.0.01.1
+    * MoPub will not be collecting GDPR consent on behalf of Mintegral. It is publisher’s responsibility to work with Mintegral to ensure GDPR compliance.
+    * This version of the adapters has been certified with Mintegral 12.0.01.
+    * Add support for Advanced Bidding.
+
+  * 12.0.01.0
+    * Do Not integrate this version.
+    * Initial commit of the Mintegral adapters.

@@ -1,147 +1,153 @@
 package com.mopub.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 
-import com.google.ads.mediation.admob.AdMobAdapter;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
-import com.mopub.common.MediationSettings;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
+import com.mopub.common.LifecycleListener;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 
+import java.util.Collections;
 import java.util.Map;
 
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
-import static com.google.android.gms.ads.AdRequest.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
-
-import static com.google.android.gms.ads.AdSize.BANNER;
-import static com.google.android.gms.ads.AdSize.FULL_BANNER;
-import static com.google.android.gms.ads.AdSize.LEADERBOARD;
-import static com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE;
-
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
-public class GooglePlayServicesBanner extends CustomEventBanner {
+public class GooglePlayServicesBanner extends BaseAd {
     /*
      * These keys are intended for MoPub internal use. Do not modify.
      */
-    private static final String AD_UNIT_ID_KEY = "adUnitID";
-    private static final String AD_WIDTH_KEY = "adWidth";
-    private static final String AD_HEIGHT_KEY = "adHeight";
-    private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
-    private static final String CONTENT_URL_KEY = "contentUrl";
-    private static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
-    private static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
-    private static final String TEST_DEVICES_KEY = "testDevices";
+    public static final String AD_UNIT_ID_KEY = "adUnitID";
+    public static final String CONTENT_URL_KEY = "contentUrl";
+    public static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
+    public static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
+    public static final String TEST_DEVICES_KEY = "testDevices";
 
-    private CustomEventBannerListener mBannerListener;
+    private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
+    @Nullable
     private AdView mGoogleAdView;
+    @Nullable
+    private String mAdUnitId;
 
     @Override
-    protected void loadBanner(
-            final Context context,
-            final CustomEventBannerListener customEventBannerListener,
-            final Map<String, Object> localExtras,
-            final Map<String, String> serverExtras) {
-        mBannerListener = customEventBannerListener;
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
 
-        final int adWidth;
-        final int adHeight;
+        final Integer adWidth = adData.getAdWidth();
+        final Integer adHeight = adData.getAdHeight();
+        final Map<String, String> extras = adData.getExtras();
 
-        String adUnitId = "";
-        if (extrasAreValid(serverExtras)) {
-            adUnitId = serverExtras.get(AD_UNIT_ID_KEY);
-            adWidth = Integer.parseInt(serverExtras.get(AD_WIDTH_KEY));
-            adHeight = Integer.parseInt(serverExtras.get(AD_HEIGHT_KEY));
-        } else {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-
-            mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-            return;
-        }
+        mAdUnitId = extras.get(AD_UNIT_ID_KEY);
 
         mGoogleAdView = new AdView(context);
         mGoogleAdView.setAdListener(new AdViewListener());
-        mGoogleAdView.setAdUnitId(adUnitId);
+        mGoogleAdView.setAdUnitId(mAdUnitId);
 
-        final AdSize adSize = calculateAdSize(adWidth, adHeight);
-        if (adSize == null) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+        final AdSize adSize = (adWidth == null || adHeight == null || adWidth <= 0 || adHeight <= 0)
+                ? null
+                : new AdSize(adWidth, adHeight);
+
+        if (adSize != null) {
+            mGoogleAdView.setAdSize(adSize);
+        } else {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
             return;
         }
 
-        mGoogleAdView.setAdSize(adSize);
-
-        AdRequest.Builder builder = new AdRequest.Builder();
+        final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
         // Publishers may append a content URL by passing it to the MoPubView.setLocalExtras() call.
-        String contentUrl = (String) localExtras.get(CONTENT_URL_KEY);
+        final String contentUrl = extras.get(CONTENT_URL_KEY);
 
         if (!TextUtils.isEmpty(contentUrl)) {
             builder.setContentUrl(contentUrl);
         }
 
+        forwardNpaIfSet(builder);
+
+        final RequestConfiguration.Builder requestConfigurationBuilder = new RequestConfiguration.Builder();
+
         // Publishers may request for test ads by passing test device IDs to the MoPubView.setLocalExtras() call.
-        String testDeviceId = (String) localExtras.get(TEST_DEVICES_KEY);
+        final String testDeviceId = extras.get(TEST_DEVICES_KEY);
 
         if (!TextUtils.isEmpty(testDeviceId)) {
-            builder.addTestDevice(testDeviceId);
+            requestConfigurationBuilder.setTestDeviceIds(Collections.singletonList(testDeviceId));
         }
-
-        // Consent collected from the MoPub’s consent dialogue should not be used to set up
-        // Google's personalization preference. Publishers should work with Google to be GDPR-compliant.
-        forwardNpaIfSet(builder);
 
         // Publishers may want to indicate that their content is child-directed and forward this
         // information to Google.
-        Boolean childDirected = (Boolean) localExtras.get(TAG_FOR_CHILD_DIRECTED_KEY);
+        final String childDirected = extras.get(TAG_FOR_CHILD_DIRECTED_KEY);
 
         if (childDirected != null) {
-            builder.tagForChildDirectedTreatment(childDirected);
+            if (Boolean.parseBoolean(childDirected)) {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE);
+            } else {
+                requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE);
+            }
+        } else {
+            requestConfigurationBuilder.setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED);
         }
 
         // Publishers may want to mark their requests to receive treatment for users in the
         // European Economic Area (EEA) under the age of consent.
-        Boolean underAgeOfConsent = (Boolean) localExtras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
+        final String underAgeOfConsent = extras.get(TAG_FOR_UNDER_AGE_OF_CONSENT_KEY);
 
         if (underAgeOfConsent != null) {
-            if (underAgeOfConsent) {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
+            if (Boolean.parseBoolean(underAgeOfConsent)) {
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE);
             } else {
-                builder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+                requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
             }
+        } else {
+            requestConfigurationBuilder.setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED);
         }
 
-        AdRequest adRequest = builder.build();
+        final RequestConfiguration requestConfiguration = requestConfigurationBuilder.build();
+        MobileAds.setRequestConfiguration(requestConfiguration);
 
-        try {
-            mGoogleAdView.loadAd(adRequest);
+        final AdRequest adRequest = builder.build();
+        mGoogleAdView.loadAd(adRequest);
 
-            MoPubLog.log(adUnitId, LOAD_ATTEMPTED, ADAPTER_NAME);
-        } catch (NoClassDefFoundError e) {
-            // This can be thrown by Play Services on Honeycomb.
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
+    }
 
-            mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-        }
+    @Nullable
+    @Override
+    protected View getAdView() {
+        return mGoogleAdView;
     }
 
     @Override
@@ -154,60 +160,39 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
         }
     }
 
-    private void forwardNpaIfSet(AdRequest.Builder builder) {
-
-        // Only forward the "npa" bundle if it is explicitly set. Otherwise, don't attach it with the ad request.
-        Bundle npaBundle = GooglePlayServicesAdapterConfiguration.getNpaBundle();
-
-        if (npaBundle != null && !npaBundle.isEmpty()) {
-            builder.addNetworkExtrasBundle(AdMobAdapter.class, npaBundle);
-        }
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
     }
 
-    private boolean extrasAreValid(Map<String, String> serverExtras) {
-        try {
-            Integer.parseInt(serverExtras.get(AD_WIDTH_KEY));
-            Integer.parseInt(serverExtras.get(AD_HEIGHT_KEY));
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return serverExtras.containsKey(AD_UNIT_ID_KEY);
+    @NonNull
+    public String getAdNetworkId() {
+        return mAdUnitId == null ? "" : mAdUnitId;
     }
 
-    private AdSize calculateAdSize(int width, int height) {
-        // Use the smallest AdSize that will properly contain the adView
-        if (width <= BANNER.getWidth() && height <= BANNER.getHeight()) {
-            return BANNER;
-        } else if (width <= MEDIUM_RECTANGLE.getWidth() && height <= MEDIUM_RECTANGLE.getHeight()) {
-            return MEDIUM_RECTANGLE;
-        } else if (width <= FULL_BANNER.getWidth() && height <= FULL_BANNER.getHeight()) {
-            return FULL_BANNER;
-        } else if (width <= LEADERBOARD.getWidth() && height <= LEADERBOARD.getHeight()) {
-            return LEADERBOARD;
-        } else {
-            return null;
-        }
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
+                                            @NonNull final AdData adData) {
+        return false;
     }
 
     private class AdViewListener extends AdListener {
-        /*
-         * Google Play Services AdListener implementation
-         */
-
         @Override
         public void onAdClosed() {
-
         }
 
         @Override
-        public void onAdFailedToLoad(int errorCode) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    getMoPubErrorCode(errorCode).getIntCode(),
-                    getMoPubErrorCode(errorCode));
+        public void onAdFailedToLoad(LoadAdError loadAdError) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    getMoPubErrorCode(loadAdError.getCode()).getIntCode(),
+                    getMoPubErrorCode(loadAdError.getCode()));
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Google " +
+                    "banners with message: " + loadAdError.getMessage() + ". Caused by: " +
+                    loadAdError.getCause());
 
-            if (mBannerListener != null) {
-                mBannerListener.onBannerFailed(getMoPubErrorCode(errorCode));
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(getMoPubErrorCode(loadAdError.getCode()));
             }
         }
 
@@ -217,21 +202,21 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
 
         @Override
         public void onAdLoaded() {
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-            MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-            MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
-            if (mBannerListener != null) {
-                mBannerListener.onBannerLoaded(mGoogleAdView);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoaded();
             }
         }
 
         @Override
         public void onAdOpened() {
-            MoPubLog.log(CLICKED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
-            if (mBannerListener != null) {
-                mBannerListener.onBannerClicked();
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdClicked();
             }
         }
 
@@ -243,24 +228,18 @@ public class GooglePlayServicesBanner extends CustomEventBanner {
          * code.
          */
         private MoPubErrorCode getMoPubErrorCode(int error) {
-            MoPubErrorCode errorCode;
             switch (error) {
                 case AdRequest.ERROR_CODE_INTERNAL_ERROR:
-                    errorCode = MoPubErrorCode.INTERNAL_ERROR;
-                    break;
+                    return MoPubErrorCode.INTERNAL_ERROR;
                 case AdRequest.ERROR_CODE_INVALID_REQUEST:
-                    errorCode = MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
-                    break;
+                    return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
                 case AdRequest.ERROR_CODE_NETWORK_ERROR:
-                    errorCode = MoPubErrorCode.NO_CONNECTION;
-                    break;
+                    return MoPubErrorCode.NO_CONNECTION;
                 case AdRequest.ERROR_CODE_NO_FILL:
-                    errorCode = MoPubErrorCode.NO_FILL;
-                    break;
+                    return MoPubErrorCode.NO_FILL;
                 default:
-                    errorCode = MoPubErrorCode.UNSPECIFIED;
+                    return MoPubErrorCode.UNSPECIFIED;
             }
-            return errorCode;
         }
     }
 }

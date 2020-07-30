@@ -1,10 +1,11 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.flurry.android.FlurryAgent;
 import com.flurry.android.FlurryAgentListener;
@@ -40,11 +41,9 @@ public final class FlurryAgentWrapper {
 
         // init
         if (!FlurryAgent.isSessionActive()) {
-            if (flurryAgentListener != null) {
             mAgentBuilder.withListener(flurryAgentListener) // withListener allows nulls
                     .build(context, apiKey);
             FlurryAgent.onStartSession(context);
-            }
         }
     }
 

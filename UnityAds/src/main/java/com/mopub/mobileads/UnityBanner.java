@@ -2,15 +2,16 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.mopub.common.LifecycleListener;
 import com.mopub.common.logging.MoPubLog;
-import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
-import com.unity3d.ads.metadata.MetaData;
-import com.unity3d.services.banners.IUnityBannerListener;
-import com.unity3d.services.banners.UnityBanners;
+import com.unity3d.services.banners.BannerErrorInfo;
+import com.unity3d.services.banners.BannerView;
+import com.unity3d.services.banners.UnityBannerSize;
 
 import java.util.Map;
 
@@ -21,15 +22,15 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 
-public class UnityBanner extends CustomEventBanner implements IUnityBannerListener, IUnityAdsExtendedListener {
+public class UnityBanner extends BaseAd implements BannerView.IListener {
 
     private static final String ADAPTER_NAME = UnityBanner.class.getSimpleName();
 
-    private Context context;
     private String placementId = "banner";
-    private CustomEventBannerListener customEventBannerListener;
-    private View bannerView;
+    private BannerView mBannerView;
+
     @NonNull
     private UnityAdsAdapterConfiguration mUnityAdsAdapterConfiguration;
 
@@ -38,145 +39,148 @@ public class UnityBanner extends CustomEventBanner implements IUnityBannerListen
     }
 
     @Override
-    protected void loadBanner(Context context, CustomEventBannerListener customEventBannerListener,
-                              Map<String, Object> localExtras, Map<String, String> serverExtras) {
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
         if (!(context instanceof Activity)) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
-            customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
             return;
         }
 
-        initNoRefreshMetaData(context);
+        setAutomaticImpressionAndClickTracking(false);
 
-        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+        final Map<String, String> extras = adData.getExtras();
+        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, extras);
 
-        placementId = UnityRouter.placementIdForServerExtras(serverExtras, placementId);
-        this.customEventBannerListener = customEventBannerListener;
-        this.context = context;
-        UnityRouter.getBannerRouter().setCurrentPlacementId(placementId);
+        placementId = UnityRouter.placementIdForServerExtras(extras, placementId);
 
-        if (UnityRouter.initUnityAds(serverExtras, (Activity) context)) {
-            UnityRouter.getBannerRouter().addListener(placementId, this);
-            // Bug: banner ready events go through the interstitial router atm.
-            UnityRouter.getInterstitialRouter().addListener(placementId, this);
+        final String format = extras.get("adunit_format");
+        final boolean isMediumRectangleFormat = format.contains("medium_rectangle");
 
-            if (UnityAds.isReady(placementId)) {
-                UnityBanners.loadBanner((Activity) context, placementId);
+        if (isMediumRectangleFormat) {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Unity Ads does not support medium rectangle ads.");
 
-                MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
+
+            return;
+        }
+
+        if (UnityRouter.initUnityAds(extras, (Activity) context)) {
+            final UnityBannerSize bannerSize = unityAdsAdSizeFromAdData(adData);
+
+            if (mBannerView != null) {
+                mBannerView.destroy();
+                mBannerView = null;
+            }
+
+            mBannerView = new BannerView((Activity) context, placementId, bannerSize);
+            mBannerView.setListener(this);
+            mBannerView.load();
+
+            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to initialize Unity Ads");
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to initialize Unity Ads");
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
 
-            if (customEventBannerListener != null) {
-                customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
             }
         }
     }
 
-    private void initNoRefreshMetaData(Context context) {
-        MetaData metaData = new MetaData(context);
-        metaData.set("banner.refresh", false);
-        metaData.commit();
+    @Override
+    @Nullable
+    public View getAdView() {
+        return mBannerView;
+    }
+
+    private UnityBannerSize unityAdsAdSizeFromAdData(@NonNull final AdData adData) {
+
+        int adWidth = adData.getAdWidth() != null ? adData.getAdWidth() : 0;
+        int adHeight = adData.getAdHeight() != null ? adData.getAdHeight() : 0;
+
+        if (adWidth >= 728 && adHeight >= 90) {
+            return new UnityBannerSize(728, 90);
+        } else if (adWidth >= 468 && adHeight >= 60) {
+            return new UnityBannerSize(468, 60);
+        } else {
+            return new UnityBannerSize(320, 50);
+        }
+
     }
 
     @Override
     protected void onInvalidate() {
-        UnityRouter.getBannerRouter().removeListener(placementId);
-        UnityRouter.getInterstitialRouter().removeListener(placementId);
-        UnityBanners.destroy();
+        if (mBannerView != null) {
+            mBannerView.destroy();
+        }
 
-        bannerView = null;
-        customEventBannerListener = null;
+        mBannerView = null;
+    }
+
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
     }
 
     @Override
-    public void onUnityBannerLoaded(String placementId, View view) {
-        MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-        MoPubLog.log(SHOW_SUCCESS, ADAPTER_NAME);
+    public void onBannerLoaded(BannerView bannerView) {
+        MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
 
-        if (customEventBannerListener != null) {
-            customEventBannerListener.onBannerLoaded(view);
-            this.bannerView = view;
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoaded();
+            mBannerView = bannerView;
+        }
+
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdImpression();
         }
     }
 
     @Override
-    public void onUnityBannerUnloaded(String placementId) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, String.format("Banner did unload for placement %s", placementId));
-    }
+    public void onBannerClick(BannerView bannerView) {
+        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
 
-    @Override
-    public void onUnityBannerShow(String placementId) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, String.format("Banner did show for placement %s", placementId));
-
-        if (customEventBannerListener != null) {
-            customEventBannerListener.onBannerImpression();
+        if (mInteractionListener != null) {
+            mInteractionListener.onAdClicked();
         }
     }
 
     @Override
-    public void onUnityBannerClick(String placementId) {
-        MoPubLog.log(CLICKED, ADAPTER_NAME);
+    public void onBannerFailedToLoad(BannerView bannerView, BannerErrorInfo errorInfo) {
+        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, String.format("Banner did error for placement %s with error %s",
+                placementId, errorInfo.errorMessage));
 
-        if (customEventBannerListener != null) {
-            customEventBannerListener.onBannerClicked();
+        if (mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
         }
     }
 
     @Override
-    public void onUnityBannerHide(String placementIds) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, String.format("Banner did hide for placement %s", placementIds));
+    public void onBannerLeftApplication(BannerView bannerView) {
+        MoPubLog.log(getAdNetworkId(), WILL_LEAVE_APPLICATION, ADAPTER_NAME);
+    }
+
+    @NonNull
+    @Override
+    public String getAdNetworkId() {
+        return placementId != null ? placementId : "";
     }
 
     @Override
-    public void onUnityBannerError(String message) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, String.format("Banner did error for placement %s with error %s",
-                placementId, message));
-
-        if (customEventBannerListener != null) {
-            customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
-        }
-    }
-
-    @Override
-    public void onUnityAdsClick(String placementId) {
-
-    }
-
-    @Override
-    public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState placementState, UnityAds.PlacementState placementState1) {
-
-    }
-
-    @Override
-    public void onUnityAdsReady(String placementId) {
-        if (bannerView == null) {
-            UnityBanners.loadBanner((Activity) context, placementId);
-
-            MoPubLog.log(placementId, LOAD_ATTEMPTED, ADAPTER_NAME);
-        }
-    }
-
-    @Override
-    public void onUnityAdsStart(String s) {
-
-    }
-
-    @Override
-    public void onUnityAdsFinish(String s, UnityAds.FinishState finishState) {
-
-    }
-
-    @Override
-    public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String s) {
-
+    protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
+                                            @NonNull final AdData adData) {
+        return false;
     }
 }

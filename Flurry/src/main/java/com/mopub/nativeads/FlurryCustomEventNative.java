@@ -1,11 +1,12 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.flurry.android.FlurryAgentListener;
 import com.flurry.android.ads.FlurryAdErrorType;
@@ -22,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
@@ -231,6 +232,7 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                 localExtras.get(LOCAL_EXTRA_TEST_MODE) instanceof Boolean) {
             final FlurryAdTargeting targeting = new FlurryAdTargeting();
             targeting.setEnableTestAds((Boolean) localExtras.get(LOCAL_EXTRA_TEST_MODE));
+            flurryAdNative.setTargeting(targeting);
         }
 
         final FlurryBaseNativeAd flurryNativeAd;
@@ -295,11 +297,11 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                                 final FlurryAdErrorType adErrorType,
                                 final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
+                mCustomEventNativeListener.onNativeAdFailed(getMoPubNativeErrorCode(adErrorType));
 
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                        NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        NativeErrorCode.NETWORK_NO_FILL);
+                        getMoPubNativeErrorCode(adErrorType).getIntCode(),
+                        getMoPubNativeErrorCode(adErrorType));
             }
         };
 
@@ -437,11 +439,11 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                                 final FlurryAdErrorType adErrorType,
                                 final int errorCode) {
                 super.onError(adNative, adErrorType, errorCode);
-                mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
+                mCustomEventNativeListener.onNativeAdFailed(getMoPubNativeErrorCode(adErrorType));
 
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                        NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        NativeErrorCode.NETWORK_NO_FILL);
+                        getMoPubNativeErrorCode(adErrorType).getIntCode(),
+                        getMoPubNativeErrorCode(adErrorType));
             }
         };
 
@@ -710,8 +712,19 @@ public final class FlurryCustomEventNative extends CustomEventNative {
                             final int errorCode) {
 
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "onError: Flurry native ad not available. " +
-                    "Error type: %s. Error code: %s", adErrorType.toString(), errorCode);
+                    "Error type: %s. Error code: %s", getMoPubNativeErrorCode(adErrorType).toString(), getMoPubNativeErrorCode(adErrorType));
             sFlurryNativeAds.remove(flurryAdNative);
+        }
+    }
+
+    private static NativeErrorCode getMoPubNativeErrorCode(FlurryAdErrorType adErrorType) {
+        switch (adErrorType) {
+            case FETCH:
+                return NativeErrorCode.NETWORK_NO_FILL;
+            case RENDER:
+                return NativeErrorCode.NETWORK_INVALID_STATE;
+            default:
+                return NativeErrorCode.UNSPECIFIED;
         }
     }
 }

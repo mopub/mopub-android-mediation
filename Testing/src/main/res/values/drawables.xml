@@ -1,0 +1,9 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <item name="ic_menu_revoke" type="drawable">@drawable/ic_no</item>
+    <item name="ic_menu_grant" type="drawable">@drawable/ic_lock</item>
+    <item name="ic_menu_production" type="drawable">@drawable/ic_checkmark_circle</item>
+    <item name="ic_menu_staging" type="drawable">@drawable/ic_checkmark_circle</item>
+    <item name="ic_menu_adapters" type="drawable">@drawable/ic_share_android</item>
+    <item name="ic_menu_info" type="drawable">@drawable/ic_information_circle</item>
+    <item name="ic_menu_force_gdpr" type="drawable">@drawable/ic_globe_stroke</item>
+</resources>

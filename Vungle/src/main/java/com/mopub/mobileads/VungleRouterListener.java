@@ -1,13 +1,21 @@
 package com.mopub.mobileads;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public interface VungleRouterListener {
-    void onAdEnd(@NonNull String var1, boolean var2, boolean var3);
 
-    void onAdStart(@NonNull String var1);
+    void onAdEnd(String placementId);
 
-    void onUnableToPlayAd(@NonNull String var1, String var2);
+    void onAdClick(String placementId);
 
-    void onAdAvailabilityUpdate(@NonNull String var1, boolean var2);
+    void onAdRewarded(String placementId);
+
+    void onAdLeftApplication(String placementId);
+
+    void onAdStart(@NonNull String placementId);
+
+    void onUnableToPlayAd(@NonNull String placementId, String reason);
+
+    void onAdAvailabilityUpdate(@NonNull String placementId, boolean isAdAvailable);
+
 }

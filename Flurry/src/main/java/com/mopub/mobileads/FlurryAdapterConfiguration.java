@@ -1,9 +1,10 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.flurry.android.FlurryAgent;
 import com.mopub.common.BaseAdapterConfiguration;
@@ -74,7 +75,7 @@ public class FlurryAdapterConfiguration extends BaseAdapterConfiguration {
                     final String apiKey = configuration.get(FlurryAgentWrapper.PARAM_API_KEY);
 
                     if (TextUtils.isEmpty(apiKey)) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Flurry's initialization not " +
+                        MoPubLog.log(apiKey, CUSTOM, ADAPTER_NAME, "Flurry's initialization not " +
                                 "started. Ensure Flurry's " + API_KEY +
                                 "is populated on the MoPub dashboard.");
                     } else {

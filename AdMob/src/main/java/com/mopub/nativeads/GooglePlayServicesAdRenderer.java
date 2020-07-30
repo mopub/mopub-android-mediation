@@ -1,15 +1,16 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.ads.formats.AdChoicesView;
 import com.google.android.gms.ads.formats.MediaView;
@@ -33,27 +34,27 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
     /**
      * Key to set and get star rating text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_STAR_RATING = "key_star_rating";
+    public static final String VIEW_BINDER_KEY_STAR_RATING = "key_star_rating";
 
     /**
      * Key to set and get advertiser text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_ADVERTISER = "key_advertiser";
+    public static final String VIEW_BINDER_KEY_ADVERTISER = "key_advertiser";
 
     /**
      * Key to set and get store text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_STORE = "key_store";
+    public static final String VIEW_BINDER_KEY_STORE = "key_store";
 
     /**
      * Key to set and get price text view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_PRICE = "key_price";
+    public static final String VIEW_BINDER_KEY_PRICE = "key_price";
 
     /**
      * Key to set and get the AdChoices icon view as an extra in the view binder.
      */
-    private static final String VIEW_BINDER_KEY_AD_CHOICES_ICON_CONTAINER = "ad_choices_container";
+    public static final String VIEW_BINDER_KEY_AD_CHOICES_ICON_CONTAINER = "ad_choices_container";
 
     /**
      * ID for the frame layout that wraps the Google ad view.

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="native_main_image_height">200dp</dimen>
+    <dimen name="sample_text_size">18sp</dimen>
+    <dimen name="small_text_size">14sp</dimen>
+    <dimen name="button_text_size">15sp</dimen>
+</resources>

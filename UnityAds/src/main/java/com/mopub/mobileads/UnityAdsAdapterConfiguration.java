@@ -2,8 +2,8 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.BaseAdapterConfiguration;
@@ -21,7 +21,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class UnityAdsAdapterConfiguration extends BaseAdapterConfiguration {
 
     // Adapter's keys
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    public static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
     private static final String ADAPTER_NAME = UnityAdsAdapterConfiguration.class.getSimpleName();
 

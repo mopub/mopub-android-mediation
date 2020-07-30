@@ -1,4 +1,66 @@
 ## Changelog
+  * 19.3.0.0
+    * This version of the adapters has been certified with AdMob 19.3.0 and MoPub 5.13.1.
+    * All ad formats: Remove load failure callbacks that return an `int` (deprecated by Google) and use the equivalent (if any) that returns a `LoadAdError`.
+    * Rewarded video: Remove `onRewardedAdFailedToShow(int)` (deprecated by Google) and use `onRewardedAdFailedToShow(AdError)`.
+
+  * 19.2.0.1
+    * Fix interstitial load listener usage.
+
+  * 19.2.0.0
+    * This version of the adapters has been certified with AdMob 19.2.0 and MoPub 5.13.0.
+
+  * 19.1.0.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * Remove banner size mapping checks to fully take advantage of adaptive banner. 
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
+  * 19.1.0.0
+    * This version of the adapters has been certified with AdMob 19.1.0 and MoPub 5.12.0.
+    * Remove calls to `MobileAds.initialize(Context context, String applicationCode)` (deprecated by Google) in favor of `MobileAds.initialize(Context context)`.
+
+  * 19.0.1.0
+    * This version of the adapters has been certified with AdMob 19.0.1 and MoPub 5.11.1.
+
+  * 19.0.0.0
+    * This version of the adapters has been certified with AdMob 19.0.0.
+    * Deprecated `AdRequest.Builder.addTestDevice()` in favor of `RequestConfiguration.Builder.setTestDeviceIds()`.
+
+  * 18.3.0.3
+    * MoPub now collects GDPR consent on behalf of Google.
+
+  * 18.3.0.2
+    * Log the AdMob ad unit ID in ad lifecycle events.
+
+  * 18.3.0.1
+    * Make the adapter keys public.
+
+  * 18.3.0.0
+    * This version of the adapters has been certified with AdMob 18.3.0.
+    * Allow publishers to reset previously-supplied npa without re-initializing the MoPub SDK. This change expands upon the one introduced in v18.2.0.4.
+
+  * 18.2.0.4
+    * Allow publishers to set a new npa without re-initializing the MoPub SDK.
+
+  * 18.2.0.3
+    * Map banner ad sizes starting from largest height x width.
+
+  * 18.2.0.2
+    * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for GooglePlayServicesRewardedVideo.java.
+
+  * 18.2.0.1
+    * Read banner ad size from `localExtras` instead of `serverExtras`. To ensure an optimal ad experience, publishers should use the MoPub 5.8.0+ SDK and unified banner ad units. If you are using a pre-5.8.0 MoPub SDK or unable to pass the safe area in the 5.8.0 MoPub SDK, check your ad unit setup in the Advanced Options section on the MoPub UI (more info at https://developers.mopub.com/publishers/ui/apps/manage-ad-units/#create-an-ad-unit).
+
+  * 18.2.0.0
+    * This version of the adapters has been certified with AdMob 18.2.0.
+    * Use `RequestConfiguration` in place of `AdRequest.Builder` to pass targeting data to Google. 
+
+  * 17.2.1.1
+    * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
+
+  * 17.2.1.0
+    * This version of the adapters has been certified with AdMob 17.2.1.
+
   * 17.2.0.2
     * Move the `npa` from `MediationSettings` to `NetworkConfiguration`. [Click here](https://developers.mopub.com/publishers/mediation/networks/google/#instructions-for-passing-users-ad-preference-to-admob) for updated usage instructions.
 

@@ -11,7 +11,6 @@ import com.mopub.common.privacy.PersonalInfoManager;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.ads.metadata.MetaData;
-import com.unity3d.services.banners.UnityBanners;
 
 import java.util.Map;
 
@@ -24,7 +23,6 @@ public class UnityRouter {
     private static final String ADAPTER_NAME = UnityRouter.class.getSimpleName();
 
     private static final UnityInterstitialCallbackRouter interstitialRouter = new UnityInterstitialCallbackRouter();
-    private static final UnityBannerCallbackRouter bannerRouter = new UnityBannerCallbackRouter();
 
     static boolean initUnityAds(Map<String, String> serverExtras, Activity launcherActivity) {
         initGdpr(launcherActivity);
@@ -35,9 +33,10 @@ public class UnityRouter {
             return false;
         }
         initMediationMetadata(launcherActivity);
-        UnityBanners.setBannerListener(bannerRouter);
-
-        UnityAds.initialize(launcherActivity, gameId, interstitialRouter);
+        
+        boolean testMode = false;
+        boolean enablePerPlacementLoad = true;
+        UnityAds.initialize(launcherActivity, gameId, interstitialRouter, testMode, enablePerPlacementLoad);
         return true;
     }
 
@@ -70,6 +69,7 @@ public class UnityRouter {
         MediationMetaData mediationMetaData = new MediationMetaData(context);
         mediationMetaData.setName("MoPub");
         mediationMetaData.setVersion(MoPub.SDK_VERSION);
+        mediationMetaData.set("adapter_version", UnityAdsAdapterConfiguration.ADAPTER_VERSION);
         mediationMetaData.commit();
     }
 
@@ -87,10 +87,6 @@ public class UnityRouter {
         return interstitialRouter;
     }
 
-    static UnityBannerCallbackRouter getBannerRouter() {
-        return bannerRouter;
-    }
-
     static final class UnityAdsUtils {
         static MoPubErrorCode getMoPubErrorCode(UnityAds.UnityAdsError unityAdsError) {
             MoPubErrorCode errorCode;
@@ -105,7 +101,7 @@ public class UnityRouter {
                     errorCode = MoPubErrorCode.NETWORK_INVALID_STATE;
                     break;
                 default:
-                    errorCode = MoPubErrorCode.NETWORK_NO_FILL;
+                    errorCode = MoPubErrorCode.UNSPECIFIED;
                     break;
             }
             return errorCode;
