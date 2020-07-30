@@ -11,6 +11,7 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
 import com.mopub.common.BaseLifecycleListener;
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
@@ -92,6 +93,8 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
     protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
                                             @NonNull final AdData adData) throws IllegalStateException {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "checkAndInitializeSdk");
+        Preconditions.checkNotNull(launcherActivity);
+        Preconditions.checkNotNull(adData);
 
         // Pass the user consent from the MoPub SDK to ironSource as per GDPR
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
@@ -100,7 +103,7 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
         try {
             String applicationKey = "";
 
-            if (TextUtils.isEmpty(extras.get(APPLICATION_KEY))) {
+            if(TextUtils.isEmpty(extras.get(APPLICATION_KEY))) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource didn't perform initRewardedVideo- null or empty appkey");
 
                 if (mLoadListener != null) {
@@ -149,7 +152,14 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
         mIronSourceAdapterConfiguration.setCachedInitializationParameters(context, extras);
-        IronSource.loadISDemandOnlyRewardedVideo(mInstanceId);
+
+        final String adMarkup = extras.get(DataKeys.ADM_KEY);
+
+        if(!TextUtils.isEmpty(adMarkup)) {
+            IronSource.loadISDemandOnlyRewardedVideoWithAdm(mInstanceId, adMarkup);
+        } else {
+            IronSource.loadISDemandOnlyRewardedVideo(mInstanceId);
+        }
     }
 
     protected boolean hasVideoAvailable() {
@@ -247,7 +257,7 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
     //Invoked when the video ad load failed.
     @Override
     public void onRewardedVideoAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video failed to load for instance " + instanceId + " (current instance: " + getAdNetworkId() + " )");
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video failed to load for instance "+ instanceId + " (current instance: " + getAdNetworkId() + " )");
         MoPubLog.log(instanceId, LOAD_FAILED, ADAPTER_NAME,
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError).getIntCode(),
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
