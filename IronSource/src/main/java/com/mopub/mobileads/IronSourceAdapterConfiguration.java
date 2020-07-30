@@ -26,7 +26,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
 
     // ironSource's keys
-    public static final String IRONSOURCE_ADAPTER_VERSION = "311";
+    public static final String IRONSOURCE_ADAPTER_VERSION = "400";
     public static final String DEFAULT_INSTANCE_ID = "0";
     private static final String APPLICATION_KEY = "applicationKey";
     private static final String MEDIATION_TYPE = "mopub";
