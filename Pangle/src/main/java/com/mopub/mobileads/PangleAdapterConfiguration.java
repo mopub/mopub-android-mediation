@@ -5,13 +5,11 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.mopub.common.BaseAdapterConfiguration;
@@ -41,7 +39,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static final String ADAPTER_VERSION = "3.1.0.1.1";
     private static final String ADAPTER_NAME = PangleAdapterConfiguration.class.getSimpleName();
-    private static final String MOPUB_NETWORK_NAME = "pangle_network";
+    private static final String MOPUB_NETWORK_NAME = "pangle";
 
     public static final String AD_PLACEMENT_ID_EXTRA_KEY = "ad_placement_id";
     public static final String APP_ID_EXTRA_KEY = "app_id";
