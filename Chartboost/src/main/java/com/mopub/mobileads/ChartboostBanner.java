@@ -88,7 +88,7 @@ public class ChartboostBanner extends BaseAd {
             ChartboostShared.initializeSdk(context, extras);
             mChartboostAdapterConfiguration.setCachedInitializationParameters(context, extras);
         } catch (NullPointerException | IllegalStateException error) {
-            logAndNotifyBannerFailed(LOAD_FAILED, NETWORK_INVALID_STATE,
+            logAndNotifyBannerFailed(true, LOAD_FAILED, NETWORK_INVALID_STATE,
                     null, null);
             return;
         }
@@ -96,7 +96,7 @@ public class ChartboostBanner extends BaseAd {
         prepareLayout(context);
         createBanner(context, adData);
         attachBannerToLayout();
-        mChartboostBanner.show();
+        mChartboostBanner.cache();
     }
 
     @Nullable
@@ -119,9 +119,9 @@ public class ChartboostBanner extends BaseAd {
 
     private void createBanner(final Context context, final AdData adData) {
         final BannerSize bannerSize = chartboostAdSizeFromAdData(adData);
-
         mChartboostBanner = new com.chartboost.sdk.ChartboostBanner(context, mLocation,
                 bannerSize, chartboostBannerListener);
+        mChartboostBanner.setAutomaticallyRefreshesContent(false);
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requested ad size is: Chartboost " + bannerSize);
     }
 
@@ -132,7 +132,8 @@ public class ChartboostBanner extends BaseAd {
         }
     }
 
-    private void logAndNotifyBannerFailed(MoPubLog.AdapterLogEvent event,
+    private void logAndNotifyBannerFailed(boolean isLoad,
+                                          MoPubLog.AdapterLogEvent event,
                                           MoPubErrorCode moPubErrorCode,
                                           String chartboostErrorName,
                                           Integer chartboostErrorCode) {
@@ -143,9 +144,9 @@ public class ChartboostBanner extends BaseAd {
 
         MoPubLog.log(getAdNetworkId(), event, ADAPTER_NAME, moPubErrorCode.getIntCode(), moPubErrorCode);
 
-        if (LOAD_FAILED.equals(event) && mLoadListener != null) {
+        if (isLoad && mLoadListener != null) {
             mLoadListener.onAdLoadFailed(moPubErrorCode);
-        } else if (!LOAD_FAILED.equals(event) && mInteractionListener != null) {
+        } else if (!isLoad && mInteractionListener != null) {
             mInteractionListener.onAdFailed(moPubErrorCode);
         }
     }
@@ -209,40 +210,46 @@ public class ChartboostBanner extends BaseAd {
     private ChartboostBannerListener chartboostBannerListener = new ChartboostBannerListener() {
         @Override
         public void onAdCached(ChartboostCacheEvent chartboostCacheEvent, ChartboostCacheError chartboostCacheError) {
-        }
-
-        @Override
-        public void onAdShown(ChartboostShowEvent chartboostShowEvent, ChartboostShowError chartboostShowError) {
-            if (chartboostShowError == null) {
+            if (chartboostCacheError == null) {
                 if (!loadTracked) {
                     if (mLoadListener != null) {
                         mLoadListener.onAdLoaded();
                         loadTracked = true;
                     }
                 }
+                mChartboostBanner.show();
+            } else {
+                logAndNotifyBannerFailed(true, LOAD_FAILED, MoPubErrorCode.NO_FILL,
+                        chartboostCacheError.toString(), chartboostCacheError.code.getErrorCode());
+            }
+        }
 
+        @Override
+        public void onAdShown(ChartboostShowEvent chartboostShowEvent, ChartboostShowError chartboostShowError) {
+            if (chartboostShowError == null) {
                 if (!impressionTracked) {
                     if (mInteractionListener != null) {
                         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
                         MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
-
                         mInteractionListener.onAdImpression();
                         impressionTracked = true;
                     }
                 }
+            } else {
+                logAndNotifyBannerFailed(false, SHOW_FAILED, MoPubErrorCode.INLINE_SHOW_ERROR,
+                        chartboostShowError.toString(), chartboostShowError.code.getErrorCode());
             }
         }
 
         @Override
         public void onAdClicked(ChartboostClickEvent chartboostClickEvent, ChartboostClickError chartboostClickError) {
             if (chartboostClickError != null) {
-                logAndNotifyBannerFailed(CLICKED, MoPubErrorCode.UNSPECIFIED,
-                        chartboostClickError.toString(), chartboostClickError.code);
+                logAndNotifyBannerFailed(false, CLICKED, MoPubErrorCode.UNSPECIFIED,
+                        chartboostClickError.toString(), chartboostClickError.code.getErrorCode());
             } else {
                 if (!clickTracked) {
                     if (mInteractionListener != null) {
                         MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
-
                         mInteractionListener.onAdClicked();
                         clickTracked = true;
                     }

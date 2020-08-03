@@ -56,7 +56,7 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
 
-    public static String getMoPubSdkVersion(){
+    public static String getMoPubSdkVersion() {
         return MOPUB_SDK_VERSION.replaceAll("[^A-Za-z0-9]", "");
     }
 
@@ -95,7 +95,7 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
                     } else {
                         IronSource.setMediationType(MEDIATION_TYPE + IRONSOURCE_ADAPTER_VERSION
                                 + "SDK" + getMoPubSdkVersion());
-                        IronSource.initISDemandOnly((Activity)context, appKey,
+                        IronSource.initISDemandOnly((Activity) context, appKey,
                                 IronSource.AD_UNIT.REWARDED_VIDEO, IronSource.AD_UNIT.INTERSTITIAL);
 
                         networkInitializationSucceeded = true;

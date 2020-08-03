@@ -91,12 +91,12 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
                 if (isAdColonyConfigured()) {
                     networkInitializationSucceeded = true;
                 } else if (configuration != null && !configuration.isEmpty()) {
-                    String clientOptions = configuration.get(CLIENT_OPTIONS_KEY);;
+                    String clientOptions = configuration.get(CLIENT_OPTIONS_KEY);
+
                     if (clientOptions == null)
                         clientOptions = "";
 
                     final String appId = getAdColonyParameter(APP_ID_KEY, configuration);
-                    final String zoneId = getAdColonyParameter(ZONE_ID_KEY, configuration);;
                     final String[] allZoneIds = Json.jsonArrayToStringArray(
                             getAdColonyParameter(ALL_ZONE_IDS_KEY, configuration)
                     );
@@ -104,7 +104,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
                     // Check if mandatory parameters are valid, abort otherwise
                     if (appId == null) {
                         logAndFail("initialization", APP_ID_KEY);
-                    } else if (allZoneIds == null || allZoneIds.length == 0) {
+                    } else if (allZoneIds.length == 0) {
                         logAndFail("initialization", ALL_ZONE_IDS_KEY);
                     } else {
                         AdColonyAppOptions adColonyAppOptions = getAdColonyAppOptionsAndSetConsent(clientOptions);
@@ -137,8 +137,8 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     protected static void logAndFail(String operation, String parameterName) {
         MoPubLog.log(CUSTOM, ADAPTER_NAME,
                 "Aborting AdColony " + operation + ", because " + parameterName + " is empty. " +
-                "Please make sure you enter the correct " + parameterName + " on the MoPub " +
-                "Dashboard under the AdColony network settings."
+                        "Please make sure you enter the correct " + parameterName + " on the MoPub " +
+                        "Dashboard under the AdColony network settings."
         );
     }
 
@@ -157,18 +157,18 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
         adColonyAppOptions.setMediationNetwork("MoPub", ADAPTER_VERSION);
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
-            adColonyAppOptions.setGDPRRequired(true);
+            adColonyAppOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.GDPR, true);
             if (shouldAllowLegitimateInterest) {
                 if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
                         || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
-                    adColonyAppOptions.setGDPRConsentString("0");
+                    adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "0");
                 } else {
-                    adColonyAppOptions.setGDPRConsentString("1");
+                    adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "1");
                 }
             } else if (canCollectPersonalInfo) {
-                adColonyAppOptions.setGDPRConsentString("1");
+                adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "1");
             } else {
-                adColonyAppOptions.setGDPRConsentString("0");
+                adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "0");
             }
         }
         return adColonyAppOptions;
@@ -186,10 +186,9 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    protected static void checkAndConfigureAdColonyIfNecessary(Context context, String clientOptions, String appId, String[] allZoneIds)
-    {
+    protected static void checkAndConfigureAdColonyIfNecessary(Context context, String clientOptions, String appId, String[] allZoneIds) {
         if (TextUtils.isEmpty(appId)) {
-            MoPubLog.log(CUSTOM,null,"AdColony cannot configure without a valid appId parameter. " +
+            MoPubLog.log(CUSTOM, null, "AdColony cannot configure without a valid appId parameter. " +
                     "Please ensure you enter a valid appId.");
             return;
         }
@@ -212,9 +211,9 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     protected static void configureAdColony(Context context, AdColonyAppOptions adColonyAppOptions, String appId, String[] allZoneIds) {
         if (!TextUtils.isEmpty(appId)) {
             if (context instanceof Activity) {
-                Boolean isAdColonyConfigSucceeded = AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
+                boolean isAdColonyConfigSucceeded = AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
 
-                if (isAdColonyConfigSucceeded != null && isAdColonyConfigSucceeded) {
+                if (isAdColonyConfigSucceeded) {
                     MoPubLog.log(CUSTOM, null, "AdColony configuration was attempted and succeeded");
                 } else {
                     MoPubLog.log(CUSTOM, null, "AdColony configuration was attempted but failed");

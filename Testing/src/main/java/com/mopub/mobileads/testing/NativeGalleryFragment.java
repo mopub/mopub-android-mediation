@@ -25,6 +25,8 @@ import com.mopub.nativeads.MoPubNativeAdLoadedListener;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.MoPubStreamAdPlacer;
 import com.mopub.nativeads.MoPubVideoNativeAdRenderer;
+import com.mopub.nativeads.PangleAdRenderer;
+import com.mopub.nativeads.PangleAdViewBinder;
 import com.mopub.nativeads.RequestParameters;
 import com.mopub.nativeads.VerizonNativeAdRenderer;
 import com.mopub.nativeads.ViewBinder;
@@ -104,6 +106,16 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
 
+        // Set up a renderer for Pangle ads.
+        final PangleAdRenderer pangleAdRenderer = new PangleAdRenderer(
+                new PangleAdViewBinder.Builder(R.layout.native_ad_pangle_list_item)
+                        .callToActionId(R.id.native_cta)
+                        .decriptionTextId(R.id.native_text)
+                        .iconImageId(R.id.native_icon_image)
+                        .titleId(R.id.native_title)
+                        .mediaViewIdId(R.id.native_main_image)
+                        .build());
+
         // Set up a renderer for AdMob ads.
         final GooglePlayServicesAdRenderer googlePlayServicesAdRenderer = new GooglePlayServicesAdRenderer(
                 new MediaViewBinder.Builder(R.layout.video_ad_list_item)
@@ -146,6 +158,7 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
         mStreamAdPlacer.registerAdRenderer(verizonNativeAdRenderer);
         mStreamAdPlacer.registerAdRenderer(googlePlayServicesAdRenderer);
         mStreamAdPlacer.registerAdRenderer(facebookAdRenderer);
+        mStreamAdPlacer.registerAdRenderer(pangleAdRenderer);
         mStreamAdPlacer.registerAdRenderer(moPubStaticNativeAdRenderer);
         mStreamAdPlacer.registerAdRenderer(moPubVideoNativeAdRenderer);
         mStreamAdPlacer.setAdLoadedListener(this);

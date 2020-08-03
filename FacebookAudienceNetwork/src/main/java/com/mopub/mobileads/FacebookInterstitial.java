@@ -38,7 +38,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.CANCELLED;
-import static com.mopub.mobileads.MoPubErrorCode.EXPIRED;
+import static com.mopub.mobileads.MoPubErrorCode.FULLSCREEN_SHOW_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
@@ -66,16 +66,15 @@ public class FacebookInterstitial extends BaseAd implements InterstitialAdExtend
         mAdExpiration = new Runnable() {
             @Override
             public void run() {
-                if (mInteractionListener != null) {
+                // Add custom cleanup logic following an expiration. To request a new ad, call
+                // MoPubInterstitial.destroy() first.
+                if (mLoadListener != null) {
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Expiring unused " +
                             "Facebook Interstitial ad due to Facebook's 60-minute expiration policy.");
-                    mInteractionListener.onAdFailed(EXPIRED);
+                    mLoadListener.onAdLoadFailed(FULLSCREEN_SHOW_ERROR);
                     MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                             MoPubErrorCode.EXPIRED.getIntCode(), MoPubErrorCode.EXPIRED);
 
-                    /* Can't get a direct handle to adFailed() to set the interstitial's state to
-                    IDLE: https://github.com/mopub/mopub-android-sdk/blob/4199080a1efd755641369715a4de5031d6072fbc/mopub-sdk/mopub-sdk-interstitial/src/main/java/com/mopub/mobileads/MoPubInterstitial.java#L91.
-                    So, invalidating the interstitial (destroying & nulling) instead. */
                     onInvalidate();
                 }
             }

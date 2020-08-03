@@ -251,8 +251,7 @@ public class AdColonyRewardedVideo extends BaseAd {
                 MoPubRewardedVideoManager.getGlobalMediationSettings(AdColonyGlobalMediationSettings.class);
         if (globalMediationSettings != null) {
             if (globalMediationSettings.getUserId() != null) {
-                if(mAdColonyAppOptions == null)
-                {
+                if (mAdColonyAppOptions == null) {
                     mAdColonyAppOptions = AdColonyAdapterConfiguration.getAdColonyAppOptionsAndSetConsent(mAdColonyClientOptions);
                     AdColony.setAppOptions(mAdColonyAppOptions);
                 }

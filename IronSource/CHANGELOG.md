@@ -1,4 +1,10 @@
 ## Changelog
+ * 6.18.0.0
+    * This version of the adapters has been certified with ironSource 6.18.0 and MoPub SDK 5.13.1.
+
+ * 6.17.0.1
+    * Rename `Ironsource` to `ironsource` for the internal network name
+
  * 6.17.0.0
     * This version of the adapters has been certified with ironSource 6.17.0 and MoPub SDK 5.13.0.
 
