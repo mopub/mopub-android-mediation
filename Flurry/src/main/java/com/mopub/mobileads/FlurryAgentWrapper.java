@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import com.flurry.android.FlurryAgent;
 import com.flurry.android.FlurryAgentListener;
 
-
 public final class FlurryAgentWrapper {
     public static final String PARAM_API_KEY = "apiKey";
     public static final String PARAM_AD_SPACE_NAME = "adSpaceName";
