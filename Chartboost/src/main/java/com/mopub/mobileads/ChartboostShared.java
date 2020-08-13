@@ -73,11 +73,11 @@ public class ChartboostShared {
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
             if (shouldAllowLegitimateInterest) {
-                boolean explicitNoConsent = personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
+                boolean isExplicitNoConsent = personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
                         || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT;
-                addPrivacyConsent(context, !explicitNoConsent);
+                addChartboostPrivacyConsent(context, !isExplicitNoConsent);
             } else {
-                addPrivacyConsent(context, canCollectPersonalInfo);
+                addChartboostPrivacyConsent(context, canCollectPersonalInfo);
             }
         }
 
@@ -122,14 +122,18 @@ public class ChartboostShared {
         return true;
     }
 
-    private static void addPrivacyConsent(Context context, boolean canCollectPersonalInfo) {
-        if(context == null) {
+    private static void addChartboostPrivacyConsent(Context context, boolean canCollectPersonalInfo) {
+        if (context == null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Skipped setting Chartboost Privacy consent " +
+                    "as context is null.");
             return;
         }
 
-        if(canCollectPersonalInfo) {
+        if (canCollectPersonalInfo) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Setting Chartboost GDPR data use consent as BEHAVIORAL");
             Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
         } else {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Setting Chartboost GDPR data use consent as NON_BEHAVIORAL");
             Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
         }
     }
@@ -249,8 +253,12 @@ public class ChartboostShared {
         }
 
         private void invalidateLocation(String location) {
-            unregisterLoadListener(location);
-            unregisterInteractionListener(location);
+            if (!TextUtils.isEmpty(location)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Invalidating listeners for location: " + location);
+
+                unregisterLoadListener(location);
+                unregisterInteractionListener(location);
+            }
         }
 
         @NonNull
