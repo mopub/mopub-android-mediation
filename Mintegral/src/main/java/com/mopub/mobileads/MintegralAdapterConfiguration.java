@@ -16,6 +16,7 @@ import com.mintegral.msdk.base.common.net.Aa;
 import com.mintegral.msdk.mtgbid.out.BidManager;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MTGConfiguration;
+import com.mintegral.msdk.out.SDKInitStatusListener;
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
@@ -126,14 +127,39 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        sdk.init(mtgConfigurationMap, ((Activity) context).getApplication());
+                        sdk.init(mtgConfigurationMap, ((Activity) context).getApplication(),
+                                new SDKInitStatusListener() {
+                                    @Override
+                                    public void onInitSuccess() {
+                                        MoPubLog.log(CUSTOM, this.getClass().getName(),
+                                                "Mintegral SDK successfully initialized.");
+                                    }
+
+                                    @Override
+                                    public void onInitFail() {
+                                        MoPubLog.log(CUSTOM, this.getClass().getName(),
+                                                "Mintegral SDK failed to initialize.");
+                                    }
+                                });
                     }
                 });
             } else if (context instanceof Application) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        sdk.init(mtgConfigurationMap, context);
+                        sdk.init(mtgConfigurationMap, context, new SDKInitStatusListener() {
+                            @Override
+                            public void onInitSuccess() {
+                                MoPubLog.log(CUSTOM, this.getClass().getName(), "Mintegral " +
+                                        "SDK successfully initialized.");
+                            }
+
+                            @Override
+                            public void onInitFail() {
+                                MoPubLog.log(CUSTOM, this.getClass().getName(), "Mintegral " +
+                                        "SDK failed to initialize.");
+                            }
+                        });
                     }
                 });
             }

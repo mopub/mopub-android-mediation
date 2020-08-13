@@ -194,8 +194,8 @@ public class AppLovinInterstitial extends BaseAd implements AppLovinAdLoadListen
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show an AppLovin interstitial before one was " +
                     "loaded");
 
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
             }
         }
     }

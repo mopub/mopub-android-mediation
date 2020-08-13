@@ -15,12 +15,16 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.mopub.nativeads.FacebookAdRenderer;
+import com.mopub.nativeads.FlurryNativeAdRenderer;
+import com.mopub.nativeads.FlurryViewBinder;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
 import com.mopub.nativeads.MediaViewBinder;
 import com.mopub.nativeads.MintegralAdRenderer;
 import com.mopub.nativeads.MoPubAdAdapter;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.MoPubVideoNativeAdRenderer;
+import com.mopub.nativeads.PangleAdRenderer;
+import com.mopub.nativeads.PangleAdViewBinder;
 import com.mopub.nativeads.RequestParameters;
 import com.mopub.nativeads.VerizonNativeAdRenderer;
 import com.mopub.nativeads.ViewBinder;
@@ -106,6 +110,17 @@ public class NativeListViewFragment extends Fragment {
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
 
+        // Set up a renderer for Flurry video and static native ads.
+        final FlurryNativeAdRenderer flurryAdRenderer = new FlurryNativeAdRenderer(
+                new FlurryViewBinder.Builder(new ViewBinder.Builder(R.layout.native_ad_flurry_list_item)
+                        .titleId(R.id.flurry_native_title)
+                        .textId(R.id.flurry_native_text)
+                        .mainImageId(R.id.flurry_native_main_image)
+                        .iconImageId(R.id.flurry_native_icon_image)
+                        .callToActionId(R.id.flurry_native_cta)
+                        .privacyInformationIconImageId(R.id.flurry_native_privacy_information_icon_image)
+                        .build()).videoViewId(R.id.flurry_native_video_view).build());
+
         // Set up a renderer for AdMob ads.
         final GooglePlayServicesAdRenderer googlePlayServicesAdRenderer = new GooglePlayServicesAdRenderer(
                 new MediaViewBinder.Builder(R.layout.video_ad_list_item)
@@ -115,6 +130,16 @@ public class NativeListViewFragment extends Fragment {
                         .iconImageId(R.id.native_icon_image)
                         .callToActionId(R.id.native_cta)
                         .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
+                        .build());
+
+        // Set up a renderer for Pangle ads.
+        final PangleAdRenderer pangleAdRenderer = new PangleAdRenderer(
+                new PangleAdViewBinder.Builder(R.layout.native_ad_pangle_list_item)
+                        .callToActionId(R.id.native_cta)
+                        .decriptionTextId(R.id.native_text)
+                        .iconImageId(R.id.native_icon_image)
+                        .titleId(R.id.native_title)
+                        .mediaViewIdId(R.id.native_main_image)
                         .build());
 
         // Set up a renderer for Verizon ads.
@@ -146,8 +171,10 @@ public class NativeListViewFragment extends Fragment {
         mAdAdapter.registerAdRenderer(verizonNativeAdRenderer);
         mAdAdapter.registerAdRenderer(googlePlayServicesAdRenderer);
         mAdAdapter.registerAdRenderer(facebookAdRenderer);
+        mAdAdapter.registerAdRenderer(flurryAdRenderer);
         mAdAdapter.registerAdRenderer(staticAdRender);
         mAdAdapter.registerAdRenderer(videoAdRenderer);
+        mAdAdapter.registerAdRenderer(pangleAdRenderer);
         listView.setAdapter(mAdAdapter);
 
         updateRequestParameters(views);

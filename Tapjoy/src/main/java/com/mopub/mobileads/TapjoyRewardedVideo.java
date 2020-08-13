@@ -21,6 +21,7 @@ import com.tapjoy.TJPlacement;
 import com.tapjoy.TJPlacementListener;
 import com.tapjoy.TJPlacementVideoListener;
 import com.tapjoy.Tapjoy;
+import com.tapjoy.TJPrivacyPolicy;
 
 import org.json.JSONException;
 
@@ -56,6 +57,8 @@ public class TapjoyRewardedVideo extends BaseAd {
     private boolean isAutoConnect = false;
     private String mPlacementName;
     private TapjoyRewardedVideoListener mTapjoyListener = new TapjoyRewardedVideoListener();
+    private static TJPrivacyPolicy tjPrivacyPolicy;
+	
     @NonNull
     private TapjoyAdapterConfiguration mTapjoyAdapterConfiguration;
 
@@ -81,6 +84,7 @@ public class TapjoyRewardedVideo extends BaseAd {
 
     public TapjoyRewardedVideo() {
         mTapjoyAdapterConfiguration = new TapjoyAdapterConfiguration();
+        tjPrivacyPolicy = Tapjoy.getPrivacyPolicy();
     }
 
     @Override
@@ -188,6 +192,9 @@ public class TapjoyRewardedVideo extends BaseAd {
             tjPlacement.showContent();
         } else {
             MoPubLog.log(mPlacementName, SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+            }
         }
     }
 
@@ -216,14 +223,14 @@ public class TapjoyRewardedVideo extends BaseAd {
             Boolean gdprApplies = personalInfoManager.gdprApplies();
 
             if (gdprApplies != null) {
-                Tapjoy.subjectToGDPR(gdprApplies);
+                tjPrivacyPolicy.setSubjectToGDPR(gdprApplies);
 
                 if (gdprApplies) {
                     String userConsented = MoPub.canCollectPersonalInformation() ? "1" : "0";
 
-                    Tapjoy.setUserConsent(userConsented);
+                    tjPrivacyPolicy.setUserConsent(userConsented);
                 } else {
-                    Tapjoy.setUserConsent("-1");
+                    tjPrivacyPolicy.setUserConsent("-1");
                 }
             }
         }
