@@ -77,7 +77,6 @@ public class ChartboostBanner extends BaseAd {
                     null, null);
             return;
         }
-
         try {
             setAutomaticImpressionAndClickTracking(false);
 
@@ -103,7 +102,6 @@ public class ChartboostBanner extends BaseAd {
         prepareLayout(context);
         createBanner(context, adData);
         attachBannerToLayout();
-        mChartboostBanner.setAutomaticallyRefreshesContent(false);
         mChartboostBanner.cache();
     }
 
