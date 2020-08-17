@@ -9,10 +9,6 @@ dependencies {
     if (sdkSrcDependency) {
         implementation project(':vungle-android-sdk:publisher-sdk-android')
     } else {
-        implementation 'com.github.vungle:vungle-android-sdk:6.7.1'
-/*      TODO: Replace with this when available on bintray
-
         implementation "com.vungle:publisher-sdk-android:${sdkVersion}"
-*/
     }
 }
