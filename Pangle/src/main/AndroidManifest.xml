@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mopub.mobileads.pangle">
+
+    <!-- To enable the video ad that run in Pangle Ad Texture view, you need to declare this permission. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application>
+        <provider
+            android:name="com.bytedance.sdk.openadsdk.multipro.TTMultiProvider"
+            android:authorities="${applicationId}.TTMultiProvider"
+            android:exported="false" />
+    </application>
+
+</manifest>

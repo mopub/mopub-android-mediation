@@ -1,4 +1,15 @@
 ## Changelog
+  * 19.3.0.0
+    * This version of the adapters has been certified with AdMob 19.3.0 and MoPub 5.13.1.
+    * All ad formats: Remove load failure callbacks that return an `int` (deprecated by Google) and use the equivalent (if any) that returns a `LoadAdError`.
+    * Rewarded video: Remove `onRewardedAdFailedToShow(int)` (deprecated by Google) and use `onRewardedAdFailedToShow(AdError)`.
+
+  * 19.2.0.1
+    * Fix interstitial load listener usage.
+
+  * 19.2.0.0
+    * This version of the adapters has been certified with AdMob 19.2.0 and MoPub 5.13.0.
+
   * 19.1.0.1
     * Refactor non-native adapter classes to use the new consolidated API from MoPub.
     * Remove banner size mapping checks to fully take advantage of adaptive banner. 

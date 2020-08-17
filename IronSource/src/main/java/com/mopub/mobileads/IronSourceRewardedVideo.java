@@ -100,7 +100,7 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
         try {
             String applicationKey = "";
 
-            if(TextUtils.isEmpty(extras.get(APPLICATION_KEY))) {
+            if (TextUtils.isEmpty(extras.get(APPLICATION_KEY))) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource didn't perform initRewardedVideo- null or empty appkey");
 
                 if (mLoadListener != null) {
@@ -247,7 +247,7 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
     //Invoked when the video ad load failed.
     @Override
     public void onRewardedVideoAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video failed to load for instance "+ instanceId + " (current instance: " + getAdNetworkId() + " )");
+        MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video failed to load for instance " + instanceId + " (current instance: " + getAdNetworkId() + " )");
         MoPubLog.log(instanceId, LOAD_FAILED, ADAPTER_NAME,
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError).getIntCode(),
                 IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));

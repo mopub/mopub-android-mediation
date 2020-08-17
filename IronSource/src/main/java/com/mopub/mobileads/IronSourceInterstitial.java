@@ -111,7 +111,7 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
 
                 mIronSourceAdapterConfiguration.setCachedInitializationParameters(context, extras);
             } else {
-                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ironSource initialization failed, make sure that"+
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ironSource initialization failed, make sure that" +
                         " 'applicationKey' parameter is added");
                 sendMoPubAdLoadFailed(MoPubErrorCode.INTERNAL_ERROR, getAdNetworkId());
             }
@@ -150,8 +150,8 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ironSource Interstitial initialization is called with appkey: " + appKey);
 
         IronSource.setISDemandOnlyInterstitialListener(this);
-        IronSource.setMediationType(MEDIATION_TYPE + IronSourceAdapterConfiguration.IRONSOURCE_ADAPTER_VERSION + 
-            "SDK" + IronSourceAdapterConfiguration.getMoPubSdkVersion());
+        IronSource.setMediationType(MEDIATION_TYPE + IronSourceAdapterConfiguration.IRONSOURCE_ADAPTER_VERSION +
+                "SDK" + IronSourceAdapterConfiguration.getMoPubSdkVersion());
         IronSource.initISDemandOnly(activity, appKey, IronSource.AD_UNIT.INTERSTITIAL);
 
     }
@@ -209,7 +209,7 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
     @Override
     public void onInterstitialAdOpened(final String instanceId) {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "ironSource Interstitial opened ad for instance "
-            + instanceId + " (current instance: " + mInstanceId + " )");
+                + instanceId + " (current instance: " + mInstanceId + " )");
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -242,7 +242,7 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
     @Override
     public void onInterstitialAdShowFailed(final String instanceId, final IronSourceError ironSourceError) {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "ironSource Interstitial failed to show for instance "
-            + instanceId + " (current instance: " + mInstanceId + " )" + " Error: " + ironSourceError.getErrorMessage());
+                + instanceId + " (current instance: " + mInstanceId + " )" + " Error: " + ironSourceError.getErrorMessage());
         MoPubLog.log(instanceId, SHOW_FAILED, ADAPTER_NAME);
 
         final MoPubErrorCode errorCode = IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError);
@@ -263,7 +263,7 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
     @Override
     public void onInterstitialAdClicked(final String instanceId) {
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "ironSource Interstitial clicked ad for instance "
-            + instanceId + " (current instance: " + mInstanceId + " )");
+                + instanceId + " (current instance: " + mInstanceId + " )");
 
         mHandler.post(new Runnable() {
             @Override

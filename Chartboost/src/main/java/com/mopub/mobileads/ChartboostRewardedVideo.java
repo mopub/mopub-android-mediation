@@ -74,7 +74,7 @@ public class ChartboostRewardedVideo extends BaseAd {
             return;
         }
         mWeakActivity = new WeakReference<>((Activity) context);
-
+        
         // Chartboost delegation can be set to null on some cases in Chartboost SDK 8.0+.
         // We should set the delegation on each load request to prevent this.
         Chartboost.setDelegate(ChartboostShared.getDelegate());
@@ -136,6 +136,7 @@ public class ChartboostRewardedVideo extends BaseAd {
     public void show() {
         ChartboostShared.getDelegate().registerInteractionListener(mLocation, mInteractionListener);
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+
         if (mWeakActivity != null && mWeakActivity.get() != null) {
             Chartboost.showRewardedVideo(mLocation);
         } else {

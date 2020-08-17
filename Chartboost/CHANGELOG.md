@@ -1,4 +1,10 @@
 ## Changelog
+  * 8.1.0.0
+    * This version of the adapters has been certified with Chartboost 8.1.0 and MoPub 5.13.1.
+    * Fix a bug where load and interaction listeners for interstitials were not unregistered properly
+    * Use `addDataUseConsent` to pass GDPR consent
+    * Implement Chartboost's `cache` and `show` APIs for inline ads.
+
   * 8.0.3.0
     * This version of the adapters has been certified with Chartboost 8.0.3 and MoPub 5.13.0.
     * Fix a bug where rewarded videos fail to show due to the activity presenting it is set to null.
