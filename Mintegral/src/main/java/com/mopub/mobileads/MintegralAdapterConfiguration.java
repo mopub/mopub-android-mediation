@@ -44,8 +44,6 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String SDK_VERSION = MTGConfiguration.SDK_VERSION;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
-    private static boolean sdkInitialized = false;
-
     private static int mAge;
     private static String mCustomData;
     private static int mGender;
@@ -55,6 +53,8 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     private static int mPay;
     private static String mRewardId;
     private static String mUserId;
+
+    private static MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
 
     @NonNull
     @Override
@@ -67,7 +67,13 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     public String getBiddingToken(@NonNull Context context) {
         Preconditions.checkNotNull(context);
 
-        return !sdkInitialized ? null : BidManager.getBuyerUid(context);
+        if (sdk != null) {
+            if (sdk.getStatus() == MIntegralSDK.PLUGIN_LOAD_STATUS.COMPLETED) {
+                return BidManager.getBuyerUid(context);
+            }
+        }
+
+        return null;
     }
 
     @NonNull
@@ -111,12 +117,11 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static void configureMintegral(String appId, String appKey, final Context context) {
-
-        if (sdkInitialized) return;
-
-        final MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-
         if (sdk != null) {
+            if (sdk.getStatus() == MIntegralSDK.PLUGIN_LOAD_STATUS.COMPLETED) {
+                return;
+            }
+
             final boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
             final int switchState = canCollectPersonalInfo ? IS_SWITCH_ON : IS_SWITCH_OFF;
             sdk.setUserPrivateInfoType(context, AUTHORITY_ALL_INFO, switchState);
@@ -163,9 +168,6 @@ public class MintegralAdapterConfiguration extends BaseAdapterConfiguration {
                     }
                 });
             }
-
-            sdkInitialized = true;
-
         } else {
             MoPubLog.log(CUSTOM, "Failed to initialize the Mintegral SDK because the SDK " +
                     "instance is null.");

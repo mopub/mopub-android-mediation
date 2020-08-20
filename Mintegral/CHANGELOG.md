@@ -1,4 +1,7 @@
 ## Changelog
+  * 14.4.01.1
+    * Use Mintegral's `getStatus()` to query for initialization status. Since a local flag is not used anymore, initializing Mintegral statically from the app will also produce an Advanced Bidding token.
+
   * 14.4.01.0
     * This version of the adapters has been certified with Mintegral 14.4.01 and MoPub 5.13.1.
 
