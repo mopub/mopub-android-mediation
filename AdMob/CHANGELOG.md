@@ -1,4 +1,7 @@
 ## Changelog
+  * 19.3.0.1
+    * Add support for the new `onRewardedAdFailedToLoad(LoadAdError loadAdError)` to handle load failures. 
+
   * 19.3.0.0
     * This version of the adapters has been certified with AdMob 19.3.0 and MoPub 5.13.1.
     * All ad formats: Remove load failure callbacks that return an `int` (deprecated by Google) and use the equivalent (if any) that returns a `LoadAdError`.

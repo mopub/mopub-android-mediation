@@ -1,4 +1,7 @@
 ## Changelog
+ * 6.18.0.1
+    * Service release. No new features.
+
  * 6.18.0.0
     * This version of the adapters has been certified with ironSource 6.18.0 and MoPub SDK 5.13.1.
 

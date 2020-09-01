@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.7.1.0
+    * This version of the adapters has been certified with Vungle 6.7.1 and MoPub SDK 5.13.1.
+    * Note that, this adapter version is not certified using Android API 30. For Android 11 compatibility, expect an upcoming adapter release.
+
   * 6.7.0.0
     * This version of the adapters has been certified with Vungle 6.7.0 and MoPub SDK 5.13.0.
     * Add support for Advanced Bidding for fullscreen ads.
@@ -25,7 +29,7 @@
 
   * 6.4.11.3
     * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for `VungleRewardedVideo.java`
-
+      
   * 6.4.11.2
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
 

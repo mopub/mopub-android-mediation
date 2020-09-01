@@ -1,4 +1,11 @@
 ## Changelog
+ * 12.5.0.0
+    * This version of the adapter has been certified with Flurry 12.5.0 and MoPub SDK 5.13.1.
+    * This version of the adapter will only support native ad format.
+    * Deprecate Flurry interstitial adapter support.
+    Note: We are [deprecating Flurry mediation support](https://developers.mopub.com/publishers/mediation/networks/yahooflurry/) for interstitial ad format. Publishers mediating Flurry via supported connection should migrate from Flurry connection to
+    [Verizon Media Connection](https://developers.mopub.com/publishers/mediation/networks/verizon/) for interstitial format.
+
  * 12.0.3.1
     * Log Flurry ad space name in ad lifecycle events.
     * Map additional error codes for failure cases.
