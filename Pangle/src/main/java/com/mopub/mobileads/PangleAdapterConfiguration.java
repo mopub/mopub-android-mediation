@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.mopub.common.BaseAdapterConfiguration;
@@ -18,6 +17,7 @@ import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.pangle.BuildConfig;
 
 import java.util.Map;
 
@@ -38,9 +38,9 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     public static final int PLACEMENT_EMPTY_ERROR = 40004;
     public static final int PLACEMENT_ERROR = 40006;
 
-    private static final String ADAPTER_VERSION = "3.1.0.1.0";
+    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String ADAPTER_NAME = PangleAdapterConfiguration.class.getSimpleName();
-    private static final String MOPUB_NETWORK_NAME = "pangle_network";
+    private static final String MOPUB_NETWORK_NAME = "pangle";
 
     public static final String AD_PLACEMENT_ID_EXTRA_KEY = "ad_placement_id";
     public static final String APP_ID_EXTRA_KEY = "app_id";
@@ -71,7 +71,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return null;
+        return (getPangleSdkManager() != null) ? getPangleSdkManager().getBiddingToken() : null;
     }
 
     @NonNull
