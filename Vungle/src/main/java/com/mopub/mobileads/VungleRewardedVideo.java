@@ -227,7 +227,6 @@ public class VungleRewardedVideo extends BaseAd {
         sVungleRouter.setIncentivizedFields(userId, mediationSettings.getTitle(), mediationSettings.getBody(),
                 mediationSettings.getKeepWatchingButtonText(), mediationSettings.getCloseButtonText());
         adConfig.setMuted(mediationSettings.isStartMuted());
-        adConfig.setFlexViewCloseTime(mediationSettings.getFlexViewCloseTimeInSec());
         adConfig.setOrdinal(mediationSettings.getOrdinalViewCount());
         adConfig.setAdOrientation(mediationSettings.getAdOrientation());
     }
@@ -391,12 +390,6 @@ public class VungleRewardedVideo extends BaseAd {
             @Override
             public Builder withStartMuted(boolean isStartMuted) {
                 super.withStartMuted(isStartMuted);
-                return this;
-            }
-
-            @Override
-            public Builder withFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
-                super.withFlexViewCloseTimeInSec(flexViewCloseTimeInSec);
                 return this;
             }
 

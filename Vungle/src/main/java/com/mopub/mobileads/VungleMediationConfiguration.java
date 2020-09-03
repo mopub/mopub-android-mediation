@@ -87,16 +87,6 @@ public class VungleMediationConfiguration implements MediationSettings {
             }
         }
 
-        final String flexViewCloseTimeInSec = extras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
-
-        if (!TextUtils.isEmpty(flexViewCloseTimeInSec)) {
-            try {
-                adConfig.setFlexViewCloseTime(Integer.parseInt(flexViewCloseTimeInSec));
-
-            } catch (NumberFormatException e) {
-                // ignore and don't set flex view close time
-            }
-        }
         final String ordinalViewCount = extras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
 
         if (!TextUtils.isEmpty(ordinalViewCount)) {
@@ -128,7 +118,6 @@ public class VungleMediationConfiguration implements MediationSettings {
     public static class Builder {
         private static final String EXTRA_START_MUTED_KEY = "startMuted";
         private static final String EXTRA_SOUND_ENABLED_KEY = VungleInterstitial.SOUND_ENABLED_KEY;
-        private static final String EXTRA_FLEXVIEW_CLOSE_TIME_KEY = VungleInterstitial.FLEX_VIEW_CLOSE_TIME_KEY;
         private static final String EXTRA_ORDINAL_VIEW_COUNT_KEY = VungleInterstitial.ORDINAL_VIEW_COUNT_KEY;
         private static final String EXTRA_ORIENTATION_KEY = VungleInterstitial.AD_ORIENTATION_KEY;
 
@@ -182,12 +171,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         public Builder withStartMuted(boolean isStartMuted) {
             this.mIsStartMuted = isStartMuted;
             mExtras.put(EXTRA_START_MUTED_KEY, isStartMuted);
-            return this;
-        }
-
-        public Builder withFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
-            this.mFlexViewCloseTimeInSec = flexViewCloseTimeInSec;
-            mExtras.put(EXTRA_FLEXVIEW_CLOSE_TIME_KEY, flexViewCloseTimeInSec);
             return this;
         }
 
