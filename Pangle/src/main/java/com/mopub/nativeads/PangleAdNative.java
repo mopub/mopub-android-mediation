@@ -19,6 +19,7 @@ import com.bytedance.sdk.openadsdk.TTDislikeDialogAbstract;
 import com.bytedance.sdk.openadsdk.TTFeedAd;
 import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
+import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.PangleAdapterConfiguration;
 
@@ -51,6 +52,7 @@ public class PangleAdNative extends CustomEventNative {
         this.mCustomEventNativeListener = customEventNativeListener;
 
         TTAdManager ttAdManager = null;
+        String adm = null;
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
             /** Obtain ad placement id from MoPub UI */
@@ -66,6 +68,7 @@ public class PangleAdNative extends CustomEventNative {
                 }
                 return;
             }
+            adm = serverExtras.get(DataKeys.ADM_KEY);
 
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             final String appId = serverExtras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
@@ -95,6 +98,7 @@ public class PangleAdNative extends CustomEventNative {
                     .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
                     .setImageAcceptedSize(mediaViewWidth, mediaViewHeight)
+                    .withBid(adm)
                     .build();
 
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);

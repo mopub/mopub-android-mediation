@@ -1,4 +1,10 @@
 ## Changelog
+ * 9.13.4.0
+    * This version of the adapters has been certified with AppLovin 9.13.4 and MoPub SDK 5.13.1.
+
+ * 9.13.2.0
+    * This version of the adapters has been certified with AppLovin 9.13.2 and MoPub SDK 5.13.1.
+
  * 9.13.1.0
     * Manually track impression and click for Rewarded Videos based on AppLovin's callbacks.
     * This version of the adapters has been certified with AppLovin 9.13.1 and MoPub SDK 5.13.1.

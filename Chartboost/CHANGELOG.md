@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.1.0.1
+    * Fail banner load requests for Android API below 21. Chartboost 8.0.1 and above currently doesn't support displaying of banners for devices with Android API below 21.
+
   * 8.1.0.0
     * This version of the adapters has been certified with Chartboost 8.1.0 and MoPub 5.13.1.
     * Fix a bug where load and interaction listeners for interstitials were not unregistered properly

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyZone;
 import com.mopub.common.LifecycleListener;
@@ -101,11 +102,13 @@ public class AdColonyInterstitial extends BaseAd {
 
         mZoneId = zoneId;
 
+        final AdColonyAdOptions mAdColonyAdOptions = mAdColonyAdapterConfiguration.getInterstitialAdOptionsFromExtras(extras);
+
         mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, extras);
-        mAdColonyInterstitialListener = getAdColonyInterstitialListener();
+        mAdColonyInterstitialListener = getAdColonyInterstitialListener(mAdColonyAdOptions);
 
         AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(context, clientOptions, appId, allZoneIds);
-        AdColony.requestInterstitial(mZoneId, mAdColonyInterstitialListener);
+        AdColony.requestInterstitial(mZoneId, mAdColonyInterstitialListener, mAdColonyAdOptions);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
@@ -151,7 +154,7 @@ public class AdColonyInterstitial extends BaseAd {
         return null;
     }
 
-    private AdColonyInterstitialListener getAdColonyInterstitialListener() {
+    private AdColonyInterstitialListener getAdColonyInterstitialListener(final AdColonyAdOptions mAdColonyAdOptions) {
         if (mAdColonyInterstitialListener != null) {
             return mAdColonyInterstitialListener;
         } else {
@@ -217,7 +220,7 @@ public class AdColonyInterstitial extends BaseAd {
                     Preconditions.checkNotNull(ad);
 
                     if (mAdColonyInterstitialListener != null) {
-                        AdColony.requestInterstitial(ad.getZoneID(), mAdColonyInterstitialListener);
+                        AdColony.requestInterstitial(ad.getZoneID(), mAdColonyInterstitialListener, mAdColonyAdOptions);
                     }
                 }
 

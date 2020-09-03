@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.adcolony.sdk.AdColonyAdSize;
 import com.adcolony.sdk.AdColonyAdView;
 import com.adcolony.sdk.AdColonyAdViewListener;
@@ -106,11 +107,13 @@ public class AdColonyBanner extends BaseAd {
 
         mZoneId = zoneId;
 
+        final AdColonyAdOptions mAdColonyAdOptions = mAdColonyAdapterConfiguration.getBannerAdOptionsFromExtras(extras);
+
         mAdColonyAdapterConfiguration.setCachedInitializationParameters(context, extras);
         mAdColonyBannerListener = getAdColonyBannerListener();
 
         AdColonyAdapterConfiguration.checkAndConfigureAdColonyIfNecessary(context, clientOptions, appId, allZoneIds);
-        AdColony.requestAdView(zoneId, mAdColonyBannerListener, adSize);
+        AdColony.requestAdView(zoneId, mAdColonyBannerListener, adSize, mAdColonyAdOptions);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
