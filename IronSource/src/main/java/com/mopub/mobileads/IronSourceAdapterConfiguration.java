@@ -26,7 +26,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
 
     // ironSource's keys
-    public static final String IRONSOURCE_ADAPTER_VERSION = "310";
+    public static final String IRONSOURCE_ADAPTER_VERSION = "400";
     public static final String DEFAULT_INSTANCE_ID = "0";
     private static final String APPLICATION_KEY = "applicationKey";
     private static final String MEDIATION_TYPE = "mopub";
@@ -46,7 +46,7 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return null;
+        return IronSource.getISDemandOnlyBiddingData();
     }
 
     @NonNull

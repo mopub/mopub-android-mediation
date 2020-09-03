@@ -50,7 +50,6 @@ public class AdColonyRewardedVideo extends BaseAd {
     private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
 
     private AdColonyInterstitial mAd;
-    private AdColonyAdOptions mAdColonyAdOptions = new AdColonyAdOptions();
     private String mAdColonyClientOptions = "";
     private static WeakHashMap<String, AdColonyInterstitial> sZoneIdToAdMap = new WeakHashMap<>();
     @NonNull
@@ -211,7 +210,9 @@ public class AdColonyRewardedVideo extends BaseAd {
         }
 
         sZoneIdToAdMap.put(mZoneId, null);
-        setUpAdOptions();
+
+        final AdColonyAdOptions mAdColonyAdOptions = mAdColonyAdapterConfiguration.getRewardAdOptionsFromExtras(extras, mAdUnitId);
+
         final AdColonyListener mAdColonyListener = new AdColonyListener(mAdColonyAdOptions);
         AdColony.setRewardListener(mAdColonyListener);
         AdColony.requestInterstitial(mZoneId, mAdColonyListener, mAdColonyAdOptions);
@@ -224,11 +225,6 @@ public class AdColonyRewardedVideo extends BaseAd {
         if (mLoadListener != null) {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
-    }
-
-    private void setUpAdOptions() {
-        mAdColonyAdOptions.enableConfirmationDialog(getConfirmationDialogFromSettings());
-        mAdColonyAdOptions.enableResultsDialog(getResultsDialogFromSettings());
     }
 
     private boolean hasVideoAvailable() {
@@ -258,18 +254,6 @@ public class AdColonyRewardedVideo extends BaseAd {
                 mAdColonyAppOptions.setUserID(globalMediationSettings.getUserId());
             }
         }
-    }
-
-    private boolean getConfirmationDialogFromSettings() {
-        final AdColonyInstanceMediationSettings settings =
-                MoPubRewardedVideoManager.getInstanceMediationSettings(AdColonyInstanceMediationSettings.class, mAdUnitId);
-        return settings != null && settings.isWithConfirmationDialog();
-    }
-
-    private boolean getResultsDialogFromSettings() {
-        final AdColonyInstanceMediationSettings settings =
-                MoPubRewardedVideoManager.getInstanceMediationSettings(AdColonyInstanceMediationSettings.class, mAdUnitId);
-        return settings != null && settings.isWithResultsDialog();
     }
 
     private void scheduleOnVideoReady() {

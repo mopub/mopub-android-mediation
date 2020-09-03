@@ -130,6 +130,8 @@ public class PangleAdRewardedVideo extends BaseAd {
             return;
         }
 
+        final String adm = extras.get(DataKeys.ADM_KEY);
+
         final AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(getAdNetworkId())
                 .setSupportDeepLink(true)
@@ -138,6 +140,7 @@ public class PangleAdRewardedVideo extends BaseAd {
                 .setRewardAmount(PangleAdapterConfiguration.getRewardAmount())
                 .setUserID(PangleAdapterConfiguration.getUserID())
                 .setMediaExtra(PangleAdapterConfiguration.getMediaExtra())
+                .withBid(adm)
                 .build();
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
