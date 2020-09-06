@@ -244,7 +244,10 @@ public class FacebookRewardedVideo extends BaseAd implements RewardedVideoAdExte
     @Override
     public void onError(Ad ad, AdError adError) {
         cancelExpirationTimer();
-        if (mInteractionListener != null) {
+
+        if (mInteractionListener == null && mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(mapErrorCode(adError.getErrorCode()));
+        } else if (mInteractionListener != null) {
             mInteractionListener.onAdFailed(mapErrorCode(adError.getErrorCode()));
         }
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Loading/Playing Facebook " +

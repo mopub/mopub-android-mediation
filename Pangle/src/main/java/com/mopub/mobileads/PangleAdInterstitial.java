@@ -49,6 +49,8 @@ public class PangleAdInterstitial extends BaseAd {
         setAutomaticImpressionAndClickTracking(false);
         final Map<String, String> extras = adData.getExtras();
 
+        String adm = null;
+
         if (extras != null && !extras.isEmpty()) {
             mPlacementId = extras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
@@ -63,6 +65,8 @@ public class PangleAdInterstitial extends BaseAd {
 
                 return;
             }
+
+            adm = extras.get(DataKeys.ADM_KEY);
 
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             final String appId = extras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
@@ -84,6 +88,7 @@ public class PangleAdInterstitial extends BaseAd {
 
         final AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
+                .withBid(adm)
                 .setSupportDeepLink(true);
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);

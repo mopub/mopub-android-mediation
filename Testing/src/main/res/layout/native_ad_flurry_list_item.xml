@@ -111,4 +111,14 @@
         android:text="@string/learn_more"
         android:textStyle="bold" />
 
+    <ImageView
+        android:id="@+id/flurry_native_privacy_information_icon_image"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/native_privacy_information_icon_image"
+        android:padding="10dp" />
+
 </RelativeLayout>

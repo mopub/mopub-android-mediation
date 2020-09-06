@@ -1,4 +1,13 @@
 ## Changelog
+ * 6.0.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 6.0.0 and MoPub 5.13.1.
+
+ * 5.11.0.1
+   * Fix timeout issues due to null `mInteractionListener`.
+
+ * 5.11.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 5.11.0 and MoPub 5.13.1.
+
  * 5.10.1.0
    * This version of the adapters has been certified with Facebook Audience Network 5.10.1 and MoPub 5.13.1.
    * Fixed `java.lang.NoClassDefFoundError: com.facebook.ads.redexgen.X.8O` crashes on some Android 4.x and 5.x builds. 
