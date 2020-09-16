@@ -30,6 +30,7 @@ import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
+import static com.mopub.common.DataKeys.ADUNIT_FORMAT;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
@@ -81,6 +82,27 @@ public class AppLovinBanner extends BaseAd {
         if (AppLovinSdk.VERSION_CODE < 710 && !(context instanceof Activity)) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Unable to request AppLovin banner. Invalid context provided");
 
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
+
+            return;
+        }
+
+        String adUnitFormat = extras.get(ADUNIT_FORMAT);
+        if (!TextUtils.isEmpty(adUnitFormat)) {
+            adUnitFormat = adUnitFormat.toLowerCase();
+        }
+
+        final boolean isBannerFormat = "banner".equals(adUnitFormat);
+        if (!isBannerFormat) {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                    "AppLovin only supports 320*50 and 728*90 sized ads. " +
+                            "Please ensure your MoPub adunit's format is Banner.");
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
@@ -277,9 +299,6 @@ public class AppLovinBanner extends BaseAd {
                 // Size can contain an AppLovin leaderboard ad size of 728x90
                 if (width >= 728 && height >= 90) {
                     adSize = AppLovinAdSize.LEADER;
-                } else if (width >= 300 && height >= 250) {
-                    // Size can contain an AppLovin medium rectangle
-                    adSize = AppLovinAdSize.MREC;
                 }
             } else {
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Invalid width (" + width + ") and height " +
