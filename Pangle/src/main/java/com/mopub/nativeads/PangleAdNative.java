@@ -51,7 +51,7 @@ public class PangleAdNative extends CustomEventNative {
         this.mContext = context;
         this.mCustomEventNativeListener = customEventNativeListener;
 
-        TTAdManager ttAdManager = null;
+        TTAdManager adManager = null;
         String adm = null;
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
@@ -73,7 +73,7 @@ public class PangleAdNative extends CustomEventNative {
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             final String appId = serverExtras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
-            ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
+            adManager = PangleAdapterConfiguration.getPangleSdkManager();
 
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
@@ -92,8 +92,8 @@ public class PangleAdNative extends CustomEventNative {
                 "extras: mediaViewWidth=" + mediaViewWidth
                         + ", mediaViewHeight=" + mediaViewHeight);
 
-        if (ttAdManager != null) {
-            final TTAdNative adNative = ttAdManager.createAdNative(mContext);
+        if (adManager != null) {
+            final TTAdNative adNative = adManager.createAdNative(mContext);
             final AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
