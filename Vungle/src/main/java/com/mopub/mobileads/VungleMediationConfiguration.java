@@ -24,7 +24,6 @@ public class VungleMediationConfiguration implements MediationSettings {
     private final String mKeepWatchingButtonText;
 
     private final boolean mIsStartMuted;
-    private final int mFlexViewCloseTimeInSec;
     private final int mOrdinalViewCount;
     private final int mAdOrientation;
     private final Map<String, Object> mExtras;
@@ -56,10 +55,6 @@ public class VungleMediationConfiguration implements MediationSettings {
 
     public boolean isStartMuted() {
         return mIsStartMuted;
-    }
-
-    public int getFlexViewCloseTimeInSec() {
-        return mFlexViewCloseTimeInSec;
     }
 
     public int getOrdinalViewCount() {
@@ -133,7 +128,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         private String mKeepWatchingButtonText;
 
         private boolean mIsStartMuted = false;
-        private int mFlexViewCloseTimeInSec = 0;
         private int mOrdinalViewCount = 0;
         private int mAdOrientation = AdConfig.AUTO_ROTATE;
         private Map<String, Object> mExtras = new HashMap<>();
@@ -198,7 +192,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         this.mCloseButtonText = builder.mCloseButtonText;
         this.mKeepWatchingButtonText = builder.mKeepWatchingButtonText;
         this.mIsStartMuted = builder.mIsStartMuted;
-        this.mFlexViewCloseTimeInSec = builder.mFlexViewCloseTimeInSec;
         this.mOrdinalViewCount = builder.mOrdinalViewCount;
         this.mAdOrientation = builder.mAdOrientation;
         this.mExtras = builder.mExtras;
