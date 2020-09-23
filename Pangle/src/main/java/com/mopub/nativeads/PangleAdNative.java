@@ -19,6 +19,7 @@ import com.bytedance.sdk.openadsdk.TTDislikeDialogAbstract;
 import com.bytedance.sdk.openadsdk.TTFeedAd;
 import com.bytedance.sdk.openadsdk.TTImage;
 import com.bytedance.sdk.openadsdk.TTNativeAd;
+import com.mopub.common.DataKeys;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.PangleAdapterConfiguration;
 
@@ -50,7 +51,8 @@ public class PangleAdNative extends CustomEventNative {
         this.mContext = context;
         this.mCustomEventNativeListener = customEventNativeListener;
 
-        TTAdManager ttAdManager = null;
+        TTAdManager adManager = null;
+        String adm = null;
 
         if (serverExtras != null && !serverExtras.isEmpty()) {
             /** Obtain ad placement id from MoPub UI */
@@ -66,11 +68,12 @@ public class PangleAdNative extends CustomEventNative {
                 }
                 return;
             }
+            adm = serverExtras.get(DataKeys.ADM_KEY);
 
             /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
             final String appId = serverExtras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
-            ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
+            adManager = PangleAdapterConfiguration.getPangleSdkManager();
 
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
         }
@@ -89,12 +92,13 @@ public class PangleAdNative extends CustomEventNative {
                 "extras: mediaViewWidth=" + mediaViewWidth
                         + ", mediaViewHeight=" + mediaViewHeight);
 
-        if (ttAdManager != null) {
-            final TTAdNative adNative = ttAdManager.createAdNative(mContext);
+        if (adManager != null) {
+            final TTAdNative adNative = adManager.createAdNative(mContext);
             final AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(mPlacementId)
                     .setSupportDeepLink(true)
                     .setImageAcceptedSize(mediaViewWidth, mediaViewHeight)
+                    .withBid(adm)
                     .build();
 
             MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
