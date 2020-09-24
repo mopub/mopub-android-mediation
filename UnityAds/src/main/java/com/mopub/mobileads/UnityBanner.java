@@ -9,6 +9,9 @@ import androidx.annotation.Nullable;
 
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.logging.MoPubLog;
+
+import com.unity3d.ads.IUnityAdsInitializationListener;
+import com.unity3d.ads.UnityAds;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -39,7 +42,8 @@ public class UnityBanner extends BaseAd implements BannerView.IListener {
     }
 
     @Override
-    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+    protected void loadBanner(final Context context, final CustomEventBannerListener customEventBannerListener,
+                              final Map<String, Object> localExtras, Map<String, String> serverExtras) {
         if (!(context instanceof Activity)) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
@@ -71,29 +75,44 @@ public class UnityBanner extends BaseAd implements BannerView.IListener {
             return;
         }
 
-        if (UnityRouter.initUnityAds(extras, (Activity) context)) {
-            final UnityBannerSize bannerSize = unityAdsAdSizeFromAdData(adData);
+        final BannerView.IListener bannerlistener = this;
 
-            if (mBannerView != null) {
-                mBannerView.destroy();
-                mBannerView = null;
+        UnityRouter.initUnityAds(serverExtras, context, new IUnityAdsInitializationListener() {
+            @Override
+            public void onInitializationComplete() {
+                if (localExtras == null || localExtras.isEmpty()) {
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to get banner size because the " +
+                            "localExtras is empty.");
+
+                    if (customEventBannerListener != null) {
+                        customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                    }
+                } else {
+                    final UnityBannerSize bannerSize = unityAdsAdSizeFromLocalExtras(context, localExtras);
+
+                    if (mBannerView != null) {
+                        mBannerView.destroy();
+                        mBannerView = null;
+                    }
+
+                    mBannerView = new BannerView((Activity) context, placementId, bannerSize);
+                    mBannerView.setListener(bannerlistener);
+                    mBannerView.load();
+
+                    MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
+                }
             }
 
-            mBannerView = new BannerView((Activity) context, placementId, bannerSize);
-            mBannerView.setListener(this);
-            mBannerView.load();
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to initialize Unity Ads");
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
 
-            MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-        } else {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to initialize Unity Ads");
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                if (customEventBannerListener != null) {
+                    customEventBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                }
             }
-        }
+        });
     }
 
     @Override

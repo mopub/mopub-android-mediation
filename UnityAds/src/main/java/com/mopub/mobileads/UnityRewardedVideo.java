@@ -10,6 +10,8 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
+import com.unity3d.ads.IUnityAdsLoadListener;
+import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
@@ -88,7 +90,28 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
         UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
 
-        setAutomaticImpressionAndClickTracking(false);
+        UnityAds.load(mPlacementId, new IUnityAdsLoadListener() {
+            @Override
+            public void onUnityAdsAdLoaded(String placementId) {
+                MoPubRewardedVideoManager.onRewardedVideoLoadSuccess(UnityRewardedVideo.class, placementId);
+                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            }
+
+            @Override
+            public void onUnityAdsFailedToLoad(String placementId) {
+                MoPubRewardedVideoManager.onRewardedVideoLoadFailure(
+                        UnityRewardedVideo.class,
+                        mPlacementId,
+                        MoPubErrorCode.NETWORK_NO_FILL);
+
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video failed to load for placement " + placementId);
+
+                MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
+            }
+        });
+    }
 
         UnityAds.load(mPlacementId);
     }
@@ -143,33 +166,11 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
     @Override
     public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
-        if (placementId.equals(mPlacementId)) {
-            if (newState == UnityAds.PlacementState.NO_FILL) {
-                if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                }
-
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        MoPubErrorCode.NETWORK_NO_FILL);
-
-                UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
-            }
-        }
-
     }
 
     @Override
     public void onUnityAdsReady(String placementId) {
-        if (placementId.equals(mPlacementId)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video cached for placement " +
-                    placementId + ".");
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoaded();
-            }
 
-            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-        }
 
     }
 
@@ -190,16 +191,17 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ad finished with finish state = " + finishState);
 
         if (finishState == UnityAds.FinishState.ERROR) {
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
-            }
+            MoPubRewardedVideoManager.onRewardedVideoPlaybackError(
+                    UnityRewardedVideo.class,
+                    mPlacementId,
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video encountered a playback error for " +
                     "placement " + placementId);
 
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
         } else if (finishState == UnityAds.FinishState.COMPLETED) {
             MoPubLog.log(SHOULD_REWARD, ADAPTER_NAME, MoPubReward.NO_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
 
@@ -221,16 +223,7 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video cache failed for placement " +
-                mPlacementId + "." + message);
-        MoPubErrorCode errorCode = UnityRouter.UnityAdsUtils.getMoPubErrorCode(unityAdsError);
-        if (mLoadListener != null) {
-            mLoadListener.onAdLoadFailed(errorCode);
-        }
 
-        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                errorCode.getIntCode(),
-                errorCode);
 
     }
 
