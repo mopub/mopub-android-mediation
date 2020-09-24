@@ -70,7 +70,7 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
             }
         });
 
-        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, extras);
+        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
 
         initializeUnityAdsSdk(serverExtras);
     }
@@ -116,23 +116,6 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
     }
 
     @Nullable
-    @Override
-    protected LifecycleListener getLifecycleListener() {
-        return null;
-    }
-
-    @NonNull
-    @Override
-    protected String getAdNetworkId() {
-        return mPlacementId != null ? mPlacementId : "";
-    }
-
-    @Override
-    protected boolean checkAndInitializeSdk(@NonNull final Activity activity,
-                                            @NonNull final AdData adData) {
-        return false;
-    }
-
     @Override
     public void onUnityAdsReady(String placementId) {
     }

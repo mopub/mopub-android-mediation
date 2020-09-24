@@ -7,7 +7,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mopub.common.LifecycleListener;
 import com.mopub.common.logging.MoPubLog;
 
 import com.unity3d.ads.IUnityAdsInitializationListener;
