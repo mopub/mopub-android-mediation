@@ -1,6 +1,5 @@
 package com.mopub.mobileads;
 
-import android.app.Activity;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,6 +10,7 @@ import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.unityads.BuildConfig;
+import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 
 import java.util.Map;
@@ -62,31 +62,32 @@ public class UnityAdsAdapterConfiguration extends BaseAdapterConfiguration {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
-        boolean networkInitializationSucceeded = false;
-
         synchronized (UnityAdsAdapterConfiguration.class) {
             try {
                 if (UnityAds.isInitialized()) {
-                    networkInitializationSucceeded = true;
-                } else if (configuration != null && context instanceof Activity) {
-                    UnityRouter.initUnityAds(configuration, (Activity) context);
+                    listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
+                } else if (configuration != null && context != null) {
+                    UnityRouter.initUnityAds(configuration, context, new IUnityAdsInitializationListener() {
+                        @Override
+                        public void onInitializationComplete() {
+                            listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
+                        }
 
-                    networkInitializationSucceeded = true;
+                        @Override
+                        public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                            listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                        }
+                    });
                 } else {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads initialization not started. " +
-                            "Context is not an Activity. Note that initialization on the first app launch is a no-op.");
+                            "Configuration or Context is null. Note that initialization on the first app launch is a no-op.");
+                    listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Unity Ads has encountered " +
                         "an exception.", e);
+                listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
-        }
-        if (networkInitializationSucceeded) {
-            listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
-        } else {
-            listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
 
         MoPubLog.LogLevel logLevel = MoPubLog.getLogLevel();

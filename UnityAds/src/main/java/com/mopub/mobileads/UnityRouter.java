@@ -1,6 +1,5 @@
 package com.mopub.mobileads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -8,6 +7,7 @@ import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
+import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.ads.metadata.MetaData;
@@ -24,23 +24,38 @@ public class UnityRouter {
 
     private static final UnityInterstitialCallbackRouter interstitialRouter = new UnityInterstitialCallbackRouter();
 
-    static boolean initUnityAds(Map<String, String> serverExtras, Activity launcherActivity) {
-        initGdpr(launcherActivity);
+    static boolean initUnityAds(Map<String, String> serverExtras, Context context) {
+        return initUnityAds(serverExtras, context, new IUnityAdsInitializationListener() {
+            @Override
+            public void onInitializationComplete() {
+
+            }
+
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+
+            }
+        });
+    }
+
+    static boolean initUnityAds(Map<String, String> serverExtras, Context context, IUnityAdsInitializationListener initializationListener) {
+        initGdpr(context);
 
         String gameId = serverExtras.get(GAME_ID_KEY);
         if (gameId == null || gameId.isEmpty()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "gameId is missing or entered incorrectly in the MoPub UI");
             return false;
         }
-        initMediationMetadata(launcherActivity);
-        
+        initMediationMetadata(context);
+
         boolean testMode = false;
         boolean enablePerPlacementLoad = true;
-        UnityAds.initialize(launcherActivity, gameId, interstitialRouter, testMode, enablePerPlacementLoad);
+        UnityAds.addListener(interstitialRouter);
+        UnityAds.initialize(context, gameId, testMode, enablePerPlacementLoad, initializationListener);
         return true;
     }
 
-    static void initGdpr(Activity activity) {
+    static void initGdpr(Context context) {
 
         // Pass the user consent from the MoPub SDK to Unity Ads as per GDPR
         PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
@@ -49,7 +64,7 @@ public class UnityRouter {
         boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
-            MetaData gdprMetaData = new MetaData(activity.getApplicationContext());
+            MetaData gdprMetaData = new MetaData(context);
 
             if (shouldAllowLegitimateInterest) {
                 if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
