@@ -1,38 +1,37 @@
 package com.mopub.nativeads;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import android.view.View;
 
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.adapter.MediaView;
 import com.mopub.common.logging.MoPubLog;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
-/**
- * created by wuzejian on 2020/5/12
- */
 public class PangleAdNativeViewHolder {
 
     @Nullable
-    public TextView titleView;
+    public TextView mTitleView;
     @Nullable
-    public TextView description;
+    public TextView mDescription;
     @Nullable
-    public ImageView icon;
+    public ImageView mIcon;
     @Nullable
-    public TextView advertiserNameView;
+    public TextView mAdvertiserNameView;
     @Nullable
-    public TextView callToActionView;
-
-    public ImageView logoView;
+    public TextView mCallToActionView;
+    @Nullable
+    public ImageView mLogoView;
 
     /**
      * video View
      */
-    public MediaView mediaView;
+    @Nullable
+    public MediaView mMediaView;
 
 
     private static PangleAdNativeViewHolder EMPTY_VIEW_HOLDER = new PangleAdNativeViewHolder();
@@ -44,22 +43,19 @@ public class PangleAdNativeViewHolder {
                                                    @NonNull final PangleAdViewBinder pangleAdViewBinder) {
         final PangleAdNativeViewHolder adViewHolder = new PangleAdNativeViewHolder();
         try {
-
-            /** common ui */
-            adViewHolder.titleView = view.findViewById(pangleAdViewBinder.titleId);
-            adViewHolder.description = view.findViewById(pangleAdViewBinder.descriptionTextId);
-            adViewHolder.callToActionView = view.findViewById(pangleAdViewBinder.callToActionId);
-            adViewHolder.advertiserNameView = view.findViewById(pangleAdViewBinder.sourceId);
-            adViewHolder.icon = view.findViewById(pangleAdViewBinder.iconImageId);
-            adViewHolder.logoView = view.findViewById(pangleAdViewBinder.logoViewId);
-            adViewHolder.mediaView = view.findViewById(pangleAdViewBinder.mediaViewId);
+            adViewHolder.mTitleView = view.findViewById(pangleAdViewBinder.mTitleId);
+            adViewHolder.mDescription = view.findViewById(pangleAdViewBinder.mDescriptionTextId);
+            adViewHolder.mCallToActionView = view.findViewById(pangleAdViewBinder.mCallToActionId);
+            adViewHolder.mAdvertiserNameView = view.findViewById(pangleAdViewBinder.mSourceId);
+            adViewHolder.mIcon = view.findViewById(pangleAdViewBinder.mIconImageId);
+            adViewHolder.mLogoView = view.findViewById(pangleAdViewBinder.mLogoViewId);
+            adViewHolder.mMediaView = view.findViewById(pangleAdViewBinder.mMediaViewId);
             return adViewHolder;
         } catch (ClassCastException exception) {
-            MoPubLog.log(CUSTOM, "Could not cast from id in pangleAdViewBinder to expected View type",
+            MoPubLog.log(CUSTOM, "Could not cast from id in PangleAdViewBinder to expected View type",
                     exception);
             return EMPTY_VIEW_HOLDER;
         }
     }
-
 
 }

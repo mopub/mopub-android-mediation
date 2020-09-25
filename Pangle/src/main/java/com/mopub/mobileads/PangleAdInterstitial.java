@@ -2,491 +2,193 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.text.TextUtils;
-import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
-import com.bytedance.sdk.openadsdk.TTNativeAd;
-import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
-import com.bytedance.sdk.openadsdk.adapter.PangleAdInterstitialActivity;
 import com.mopub.common.DataKeys;
+import com.mopub.common.LifecycleListener;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.DID_DISAPPEAR;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
-/**
- * created by wuzejian on 2020/5/11
- */
-public class PangleAdInterstitial extends CustomEventInterstitial {
-    public static final String ADAPTER_NAME = "PangolinAdapterInterstitial";
+public class PangleAdInterstitial extends BaseAd {
+    private static final String ADAPTER_NAME = PangleAdInterstitial.class.getSimpleName();
 
-    /**
-     * GDRP value if need : 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
-     */
-    public final static String GDPR_RESULT = "gdpr_result";
-
-
-    public final static String COPPA_VALUE = "coppa_value";
-
-
-    /**
-     * ad size
-     */
-    public final static String AD_WIDTH = "ad_width";
-    public final static String AD_HEIGHT = "ad_height";
-
-
-    /**
-     * pangolin network Interstitial ad unit ID.
-     */
-    private String placementId;
-    private boolean mIsFullVideoAd;
+    private String mPlacementId;
     private Context mContext;
-    private boolean isExpressAd = false;
-    private float adWidth = 0;
-    private float adHeight = 0;
     private PangleAdapterConfiguration mPangleAdapterConfiguration;
-    private PangleAdInterstitialExpressLoader mExpressInterstitialLoader;
-    private PangleAdInterstitialNativeLoader mNativeInterstitialLoader;
     private PangleAdInterstitialFullVideoLoader mFullVideoLoader;
 
     public PangleAdInterstitial() {
         mPangleAdapterConfiguration = new PangleAdapterConfiguration();
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "PangolinAdapterInterstitial has been create ....");
     }
 
     @Override
-    protected void loadInterstitial(
-            final Context context,
-            final CustomEventInterstitialListener customEventInterstitialListener,
-            final Map<String, Object> localExtras,
-            final Map<String, String> serverExtras) {
-        this.mContext = context;
-        int mOrientation = mContext.getResources().getConfiguration().orientation;
-        mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+    protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
+
+        mContext = context;
         setAutomaticImpressionAndClickTracking(false);
+        final Map<String, String> extras = adData.getExtras();
 
         String adm = null;
 
-        TTAdManager ttAdManager = null;
-        TTAdNative ttAdNative = null;
+        if (extras != null && !extras.isEmpty()) {
+            mPlacementId = extras.get(PangleAdapterConfiguration.AD_PLACEMENT_ID_EXTRA_KEY);
 
+            if (TextUtils.isEmpty(mPlacementId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                        "Invalid Pangle placement ID. Failing ad request. " +
+                                "Ensure the ad placement ID is valid on the MoPub dashboard.");
 
-        if (serverExtras != null) {
-            /** obtain adunit from server by mopub */
-            String adunit = serverExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
-            if (!TextUtils.isEmpty(adunit)) {
-                this.placementId = adunit;
-            }
-            adm = serverExtras.get(DataKeys.ADM_KEY);
-            /** init pangolin SDK */
-            String appId = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_ID_KEY);
-            String appName = serverExtras.get(PangleAdapterConfiguration.PANGLE_APP_NAME_KEY);
-            PangleAdapterConfiguration.pangleSdkInit(context, appId, appName);
-            ttAdManager = PangleAdapterConfiguration.getPangleSdkManager();
-            ttAdNative = ttAdManager.createAdNative(context.getApplicationContext());
-            mPangleAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
-        }
-
-        if (localExtras != null && !localExtras.isEmpty()) {
-            if (localExtras.containsKey(GDPR_RESULT)) {
-                int gdpr = (int) localExtras.get(GDPR_RESULT);
-                /** set GDPR */
-                if (ttAdManager != null && (gdpr == 0 || gdpr == 1)) {
-                    ttAdManager.setGdpr(gdpr);
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                 }
-            }
-            this.placementId = (String) localExtras.get(PangleAdapterConfiguration.KEY_EXTRA_AD_UNIT_ID);
 
-            if (ttAdManager != null) {
-                isExpressAd = ttAdManager.getAdRequetTypeByRit(placementId) == TTAdConstant.REQUEST_AD_TYPE_EXPRESS;
-                mIsFullVideoAd = ttAdManager.isFullScreenVideoAd(placementId);
+                return;
             }
 
-            /** obtain extra parameters */
-            float[] adSize = PangleSharedUtil.getAdSizeSafely(localExtras, AD_WIDTH, AD_HEIGHT);
-            adWidth = adSize[0];
-            adHeight = adSize[1];
+            adm = extras.get(DataKeys.ADM_KEY);
 
-            checkSize(isExpressAd);
-
+            /** Init Pangle SDK if fail to initialize in the adapterConfiguration */
+            final String appId = extras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
+            PangleAdapterConfiguration.pangleSdkInit(context, appId);
+            mPangleAdapterConfiguration.setCachedInitializationParameters(context, extras);
         }
 
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "adWidth =" + adWidth + "，adHeight=" + adHeight + ",placementId=" + placementId + ",isExpressAd=" + isExpressAd);
+        final TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
+        if (adManager == null) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
+                    MoPubErrorCode.NETWORK_INVALID_STATE);
 
-        AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
-                .setCodeId(placementId)
-                .setSupportDeepLink(true)
-                .setAdCount(1)
-                .withBid(adm);
-
-
-        if (!mIsFullVideoAd) {
-            /** request Interstitial */
-            if (isExpressAd) {
-                adSlotBuilder.setExpressViewAcceptedSize(adWidth, adHeight); //期望模板广告view的size
-                mExpressInterstitialLoader = new PangleAdInterstitialExpressLoader(mContext, customEventInterstitialListener);
-                mExpressInterstitialLoader.loadExpressInterstitialAd(adSlotBuilder.build(), ttAdNative);
-            } else {
-                if (mOrientation == Configuration.ORIENTATION_PORTRAIT) {
-                    /** ORIENTATION_PORTRAIT 2:3 */
-                    adWidth = PangleSharedUtil.getScreenWidth(mContext);
-                    adHeight = (3 * adWidth) / 2;
-                } else {
-                    /**  3:2 = w:h */
-                    adHeight = PangleSharedUtil.getScreenHeight(mContext);
-                    adWidth = (3 * adHeight) / 2;
-                }
-                adSlotBuilder.setNativeAdType(AdSlot.TYPE_INTERACTION_AD);
-                adSlotBuilder.setImageAcceptedSize((int) adWidth, (int) adHeight);
-                mNativeInterstitialLoader = new PangleAdInterstitialNativeLoader(mContext, mOrientation, customEventInterstitialListener);
-                mNativeInterstitialLoader.loadAdNativeInterstitial(adSlotBuilder.build(), ttAdNative);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
             }
-        } else {
-            /**  request FullVideoAd */
-            adSlotBuilder.setImageAcceptedSize(1080, 1920);
-            mFullVideoLoader = new PangleAdInterstitialFullVideoLoader(mContext, customEventInterstitialListener);
-            mFullVideoLoader.loadAdFullVideoListener(adSlotBuilder.build(), ttAdNative);
+            return;
         }
+
+        final AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
+                .setCodeId(mPlacementId)
+                .withBid(adm)
+                .setSupportDeepLink(true);
+
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
+
+        /** Default value for Full Screen Video */
+        adSlotBuilder.setImageAcceptedSize(1080, 1920);
+        mFullVideoLoader = new PangleAdInterstitialFullVideoLoader(mContext);
+        mFullVideoLoader.loadAdFullVideoListener(adSlotBuilder.build(),
+                adManager.createAdNative(context.getApplicationContext()));
     }
-
-
-    private void checkSize(boolean isExpressAd) {
-        if (isExpressAd) {
-            if (adWidth <= 0) {
-                adWidth = 300;
-                adWidth = 450;
-            }
-            if (adHeight < 0) {
-                adHeight = 0;
-            }
-        } else {
-            if (adWidth <= 0 || adHeight <= 0) {
-                adWidth = 600;
-                adHeight = 900;
-            }
-        }
-    }
-
 
     @Override
-    protected void showInterstitial() {
-        MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-        if (!mIsFullVideoAd) {
-            if (isExpressAd) {
-                if (mExpressInterstitialLoader != null && mContext instanceof Activity) {
-                    mExpressInterstitialLoader.showInterstitial((Activity) mContext);
-                }
-            } else {
-                if (mNativeInterstitialLoader != null && mNativeInterstitialLoader.isReady()) {
-                    mNativeInterstitialLoader.showNativeInterstitialActiviy();
-                }
-            }
+    protected void show() {
+        if (mFullVideoLoader != null && mContext instanceof Activity) {
+            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+
+            mFullVideoLoader.showFullVideo((Activity) mContext);
         } else {
-            if (mFullVideoLoader != null && mContext instanceof Activity) {
-                mFullVideoLoader.showFullVideo((Activity) mContext);
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
             }
         }
+    }
+
+    @NonNull
+    public String getAdNetworkId() {
+        return mPlacementId == null ? "" : mPlacementId;
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) throws Exception {
+        return false;
     }
 
     @Override
     protected void onInvalidate() {
-        if (!mIsFullVideoAd) {
-            if (isExpressAd) {
-                if (mExpressInterstitialLoader != null) {
-                    mExpressInterstitialLoader.destroy();
-                }
-            } else {
-                if (mNativeInterstitialLoader != null) {
-                    mNativeInterstitialLoader.destroy();
-                }
-            }
-        } else {
-            if (mFullVideoLoader != null) {
-                mFullVideoLoader.destroy();
-            }
+        if (mFullVideoLoader != null) {
+            mFullVideoLoader.destroy();
         }
     }
 
-
-    /**
-     * created by wuzejian on 2020/5/15
-     * pangle Native Interstitial Ad Loader
-     */
-    public static class PangleAdInterstitialNativeLoader {
-        private static final String TAG = "AdNativeInterLoader";
-        private Context mContext;
-        private CustomEventInterstitial.CustomEventInterstitialListener mInterstitialListener;
-        private boolean mIsLoading;
-        private TTNativeAd mTTNativeAd;
-        private int mOrientation;
-
-        PangleAdInterstitialNativeLoader(Context context, int orientation, CustomEventInterstitial.CustomEventInterstitialListener interstitialListener) {
-            this.mContext = context;
-            this.mInterstitialListener = interstitialListener;
-            this.mOrientation = orientation;
-        }
-
-        void loadAdNativeInterstitial(AdSlot adSlot, TTAdNative ttAdNative) {
-            if (ttAdNative == null || mContext == null || adSlot == null || TextUtils.isEmpty(adSlot.getCodeId())) {
-                return;
-            }
-            ttAdNative.loadNativeAd(adSlot, mNativeAdListener);
-        }
-
-        TTAdNative.NativeAdListener mNativeAdListener = new TTAdNative.NativeAdListener() {
-            @Override
-            public void onError(int code, String message) {
-                mIsLoading = false;
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, PangleSharedUtil.mapErrorCode(code), message);
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialFailed(PangleSharedUtil.mapErrorCode(code));
-                }
-            }
-
-            @Override
-            public void onNativeAdLoad(List<TTNativeAd> ads) {
-                mIsLoading = true;
-                if (ads.get(0) == null) {
-                    return;
-                }
-                mTTNativeAd = ads.get(0);
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialLoaded();
-                }
-            }
-        };
-
-        private boolean isReady() {
-            return mIsLoading;
-        }
-
-        private void showNativeInterstitialActiviy() {
-            PangleAdInterstitialActivity.showAd(mContext, mTTNativeAd, mOrientation == Configuration.ORIENTATION_PORTRAIT ? PangleAdInterstitialActivity.INTENT_TYPE_IMAGE_2_3 : PangleAdInterstitialActivity.INTENT_TYPE_IMAGE_3_2, new com.bytedance.sdk.openadsdk.CustomEventInterstitialListener() {
-                @Override
-                public void onInterstitialShown() {
-                    if (mInterstitialListener != null) {
-                        mInterstitialListener.onInterstitialShown();
-                    }
-                }
-
-                @Override
-                public void onInterstitialClicked() {
-                    if (mInterstitialListener != null) {
-                        mInterstitialListener.onInterstitialClicked();
-                    }
-                }
-
-                @Override
-                public void onInterstitialImpression() {
-                    if (mInterstitialListener != null) {
-                        mInterstitialListener.onInterstitialImpression();
-                    }
-                }
-
-                @Override
-                public void onLeaveApplication() {
-                    if (mInterstitialListener != null) {
-                        mInterstitialListener.onLeaveApplication();
-                    }
-                }
-
-                @Override
-                public void onInterstitialDismissed() {
-                    if (mInterstitialListener != null) {
-                        mInterstitialListener.onInterstitialDismissed();
-                    }
-                }
-            });
-        }
-
-        public void destroy() {
-            mContext = null;
-            mInterstitialListener = null;
-            mNativeAdListener = null;
-            mTTNativeAd = null;
-        }
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
     }
 
-
     /**
-     * created by wuzejian on 2020/5/11
-     * pangle express interstitial ad
+     * Pangle full-video ad
      */
-    public static class PangleAdInterstitialExpressLoader {
+    public class PangleAdInterstitialFullVideoLoader {
         private Context mContext;
-        private CustomEventInterstitial.CustomEventInterstitialListener mInterstitialListener;
-        private TTNativeExpressAd mTTInterstitialExpressAd;
-        private AtomicBoolean isRenderLoaded = new AtomicBoolean(false);
-
-
-        PangleAdInterstitialExpressLoader(Context context, CustomEventInterstitial.CustomEventInterstitialListener interstitialListener) {
-            this.mContext = context;
-            this.mInterstitialListener = interstitialListener;
-        }
-
-        void loadExpressInterstitialAd(AdSlot adSlot, TTAdNative ttAdNative) {
-            if (ttAdNative == null || mContext == null || adSlot == null || TextUtils.isEmpty(adSlot.getCodeId())) {
-                return;
-            }
-            ttAdNative.loadInteractionExpressAd(adSlot, mInterstitialAdExpressAdListener);
-        }
-
-        private TTAdNative.NativeExpressAdListener mInterstitialAdExpressAdListener = new TTAdNative.NativeExpressAdListener() {
-            @Override
-            public void onError(int code, String message) {
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, PangleSharedUtil.mapErrorCode(code), message);
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialFailed(PangleSharedUtil.mapErrorCode(code));
-                }
-            }
-
-            @Override
-            public void onNativeExpressAdLoad(List<TTNativeExpressAd> ads) {
-                if (ads == null || ads.size() == 0) {
-                    return;
-                }
-                mTTInterstitialExpressAd = ads.get(0);
-                mTTInterstitialExpressAd.setExpressInteractionListener(mInterstitialExpressAdInteractionListener);
-                mTTInterstitialExpressAd.render();
-            }
-        };
-
-        /**
-         * render callback
-         */
-        private TTNativeExpressAd.AdInteractionListener mInterstitialExpressAdInteractionListener = new TTNativeExpressAd.AdInteractionListener() {
-            @Override
-            public void onAdDismiss() {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTNativeExpressAd-AdInteractionListener ad onAdDismiss");
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialDismissed();
-                }
-            }
-
-            @Override
-            public void onAdClicked(View view, int type) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTNativeExpressAd-AdInteractionListener ad onAdClicked");
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialClicked();
-                }
-            }
-
-            @Override
-            public void onAdShow(View view, int type) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTNativeExpressAd-AdInteractionListener ad show");
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialImpression();
-                }
-            }
-
-            @Override
-            public void onRenderFail(View view, String msg, int code) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "onInterstitialFailed ad onRenderFail msg = " + msg + "，code=" + code);
-
-                MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED.getIntCode(),
-                        msg);
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
-                }
-            }
-
-            @Override
-            public void onRenderSuccess(View view, float width, float height) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "render success");
-                isRenderLoaded.set(true);
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialLoaded();
-                }
-            }
-        };
-
-
-        public void showInterstitial(Activity activity) {
-            if (mTTInterstitialExpressAd != null && isRenderLoaded.get()) {
-                mTTInterstitialExpressAd.showInteractionExpressAd(activity);
-            } else {
-                MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        MoPubErrorCode.NETWORK_NO_FILL);
-
-                if (mInterstitialListener != null) {
-                    mInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                }
-            }
-        }
-
-        public void destroy() {
-            if (mTTInterstitialExpressAd != null) {
-                mTTInterstitialExpressAd.destroy();
-                mTTInterstitialExpressAd = null;
-            }
-            mInterstitialExpressAdInteractionListener = null;
-            mInterstitialListener = null;
-            mInterstitialAdExpressAdListener = null;
-            mContext = null;
-        }
-
-    }
-
-
-    /**
-     * created by wuzejian on 2020/5/11
-     * pangle full-video ad
-     */
-    public static class PangleAdInterstitialFullVideoLoader {
-        private Context mContext;
-        private CustomEventInterstitial.CustomEventInterstitialListener mFullVideoListener;
         private boolean mIsLoaded;
         private TTFullScreenVideoAd mTTFullScreenVideoAd;
 
-        PangleAdInterstitialFullVideoLoader(Context context, CustomEventInterstitial.CustomEventInterstitialListener fullVideoListener) {
+        PangleAdInterstitialFullVideoLoader(Context context) {
             this.mContext = context;
-            this.mFullVideoListener = fullVideoListener;
         }
 
-        void loadAdFullVideoListener(AdSlot adSlot, TTAdNative ttAdNative) {
-            if (ttAdNative == null || mContext == null || adSlot == null || TextUtils.isEmpty(adSlot.getCodeId())) {
+        void loadAdFullVideoListener(AdSlot adSlot, TTAdNative adInstance) {
+            if (adInstance == null || mContext == null || adSlot == null || TextUtils.isEmpty(adSlot.getCodeId())) {
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
                 return;
             }
-            ttAdNative.loadFullScreenVideoAd(adSlot, mLoadFullVideoAdListener);
+            adInstance.loadFullScreenVideoAd(adSlot, mLoadFullVideoAdListener);
         }
 
         void showFullVideo(Activity activity) {
             if (mTTFullScreenVideoAd != null && mIsLoaded) {
                 mTTFullScreenVideoAd.showFullScreenVideoAd(activity);
+            } else {
+                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+                }
             }
         }
 
         public void destroy() {
             mContext = null;
-            mFullVideoListener = null;
             mTTFullScreenVideoAd = null;
             mLoadFullVideoAdListener = null;
             mFullScreenVideoAdInteractionListener = null;
         }
 
-
         private TTAdNative.FullScreenVideoAdListener mLoadFullVideoAdListener = new TTAdNative.FullScreenVideoAdListener() {
             @Override
             public void onError(int code, String message) {
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, "Loading Full Video creative encountered an error: " + PangleSharedUtil.mapErrorCode(code).toString() + ",error message:" + message);
-                if (mFullVideoListener != null) {
-                    mFullVideoListener.onInterstitialFailed(PangleSharedUtil.mapErrorCode(code));
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                        "Loading Full Video creative encountered an error: "
+                                + PangleAdapterConfiguration.mapErrorCode(code).toString()
+                                + ", error message:" + message);
+
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(PangleAdapterConfiguration.mapErrorCode(code));
                 }
             }
 
@@ -496,63 +198,67 @@ public class PangleAdInterstitial extends CustomEventInterstitial {
                     mIsLoaded = true;
                     mTTFullScreenVideoAd = ad;
                     mTTFullScreenVideoAd.setFullScreenVideoAdInteractionListener(mFullScreenVideoAdInteractionListener);
-                    if (mFullVideoListener != null) {
-                        mFullVideoListener.onInterstitialLoaded();
-                    }
-                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
 
-                } else {
-                    if (mFullVideoListener != null) {
-                        mFullVideoListener.onInterstitialFailed(PangleSharedUtil.mapErrorCode(PangleSharedUtil.NO_AD));
+                    MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoaded();
                     }
-                    MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, " mTTFullScreenVideoAd is null !");
+                } else {
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
+
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
+                    }
                 }
             }
 
             @Override
             public void onFullScreenVideoCached() {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, " mTTFullScreenVideoAd onFullScreenVideoCached invoke !");
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onFullScreenVideoCached: The full screen video is cached.");
             }
         };
 
-        private TTFullScreenVideoAd.FullScreenVideoAdInteractionListener mFullScreenVideoAdInteractionListener = new TTFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
+        private TTFullScreenVideoAd.FullScreenVideoAdInteractionListener mFullScreenVideoAdInteractionListener
+                = new TTFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
 
             @Override
             public void onAdShow() {
-                if (mFullVideoListener != null) {
-                    mFullVideoListener.onInterstitialShown();
+                MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdShown();
+                    mInteractionListener.onAdImpression();
                 }
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTFullScreenVideoAd onAdShow...");
             }
 
             @Override
             public void onAdVideoBarClick() {
-                if (mFullVideoListener != null) {
-                    mFullVideoListener.onInterstitialClicked();
+                MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdClicked();
                 }
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTFullScreenVideoAd onAdVideoBarClick...");
             }
 
             @Override
             public void onAdClose() {
-                if (mFullVideoListener != null) {
-                    mFullVideoListener.onInterstitialDismissed();
+                MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdDismissed();
                 }
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTFullScreenVideoAd onAdClose...");
             }
 
             @Override
             public void onVideoComplete() {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTFullScreenVideoAd onVideoComplete...");
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle FullScreenVideoAd onVideoComplete.");
             }
 
             @Override
             public void onSkippedVideo() {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "TTFullScreenVideoAd onSkippedVideo...");
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle FullScreenVideoAd onSkippedVideo.");
             }
         };
-
     }
-
-
 }
