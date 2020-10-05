@@ -73,15 +73,4 @@
         android:text="@string/learn_more"
         android:textStyle="bold" />
 
-    <ImageView
-        android:id="@+id/native_dislike"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="10dp"
-        android:clickable="true"
-        android:src="@drawable/baseline_cancel_black_36" />
-
 </RelativeLayout>

@@ -6,6 +6,7 @@ package com.mopub.mobileads.testing;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.material.navigation.NavigationView;
 import com.mopub.common.MoPub;
 import com.mopub.common.SdkConfiguration;
@@ -35,6 +37,7 @@ import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.DeviceUtils;
 import com.mopub.mobileads.MoPubConversionTracker;
 import com.mopub.mobileads.MoPubErrorCode;
+import com.mopub.mobileads.testing.qrcode.BarcodeCaptureActivity;
 import com.mopub.network.ImpressionData;
 import com.mopub.network.ImpressionListener;
 import com.mopub.network.ImpressionsEmitter;
@@ -46,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.CAMERA;
 import static com.mopub.common.Constants.UNUSED_REQUEST_CODE;
 import static com.mopub.common.logging.MoPubLog.LogLevel.DEBUG;
 import static com.mopub.common.logging.MoPubLog.LogLevel.INFO;
@@ -57,9 +61,11 @@ public class MoPubSampleActivity extends AppCompatActivity
 
     private static final List<String> REQUIRED_DANGEROUS_PERMISSIONS = new ArrayList<>();
     private static final String SHOWING_CONSENT_DIALOG_KEY = "ShowingConsentDialog";
+    private static final int RC_BARCODE_CAPTURE = 9001;
 
     static {
         REQUIRED_DANGEROUS_PERMISSIONS.add(ACCESS_COARSE_LOCATION);
+        REQUIRED_DANGEROUS_PERMISSIONS.add(CAMERA);
     }
 
     // Sample app web views are debuggable.
@@ -298,6 +304,9 @@ public class MoPubSampleActivity extends AppCompatActivity
             case R.id.action_clear_logs:
                 onClearLogs();
                 return true;
+            case R.id.qr_scan:
+                onCaptureQrCode();
+                return true;
             default:
                 return super.onContextItemSelected(item);
         }
@@ -400,6 +409,35 @@ public class MoPubSampleActivity extends AppCompatActivity
                     .addToBackStack(NETWORKS_FRAGMENT_TAG)
                     .commit();
         }
+    }
+
+    private boolean onCaptureQrCode() {
+        // launch barcode activity.
+        Intent intent = new Intent(this, BarcodeCaptureActivity.class);
+        intent.putExtra(BarcodeCaptureActivity.AutoFocus, true);
+        intent.putExtra(BarcodeCaptureActivity.UseFlash, false);
+
+        startActivityForResult(intent, RC_BARCODE_CAPTURE);
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_BARCODE_CAPTURE
+                && resultCode == CommonStatusCodes.SUCCESS
+                && data != null) {
+
+            final Uri deeplinkUri = data.getParcelableExtra(BarcodeCaptureActivity.DEEPLINK_URI_KEY);
+
+            if (deeplinkUri != null) {
+                final Intent deeplinkIntent = new Intent();
+                deeplinkIntent.setData(deeplinkUri);
+                mDeeplinkIntent = deeplinkIntent;
+                return;
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
 
