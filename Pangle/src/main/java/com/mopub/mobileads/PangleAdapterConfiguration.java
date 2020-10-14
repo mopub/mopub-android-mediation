@@ -17,6 +17,7 @@ import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.mobileads.pangle.BuildConfig;
 
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     public static final int PLACEMENT_EMPTY_ERROR = 40004;
     public static final int PLACEMENT_ERROR = 40006;
 
-    private static final String ADAPTER_VERSION = "3.1.0.1.1";
+    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String ADAPTER_NAME = PangleAdapterConfiguration.class.getSimpleName();
     private static final String MOPUB_NETWORK_NAME = "pangle";
 
@@ -70,7 +71,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return getPangleSdkManager().getBiddingToken();
+        return (getPangleSdkManager() != null) ? getPangleSdkManager().getBiddingToken() : null;
     }
 
     @NonNull
@@ -128,10 +129,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static TTAdManager getPangleSdkManager() {
-        if (!sIsSDKInitialized) {
-            throw new RuntimeException("Pangle SDK is not initialized, " +
-                    "please check whether app ID is empty or null");
-        }
         return TTAdSdk.getAdManager();
     }
 
@@ -150,17 +147,19 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "For video ads to work in Pangle Ad TextureView, " +
                         "declare the android.permission.WAKE_LOCK permission in your AndroidManifest.");
             }
+
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
                     .useTextureView(hasWakeLockPermission)
                     .appName(MOPUB_NETWORK_NAME)
-                    .setGDPR(MoPub.canCollectPersonalInformation() ? 0 : 1)
                     .allowShowPageWhenScreenLock(sIsAllowAdShowInLockScreen)
                     /* Allow or deny permission to display the landing page ad in the lock screen */
                     .debug(MoPubLog.getLogLevel() == MoPubLog.LogLevel.DEBUG)
                     .supportMultiProcess(sIsSupportMultiProcess)
                     /* true for support multi-process environment, false for single-process */
                     .build());
+
+            getPangleSdkManager().setGdpr(MoPub.canCollectPersonalInformation() ? 0 : 1);
             sIsSDKInitialized = true;
         }
     }
