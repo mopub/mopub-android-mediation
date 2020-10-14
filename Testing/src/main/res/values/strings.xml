@@ -70,5 +70,17 @@
     <string name="empty_list">Empty list</string>
     <string name="share_impression">Share Impression</string>
     <string name="checkmark">checkmark</string>
+    <string name="clear_search_button">Clear search button</string>
+    <string name="list_of_impressions">List of impressions</string>
+    <string name="delete_label">Delete ad unit</string>
+    <string name="qr_code_reader">QR Code Reader</string>
+    <string name="share_all">Share All</string>
+
+    <!-- From the Google GMS Vision Sample App -->
+    <string name="barcodereader_ok">OK</string>
+    <string name="barcodereader_permission_camera_rationale">Access to the camera is needed for detection</string>
+    <string name="barcodereader_no_camera_permission">This feature cannot run because it does not have the camera permission.</string>
+    <string name="barcodereader_low_storage_error">Barcode detector dependencies cannot be downloaded due to low device storage</string>
+
 
 </resources>

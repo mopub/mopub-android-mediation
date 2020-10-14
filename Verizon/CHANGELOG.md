@@ -1,4 +1,26 @@
 ## Changelog
+  * 1.8.0.2
+    * Refactor native ad impression tracking logic. No external changes for publishers. 
+
+  * 1.8.0.1
+    * Fire `onNativeAdFailed()` on native ad failures so failovers can happen immediately.
+
+  * 1.8.0.0
+    * This version of the adapters has been certified with Verizon 1.8.0 and MoPub 5.13.1.
+    * No longer pass the ability to collect location.
+
+  * 1.7.0.0
+    * This version of the adapters has been certified with Verizon 1.7.0 and MoPub 5.13.1.
+
+  * 1.6.0.0
+    * This version of the adapters has been certified with Verizon 1.6.0 and MoPub 5.13.0.
+    * Fix interstitial timeouts.
+    * Enable Advanced Bidding support for rewarded video.
+
+  * 1.5.0.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   * 1.5.0.0
     * Compress the Advanced Bidding token to adhere to MoPub's spec.
     * This version of the adapters has been certified with Verizon 1.5.0 and MoPub 5.11.1.

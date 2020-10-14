@@ -10,7 +10,9 @@ import androidx.annotation.Nullable;
 
 import com.adcolony.sdk.AdColony;
 import com.adcolony.sdk.AdColonyAppOptions;
+import com.adcolony.sdk.AdColonyAdOptions;
 import com.mopub.common.BaseAdapterConfiguration;
+import com.mopub.common.DataKeys;
 import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
@@ -31,7 +33,6 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     // Adapter's keys
     private static final String ADAPTER_NAME = AdColonyAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String BIDDING_TOKEN = "1";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     // AdColony-specific keys (do not modify)
@@ -39,6 +40,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     protected static final String ALL_ZONE_IDS_KEY = "allZoneIds";
     protected static final String CLIENT_OPTIONS_KEY = "clientOptions";
     protected static final String ZONE_ID_KEY = "zoneId";
+    protected static final String KEY_ADCOLONY_BID_RESPONSE = "adm";
 
     // AdColony Default values
     protected static final String DEFAULT_ZONE_ID = "YOUR_CURRENT_ZONE_ID";
@@ -54,7 +56,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull final Context context) {
-        return BIDDING_TOKEN;
+        return AdColony.collectSignals();
     }
 
     @NonNull
@@ -91,12 +93,12 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
                 if (isAdColonyConfigured()) {
                     networkInitializationSucceeded = true;
                 } else if (configuration != null && !configuration.isEmpty()) {
-                    String clientOptions = configuration.get(CLIENT_OPTIONS_KEY);;
+                    String clientOptions = configuration.get(CLIENT_OPTIONS_KEY);
+
                     if (clientOptions == null)
                         clientOptions = "";
 
                     final String appId = getAdColonyParameter(APP_ID_KEY, configuration);
-                    final String zoneId = getAdColonyParameter(ZONE_ID_KEY, configuration);;
                     final String[] allZoneIds = Json.jsonArrayToStringArray(
                             getAdColonyParameter(ALL_ZONE_IDS_KEY, configuration)
                     );
@@ -104,7 +106,7 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
                     // Check if mandatory parameters are valid, abort otherwise
                     if (appId == null) {
                         logAndFail("initialization", APP_ID_KEY);
-                    } else if (allZoneIds == null || allZoneIds.length == 0) {
+                    } else if (allZoneIds.length == 0) {
                         logAndFail("initialization", ALL_ZONE_IDS_KEY);
                     } else {
                         AdColonyAppOptions adColonyAppOptions = getAdColonyAppOptionsAndSetConsent(clientOptions);
@@ -137,8 +139,8 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     protected static void logAndFail(String operation, String parameterName) {
         MoPubLog.log(CUSTOM, ADAPTER_NAME,
                 "Aborting AdColony " + operation + ", because " + parameterName + " is empty. " +
-                "Please make sure you enter the correct " + parameterName + " on the MoPub " +
-                "Dashboard under the AdColony network settings."
+                        "Please make sure you enter the correct " + parameterName + " on the MoPub " +
+                        "Dashboard under the AdColony network settings."
         );
     }
 
@@ -157,18 +159,18 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
         adColonyAppOptions.setMediationNetwork("MoPub", ADAPTER_VERSION);
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
-            adColonyAppOptions.setGDPRRequired(true);
+            adColonyAppOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.GDPR, true);
             if (shouldAllowLegitimateInterest) {
                 if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
                         || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT) {
-                    adColonyAppOptions.setGDPRConsentString("0");
+                    adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "0");
                 } else {
-                    adColonyAppOptions.setGDPRConsentString("1");
+                    adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "1");
                 }
             } else if (canCollectPersonalInfo) {
-                adColonyAppOptions.setGDPRConsentString("1");
+                adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "1");
             } else {
-                adColonyAppOptions.setGDPRConsentString("0");
+                adColonyAppOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, "0");
             }
         }
         return adColonyAppOptions;
@@ -186,10 +188,9 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    protected static void checkAndConfigureAdColonyIfNecessary(Context context, String clientOptions, String appId, String[] allZoneIds)
-    {
+    protected static void checkAndConfigureAdColonyIfNecessary(Context context, String clientOptions, String appId, String[] allZoneIds) {
         if (TextUtils.isEmpty(appId)) {
-            MoPubLog.log(CUSTOM,null,"AdColony cannot configure without a valid appId parameter. " +
+            MoPubLog.log(CUSTOM, null, "AdColony cannot configure without a valid appId parameter. " +
                     "Please ensure you enter a valid appId.");
             return;
         }
@@ -212,9 +213,9 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
     protected static void configureAdColony(Context context, AdColonyAppOptions adColonyAppOptions, String appId, String[] allZoneIds) {
         if (!TextUtils.isEmpty(appId)) {
             if (context instanceof Activity) {
-                Boolean isAdColonyConfigSucceeded = AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
+                boolean isAdColonyConfigSucceeded = AdColony.configure((Activity) context, adColonyAppOptions, appId, allZoneIds);
 
-                if (isAdColonyConfigSucceeded != null && isAdColonyConfigSucceeded) {
+                if (isAdColonyConfigSucceeded) {
                     MoPubLog.log(CUSTOM, null, "AdColony configuration was attempted and succeeded");
                 } else {
                     MoPubLog.log(CUSTOM, null, "AdColony configuration was attempted but failed");
@@ -244,5 +245,52 @@ public class AdColonyAdapterConfiguration extends BaseAdapterConfiguration {
         Arrays.sort(newZones);
 
         return !Arrays.equals(previousZones, newZones);
+    }
+
+    protected AdColonyAdOptions getBannerAdOptionsFromExtras(Map<String, String> extras) {
+        return getAdOptionsFromExtras(extras, null);
+    }
+
+    protected AdColonyAdOptions getInterstitialAdOptionsFromExtras(Map<String, String> extras) {
+        return getAdOptionsFromExtras(extras, null);
+    }
+
+    protected AdColonyAdOptions getRewardAdOptionsFromExtras(Map<String, String> extras, String mAdUnitId) {
+        return getAdOptionsFromExtras(extras, mAdUnitId);
+    }
+
+    private AdColonyAdOptions getAdOptionsFromExtras(Map<String, String> extras, String mAdUnitId) {
+        final AdColonyAdOptions options = new AdColonyAdOptions();
+
+        // Rewarded Video only
+        if (mAdUnitId != null) {
+            options.enableConfirmationDialog(getConfirmationDialogFromSettings(mAdUnitId));
+            options.enableResultsDialog(getResultsDialogFromSettings(mAdUnitId));
+        }
+
+        // Forward ADM field contents to AdColony for Advanced Bidding requests.
+        // This is a requirement of AdColony Advanced Bidding 3.0 spec.
+        if (extras != null && extras.containsKey(DataKeys.ADM_KEY)
+                && !TextUtils.isEmpty(extras.get(DataKeys.ADM_KEY))) {
+            final String adMarkup = extras.get(DataKeys.ADM_KEY);
+
+            if (adMarkup != null) {
+                options.setOption(KEY_ADCOLONY_BID_RESPONSE, adMarkup);
+            }
+        }
+
+        return options;
+    }
+
+    private boolean getConfirmationDialogFromSettings(String mAdUnitId) {
+        final AdColonyRewardedVideo.AdColonyInstanceMediationSettings settings =
+                MoPubRewardedVideoManager.getInstanceMediationSettings(AdColonyRewardedVideo.AdColonyInstanceMediationSettings.class, mAdUnitId);
+        return settings != null && settings.isWithConfirmationDialog();
+    }
+
+    private boolean getResultsDialogFromSettings(String mAdUnitId) {
+        final AdColonyRewardedVideo.AdColonyInstanceMediationSettings settings =
+                MoPubRewardedVideoManager.getInstanceMediationSettings(AdColonyRewardedVideo.AdColonyInstanceMediationSettings.class, mAdUnitId);
+        return settings != null && settings.isWithResultsDialog();
     }
 }

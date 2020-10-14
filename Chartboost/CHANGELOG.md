@@ -1,4 +1,19 @@
 ## Changelog
+  * 8.1.0.1
+    * Fail banner load requests for Android API below 21. Chartboost 8.0.1 and above currently doesn't support displaying of banners for devices with Android API below 21.
+
+  * 8.1.0.0
+    * This version of the adapters has been certified with Chartboost 8.1.0 and MoPub 5.13.1.
+    * Fix a bug where load and interaction listeners for interstitials were not unregistered properly
+    * Use `addDataUseConsent` to pass GDPR consent
+    * Implement Chartboost's `cache` and `show` APIs for inline ads.
+
+  * 8.0.3.0
+    * This version of the adapters has been certified with Chartboost 8.0.3 and MoPub 5.13.0.
+    * Fix a bug where rewarded videos fail to show due to the activity presenting it is set to null.
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   * 8.0.2.1
     * Set Chartboost delegation on each load request for interstitials and rewarded videos.
 

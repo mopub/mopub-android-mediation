@@ -1,4 +1,23 @@
 ## Changelog
+  * 6.8.0.0
+    * This version of the adapters has been certified with Vungle 6.8.0 and MoPub SDK 5.13.1.
+    * Remove `FlexFeed` and `FlexView` (deprecated in Vungle 6.8.0).
+    * Fix fail over issues due to null `mInteractionListener`.
+    * Note that, this adapter version is not certified using Android API 30. For Android 11 compatibility, expect an upcoming adapter release.
+
+  * 6.7.1.0
+    * This version of the adapters has been certified with Vungle 6.7.1 and MoPub SDK 5.13.1.
+    * Note that, this adapter version is not certified using Android API 30. For Android 11 compatibility, expect an upcoming adapter release.
+
+  * 6.7.0.0
+    * This version of the adapters has been certified with Vungle 6.7.0 and MoPub SDK 5.13.0.
+    * Add support for Advanced Bidding for fullscreen ads.
+    * Add `onAdClick` callback support.
+
+  * 6.5.3.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   *  6.5.3.0
     * This version of the adapters has been certified with Vungle 6.5.3 and MoPub SDK 5.11.1.
     * Code format following [MoPub mediation coding style guideline](https://developers.mopub.com/networks/integrate/mopub-network-mediation-guidelines/).
@@ -16,7 +35,7 @@
 
   * 6.4.11.3
     * Prioritize reading data from `localExtras` and fall back to `MediationSettings` if necessary for `VungleRewardedVideo.java`
-
+      
   * 6.4.11.2
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
 

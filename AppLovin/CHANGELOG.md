@@ -1,4 +1,41 @@
 ## Changelog
+ * 9.14.4.0
+    * This version of the adapters has been certified with AppLovin 9.14.4 and MoPub SDK 5.13.1.
+
+ * 9.14.3.0
+    * This version of the adapters has been certified with AppLovin 9.14.3 and MoPub SDK 5.13.1.
+
+ * 9.14.1.0
+    * This version of the adapters has been certified with AppLovin 9.14.1 and MoPub SDK 5.13.1.
+
+ * 9.13.5.0
+    * Remove MREC support from AppLovin banner adapter.
+    * This version of the adapters has been certified with AppLovin 9.13.5 and MoPub SDK 5.13.1.
+
+ * 9.13.4.0
+    * This version of the adapters has been certified with AppLovin 9.13.4 and MoPub SDK 5.13.1.
+
+ * 9.13.2.0
+    * This version of the adapters has been certified with AppLovin 9.13.2 and MoPub SDK 5.13.1.
+
+ * 9.13.1.0
+    * Manually track impression and click for Rewarded Videos based on AppLovin's callbacks.
+    * This version of the adapters has been certified with AppLovin 9.13.1 and MoPub SDK 5.13.1.
+
+ * 9.13.0.0
+    * Fix interstitial load listener usage.
+    * This version of the adapters has been certified with AppLovin 9.13.0 and MoPub SDK 5.13.1.
+    
+ * 9.12.8.0
+    * This version of the adapters has been certified with AppLovin 9.12.8 and MoPub SDK 5.13.0.
+
+ * 9.12.6.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+    
+ * 9.12.6.0
+    * This version of the adapters has been certified with AppLovin 9.12.6 and MoPub SDK 5.12.0.
+
  * 9.12.5.0
     * This version of the adapters has been certified with AppLovin 9.12.5 and MoPub SDK 5.12.0.
 

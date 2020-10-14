@@ -9,7 +9,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mopub.common.MoPub;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.VerizonAdapterConfiguration;
@@ -67,6 +67,10 @@ public class VerizonNative extends CustomEventNative {
                                 @NonNull final CustomEventNativeListener customEventNativeListener,
                                 @NonNull final Map<String, Object> localExtras,
                                 @NonNull final Map<String, String> serverExtras) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(customEventNativeListener);
+        Preconditions.checkNotNull(localExtras);
+        Preconditions.checkNotNull(serverExtras);
 
         this.customEventNativeListener = customEventNativeListener;
         this.context = context;
@@ -118,7 +122,7 @@ public class VerizonNative extends CustomEventNative {
         }
 
         // The current activity must be set as resumed so VAS can track ad visibility
-        ActivityStateManager activityStateManager = VASAds.getActivityStateManager();
+        final ActivityStateManager activityStateManager = VASAds.getActivityStateManager();
         if (activityStateManager != null && context instanceof Activity) {
             activityStateManager.setState((Activity) context, ActivityStateManager.ActivityState.RESUMED);
         }
@@ -149,28 +153,11 @@ public class VerizonNative extends CustomEventNative {
             return;
         }
 
-        VASAds.setLocationEnabled(MoPub.getLocationAwareness() != MoPub.LocationAwareness.DISABLED);
-
         NativeAdFactory nativeAdFactory = new NativeAdFactory(context, mPlacementId, adTypes,
                 new VerizonNativeFactoryListener());
 
         nativeAdFactory.load(new VerizonNativeListener());
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-    }
-
-    @Override
-    protected void onInvalidate() {
-
-        VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Destroy any hanging references
-                if (verizonStaticNativeAd != null) {
-                    verizonStaticNativeAd.destroy();
-                    verizonStaticNativeAd = null;
-                }
-            }
-        });
     }
 
     static class VerizonStaticNativeAd extends StaticNativeAd {
@@ -198,25 +185,31 @@ public class VerizonNative extends CustomEventNative {
         // Lifecycle Handlers
         @Override
         public void prepare(@NonNull final View view) {
+            Preconditions.checkNotNull(view);
+
             impressionTracker.addView(view, this);
             nativeClickHandler.setOnClickListener(view, this);
         }
 
         @Override
         public void clear(@NonNull final View view) {
+            Preconditions.checkNotNull(view);
+
             impressionTracker.removeView(view);
             nativeClickHandler.clearOnClickListener(view);
         }
 
         @Override
         public void destroy() {
-            impressionTracker.destroy();
             super.destroy();
+            nativeAd.destroy();
         }
 
         // Event Handlers
         @Override
         public void recordImpression(@NonNull final View view) {
+            Preconditions.checkNotNull(view);
+
             notifyAdImpressed();
             nativeAd.fireImpression();
         }
@@ -241,8 +234,8 @@ public class VerizonNative extends CustomEventNative {
                     final CreativeInfo creativeInfo = nativeAd.getCreativeInfo();
                     final Context context = VerizonNative.this.context;
 
-                    verizonStaticNativeAd = new VerizonStaticNativeAd(context, nativeAd, new ImpressionTracker(context),
-                            new NativeClickHandler(context));
+                    verizonStaticNativeAd = new VerizonStaticNativeAd(context, nativeAd,
+                            new ImpressionTracker(context), new NativeClickHandler(context));
 
                     //Populate verizonStaticNativeAd with values from nativeAd
                     populateNativeAd(nativeAd);
@@ -258,16 +251,6 @@ public class VerizonNative extends CustomEventNative {
             });
         }
 
-        @Override
-        public void onCacheLoaded(final NativeAdFactory nativeAdFactory, final int numRequested,
-                                  final int numReceived) {
-            //NO-OP
-        }
-
-        @Override
-        public void onCacheUpdated(final NativeAdFactory nativeAdFactory, final int cacheSize) {
-            //NO-OP
-        }
 
         @Override
         public void onError(final NativeAdFactory nativeAdFactory, final ErrorInfo errorInfo) {
@@ -278,6 +261,7 @@ public class VerizonNative extends CustomEventNative {
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Error Loading: " +
                             errorInfo);
                     NativeErrorCode errorCode = VerizonAdapterConfiguration.convertErrorInfoToMoPubNative(errorInfo);
+                    customEventNativeListener.onNativeAdFailed(errorCode);
                     MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(),
                             errorCode);
                 }
@@ -308,7 +292,6 @@ public class VerizonNative extends CustomEventNative {
                         verizonStaticNativeAd.setStarRating(rating);
                         verizonStaticNativeAd.addExtra(COMP_ID_RATING, ratingArray[0]);
                     } catch (NumberFormatException e) {
-                        // do nothing
                     }
                 }
             }
@@ -370,9 +353,11 @@ public class VerizonNative extends CustomEventNative {
             VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    NativeErrorCode errorCode = VerizonAdapterConfiguration.convertErrorInfoToMoPubNative(errorInfo);
+                    NativeErrorCode errorCode =
+                            VerizonAdapterConfiguration.convertErrorInfoToMoPubNative(errorInfo);
                     customEventNativeListener.onNativeAdFailed(errorCode);
-                    MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+                    MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, errorCode.getIntCode(),
+                            errorCode);
                 }
             });
         }
@@ -393,8 +378,8 @@ public class VerizonNative extends CustomEventNative {
         }
 
         @Override
-        public void onEvent(final NativeAd nativeAd, final String source, final String eventId, final Map<String, Object> arguments) {
-            //NO-OP
+        public void onEvent(final NativeAd nativeAd, final String source, final String eventId,
+                            final Map<String, Object> arguments) {
         }
     }
 }

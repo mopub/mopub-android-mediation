@@ -1,11 +1,15 @@
 package com.mopub.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.chartboost.sdk.Banner.BannerSize;
 import com.chartboost.sdk.ChartboostBannerListener;
@@ -15,81 +19,100 @@ import com.chartboost.sdk.Events.ChartboostClickError;
 import com.chartboost.sdk.Events.ChartboostClickEvent;
 import com.chartboost.sdk.Events.ChartboostShowError;
 import com.chartboost.sdk.Events.ChartboostShowEvent;
+import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
 
-import static com.mopub.common.DataKeys.AD_HEIGHT;
-import static com.mopub.common.DataKeys.AD_WIDTH;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
 
-public class ChartboostBanner extends CustomEventBanner {
+public class ChartboostBanner extends BaseAd {
 
     private static final String ADAPTER_NAME = ChartboostBanner.class.getSimpleName();
 
     @NonNull
     private String mLocation = ChartboostShared.LOCATION_DEFAULT;
 
-    private String getAdNetworkId() {
-        return mLocation;
-    }
-
     @NonNull
     private ChartboostAdapterConfiguration mChartboostAdapterConfiguration;
 
     private com.chartboost.sdk.ChartboostBanner mChartboostBanner;
-    private CustomEventBannerListener mCustomEventBannerListener;
-    private int mAdWith, mAdHeight;
+    private int mAdWidth, mAdHeight;
     private FrameLayout mInternalView;
+    private boolean loadTracked;
+    private boolean impressionTracked;
+    private boolean clickTracked;
 
     public ChartboostBanner() {
         mChartboostAdapterConfiguration = new ChartboostAdapterConfiguration();
     }
 
-    @Override
-    protected void loadBanner(@NonNull Context context,
-                              @NonNull final CustomEventBannerListener customEventBannerListener,
-                              @NonNull Map<String, Object> localExtras,
-                              @NonNull Map<String, String> serverExtras) {
-        try {
-            Preconditions.checkNotNull(context);
-            Preconditions.checkNotNull(customEventBannerListener);
-            Preconditions.checkNotNull(localExtras);
-            Preconditions.checkNotNull(serverExtras);
+    @NonNull
+    public String getAdNetworkId() {
+        return mLocation;
+    }
 
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) throws Exception {
+        return false;
+    }
+
+    @Override
+    protected void load(@NonNull final Context context,
+                        @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost Banners are not compatible with Android API < 21. " +
+                    "Will fail the request prematurely.");
+            logAndNotifyBannerFailed(true, LOAD_FAILED, INTERNAL_ERROR,
+                    null, null);
+            return;
+        }
+
+        try {
             setAutomaticImpressionAndClickTracking(false);
 
-            final String location = serverExtras.get(ChartboostShared.LOCATION_KEY);
+            loadTracked = false;
+            impressionTracked = false;
+            clickTracked = false;
+
+            final Map<String, String> extras = adData.getExtras();
+            final String location = extras.get(ChartboostShared.LOCATION_KEY);
 
             if (!TextUtils.isEmpty(location)) {
                 mLocation = location;
             }
 
-            ChartboostShared.initializeSdk(context, serverExtras);
-            mCustomEventBannerListener = customEventBannerListener;
-            mChartboostAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
+            ChartboostShared.initializeSdk(context, extras);
+            mChartboostAdapterConfiguration.setCachedInitializationParameters(context, extras);
         } catch (NullPointerException | IllegalStateException error) {
-            logAndNotifyBannerFailed(customEventBannerListener, LOAD_FAILED, NETWORK_INVALID_STATE,
+            logAndNotifyBannerFailed(true, LOAD_FAILED, NETWORK_INVALID_STATE,
                     null, null);
             return;
         }
 
-        logAndNotifyBannerFailed(customEventBannerListener, LOAD_FAILED, NETWORK_INVALID_STATE,
-                null, null);
-
         prepareLayout(context);
-        createBanner(context, localExtras);
+        createBanner(context, adData);
         attachBannerToLayout();
-        mChartboostBanner.show();
+        mChartboostBanner.cache();
+    }
+
+    @Nullable
+    @Override
+    protected View getAdView() {
+        return mInternalView;
     }
 
     private void prepareLayout(Context context) {
@@ -104,11 +127,11 @@ public class ChartboostBanner extends CustomEventBanner {
         mInternalView.setLayoutParams(layoutParams);
     }
 
-    private void createBanner(Context context, Map<String, Object> localExtras) {
-        final BannerSize bannerSize = chartboostAdSizeFromLocalExtras(localExtras);
-
+    private void createBanner(final Context context, final AdData adData) {
+        final BannerSize bannerSize = chartboostAdSizeFromAdData(adData);
         mChartboostBanner = new com.chartboost.sdk.ChartboostBanner(context, mLocation,
                 bannerSize, chartboostBannerListener);
+        mChartboostBanner.setAutomaticallyRefreshesContent(false);
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requested ad size is: Chartboost " + bannerSize);
     }
 
@@ -119,7 +142,7 @@ public class ChartboostBanner extends CustomEventBanner {
         }
     }
 
-    private void logAndNotifyBannerFailed(final CustomEventBannerListener listener,
+    private void logAndNotifyBannerFailed(boolean isLoad,
                                           MoPubLog.AdapterLogEvent event,
                                           MoPubErrorCode moPubErrorCode,
                                           String chartboostErrorName,
@@ -130,8 +153,11 @@ public class ChartboostBanner extends CustomEventBanner {
         }
 
         MoPubLog.log(getAdNetworkId(), event, ADAPTER_NAME, moPubErrorCode.getIntCode(), moPubErrorCode);
-        if (listener != null) {
-            listener.onBannerFailed(moPubErrorCode);
+
+        if (isLoad && mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(moPubErrorCode);
+        } else if (!isLoad && mInteractionListener != null) {
+            mInteractionListener.onAdFailed(moPubErrorCode);
         }
     }
 
@@ -150,20 +176,25 @@ public class ChartboostBanner extends CustomEventBanner {
         }
 
         mChartboostBanner = null;
-        mCustomEventBannerListener = null;
     }
 
-    private BannerSize chartboostAdSizeFromLocalExtras(final Map<String, Object> localExtras) {
-        if (localExtras != null && !localExtras.isEmpty()) {
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
+    }
+
+    private BannerSize chartboostAdSizeFromAdData(final AdData adData) {
+        if (adData != null) {
             try {
-                final Object adHeightObject = localExtras.get(AD_HEIGHT);
-                if (adHeightObject instanceof Integer) {
-                    mAdHeight = (int) adHeightObject;
+                final Integer adHeight = adData.getAdHeight();
+                if (adHeight != null) {
+                    mAdHeight = adHeight;
                 }
 
-                final Object adWidthObject = localExtras.get(AD_WIDTH);
-                if (adWidthObject instanceof Integer) {
-                    mAdWith = (int) adWidthObject;
+                final Integer adWidth = adData.getAdWidth();
+                if (adWidth != null) {
+                    mAdWidth = adWidth;
                 }
 
                 final int LEADERBOARD_HEIGHT = BannerSize.getHeight(BannerSize.LEADERBOARD);
@@ -171,9 +202,9 @@ public class ChartboostBanner extends CustomEventBanner {
                 final int MEDIUM_HEIGHT = BannerSize.getHeight(BannerSize.MEDIUM);
                 final int MEDIUM_WIDTH = BannerSize.getWidth(BannerSize.MEDIUM);
 
-                if (mAdHeight >= LEADERBOARD_HEIGHT && mAdWith >= LEADERBOARD_WIDTH) {
+                if (mAdHeight >= LEADERBOARD_HEIGHT && mAdWidth >= LEADERBOARD_WIDTH) {
                     return BannerSize.LEADERBOARD;
-                } else if (mAdHeight >= MEDIUM_HEIGHT && mAdWith >= MEDIUM_WIDTH) {
+                } else if (mAdHeight >= MEDIUM_HEIGHT && mAdWidth >= MEDIUM_WIDTH) {
                     return BannerSize.MEDIUM;
                 } else {
                     return BannerSize.STANDARD;
@@ -189,43 +220,49 @@ public class ChartboostBanner extends CustomEventBanner {
     private ChartboostBannerListener chartboostBannerListener = new ChartboostBannerListener() {
         @Override
         public void onAdCached(ChartboostCacheEvent chartboostCacheEvent, ChartboostCacheError chartboostCacheError) {
-            if (chartboostCacheError != null) {
-                logAndNotifyBannerFailed(mCustomEventBannerListener,
-                        LOAD_FAILED, MoPubErrorCode.NO_FILL,
-                        chartboostCacheError.toString(), chartboostCacheError.code);
-            } else {
-                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
-                if (mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerLoaded(mInternalView);
+            if (chartboostCacheError == null) {
+                if (!loadTracked) {
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoaded();
+                        loadTracked = true;
+                    }
                 }
+                mChartboostBanner.show();
+            } else {
+                logAndNotifyBannerFailed(true, LOAD_FAILED, MoPubErrorCode.NO_FILL,
+                        chartboostCacheError.toString(), chartboostCacheError.code.getErrorCode());
             }
         }
 
         @Override
         public void onAdShown(ChartboostShowEvent chartboostShowEvent, ChartboostShowError chartboostShowError) {
-            if (chartboostShowError != null) {
-                logAndNotifyBannerFailed(mCustomEventBannerListener,
-                        SHOW_FAILED, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                        chartboostShowError.toString(), chartboostShowError.code);
-            } else {
-                MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
-                MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
-                if (mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerImpression();
+            if (chartboostShowError == null) {
+                if (!impressionTracked) {
+                    if (mInteractionListener != null) {
+                        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+                        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+                        mInteractionListener.onAdImpression();
+                        impressionTracked = true;
+                    }
                 }
+            } else {
+                logAndNotifyBannerFailed(false, SHOW_FAILED, MoPubErrorCode.INLINE_SHOW_ERROR,
+                        chartboostShowError.toString(), chartboostShowError.code.getErrorCode());
             }
         }
 
         @Override
         public void onAdClicked(ChartboostClickEvent chartboostClickEvent, ChartboostClickError chartboostClickError) {
             if (chartboostClickError != null) {
-                logAndNotifyBannerFailed(mCustomEventBannerListener,
-                        CLICKED, MoPubErrorCode.UNSPECIFIED,
-                        chartboostClickError.toString(), chartboostClickError.code);
+                logAndNotifyBannerFailed(false, CLICKED, MoPubErrorCode.UNSPECIFIED,
+                        chartboostClickError.toString(), chartboostClickError.code.getErrorCode());
             } else {
-                MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
-                if (mCustomEventBannerListener != null) {
-                    mCustomEventBannerListener.onBannerClicked();
+                if (!clickTracked) {
+                    if (mInteractionListener != null) {
+                        MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+                        mInteractionListener.onAdClicked();
+                        clickTracked = true;
+                    }
                 }
             }
         }

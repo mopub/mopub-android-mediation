@@ -1,5 +1,7 @@
 package com.mopub.mobileads;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -22,7 +24,6 @@ public class VungleMediationConfiguration implements MediationSettings {
     private final String mKeepWatchingButtonText;
 
     private final boolean mIsStartMuted;
-    private final int mFlexViewCloseTimeInSec;
     private final int mOrdinalViewCount;
     private final int mAdOrientation;
     private final Map<String, Object> mExtras;
@@ -56,10 +57,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         return mIsStartMuted;
     }
 
-    public int getFlexViewCloseTimeInSec() {
-        return mFlexViewCloseTimeInSec;
-    }
-
     public int getOrdinalViewCount() {
         return mOrdinalViewCount;
     }
@@ -72,51 +69,50 @@ public class VungleMediationConfiguration implements MediationSettings {
         return mExtras;
     }
 
-    static void adConfigWithLocalExtras(AdConfig adConfig, Map<String, Object> localExtras) {
+    static void adConfigWithExtras(@NonNull final AdConfig adConfig,
+                                   @NonNull final Map<String, String> extras) {
 
-        if (localExtras != null && !localExtras.isEmpty()) {
-
-            if (localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
-                final Object isStartMuted = localExtras.get(Builder.EXTRA_START_MUTED_KEY);
-
-                if (isStartMuted instanceof Boolean) {
-                    adConfig.setMuted((Boolean) isStartMuted);
-                }
-            } else {
-                final Object isSoundEnabled = localExtras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
-                if (isSoundEnabled instanceof Boolean) {
-                    adConfig.setMuted(!(Boolean) isSoundEnabled);
-                }
+        if (extras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
+            final String isStartMuted = extras.get(Builder.EXTRA_START_MUTED_KEY);
+            adConfig.setMuted(Boolean.parseBoolean(isStartMuted));
+        } else if (extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY)) {
+            final String isSoundEnabled = extras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
+            if (!TextUtils.isEmpty(isSoundEnabled)) {
+                adConfig.setMuted(!Boolean.parseBoolean(isSoundEnabled));
             }
+        }
 
-            final Object flexViewCloseTimeInSec = localExtras.get(Builder.EXTRA_FLEXVIEW_CLOSE_TIME_KEY);
+        final String ordinalViewCount = extras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
 
-            if (flexViewCloseTimeInSec instanceof Integer) {
-                adConfig.setFlexViewCloseTime((Integer) flexViewCloseTimeInSec);
+        if (!TextUtils.isEmpty(ordinalViewCount)) {
+            try {
+                adConfig.setOrdinal(Integer.parseInt(ordinalViewCount));
+
+            } catch (NumberFormatException e) {
+                // ignore and don't set ordinal view count
             }
-            final Object ordinalViewCount = localExtras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
+        }
 
-            if (ordinalViewCount instanceof Integer) {
-                adConfig.setOrdinal((Integer) ordinalViewCount);
-            }
+        final String adOrientation = extras.get(Builder.EXTRA_ORIENTATION_KEY);
 
-            final Object adOrientation = localExtras.get(Builder.EXTRA_ORIENTATION_KEY);
+        if (!TextUtils.isEmpty(adOrientation)) {
+            try {
+                adConfig.setAdOrientation(Integer.parseInt(adOrientation));
 
-            if (adOrientation instanceof Integer) {
-                adConfig.setAdOrientation((Integer) adOrientation);
+            } catch (NumberFormatException e) {
+                // ignore and don't set ad orientation
             }
         }
     }
 
-    static boolean isStartMutedNotConfigured(Map<String, Object> localExtras) {
-        return !localExtras.containsKey(Builder.EXTRA_START_MUTED_KEY) &&
-                !localExtras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
+    static boolean isStartMutedNotConfigured(@NonNull final Map<String, String> extras) {
+        return !extras.containsKey(Builder.EXTRA_START_MUTED_KEY) &&
+                !extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
     }
 
     public static class Builder {
         private static final String EXTRA_START_MUTED_KEY = "startMuted";
         private static final String EXTRA_SOUND_ENABLED_KEY = VungleInterstitial.SOUND_ENABLED_KEY;
-        private static final String EXTRA_FLEXVIEW_CLOSE_TIME_KEY = VungleInterstitial.FLEX_VIEW_CLOSE_TIME_KEY;
         private static final String EXTRA_ORDINAL_VIEW_COUNT_KEY = VungleInterstitial.ORDINAL_VIEW_COUNT_KEY;
         private static final String EXTRA_ORIENTATION_KEY = VungleInterstitial.AD_ORIENTATION_KEY;
 
@@ -132,7 +128,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         private String mKeepWatchingButtonText;
 
         private boolean mIsStartMuted = false;
-        private int mFlexViewCloseTimeInSec = 0;
         private int mOrdinalViewCount = 0;
         private int mAdOrientation = AdConfig.AUTO_ROTATE;
         private Map<String, Object> mExtras = new HashMap<>();
@@ -173,12 +168,6 @@ public class VungleMediationConfiguration implements MediationSettings {
             return this;
         }
 
-        public Builder withFlexViewCloseTimeInSec(int flexViewCloseTimeInSec) {
-            this.mFlexViewCloseTimeInSec = flexViewCloseTimeInSec;
-            mExtras.put(EXTRA_FLEXVIEW_CLOSE_TIME_KEY, flexViewCloseTimeInSec);
-            return this;
-        }
-
         public Builder withOrdinalViewCount(int ordinalViewCount) {
             this.mOrdinalViewCount = ordinalViewCount;
             mExtras.put(EXTRA_ORDINAL_VIEW_COUNT_KEY, ordinalViewCount);
@@ -203,7 +192,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         this.mCloseButtonText = builder.mCloseButtonText;
         this.mKeepWatchingButtonText = builder.mKeepWatchingButtonText;
         this.mIsStartMuted = builder.mIsStartMuted;
-        this.mFlexViewCloseTimeInSec = builder.mFlexViewCloseTimeInSec;
         this.mOrdinalViewCount = builder.mOrdinalViewCount;
         this.mAdOrientation = builder.mAdOrientation;
         this.mExtras = builder.mExtras;

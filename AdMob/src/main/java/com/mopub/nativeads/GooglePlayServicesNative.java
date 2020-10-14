@@ -9,10 +9,12 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.GooglePlayServicesAdapterConfiguration;
 
@@ -108,6 +110,11 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                 @NonNull final CustomEventNativeListener customEventNativeListener,
                                 @NonNull Map<String, Object> localExtras,
                                 @NonNull Map<String, String> serverExtras) {
+
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(customEventNativeListener);
+        Preconditions.checkNotNull(localExtras);
+        Preconditions.checkNotNull(context);
 
         if (!sIsInitialized.getAndSet(true)) {
             MobileAds.initialize(context);
@@ -336,14 +343,8 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
             final NativeAdOptions.Builder optionsBuilder = new NativeAdOptions.Builder();
 
-            // MoPub requires the images to be pre-cached using their APIs, so we do not want
-            // Google to download the image assets.
-            optionsBuilder.setReturnUrlsForImageAssets(true);
-
             // MoPub allows for only one image, so only request for one image.
             optionsBuilder.setRequestMultipleImages(false);
-
-            optionsBuilder.setReturnUrlsForImageAssets(false);
 
             // Get the preferred image orientation from the local extras.
             if (localExtras.containsKey(KEY_EXTRA_ORIENTATION_PREFERENCE)
@@ -415,9 +416,17 @@ public class GooglePlayServicesNative extends CustomEventNative {
                         }
 
                         @Override
-                        public void onAdFailedToLoad(int errorCode) {
-                            super.onAdFailedToLoad(errorCode);
-                            switch (errorCode) {
+                        public void onAdFailedToLoad(LoadAdError loadAdError) {
+                            super.onAdFailedToLoad(loadAdError);
+
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                    NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                    NativeErrorCode.NETWORK_NO_FILL);
+                            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to " +
+                                    "load Google native ad with message: " + loadAdError.getMessage() +
+                                    ". Caused by: " + loadAdError.getCause());
+
+                            switch (loadAdError.getCode()) {
                                 case AdRequest.ERROR_CODE_INTERNAL_ERROR:
                                     mCustomEventNativeListener.onNativeAdFailed(
                                             NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR);
@@ -508,7 +517,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
          * orientation constants, {@code false} otherwise.
          */
         private boolean isValidOrientationExtra(Object extra) {
-            if (extra == null || !(extra instanceof Integer)) {
+            if (!(extra instanceof Integer)) {
                 return false;
             }
             Integer preference = (Integer) extra;
@@ -526,7 +535,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
          * AdChoices icon placement constants, {@code false} otherwise.
          */
         private boolean isValidAdChoicesPlacementExtra(Object extra) {
-            if (extra == null || !(extra instanceof Integer)) {
+            if (!(extra instanceof Integer)) {
                 return false;
             }
             Integer placement = (Integer) extra;

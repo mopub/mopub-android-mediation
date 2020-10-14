@@ -1,4 +1,32 @@
 ## Changelog
+  * 19.4.0.1
+    * Bind native ad resources via the dedicated `GooglePlayServicesViewBinder.java` instead of MoPub's `MediaViewBinder.java`. Publishers must use this new ViewBinder in their apps.
+
+  * 19.4.0.0
+    * This version of the adapters has been certified with AdMob 19.4.0 and MoPub 5.13.1.
+
+  * 19.3.0.2
+    * Fix native ad static images not displayed/clickable. This allows Google to manage the image asset within their `MediaView`.
+
+  * 19.3.0.1
+    * Add support for the new `onRewardedAdFailedToLoad(LoadAdError loadAdError)` to handle load failures. 
+
+  * 19.3.0.0
+    * This version of the adapters has been certified with AdMob 19.3.0 and MoPub 5.13.1.
+    * All ad formats: Remove load failure callbacks that return an `int` (deprecated by Google) and use the equivalent (if any) that returns a `LoadAdError`.
+    * Rewarded video: Remove `onRewardedAdFailedToShow(int)` (deprecated by Google) and use `onRewardedAdFailedToShow(AdError)`.
+
+  * 19.2.0.1
+    * Fix interstitial load listener usage.
+
+  * 19.2.0.0
+    * This version of the adapters has been certified with AdMob 19.2.0 and MoPub 5.13.0.
+
+  * 19.1.0.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * Remove banner size mapping checks to fully take advantage of adaptive banner. 
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   * 19.1.0.0
     * This version of the adapters has been certified with AdMob 19.1.0 and MoPub 5.12.0.
     * Remove calls to `MobileAds.initialize(Context context, String applicationCode)` (deprecated by Google) in favor of `MobileAds.initialize(Context context)`.

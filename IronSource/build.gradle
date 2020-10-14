@@ -1,5 +1,5 @@
-project.version = '6.16.1.0'
-project.ext.networkName = 'Ironsource'
+project.version = '7.0.2.0'
+project.ext.networkName = 'ironsource'
 
 apply from: '../shared-build.gradle'
 

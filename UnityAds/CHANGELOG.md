@@ -1,4 +1,15 @@
 ## Changelog
+  * 3.4.8.0
+    * This version of the adapters has been certified with Unity Ads 3.4.8 and MoPub SDK 5.13.1.
+    * Note that, this adapter version is not certified using Android API 30. For Android 11 compatibility, expect an upcoming adapter release.
+
+  * 3.4.6.0
+    * This version of the adapters has been certified with Unity Ads 3.4.6 and MoPub SDK 5.13.1.
+
+  * 3.4.2.1
+    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
+    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
+
   * 3.4.2.0
     * This version of the adapters has been certified with Unity Ads 3.4.2.
 
