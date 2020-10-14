@@ -133,7 +133,7 @@ public class PangleAdBanner extends BaseAd {
         int[] adSize = new int[]{0, 0};
 
         if (adData == null) {
-            adSize = new int[]{600, 90};
+            adSize = new int[]{600, 500};
             return adSize;
         }
 
@@ -150,11 +150,7 @@ public class PangleAdBanner extends BaseAd {
         if (oWidth != null) {
             final float ratio = adSize[0] / adSize[1];
 
-            if (ratio == 600f / 500f || ratio == 600f / 400f ||
-                    ratio == 690f / 388f || ratio == 600f / 300f ||
-                    ratio == 600f / 260f || ratio == 600f / 150f ||
-                    ratio == 640f / 100f || ratio == 600f / 90f
-            ) {
+            if (ratio == 600f / 500f || ratio == 640f / 100f) {
                 return adSize;
             }
 
@@ -170,35 +166,10 @@ public class PangleAdBanner extends BaseAd {
                 widthRatio = 2f;
             }
 
-            if (ratio < 600f / 500f) { //1.2f
+            if (ratio < 600f / 500f) { // 1.2f
                 adSize[0] = (int) (600f * widthRatio);
                 adSize[1] = (int) (500f * widthRatio);
-            } else if (ratio < 600f / 400f) {//1.5f
-                adSize[0] = (int) (600f * widthRatio);
-                adSize[1] = (int) (400f * widthRatio);
-            } else if (ratio < 690f / 388f) { //1.77f
-                widthRatio = adSize[0] / 690f;
-                if (widthRatio < 0.5f + factor) {
-                    widthRatio = 0.5f;
-                } else if (widthRatio < 1f + factor) {
-                    widthRatio = 1f;
-                } else if (widthRatio < 1.5f + factor) {
-                    widthRatio = 1.5f;
-                } else {
-                    widthRatio = 2f;
-                }
-                adSize[0] = (int) (690f * widthRatio);
-                adSize[1] = (int) (388f * widthRatio);
-            } else if (ratio < 600f / 300f) { // 2f
-                adSize[0] = (int) (600f * widthRatio);
-                adSize[1] = (int) (300f * widthRatio);
-            } else if (ratio < 600f / 260f) {//2.3f
-                adSize[0] = (int) (600f * widthRatio);
-                adSize[1] = (int) (260f * widthRatio);
-            } else if (ratio < 600f / 150f) {// 4.0f
-                adSize[0] = (int) (600f * widthRatio);
-                adSize[1] = (int) (150f * widthRatio);
-            } else if (ratio < 640f / 100f) { //6.4f
+            } else  { // 6.4f = 640f / 100f
                 widthRatio = adSize[0] / 640f;
                 if (widthRatio < 0.5f + factor) {
                     widthRatio = 0.5f;
@@ -211,10 +182,6 @@ public class PangleAdBanner extends BaseAd {
                 }
                 adSize[0] = (int) (640f * widthRatio);
                 adSize[1] = (int) (100f * widthRatio);
-
-            } else if (ratio < 600f / 90f || ratio > 600f / 90f) {//6.67f
-                adSize[0] = (int) (600f * widthRatio);
-                adSize[1] = (int) (90f * widthRatio);
             }
         }
 
