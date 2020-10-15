@@ -66,23 +66,26 @@ public class UnityAdsAdapterConfiguration extends BaseAdapterConfiguration {
             try {
                 if (UnityAds.isInitialized()) {
                     listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
-                } else if (configuration != null && context != null) {
-                    UnityRouter.initUnityAds(configuration, context, new IUnityAdsInitializationListener() {
-                        @Override
-                        public void onInitializationComplete() {
-                            listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
-                        }
-
-                        @Override
-                        public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
-                            listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-                        }
-                    });
-                } else {
+                    return;
+                }
+                if (configuration == null || context == null) {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads initialization not started. " +
                             "Configuration or Context is null. Note that initialization on the first app launch is a no-op.");
                     listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                    return;
                 }
+
+                UnityRouter.initUnityAds(configuration, context, new IUnityAdsInitializationListener() {
+                    @Override
+                    public void onInitializationComplete() {
+                        listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
+                    }
+
+                    @Override
+                    public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                        listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                    }
+                });
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing Unity Ads has encountered " +
                         "an exception.", e);

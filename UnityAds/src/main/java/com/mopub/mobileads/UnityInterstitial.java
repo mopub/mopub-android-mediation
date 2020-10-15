@@ -48,8 +48,6 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
 
         setAutomaticImpressionAndClickTracking(false);
 
-        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, extras);
-
         UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
         UnityRouter.getInterstitialRouter().setCurrentPlacementId(mPlacementId);
 
@@ -131,11 +129,10 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
     }
 
     @Override
-    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) throws Exception {
+    protected boolean checkAndInitializeSdk(@NonNull final Activity activity, @NonNull final AdData adData) {
         return false;
     }
 
-    @Nullable
     @Override
     public void onUnityAdsReady(String placementId) {
     }
