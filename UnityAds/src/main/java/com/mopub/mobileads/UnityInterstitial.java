@@ -46,15 +46,20 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
         mPlacementId = UnityRouter.placementIdForServerExtras(extras, mPlacementId);
         mContext = context;
 
+        setAutomaticImpressionAndClickTracking(false);
+
+        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, extras);
+
         UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
         UnityRouter.getInterstitialRouter().setCurrentPlacementId(mPlacementId);
+
+        initializeUnityAdsSdk(extras);
 
         UnityAds.load(mPlacementId, new IUnityAdsLoadListener() {
             @Override
             public void onUnityAdsAdLoaded(String placementId) {
-                if (mCustomEventInterstitialListener != null) {
-                    mCustomEventInterstitialListener.onInterstitialLoaded();
-
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoaded();
                     MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
                 }
             }
@@ -63,16 +68,14 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
             public void onUnityAdsFailedToLoad(String placementId) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity interstitial failed to load for placement " + placementId);
 
-                if (mCustomEventInterstitialListener != null) {
-                    mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 }
                 MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             }
         });
 
-        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
-
-        initializeUnityAdsSdk(serverExtras);
+        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(context, extras);
     }
 
     private void initializeUnityAdsSdk(Map<String, String> serverExtras) {
@@ -117,6 +120,23 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
 
     @Nullable
     @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
+    }
+
+    @NonNull
+    @Override
+    protected String getAdNetworkId() {
+        return mPlacementId != null ? mPlacementId : "";
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) throws Exception {
+        return false;
+    }
+
+    @Nullable
+    @Override
     public void onUnityAdsReady(String placementId) {
     }
 
@@ -136,7 +156,7 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
             if (finishState == UnityAds.FinishState.ERROR) {
                 MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity interstitial video encountered a playback error for " +
                         "placement " + placementId);
-                mCustomEventInterstitialListener.onInterstitialFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
                 MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
                         MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
