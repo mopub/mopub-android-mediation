@@ -349,6 +349,11 @@ public class VungleRouter {
                         "for Placement ID: " + id);
             }
         }
+
+        @Override
+        public void onAdViewed(String id) {
+            //no-op for now(6.8.1)
+        }
     };
 
     private final LoadAdCallback loadAdCallback = new LoadAdCallback() {
