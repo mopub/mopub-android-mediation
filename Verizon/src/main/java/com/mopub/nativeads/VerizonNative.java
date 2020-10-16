@@ -160,21 +160,6 @@ public class VerizonNative extends CustomEventNative {
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
-    @Override
-    protected void onInvalidate() {
-
-        VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Destroy any hanging references
-                if (verizonStaticNativeAd != null) {
-                    verizonStaticNativeAd.destroy();
-                    verizonStaticNativeAd = null;
-                }
-            }
-        });
-    }
-
     static class VerizonStaticNativeAd extends StaticNativeAd {
         @NonNull
         private final Context context;
@@ -216,8 +201,8 @@ public class VerizonNative extends CustomEventNative {
 
         @Override
         public void destroy() {
-            impressionTracker.destroy();
             super.destroy();
+            nativeAd.destroy();
         }
 
         // Event Handlers
