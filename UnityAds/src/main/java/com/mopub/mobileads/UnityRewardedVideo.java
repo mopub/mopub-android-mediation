@@ -10,10 +10,10 @@ import com.mopub.common.BaseLifecycleListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
+import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MediationMetaData;
 
 import java.util.Map;
@@ -26,6 +26,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.unity3d.ads.UnityAds.UnityAdsError.SHOW_ERROR;
 
 public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListener {
     private static final LifecycleListener sLifecycleListener = new UnityLifecycleListener();
@@ -59,6 +60,29 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
         mUnityAdsAdapterConfiguration = new UnityAdsAdapterConfiguration();
     }
 
+    /**
+     * IUnityAdsLoadListener instance.
+     */
+    private IUnityAdsLoadListener mUnityLoadListener = new IUnityAdsLoadListener() {
+        @Override
+        public void onUnityAdsAdLoaded(String placementId) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video cached for placement " + placementId + ".");
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoaded();
+            }
+            MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+        }
+
+        @Override
+        public void onUnityAdsFailedToLoad(String placementId) {
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
+            }
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video cache failed for placement " + mPlacementId + ".");
+            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+        }
+    };
+
     @Override
     public boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
                                          @NonNull final AdData adData) {
@@ -74,12 +98,7 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
             mUnityAdsAdapterConfiguration.setCachedInitializationParameters(launcherActivity, extras);
 
             UnityRouter.getInterstitialRouter().setCurrentPlacementId(mPlacementId);
-            if (UnityRouter.initUnityAds(extras, launcherActivity)) {
-                UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
-                return true;
-            } else {
-                return false;
-            }
+            return UnityRouter.initUnityAds(extras, launcherActivity);
         }
     }
 
@@ -88,27 +107,19 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
         mPlacementId = UnityRouter.placementIdForServerExtras(adData.getExtras(), mPlacementId);
 
-        UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
+        final Map<String, String> extras = adData.getExtras();
 
         setAutomaticImpressionAndClickTracking(false);
 
-        UnityAds.load(mPlacementId, new IUnityAdsLoadListener() {
+        UnityRouter.initUnityAds(extras, context, new IUnityAdsInitializationListener() {
             @Override
-            public void onUnityAdsAdLoaded(String placementId) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video cached for placement " + placementId + ".");
-                if (mLoadListener != null) {
-                    mLoadListener.onAdLoaded();
-                }
-                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+            public void onInitializationComplete() {
+                UnityAds.load(mPlacementId, mUnityLoadListener);
             }
 
             @Override
-            public void onUnityAdsFailedToLoad(String placementId) {
-                if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
-                }
-                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-                UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
             }
         });
     }
@@ -116,6 +127,7 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
     @Override
     public void show() {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
+        UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
 
         if (UnityAds.isReady(mPlacementId) && mLauncherActivity != null) {
             MediationMetaData metadata = new MediationMetaData(mLauncherActivity);
@@ -156,9 +168,7 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video clicked for placement " +
                 placementId + ".");
-
         MoPubLog.log(CLICKED, ADAPTER_NAME);
-
     }
 
     @Override
@@ -217,6 +227,9 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
+        if (unityAdsError == SHOW_ERROR) {
+            UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+        }
     }
 
     private static final class UnityLifecycleListener extends BaseLifecycleListener {

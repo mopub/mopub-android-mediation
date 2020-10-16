@@ -28,12 +28,12 @@ public class UnityRouter {
         return initUnityAds(serverExtras, context, new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
-
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads successfully initialized.");
             }
 
             @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
-
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
             }
         });
     }
@@ -51,6 +51,10 @@ public class UnityRouter {
         boolean testMode = false;
         boolean enablePerPlacementLoad = true;
         UnityAds.addListener(interstitialRouter);
+        if (UnityAds.isInitialized()) {
+            initializationListener.onInitializationComplete();
+            return true;
+        }
         UnityAds.initialize(context, gameId, testMode, enablePerPlacementLoad, initializationListener);
         return true;
     }
