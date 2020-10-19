@@ -71,8 +71,6 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
 
         setAutomaticImpressionAndClickTracking(false);
 
-        UnityRouter.getInterstitialRouter().setCurrentPlacementId(mPlacementId);
-
         UnityRouter.initUnityAds(extras, context, new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
@@ -90,12 +88,13 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
     @Override
     protected void show() {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-        UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
 
         if (UnityAds.isReady(mPlacementId) && mContext != null) {
             MediationMetaData metadata = new MediationMetaData(mContext);
             metadata.setOrdinal(++impressionOrdinal);
             metadata.commit();
+
+            UnityAds.addListener(UnityInterstitial.this);
 
             UnityAds.show((Activity) mContext, mPlacementId);
         } else {
@@ -114,7 +113,7 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
 
     @Override
     protected void onInvalidate() {
-        UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+        UnityAds.removeListener(UnityInterstitial.this);
     }
 
     @Nullable
@@ -164,7 +163,7 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
                 mInteractionListener.onAdDismissed();
             }
         }
-        UnityRouter.getInterstitialRouter().removeListener(placementId);
+        UnityAds.removeListener(UnityInterstitial.this);
     }
 
     @Override
@@ -181,7 +180,7 @@ public class UnityInterstitial extends BaseAd implements IUnityAdsExtendedListen
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
         if (unityAdsError == SHOW_ERROR) {
-            UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+            UnityAds.removeListener(UnityInterstitial.this);
         }
     }
 }

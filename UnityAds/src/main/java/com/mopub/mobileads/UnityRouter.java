@@ -22,41 +22,24 @@ public class UnityRouter {
     private static final String PLACEMENT_ID_KEY = "placementId";
     private static final String ADAPTER_NAME = UnityRouter.class.getSimpleName();
 
-    private static final UnityInterstitialCallbackRouter interstitialRouter = new UnityInterstitialCallbackRouter();
-
-    static boolean initUnityAds(Map<String, String> serverExtras, Context context) {
-        return initUnityAds(serverExtras, context, new IUnityAdsInitializationListener() {
-            @Override
-            public void onInitializationComplete() {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads successfully initialized.");
-            }
-
-            @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
-            }
-        });
-    }
-
-    static boolean initUnityAds(Map<String, String> serverExtras, Context context, IUnityAdsInitializationListener initializationListener) {
+    static void initUnityAds(Map<String, String> serverExtras, Context context, IUnityAdsInitializationListener initializationListener) {
         initGdpr(context);
+
+        if (UnityAds.isInitialized()) {
+            initializationListener.onInitializationComplete();
+            return;
+        }
 
         String gameId = serverExtras.get(GAME_ID_KEY);
         if (gameId == null || gameId.isEmpty()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "gameId is missing or entered incorrectly in the MoPub UI");
-            return false;
+            return;
         }
         initMediationMetadata(context);
 
         boolean testMode = false;
         boolean enablePerPlacementLoad = true;
-        UnityAds.addListener(interstitialRouter);
-        if (UnityAds.isInitialized()) {
-            initializationListener.onInitializationComplete();
-            return true;
-        }
         UnityAds.initialize(context, gameId, testMode, enablePerPlacementLoad, initializationListener);
-        return true;
     }
 
     static void initGdpr(Context context) {
@@ -100,10 +83,6 @@ public class UnityRouter {
             placementId = serverExtras.get(ZONE_ID_KEY);
         }
         return TextUtils.isEmpty(placementId) ? defaultPlacementId : placementId;
-    }
-
-    static UnityInterstitialCallbackRouter getInterstitialRouter() {
-        return interstitialRouter;
     }
 
     static final class UnityAdsUtils {

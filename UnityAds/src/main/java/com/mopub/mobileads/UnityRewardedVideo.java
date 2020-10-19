@@ -97,8 +97,19 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
             mUnityAdsAdapterConfiguration.setCachedInitializationParameters(launcherActivity, extras);
 
-            UnityRouter.getInterstitialRouter().setCurrentPlacementId(mPlacementId);
-            return UnityRouter.initUnityAds(extras, launcherActivity);
+            UnityRouter.initUnityAds(extras, launcherActivity, new IUnityAdsInitializationListener() {
+                @Override
+                public void onInitializationComplete() {
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads successfully initialized.");
+                }
+
+                @Override
+                public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
+                }
+            });
+
+            return true;
         }
     }
 
@@ -127,12 +138,13 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
     @Override
     public void show() {
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
-        UnityRouter.getInterstitialRouter().addListener(mPlacementId, this);
 
         if (UnityAds.isReady(mPlacementId) && mLauncherActivity != null) {
             MediationMetaData metadata = new MediationMetaData(mLauncherActivity);
             metadata.setOrdinal(++impressionOrdinal);
             metadata.commit();
+
+            UnityAds.addListener(UnityRewardedVideo.this);
 
             UnityAds.show(mLauncherActivity, mPlacementId);
             return;
@@ -157,7 +169,7 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
     @Override
     protected void onInvalidate() {
-        UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+        UnityAds.removeListener(UnityRewardedVideo.this);
     }
 
     @Override
@@ -222,13 +234,13 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
         if (mInteractionListener != null) {
             mInteractionListener.onAdDismissed();
         }
-        UnityRouter.getInterstitialRouter().removeListener(placementId);
+        UnityAds.removeListener(UnityRewardedVideo.this);
     }
 
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError unityAdsError, String message) {
         if (unityAdsError == SHOW_ERROR) {
-            UnityRouter.getInterstitialRouter().removeListener(mPlacementId);
+            UnityAds.removeListener(UnityRewardedVideo.this);
         }
     }
 
