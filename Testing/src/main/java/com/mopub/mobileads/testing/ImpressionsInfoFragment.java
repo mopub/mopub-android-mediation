@@ -105,11 +105,10 @@ public class ImpressionsInfoFragment extends Fragment {
      * RecyclerView adapter for the impression data list
      */
     static class ImpressionsInfoAdapter extends RecyclerView.Adapter<ImpressionsInfoAdapter.ImpressionsViewHolder> {
-        private final int mBackgroundLight;
-        private final int mBackgroundDark;
-
         @NonNull
         final List<String> stringList;
+        private final int mBackgroundLight;
+        private final int mBackgroundDark;
 
         ImpressionsInfoAdapter(@NonNull final Context context, @Nullable final List<String> list) {
             mBackgroundDark = context.getResources().getColor(R.color.listDark);

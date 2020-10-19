@@ -17,11 +17,9 @@ import androidx.fragment.app.Fragment;
 
 import com.mopub.nativeads.AdapterHelper;
 import com.mopub.nativeads.FacebookAdRenderer;
-import com.mopub.nativeads.FlurryNativeAdRenderer;
-import com.mopub.nativeads.FlurryViewBinder;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
+import com.mopub.nativeads.GooglePlayServicesViewBinder;
 import com.mopub.nativeads.MediaViewBinder;
-import com.mopub.nativeads.MintegralAdRenderer;
 import com.mopub.nativeads.MoPubNative;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.MoPubVideoNativeAdRenderer;
@@ -34,8 +32,6 @@ import com.mopub.nativeads.VerizonNativeAdRenderer;
 import com.mopub.nativeads.ViewBinder;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.mopub.mobileads.testing.Utils.logToast;
 
@@ -159,20 +155,9 @@ public class NativeManualFragment extends Fragment {
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
 
-        // Set up a renderer for Flurry video and static native ads.
-        final FlurryNativeAdRenderer flurryAdRenderer = new FlurryNativeAdRenderer(
-                new FlurryViewBinder.Builder(new ViewBinder.Builder(R.layout.native_ad_flurry_list_item)
-                        .titleId(R.id.flurry_native_title)
-                        .textId(R.id.flurry_native_text)
-                        .mainImageId(R.id.flurry_native_main_image)
-                        .iconImageId(R.id.flurry_native_icon_image)
-                        .callToActionId(R.id.flurry_native_cta)
-                        .privacyInformationIconImageId(R.id.flurry_native_privacy_information_icon_image)
-                        .build()).videoViewId(R.id.flurry_native_video_view).build());
-
         // Set up a renderer for AdMob ads.
         final GooglePlayServicesAdRenderer googlePlayServicesAdRenderer = new GooglePlayServicesAdRenderer(
-                new MediaViewBinder.Builder(R.layout.video_ad_list_item)
+                new GooglePlayServicesViewBinder.Builder(R.layout.video_ad_list_item)
                         .titleId(R.id.native_title)
                         .textId(R.id.native_text)
                         .mediaLayoutId(R.id.native_media_layout)
@@ -192,17 +177,6 @@ public class NativeManualFragment extends Fragment {
                         .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
                         .build());
 
-        // Set up a renderer for Mintegral ads.
-        final MintegralAdRenderer mintegralAdRenderer = new MintegralAdRenderer(
-                new MintegralAdRenderer.MintegralViewBinder.Builder(R.layout.native_ad_mintegral_list_item)
-                        .titleId(R.id.native_title)
-                        .textId(R.id.native_text)
-                        .mediaViewId(R.id.native_main_image)
-                        .iconImageId(R.id.native_icon_image)
-                        .callToActionId(R.id.native_cta)
-                        .adChoicesId(R.id.native_privacy_information_icon_image)
-                        .build());
-
         // Set up a renderer for Pangle ads.
         final PangleAdRenderer pangleAdRenderer = new PangleAdRenderer(
                 new PangleAdViewBinder.Builder(R.layout.native_ad_pangle_list_item)
@@ -216,9 +190,7 @@ public class NativeManualFragment extends Fragment {
         // The first renderer that can handle a particular native ad gets used.
         // We are prioritizing network renderers.
 
-        mMoPubNative.registerAdRenderer(mintegralAdRenderer);
         mMoPubNative.registerAdRenderer(facebookAdRenderer);
-        mMoPubNative.registerAdRenderer(flurryAdRenderer);
         mMoPubNative.registerAdRenderer(googlePlayServicesAdRenderer);
         mMoPubNative.registerAdRenderer(verizonNativeAdRenderer);
         mMoPubNative.registerAdRenderer(pangleAdRenderer);

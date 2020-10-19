@@ -18,11 +18,9 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.mopub.nativeads.FacebookAdRenderer;
-import com.mopub.nativeads.FlurryNativeAdRenderer;
-import com.mopub.nativeads.FlurryViewBinder;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
+import com.mopub.nativeads.GooglePlayServicesViewBinder;
 import com.mopub.nativeads.MediaViewBinder;
-import com.mopub.nativeads.MintegralAdRenderer;
 import com.mopub.nativeads.MoPubNativeAdLoadedListener;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.MoPubStreamAdPlacer;
@@ -34,8 +32,6 @@ import com.mopub.nativeads.VerizonNativeAdRenderer;
 import com.mopub.nativeads.ViewBinder;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.mopub.nativeads.RequestParameters.NativeAdAsset;
 
@@ -108,17 +104,6 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
 
-        // Set up a renderer for Flurry video and static native ads.
-        final FlurryNativeAdRenderer flurryAdRenderer = new FlurryNativeAdRenderer(
-                new FlurryViewBinder.Builder(new ViewBinder.Builder(R.layout.native_ad_flurry_list_item)
-                        .titleId(R.id.flurry_native_title)
-                        .textId(R.id.flurry_native_text)
-                        .mainImageId(R.id.flurry_native_main_image)
-                        .iconImageId(R.id.flurry_native_icon_image)
-                        .callToActionId(R.id.flurry_native_cta)
-                        .privacyInformationIconImageId(R.id.flurry_native_privacy_information_icon_image)
-                        .build()).videoViewId(R.id.flurry_native_video_view).build());
-
         // Set up a renderer for Pangle ads.
         final PangleAdRenderer pangleAdRenderer = new PangleAdRenderer(
                 new PangleAdViewBinder.Builder(R.layout.native_ad_pangle_list_item)
@@ -131,7 +116,7 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
 
         // Set up a renderer for AdMob ads.
         final GooglePlayServicesAdRenderer googlePlayServicesAdRenderer = new GooglePlayServicesAdRenderer(
-                new MediaViewBinder.Builder(R.layout.video_ad_list_item)
+                new GooglePlayServicesViewBinder.Builder(R.layout.video_ad_list_item)
                         .titleId(R.id.native_title)
                         .textId(R.id.native_text)
                         .mediaLayoutId(R.id.native_media_layout)
@@ -151,27 +136,14 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
                         .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
                         .build());
 
-        // Set up a renderer for Mintegral ads.
-        final MintegralAdRenderer mintegralAdRenderer = new MintegralAdRenderer(
-                new MintegralAdRenderer.MintegralViewBinder.Builder(R.layout.native_ad_mintegral_list_item)
-                        .titleId(R.id.native_title)
-                        .textId(R.id.native_text)
-                        .mediaViewId(R.id.native_main_image)
-                        .iconImageId(R.id.native_icon_image)
-                        .callToActionId(R.id.native_cta)
-                        .adChoicesId(R.id.native_privacy_information_icon_image)
-                        .build());
-
         // This ad placer is used to automatically insert ads into the ViewPager.
         mStreamAdPlacer = new MoPubStreamAdPlacer(getActivity());
 
         // The first renderer that can handle a particular native ad gets used.
         // We are prioritizing network renderers.
-        mStreamAdPlacer.registerAdRenderer(mintegralAdRenderer);
         mStreamAdPlacer.registerAdRenderer(verizonNativeAdRenderer);
         mStreamAdPlacer.registerAdRenderer(googlePlayServicesAdRenderer);
         mStreamAdPlacer.registerAdRenderer(facebookAdRenderer);
-        mStreamAdPlacer.registerAdRenderer(flurryAdRenderer);
         mStreamAdPlacer.registerAdRenderer(pangleAdRenderer);
         mStreamAdPlacer.registerAdRenderer(moPubStaticNativeAdRenderer);
         mStreamAdPlacer.registerAdRenderer(moPubVideoNativeAdRenderer);

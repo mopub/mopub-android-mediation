@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.rewarded.RewardItem;
@@ -314,6 +315,18 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
 
             if (mLoadListener != null) {
                 mLoadListener.onAdLoaded();
+            }
+        }
+
+        @Override
+        public void onRewardedAdFailedToLoad(LoadAdError loadAdError) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Google " +
+                    "rewarded video with message: " + loadAdError.getMessage() + ". Caused by: " +
+                    loadAdError.getCause());
+
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(getMoPubRequestErrorCode(loadAdError.getCode()));
             }
         }
     };

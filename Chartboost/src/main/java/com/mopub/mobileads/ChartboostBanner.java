@@ -71,12 +71,16 @@ public class ChartboostBanner extends BaseAd {
                         @NonNull final AdData adData) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(adData);
+
+
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Requested Chartboost banner is not compatible with Android api < 21");
-            logAndNotifyBannerFailed(false, LOAD_FAILED, INTERNAL_ERROR,
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost Banners are not compatible with Android API < 21. " +
+                    "Will fail the request prematurely.");
+            logAndNotifyBannerFailed(true, LOAD_FAILED, INTERNAL_ERROR,
                     null, null);
             return;
         }
+
         try {
             setAutomaticImpressionAndClickTracking(false);
 

@@ -1,6 +1,12 @@
 ## Changelog
+ * 7.0.2.0
+    * This version of the adapters has been certified with ironSource 7.0.2 and MoPub SDK 5.14.0.
+
+ * 7.0.1.1.0
+    * This version of the adapters has been certified with ironSource 7.0.1.1 and MoPub SDK 5.13.1.
+
  * 6.18.0.1
-    * Support for Advanced Bidding
+    * Service release. No new features.
 
  * 6.18.0.0
     * This version of the adapters has been certified with ironSource 6.18.0 and MoPub SDK 5.13.1.

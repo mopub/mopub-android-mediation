@@ -343,10 +343,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
             final NativeAdOptions.Builder optionsBuilder = new NativeAdOptions.Builder();
 
-            // MoPub requires the images to be pre-cached using their APIs, so we do not want
-            // Google to download the image assets.
-            optionsBuilder.setReturnUrlsForImageAssets(true);
-
             // MoPub allows for only one image, so only request for one image.
             optionsBuilder.setRequestMultipleImages(false);
 
