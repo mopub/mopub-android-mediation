@@ -97,8 +97,6 @@ public class PangleAdBanner extends BaseAd {
         mBannerWidth = safeBannerSizes[0];
         mBannerHeight = safeBannerSizes[1];
 
-        resolveAdSize();
-
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "BannerWidth = " + mBannerWidth +
                 ", BannerHeight = " + mBannerHeight);
 
@@ -178,18 +176,16 @@ public class PangleAdBanner extends BaseAd {
             adSize[1] = (int) (100f * widthRatio);
         }
 
+        if (adSize[0] <= 0) {
+            adSize[0] = 600;
+            adSize[1] = 0;
+        }
+
+        if (adSize[1] < 0) {
+            adSize[1] = 0;
+        }
+
         return adSize;
-    }
-
-    private void resolveAdSize() {
-        if (mBannerWidth <= 0) {
-            mBannerWidth = 600;
-            mBannerHeight = 0;
-        }
-
-        if (mBannerHeight < 0) {
-            mBannerHeight = 0;
-        }
     }
 
     @Override
@@ -275,7 +271,7 @@ public class PangleAdBanner extends BaseAd {
 
         private void bindDislike(TTNativeExpressAd ad) {
             /** Pangle provided a dislike callback, it is an optional callback method when user click they dislike the ad.
-             *  Please refer to the further detail document from Pangle.
+             *  Please reach out to Pangle team if you want to implement it.
              */
             if (mContext instanceof Activity) {
                 ad.setDislikeCallback((Activity) mContext, new TTAdDislike.DislikeInteractionCallback() {
