@@ -68,9 +68,9 @@ public class UnityAdsAdapterConfiguration extends BaseAdapterConfiguration {
                     listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
                     return;
                 }
-                if (configuration == null || context == null) {
+                if (configuration == null) {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads initialization not started. " +
-                            "Configuration or Context is null. Note that initialization on the first app launch is a no-op.");
+                            "Configuration is null. Note that initialization on the first app launch is a no-op.");
                     listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                     return;
                 }
@@ -82,7 +82,8 @@ public class UnityAdsAdapterConfiguration extends BaseAdapterConfiguration {
                     }
 
                     @Override
-                    public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
+                    public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
                         listener.onNetworkInitializationFinished(UnityAdsAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                     }
                 });

@@ -25,15 +25,9 @@ public class UnityRouter {
     static void initUnityAds(Map<String, String> serverExtras, Context context, IUnityAdsInitializationListener initializationListener) {
         initGdpr(context);
 
-        if (UnityAds.isInitialized()) {
-            initializationListener.onInitializationComplete();
-            return;
-        }
-
         String gameId = serverExtras.get(GAME_ID_KEY);
         if (gameId == null || gameId.isEmpty()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "gameId is missing or entered incorrectly in the MoPub UI");
-            return;
         }
         initMediationMetadata(context);
 

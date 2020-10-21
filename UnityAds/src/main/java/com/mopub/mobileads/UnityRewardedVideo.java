@@ -121,18 +121,10 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
         final Map<String, String> extras = adData.getExtras();
 
         setAutomaticImpressionAndClickTracking(false);
-
-        UnityRouter.initUnityAds(extras, context, new IUnityAdsInitializationListener() {
-            @Override
-            public void onInitializationComplete() {
-                UnityAds.load(mPlacementId, mUnityLoadListener);
-            }
-
-            @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
-                MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
-            }
-        });
+        if (!UnityAds.isInitialized()) {
+            UnityRouter.initUnityAds(extras, context, null);
+        }
+        UnityAds.load(mPlacementId, mUnityLoadListener);
     }
 
     @Override

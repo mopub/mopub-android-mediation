@@ -76,33 +76,22 @@ public class UnityBanner extends BaseAd implements BannerView.IListener {
 
         final BannerView.IListener bannerlistener = this;
 
-        UnityRouter.initUnityAds(extras, context, new IUnityAdsInitializationListener() {
-            @Override
-            public void onInitializationComplete() {
-                final UnityBannerSize bannerSize = unityAdsAdSizeFromAdData(adData);
+        if (!UnityAds.isInitialized()) {
+            UnityRouter.initUnityAds(extras, context, null);
+        }
 
-                if (mBannerView != null) {
-                    mBannerView.destroy();
-                    mBannerView = null;
-                }
+        final UnityBannerSize bannerSize = unityAdsAdSizeFromAdData(adData);
 
-                mBannerView = new BannerView((Activity) context, placementId, bannerSize);
-                mBannerView.setListener(bannerlistener);
-                mBannerView.load();
+        if (mBannerView != null) {
+            mBannerView.destroy();
+            mBannerView = null;
+        }
 
-                MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-            }
+        mBannerView = new BannerView((Activity) context, placementId, bannerSize);
+        mBannerView.setListener(bannerlistener);
+        mBannerView.load();
 
-            @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String s) {
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to initialize Unity Ads");
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
-
-                if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                }
-            }
-        });
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     @Override
