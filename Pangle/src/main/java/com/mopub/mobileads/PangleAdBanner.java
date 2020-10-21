@@ -31,7 +31,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
 public class PangleAdBanner extends BaseAd {
-
     private static final String ADAPTER_NAME = PangleAdBanner.class.getSimpleName();
 
     private static String mPlacementId;
@@ -53,9 +52,9 @@ public class PangleAdBanner extends BaseAd {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(adData);
 
-        mContext = context;
         setAutomaticImpressionAndClickTracking(false);
-        TTAdManager adManager = null;
+
+        mContext = context;
         String adm = null;
 
         final Map<String, String> extras = adData.getExtras();
@@ -78,10 +77,11 @@ public class PangleAdBanner extends BaseAd {
             /** Init Pangle SDK if fail to initialize in the PangleAdapterConfiguration */
             final String appId = extras.get(PangleAdapterConfiguration.APP_ID_EXTRA_KEY);
             PangleAdapterConfiguration.pangleSdkInit(context, appId);
-            adManager = PangleAdapterConfiguration.getPangleSdkManager();
+
             mPangleAdapterConfiguration.setCachedInitializationParameters(context, extras);
         }
 
+        TTAdManager adManager = PangleAdapterConfiguration.getPangleSdkManager();
         if (adManager == null) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_INVALID_STATE.getIntCode(),
@@ -120,7 +120,7 @@ public class PangleAdBanner extends BaseAd {
     }
 
     /**
-     * Banner size mapping according to the incoming size in adapter and selected size on Pangle platform.
+     * Banner size ratio mapping according to the incoming size in adapter and selected size on Pangle platform.
      * Pangle will return the banner ads with appropriate size.
      * <p>
      * Please refer to our documentation for Pangle size mapping.
@@ -137,52 +137,45 @@ public class PangleAdBanner extends BaseAd {
             return adSize;
         }
 
-        final Object oWidth = adData.getAdWidth();
-        if (oWidth instanceof Integer) {
-            adSize[0] = (Integer) oWidth;
+        adSize[0] = adData.getAdWidth();
+        adSize[1] = adData.getAdHeight();
+
+        final float dimensionRatio = adSize[0] / adSize[1];
+
+        if (dimensionRatio == 600f / 500f || dimensionRatio == 640f / 100f) {
+            return adSize;
         }
 
-        final Object oHeight = adData.getAdHeight();
-        if (oHeight instanceof Integer) {
-            adSize[1] = (Integer) oHeight;
+        final float factor = 0.25f;
+        float widthRatio = adSize[0] / 600f;
+
+        if (widthRatio <= 0.5f + factor) {
+            widthRatio = 0.5f;
+        } else if (widthRatio <= 1f + factor) {
+            widthRatio = 1f;
+        } else if (widthRatio <= 1.5f + factor) {
+            widthRatio = 1.5f;
+        } else {
+            widthRatio = 2f;
         }
 
-        if (oWidth != null) {
-            final float ratio = adSize[0] / adSize[1];
-
-            if (ratio == 600f / 500f || ratio == 640f / 100f) {
-                return adSize;
-            }
-
-            final float factor = 0.25f;
-            float widthRatio = adSize[0] / 600f;
-            if (widthRatio <= 0.5f + factor) {
+        if (dimensionRatio < 600f / 500f) { // 1.2f
+            adSize[0] = (int) (600f * widthRatio);
+            adSize[1] = (int) (500f * widthRatio);
+        } else { // 6.4f = 640f / 100f
+            widthRatio = adSize[0] / 640f;
+            if (widthRatio < 0.5f + factor) {
                 widthRatio = 0.5f;
-            } else if (widthRatio <= 1f + factor) {
+            } else if (widthRatio < 1f + factor) {
                 widthRatio = 1f;
-            } else if (widthRatio <= 1.5f + factor) {
+            } else if (widthRatio < 1.5f + factor) {
                 widthRatio = 1.5f;
             } else {
                 widthRatio = 2f;
             }
 
-            if (ratio < 600f / 500f) { // 1.2f
-                adSize[0] = (int) (600f * widthRatio);
-                adSize[1] = (int) (500f * widthRatio);
-            } else  { // 6.4f = 640f / 100f
-                widthRatio = adSize[0] / 640f;
-                if (widthRatio < 0.5f + factor) {
-                    widthRatio = 0.5f;
-                } else if (widthRatio < 1f + factor) {
-                    widthRatio = 1f;
-                } else if (widthRatio < 1.5f + factor) {
-                    widthRatio = 1.5f;
-                } else {
-                    widthRatio = 2f;
-                }
-                adSize[0] = (int) (640f * widthRatio);
-                adSize[1] = (int) (100f * widthRatio);
-            }
+            adSize[0] = (int) (640f * widthRatio);
+            adSize[1] = (int) (100f * widthRatio);
         }
 
         return adSize;
@@ -275,13 +268,14 @@ public class PangleAdBanner extends BaseAd {
                 mTTNativeExpressAd = ads.get(0);
                 mTTNativeExpressAd.setExpressInteractionListener(mExpressAdInteractionListener);
                 bindDislike(mTTNativeExpressAd);
+
                 mTTNativeExpressAd.render();
             }
         };
 
         private void bindDislike(TTNativeExpressAd ad) {
-            /** dislike function, it is an optional method that you can use custom dialog.
-             * please refer to the access document from Pangle
+            /** Pangle provided a dislike callback, it is an optional callback method when user click they dislike the ad.
+             *  Please refer to the further detail document from Pangle.
              */
             if (mContext instanceof Activity) {
                 ad.setDislikeCallback((Activity) mContext, new TTAdDislike.DislikeInteractionCallback() {
@@ -324,22 +318,23 @@ public class PangleAdBanner extends BaseAd {
 
                     @Override
                     public void onRenderFail(View view, String msg, int code) {
-                        MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+                        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
                         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
-                                "Banner ad onRenderFail() called with message: " + msg
+                                "Pangle banner ad failed to render with message: " + msg
                                         + ", and code: " + code);
 
                         if (mLoadListener != null) {
-                            mLoadListener.onAdLoadFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
+                            mLoadListener.onAdLoadFailed(MoPubErrorCode.INLINE_LOAD_ERROR);
                         }
                     }
 
                     @Override
                     public void onRenderSuccess(View view, float width, float height) {
+                        mBannerView = view;
+
                         MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
                         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
-                        mBannerView = view;
                         if (mLoadListener != null) {
                             mLoadListener.onAdLoaded();
                         }
@@ -354,6 +349,7 @@ public class PangleAdBanner extends BaseAd {
 
             this.mExpressAdInteractionListener = null;
             this.mTTNativeExpressAdListener = null;
+
             mBannerView = null;
         }
     }

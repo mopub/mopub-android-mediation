@@ -1,4 +1,8 @@
 ## Changelog
+  * 3.1.5.4.1
+    * Add support for banner format. 
+    * This version of the adapters has been certified with Pangle 3.1.5.4 and MoPub SDK 5.14.1.
+
   * 3.1.5.4.0
     * This version of the adapters has been certified with Pangle 3.1.5.4 and MoPub SDK 5.13.1.
     
