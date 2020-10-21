@@ -352,7 +352,7 @@ public class VungleRouter {
 
         @Override
         public void onAdViewed(String id) {
-            //no-op for now(6.8.1)
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "onAdViewed - Placement ID " + id);
         }
     };
 
