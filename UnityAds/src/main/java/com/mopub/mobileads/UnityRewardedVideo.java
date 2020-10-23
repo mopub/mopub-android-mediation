@@ -33,7 +33,7 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
     private static final String ADAPTER_NAME = UnityRewardedVideo.class.getSimpleName();
 
     @NonNull
-    private String mPlacementId = "";
+    private String mPlacementId = "rewardedVideo";
 
     @NonNull
     private UnityAdsAdapterConfiguration mUnityAdsAdapterConfiguration;
@@ -88,29 +88,27 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
                                          @NonNull final AdData adData) {
         mLauncherActivity = launcherActivity;
 
-        synchronized (UnityRewardedVideo.class) {
-            final Map<String, String> extras = adData.getExtras();
-            mPlacementId = UnityRouter.placementIdForServerExtras(extras, mPlacementId);
-            if (UnityAds.isInitialized()) {
-                return false;
+        final Map<String, String> extras = adData.getExtras();
+        mPlacementId = UnityRouter.placementIdForServerExtras(extras, mPlacementId);
+        if (UnityAds.isInitialized()) {
+            return false;
+        }
+
+        mUnityAdsAdapterConfiguration.setCachedInitializationParameters(launcherActivity, extras);
+
+        UnityRouter.initUnityAds(extras, launcherActivity, new IUnityAdsInitializationListener() {
+            @Override
+            public void onInitializationComplete() {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads successfully initialized.");
             }
 
-            mUnityAdsAdapterConfiguration.setCachedInitializationParameters(launcherActivity, extras);
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
+            }
+        });
 
-            UnityRouter.initUnityAds(extras, launcherActivity, new IUnityAdsInitializationListener() {
-                @Override
-                public void onInitializationComplete() {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity Ads successfully initialized.");
-                }
-
-                @Override
-                public void onInitializationFailed(UnityAds.UnityAdsInitializationError unityAdsInitializationError, String errorMessage) {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, errorMessage);
-                }
-            });
-
-            return true;
-        }
+        return true;
     }
 
     @Override
