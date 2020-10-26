@@ -1,4 +1,7 @@
 ## Changelog
+ * 6.2.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 6.2.0 and MoPub 5.13.1.
+
  * 6.1.0.0
    * This version of the adapters has been certified with Facebook Audience Network 6.1.0 and MoPub 5.13.1.
 
@@ -13,7 +16,7 @@
 
  * 5.10.1.0
    * This version of the adapters has been certified with Facebook Audience Network 5.10.1 and MoPub 5.13.1.
-   * Fixed `java.lang.NoClassDefFoundError: com.facebook.ads.redexgen.X.8O` crashes on some Android 4.x and 5.x builds. 
+   * Fixed `java.lang.NoClassDefFoundError: com.facebook.ads.redexgen.X.8O` crashes on some Android 4.x and 5.x builds.
 
  * 5.10.0.1
    * Fix custom expiration logic for interstitial and rewarded video. Note: For expired interstitials, publishers need to call `destroy()` before requesting a new ad.
@@ -31,7 +34,7 @@
  * 5.9.0.2
    * Refactor non-native adapter classes to use the new consolidated API from MoPub.
    * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
-   
+
  * 5.9.0.1
    * Add support for Facebook native banner rendering via [templates](https://developers.facebook.com/docs/audience-network/guides/ad-formats/native/android-template/#native-banner-ad).
 
@@ -42,7 +45,7 @@
    * This version of the adapters has been certified with Facebook Audience Network 5.8.0 and MoPub 5.11.1.
 
  * 5.7.1.1
-   * Fix duplicate firing of `onRewardedVideoClosed()`. 
+   * Fix duplicate firing of `onRewardedVideoClosed()`.
 
  * 5.7.1.0
    * This version of the adapters has been certified with Facebook Audience Network 5.7.1.
@@ -52,22 +55,22 @@
 
  * 5.6.1.0
    * This version of the adapters has been certified with Facebook Audience Network 5.6.1.
- 
+
  * 5.6.0.1
     * Log the Facebook placement name in ad lifecycle events.
     * Map additional error codes for failure cases.
-    * Fail fast when certain parameters are null. 
+    * Fail fast when certain parameters are null.
 
  * 5.6.0.0
     * This version of the adapters has been certified with Facebook Audience Network 5.6.0.
     * Add support for [native banner](https://developers.facebook.com/docs/audience-network/android-native-banner/). Refer to the [Mediate Facebook page](https://developers.mopub.com/publishers/mediation/networks/facebook/) for integration instructions.
-    * Refactor ad request logic to use Facebook Audience Network's `LoadConfigBuilder`. 
+    * Refactor ad request logic to use Facebook Audience Network's `LoadConfigBuilder`.
 
  * 5.5.0.8
-    * Replace `AdIconView` with `MediaView` for the ad icon view as it has been deprecated by Facebook. 
+    * Replace `AdIconView` with `MediaView` for the ad icon view as it has been deprecated by Facebook.
 
  * 5.5.0.7
-    * Fix error codes mapping for the banner and interstitial adapters. 
+    * Fix error codes mapping for the banner and interstitial adapters.
 
  * 5.5.0.6
     * Fix banner size checks so 250 doesn't always get treated as 90.
@@ -113,7 +116,7 @@
     * Facebook Audience Network Adapter will now be released as an Android Archive (AAR) file that includes manifest file for [FAN manifest changes](https://developers.facebook.com/docs/audience-network/android-interstitial/).
 
   * 5.2.0.0
-    * This version of the adapters has been certified with Facebook Audience Network 5.2.0. 
+    * This version of the adapters has been certified with Facebook Audience Network 5.2.0.
     * Add `FacebookTemplateRenderer.java` to render native ads using [predefined layouts from Facebook Audience Network](https://developers.facebook.com/docs/audience-network/android/nativeadtemplate). You won't need to bind to your XML layouts/views; instead of creating a new `FacebookAdRenderer`, simply create a new `FacebookTemplateRenderer` and pass in a new `NativeAdViewAttributes()`.
     * Replace `AdChoiceView` with `AdOptionsView`.
 
@@ -122,7 +125,7 @@
 
   * 5.1.0.1
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
-    * Add the `FacebookAdapterConfiguration` class to: 
+    * Add the `FacebookAdapterConfiguration` class to:
          * pre-initialize the Facebook Audience Network SDK during MoPub SDK initialization process
          * store adapter and SDK versions for logging purpose
          * return the Advanced Biding token previously returned by `FacebookAdvancedBidder.java`
@@ -131,7 +134,7 @@
   * 5.1.0.0
     * This version of the adapters has been certified with Facebook Audience Network 5.1.0
     * For all ad formats, add support to initialize Facebook Audience Network SDK at the time of the first ad request to Facebook Audience Network.
- 
+
   * 5.0.1.0
     * This version of the adapters has been certified with Facebook Audience Network 5.0.1.
 
