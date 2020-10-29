@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.LifecycleListener;
-import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.verizon.ads.ActivityStateManager;
@@ -43,6 +42,7 @@ public class VerizonInterstitial extends BaseAd {
 
     private static final String ADAPTER_NAME = VerizonInterstitial.class.getSimpleName();
 
+    private static final String AD_IMPRESSION_EVENT_ID = "adImpression";
     private static final String PLACEMENT_ID_KEY = "placementId";
     private static final String SITE_ID_KEY = "siteId";
 
@@ -111,8 +111,6 @@ public class VerizonInterstitial extends BaseAd {
 
             return;
         }
-
-        VASAds.setLocationEnabled(MoPub.getLocationAwareness() != MoPub.LocationAwareness.DISABLED);
 
         final InterstitialAdFactory interstitialAdFactory = new InterstitialAdFactory(context, mPlacementId,
                 new VerizonInterstitialFactoryListener());
@@ -282,14 +280,6 @@ public class VerizonInterstitial extends BaseAd {
             });
         }
 
-        @Override
-        public void onCacheLoaded(final InterstitialAdFactory interstitialAdFactory,
-                                  final int numRequested, final int numReceived) {
-        }
-
-        @Override
-        public void onCacheUpdated(final InterstitialAdFactory interstitialAdFactory, final int cacheSize) {
-        }
 
         @Override
         public void onError(final InterstitialAdFactory interstitialAdFactory, final ErrorInfo errorInfo) {
@@ -332,7 +322,6 @@ public class VerizonInterstitial extends BaseAd {
                 public void run() {
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdShown();
-                        mInteractionListener.onAdImpression();
                     }
                 }
             });
@@ -378,6 +367,17 @@ public class VerizonInterstitial extends BaseAd {
         @Override
         public void onEvent(final InterstitialAd interstitialAd, final String source,
                             final String eventId, final Map<String, Object> arguments) {
+
+            if (AD_IMPRESSION_EVENT_ID.equals(eventId)) {
+                VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdImpression();
+                        }
+                    }
+                });
+            }
         }
     }
 }

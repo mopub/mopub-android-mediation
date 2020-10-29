@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.LifecycleListener;
-import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.verizon.ads.ActivityStateManager;
@@ -48,6 +47,7 @@ public class VerizonBanner extends BaseAd {
 
     private static final String ADAPTER_NAME = VerizonBanner.class.getSimpleName();
 
+    private static final String AD_IMPRESSION_EVENT_ID = "adImpression";
     private static final String PLACEMENT_ID_KEY = "placementId";
     private static final String SITE_ID_KEY = "siteId";
     private static final String HEIGHT_LEGACY_KEY = "adHeight";
@@ -71,6 +71,8 @@ public class VerizonBanner extends BaseAd {
     protected void load(@NonNull final Context context, @NonNull final AdData adData) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(adData);
+
+        setAutomaticImpressionAndClickTracking(false);
 
         final Map<String, String> extras = adData.getExtras();
         if (extras.isEmpty()) {
@@ -152,8 +154,6 @@ public class VerizonBanner extends BaseAd {
         final LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.CENTER_HORIZONTAL;
         internalView.setLayoutParams(lp);
-
-        VASAds.setLocationEnabled(MoPub.getLocationAwareness() != MoPub.LocationAwareness.DISABLED);
 
         final Bid bid = BidCache.get(mPlacementId);
         final InlineAdFactory inlineAdFactory = new InlineAdFactory(context, mPlacementId,
@@ -319,14 +319,6 @@ public class VerizonBanner extends BaseAd {
             });
         }
 
-        @Override
-        public void onCacheLoaded(final InlineAdFactory inlineAdFactory, final int numRequested,
-                                  final int numReceived) {
-        }
-
-        @Override
-        public void onCacheUpdated(final InlineAdFactory inlineAdFactory, final int cacheSize) {
-        }
 
         @Override
         public void onError(final InlineAdFactory inlineAdFactory, final ErrorInfo errorInfo) {
@@ -425,6 +417,17 @@ public class VerizonBanner extends BaseAd {
         @Override
         public void onEvent(final InlineAdView inlineAdView, final String source, final String eventId,
                             final Map<String, Object> arguments) {
+
+            if (AD_IMPRESSION_EVENT_ID.equals(eventId)) {
+                VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdImpression();
+                        }
+                    }
+                });
+            }
         }
     }
 }

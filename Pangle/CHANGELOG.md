@@ -1,4 +1,14 @@
 ## Changelog
+  * 3.1.5.5.0
+    * This version of the adapters has been certified with Pangle 3.1.5.5 and MoPub SDK 5.14.1.
+
+  * 3.1.5.4.1
+    * Add support for banner format. 
+    * This version of the adapters has been certified with Pangle 3.1.5.4 and MoPub SDK 5.14.1.
+
+  * 3.1.5.4.0
+    * This version of the adapters has been certified with Pangle 3.1.5.4 and MoPub SDK 5.13.1.
+    
   * 3.1.5.2.1
     * Fix `RunTimeException` due to not passing the `app_id` to Pangle SDK.
     * Fix GDPR information not being updated during initializing Pangle outside of MoPub.

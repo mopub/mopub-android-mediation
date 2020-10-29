@@ -1,4 +1,16 @@
 ## Changelog
+  * 19.5.0.1
+    * Prevent oversized banner ads from serving by failing the ad request if the creative's width or height is greater than the publishers-specified width or height.
+
+  * 19.5.0.0
+    * This version of the adapters has been certified with AdMob 19.5.0 and MoPub 5.14.0.
+
+  * 19.4.0.1
+    * Bind native ad resources via the dedicated `GooglePlayServicesViewBinder.java` instead of MoPub's `MediaViewBinder.java`. Publishers must use this new ViewBinder in their apps.
+
+  * 19.4.0.0
+    * This version of the adapters has been certified with AdMob 19.4.0 and MoPub 5.13.1.
+
   * 19.3.0.2
     * Fix native ad static images not displayed/clickable. This allows Google to manage the image asset within their `MediaView`.
 

@@ -3,6 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
+    <item android:title="@string/api_endpoint">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_production"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_menu_production"
+                    android:title="@string/production" />
+                <item
+                    android:id="@+id/nav_staging"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_menu_staging"
+                    android:title="@string/staging" />
+            </group>
+        </menu>
+    </item>
+
     <item android:title="@string/privacy">
         <menu>
             <item

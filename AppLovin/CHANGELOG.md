@@ -1,4 +1,20 @@
 ## Changelog
+* 9.14.5.0
+    * This version of the adapters has been certified with AppLovin 9.14.5 and MoPub SDK 5.14.0.
+
+ * 9.14.4.0
+    * This version of the adapters has been certified with AppLovin 9.14.4 and MoPub SDK 5.13.1.
+
+ * 9.14.3.0
+    * This version of the adapters has been certified with AppLovin 9.14.3 and MoPub SDK 5.13.1.
+
+ * 9.14.1.0
+    * This version of the adapters has been certified with AppLovin 9.14.1 and MoPub SDK 5.13.1.
+
+ * 9.13.5.0
+    * Remove MREC support from AppLovin banner adapter.
+    * This version of the adapters has been certified with AppLovin 9.13.5 and MoPub SDK 5.13.1.
+
  * 9.13.4.0
     * This version of the adapters has been certified with AppLovin 9.13.4 and MoPub SDK 5.13.1.
 

@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mopub.mobileads.snap">
+    <application>
+    </application>
+</manifest>

@@ -176,6 +176,30 @@ public class ChartboostShared {
             @Override
             public void onAdImpression() {
             }
+
+            @Override
+            public void onAdDismissed() {
+            }
+
+            @Override
+            public void onAdComplete(MoPubReward moPubReward) {
+            }
+
+            @Override
+            public void onAdCollapsed() {
+            }
+
+            @Override
+            public void onAdExpanded() {
+            }
+
+            @Override
+            public void onAdPauseAutoRefresh() {
+            }
+
+            @Override
+            public void onAdResumeAutoRefresh() {
+            }
         };
 
         @Override
