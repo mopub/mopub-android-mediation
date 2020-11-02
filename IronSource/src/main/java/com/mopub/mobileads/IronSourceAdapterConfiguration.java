@@ -18,6 +18,8 @@ import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.ironsource.BuildConfig;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -26,9 +28,11 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
 
     // ironSource's keys
-    public static final String IRONSOURCE_ADAPTER_VERSION = "400";
+    public static final String IRONSOURCE_ADAPTER_VERSION = "500";
     public static final String DEFAULT_INSTANCE_ID = "0";
     private static final String APPLICATION_KEY = "applicationKey";
+    private static final String REWARDEDVIDEO_KEY = "rewardedvideo";
+    private static final String INTERSTITIAL_KEY = "interstitial";
     private static final String MEDIATION_TYPE = "mopub";
 
     // Adapter's keys
@@ -81,22 +85,40 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
         Preconditions.checkNotNull(listener);
 
         boolean networkInitializationSucceeded = false;
+        List<IronSource.AD_UNIT> adUnitsToInit = new ArrayList<>();
 
         synchronized (IronSourceAdapterConfiguration.class) {
             try {
                 if (configuration != null && context instanceof Activity) {
 
                     final String appKey = configuration.get(APPLICATION_KEY);
+                    final String rewardedVideoValue = configuration.get(REWARDEDVIDEO_KEY);
+                    final String interstitialValue = configuration.get(INTERSTITIAL_KEY);
+
+                    if(TextUtils.isEmpty(rewardedVideoValue) && TextUtils.isEmpty(interstitialValue)) {
+                        adUnitsToInit.add(IronSource.AD_UNIT.INTERSTITIAL);
+                        adUnitsToInit.add(IronSource.AD_UNIT.REWARDED_VIDEO);
+                    }
+                    else {
+                        if(rewardedVideoValue.contains(String.valueOf(true))) {
+                            adUnitsToInit.add(IronSource.AD_UNIT.REWARDED_VIDEO);
+                        }
+
+                        if(interstitialValue.contains(String.valueOf(true))) {
+                            adUnitsToInit.add(IronSource.AD_UNIT.INTERSTITIAL);
+                        }
+                    }
 
                     if (TextUtils.isEmpty(appKey)) {
-                        MoPubLog.log(CUSTOM, "ironSource's initialization not" +
+                        MoPubLog.log(CUSTOM, "IronSource's initialization not" +
                                 " started. Ensure ironSource's " + APPLICATION_KEY +
                                 " is populated on the MoPub dashboard.");
                     } else {
+                        MoPubLog.log(CUSTOM, "IronSource's initialization ad units: " + adUnitsToInit.toString());
                         IronSource.setMediationType(MEDIATION_TYPE + IRONSOURCE_ADAPTER_VERSION
                                 + "SDK" + getMoPubSdkVersion());
                         IronSource.initISDemandOnly((Activity) context, appKey,
-                                IronSource.AD_UNIT.REWARDED_VIDEO, IronSource.AD_UNIT.INTERSTITIAL);
+                                adUnitsToInit.toArray(new IronSource.AD_UNIT[adUnitsToInit.size()]));
 
                         networkInitializationSucceeded = true;
                     }
