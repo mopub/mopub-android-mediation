@@ -4,6 +4,11 @@
     * Pass the context to Vungle's `getAvailableBidTokens()` API.
     * Introduce `onAdViewed` callback to track impression.
 
+  * 6.9.0.0
+    * This version of the adapters has been certified with Vungle 6.9.0 and MoPub SDK 5.14.0.
+    * New callback `onAdViewed` is now used and mapped for MoPub's `onAdImpression`.
+
+
   * 6.8.1.2
     * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
 
