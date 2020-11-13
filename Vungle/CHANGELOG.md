@@ -1,4 +1,8 @@
 ## Changelog
+  * 6.9.0.0
+    * This version of the adapters has been certified with Vungle 6.9.0 and MoPub SDK 5.14.0.
+    * New callback `onAdViewed` is now used and mapped for MoPub's `onAdImpression`.
+
   * 6.8.1.1
     * Support `orientations` data passing through MoPub initialize in Android and Unity Android. 
     * Available `orientations` values are: (1) Portait: `0` (2) Landscape: `1` (3) Auto rotate (default): `2` (4) Match video: `3`.
