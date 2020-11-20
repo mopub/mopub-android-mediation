@@ -8,8 +8,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.ads.mediation.admob.AdMobAdapter;
+import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.query.QueryInfo;
+import com.google.android.gms.ads.query.QueryInfoGenerationCallback;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
@@ -18,6 +23,9 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.admob.BuildConfig;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
@@ -25,6 +33,8 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
 
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+
+    protected static Cache<String, QueryInfo> adMobTokens;
 
     @NonNull
     @Override
@@ -35,7 +45,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return null;
+        return refreshBidderToken(context);
     }
 
     @NonNull
@@ -81,6 +91,10 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
             listener.onNetworkInitializationFinished(GooglePlayServicesAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
+
+        adMobTokens = CacheBuilder.newBuilder()
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .build();
     }
 
     // MoPub collects GDPR consent on behalf of Google
@@ -97,4 +111,30 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
 
         return builder;
     }
+
+    private String refreshBidderToken(final Context context) {
+        FutureTask<String> generateQuery = new FutureTask<>(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                final String[] biddingToken = {null};
+                QueryInfo.generate(context, AdFormat.INTERSTITIAL, new AdRequest.Builder().build(),
+                    new QueryInfoGenerationCallback() {
+                        @Override
+                        public void onSuccess(QueryInfo queryInfo) {
+                            adMobTokens.put(queryInfo.getRequestId(), queryInfo);
+                            biddingToken[0] = queryInfo.getQuery();
+                        }
+                    });
+                return biddingToken[0];
+            }
+        });
+        try {
+            String biddingToken = generateQuery.get();
+            return biddingToken;
+        } catch (Exception e){
+            return null;
+        }
+    }
+
+
 }

@@ -13,6 +13,8 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.query.AdInfo;
+import com.google.android.gms.ads.query.QueryInfo;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -33,6 +35,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.adMobTokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesInterstitial extends BaseAd {
@@ -44,6 +47,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
     public static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
     public static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
     public static final String TEST_DEVICES_KEY = "testDevices";
+    // TODO: Key name to be verified.
+    public static final String ADM_KEY = "adm";
 
     @NonNull
     private static final String ADAPTER_NAME = GooglePlayServicesInterstitial.class.getSimpleName();
@@ -51,6 +56,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
     private InterstitialAd mGoogleInterstitialAd;
     @Nullable
     private String mAdUnitId;
+    @Nullable
+    private String mAdString;
 
     public GooglePlayServicesInterstitial() {
         mGooglePlayServicesAdapterConfiguration = new GooglePlayServicesAdapterConfiguration();
@@ -86,6 +93,14 @@ public class GooglePlayServicesInterstitial extends BaseAd {
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
+
+        if (extras.containsKey(ADM_KEY)) {
+            mAdString = extras.get(ADM_KEY);
+            String requestID = AdInfo.getRequestId(mAdString);
+            QueryInfo queryInfo = adMobTokens.getIfPresent(requestID);
+            AdInfo adInfo = new AdInfo(queryInfo, mAdString);
+            builder.setAdInfo(adInfo);
+        }
 
         // Publishers may append a content URL by passing it to the MoPubInterstitial.setLocalExtras() call.
         final String contentUrl = extras.get(CONTENT_URL_KEY);
