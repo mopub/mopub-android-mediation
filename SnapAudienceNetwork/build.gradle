@@ -1,0 +1,18 @@
+project.version = '1.0.2.2'
+project.ext.networkName = 'snap'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation(name: 'snap-adkit', ext: 'aar')
+}
+
+
+allprojects {
+    repositories {
+        jcenter()
+        flatDir {
+            dirs 'src/main/libs'
+        }
+    }
+}

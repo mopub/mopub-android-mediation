@@ -1,4 +1,4 @@
-project.version = '4.2.4.0'
+project.version = '4.3.0.0'
 project.ext.networkName = 'adcolony'
 
 apply from: '../shared-build.gradle'

@@ -253,7 +253,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         @Nullable
         FrameLayout mAdChoicesIconContainer;
         @Nullable
-        MediaLayout mMediaView;
+        GooglePlayServicesMediaLayout mMediaView;
 
         private static final GoogleStaticNativeViewHolder EMPTY_VIEW_HOLDER =
                 new GoogleStaticNativeViewHolder();
@@ -275,7 +275,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
                 viewHolder.mPrivacyInformationIconImageView =
                         (ImageView) view.findViewById(viewBinder.privacyInformationIconImageId);
                 viewHolder.mMediaView =
-                        (MediaLayout) view.findViewById(viewBinder.mediaLayoutId);
+                        (GooglePlayServicesMediaLayout) view.findViewById(viewBinder.mediaLayoutId);
                 Map<String, Integer> extraViews = viewBinder.extras;
                 Integer starRatingTextViewId = extraViews.get(VIEW_BINDER_KEY_STAR_RATING);
                 if (starRatingTextViewId != null) {

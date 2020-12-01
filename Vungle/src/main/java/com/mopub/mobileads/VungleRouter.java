@@ -349,6 +349,11 @@ public class VungleRouter {
                         "for Placement ID: " + id);
             }
         }
+
+        @Override
+        public void onAdViewed(String id) {
+            MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdViewed - Placement ID: " + id);
+        }
     };
 
     private final LoadAdCallback loadAdCallback = new LoadAdCallback() {

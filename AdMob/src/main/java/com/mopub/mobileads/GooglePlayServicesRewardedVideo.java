@@ -370,7 +370,7 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                     error.getCause());
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(getMoPubShowErrorCode(error.getCode()));
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
         }
     };
@@ -392,28 +392,6 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                 return MoPubErrorCode.NO_CONNECTION;
             case AdRequest.ERROR_CODE_NO_FILL:
                 return MoPubErrorCode.NO_FILL;
-        }
-        return MoPubErrorCode.UNSPECIFIED;
-    }
-
-    /**
-     * Converts a given Google Mobile Ads SDK error code when showing Rewarded Video Ads into
-     * {@link MoPubErrorCode}.
-     *
-     * @param error Google Mobile Ads SDK Ad Request error code when showing Rewarded Video Ads.
-     * @return an equivalent MoPub SDK error code for the given Google Mobile Ads SDK Ad Request
-     * error code thrown when showing Rewarded Video Ads.
-     */
-    private MoPubErrorCode getMoPubShowErrorCode(int error) {
-        switch (error) {
-            case RewardedAdCallback.ERROR_CODE_AD_REUSED:
-                return MoPubErrorCode.INTERNAL_ERROR;
-            case RewardedAdCallback.ERROR_CODE_APP_NOT_FOREGROUND:
-                return MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
-            case RewardedAdCallback.ERROR_CODE_INTERNAL_ERROR:
-                return MoPubErrorCode.INTERNAL_ERROR;
-            case RewardedAdCallback.ERROR_CODE_NOT_READY:
-                return MoPubErrorCode.WARMUP;
         }
         return MoPubErrorCode.UNSPECIFIED;
     }

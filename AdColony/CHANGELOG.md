@@ -1,4 +1,7 @@
 ## Changelog
+  * 4.3.0.0
+    * This version of the adapters has been certified with AdColony 4.3.0 and MoPub 5.14.0.
+
   * 4.2.4.0
     * This version of the adapters has been certified with AdColony 4.2.4 and MoPub 5.13.1.
 

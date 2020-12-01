@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.1.0.2
+    * Add missing `InteractionListener` methods to fullscreen interaction listener.
+
   * 8.1.0.1
     * Fail banner load requests for Android API below 21. Chartboost 8.0.1 and above currently doesn't support displaying of banners for devices with Android API below 21.
 
