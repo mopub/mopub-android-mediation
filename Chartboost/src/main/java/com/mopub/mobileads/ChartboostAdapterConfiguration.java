@@ -77,7 +77,7 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
             try {
                 if (configuration != null && !configuration.isEmpty()) {
 
-                    ChartboostShared.initializeSdk(context, configuration);
+                    boolean isInitialized = ChartboostShared.initializeSdk(context, configuration);
 
                     final String appId = configuration.get(APP_ID_KEY);
                     final String appSignature = configuration.get(APP_SIGNATURE_KEY);
@@ -89,7 +89,11 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
                                 "are populated on the MoPub dashboard. Note that initialization on " +
                                 "the first app launch is a no-op.");
                     } else {
-                        Chartboost.startWithAppId(context, appId, appSignature);
+                        // Add this check to avoid double initialization of Chartboost SDK
+                        // which leads to double config and install network requests
+                        if(!isInitialized) {
+                            Chartboost.startWithAppId(context, appId, appSignature);
+                        }
                     }
 
                     Chartboost.setMediation(Chartboost.CBMediation.CBMediationMoPub, MoPub.SDK_VERSION, BuildConfig.VERSION_NAME);
