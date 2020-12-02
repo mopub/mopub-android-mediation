@@ -62,6 +62,10 @@ public class ChartboostShared {
      */
     public static synchronized boolean initializeSdk(@NonNull Context context,
                                                      @NonNull Map<String, String> serverExtras) {
+        if(Chartboost.isSdkStarted()) {
+            return false;
+        }
+
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(serverExtras);
 
@@ -102,13 +106,6 @@ public class ChartboostShared {
 
         final String appId = serverExtras.get(APP_ID_KEY);
         final String appSignature = serverExtras.get(APP_SIGNATURE_KEY);
-
-        if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appSignature)) {
-            if (appId.equals(mAppId) && appSignature.equals(mAppSignature)) {
-                // We don't need to reinitialize.
-                return false;
-            }
-        }
 
         mAppId = appId;
         mAppSignature = appSignature;
