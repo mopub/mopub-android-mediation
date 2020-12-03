@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
@@ -51,11 +50,6 @@ public class ChartboostShared {
     private static final String APP_ID_KEY = "appId";
     private static final String APP_SIGNATURE_KEY = "appSignature";
     private static final String ADAPTER_NAME = ChartboostShared.class.getSimpleName();
-
-    @Nullable
-    private static String mAppId;
-    @Nullable
-    private static String mAppSignature;
 
     /**
      * Initialize the Chartboost SDK for the provided application id and app signature.
@@ -107,11 +101,16 @@ public class ChartboostShared {
         final String appId = serverExtras.get(APP_ID_KEY);
         final String appSignature = serverExtras.get(APP_SIGNATURE_KEY);
 
-        mAppId = appId;
-        mAppSignature = appSignature;
+        if(appId.isEmpty() || appSignature.isEmpty()) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost's initialization " +
+                    "succeeded, but unable to call Chartboost's startWithAppId(). " +
+                    "Ensure Chartboost's " + APP_ID_KEY + " and " + APP_SIGNATURE_KEY +
+                    "are populated on the MoPub dashboard. Note that initialization on " +
+                    "the first app launch is a no-op.");
+        }
 
         // Perform all the common SDK initialization steps including startAppWithId
-        Chartboost.startWithAppId(context, mAppId, mAppSignature);
+        Chartboost.startWithAppId(context, appId, appSignature);
         Chartboost.setMediation(Chartboost.CBMediation.CBMediationMoPub, MoPub.SDK_VERSION,
                 new ChartboostAdapterConfiguration().getAdapterVersion());
         Chartboost.setDelegate(sDelegate);
@@ -518,7 +517,5 @@ public class ChartboostShared {
     static void reset() {
         // Clears all the locations to load and other state.
         sDelegate = new ChartboostSingletonDelegate();
-        mAppId = null;
-        mAppSignature = null;
     }
 }
