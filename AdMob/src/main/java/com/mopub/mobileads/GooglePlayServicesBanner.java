@@ -57,6 +57,8 @@ public class GooglePlayServicesBanner extends BaseAd {
     private String mAdUnitId;
     private Integer adWidth;
     private Integer adHeight;
+    
+    private Boolean adaptiveBanner = false;
 
     @Override
     protected void load(@NonNull final Context context, @NonNull final AdData adData) {
@@ -78,7 +80,15 @@ public class GooglePlayServicesBanner extends BaseAd {
                 : new AdSize(adWidth, adHeight);
 
         if (adSize != null) {
-            mGoogleAdView.setAdSize(adSize);
+            if (extras.get("adaptive_banner") != null) {
+                adaptiveBanner = Boolean.valueOf(Objects.requireNonNull(extras.get("adaptive_banner")));
+            }
+            if (adaptiveBanner) {
+                int displayWidth= (int) (Resources.getSystem().getDisplayMetrics().widthPixels / Resources.getSystem().getDisplayMetrics().density);
+                mGoogleAdView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, displayWidth));
+            } else {
+                mGoogleAdView.setAdSize(adSize);
+            }
         } else {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     NETWORK_NO_FILL.getIntCode(),
@@ -209,7 +219,7 @@ public class GooglePlayServicesBanner extends BaseAd {
             final int receivedWidth = mGoogleAdView.getAdSize().getWidth();
             final int receivedHeight = mGoogleAdView.getAdSize().getHeight();
 
-            if (receivedWidth > adWidth || receivedHeight > adHeight) {
+            if (receivedWidth > adWidth || receivedHeight > adHeight && !adaptiveBanner) {
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                         NETWORK_NO_FILL.getIntCode(),
                         NETWORK_NO_FILL);
