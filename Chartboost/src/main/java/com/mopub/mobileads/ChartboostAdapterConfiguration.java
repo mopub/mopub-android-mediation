@@ -24,10 +24,6 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static volatile ChartboostShared.ChartboostSingletonDelegate sDelegate = new ChartboostShared.ChartboostSingletonDelegate();
 
-    // Chartboost's keys
-    private static final String APP_ID_KEY = "appId";
-    private static final String APP_SIGNATURE_KEY = "appSignature";
-
     // Adapter's keys
     private static final String ADAPTER_NAME = ChartboostAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
@@ -76,25 +72,7 @@ public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
         synchronized (ChartboostAdapterConfiguration.class) {
             try {
                 if (configuration != null && !configuration.isEmpty()) {
-
                     ChartboostShared.initializeSdk(context, configuration);
-
-                    final String appId = configuration.get(APP_ID_KEY);
-                    final String appSignature = configuration.get(APP_SIGNATURE_KEY);
-
-                    if (TextUtils.isEmpty(appId) || TextUtils.isEmpty(appSignature)) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost's initialization " +
-                                "succeeded, but unable to call Chartboost's startWithAppId(). " +
-                                "Ensure Chartboost's " + APP_ID_KEY + " and " + APP_SIGNATURE_KEY +
-                                "are populated on the MoPub dashboard. Note that initialization on " +
-                                "the first app launch is a no-op.");
-                    } else {
-                        Chartboost.startWithAppId(context, appId, appSignature);
-                    }
-
-                    Chartboost.setMediation(Chartboost.CBMediation.CBMediationMoPub, MoPub.SDK_VERSION, BuildConfig.VERSION_NAME);
-                    Chartboost.setDelegate(sDelegate);
-                    Chartboost.setAutoCacheAds(false);
                     networkInitializationSucceeded = true;
                 } else {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost's initialization via " +
