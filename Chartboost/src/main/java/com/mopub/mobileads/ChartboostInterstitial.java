@@ -79,6 +79,10 @@ public class ChartboostInterstitial extends BaseAd {
             mLocation = TextUtils.isEmpty(location) ? mLocation : location;
         }
 
+        if (extras != null && !extras.isEmpty()) {
+            mChartboostAdapterConfiguration.setCachedInitializationParameters(context, extras);
+        }
+
         // Chartboost delegation can be set to null on some cases in Chartboost SDK 8.0+.
         // We should set the delegation on each load request to prevent this.
         Chartboost.setDelegate(ChartboostShared.getDelegate());

@@ -22,7 +22,8 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class ChartboostAdapterConfiguration extends BaseAdapterConfiguration {
 
-    private static volatile ChartboostShared.ChartboostSingletonDelegate sDelegate = new ChartboostShared.ChartboostSingletonDelegate();
+    private static final ChartboostShared.ChartboostSingletonDelegate sDelegate = 
+            new ChartboostShared.ChartboostSingletonDelegate();
 
     // Adapter's keys
     private static final String ADAPTER_NAME = ChartboostAdapterConfiguration.class.getSimpleName();

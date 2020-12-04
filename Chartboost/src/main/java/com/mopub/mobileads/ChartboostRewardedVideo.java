@@ -65,6 +65,10 @@ public class ChartboostRewardedVideo extends BaseAd {
             mLocation = TextUtils.isEmpty(location) ? mLocation : location;
         }
 
+        if (extras != null && !extras.isEmpty()) {
+            mChartboostAdapterConfiguration.setCachedInitializationParameters(context, extras);
+        }
+
         if (!(context instanceof Activity)) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Context passed to load " +
                     "was not an Activity. Failing the request.");
