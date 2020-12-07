@@ -1,2 +1,2 @@
 ## Changelog
-  * Initial Commit
+  * Initial Commit for InMobi Advanced Bidding Adapters
