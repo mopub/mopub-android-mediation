@@ -38,20 +38,21 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.FULLSCREEN_LOAD_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 
-public class SnapAdInterstitial extends BaseAd {
-    private static final String ADAPTER_NAME = SnapAdInterstitial.class.getSimpleName();
+public class SnapAdRewardedVideo extends BaseAd {
+    private static final String ADAPTER_NAME = SnapAdRewardedVideo.class.getSimpleName();
     private static final String SLOT_ID_KEY = "slotId";
 
     private static String mSlotId;
 
     private final SnapAdAdapterConfiguration mSnapAdAdapterConfiguration;
 
-    public SnapAdInterstitial() {
+    public SnapAdRewardedVideo() {
         mSnapAdAdapterConfiguration = new SnapAdAdapterConfiguration();
 
         snapAdKit.setupListener(new SnapAdEventListener() {
             @Override
             public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
+
                 if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
                     MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
@@ -148,7 +149,7 @@ public class SnapAdInterstitial extends BaseAd {
         mSnapAdAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
-        snapAdKit.loadInterstitial();
+        snapAdKit.loadRewarded();
     }
 
     @Override
@@ -172,7 +173,7 @@ public class SnapAdInterstitial extends BaseAd {
 
     @Override
     protected void onInvalidate() {
-        // no-op
+
     }
 
     @NonNull
