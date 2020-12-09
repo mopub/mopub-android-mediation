@@ -101,12 +101,10 @@ public class ChartboostShared {
         final String appId = serverExtras.get(APP_ID_KEY);
         final String appSignature = serverExtras.get(APP_SIGNATURE_KEY);
 
-        if(appId.isEmpty() || appSignature.isEmpty()) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Chartboost's initialization " +
-                    "succeeded, but unable to call Chartboost's startWithAppId(). " +
+        if(appId == null || appId.isEmpty() || appSignature == null || appSignature.isEmpty()) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME,
                     "Ensure Chartboost's " + APP_ID_KEY + " and " + APP_SIGNATURE_KEY +
-                    "are populated on the MoPub dashboard. Note that initialization on " +
-                    "the first app launch is a no-op.");
+                    "are populated on the MoPub dashboard. Sdk won't be initialized.");
         }
 
         // Perform all the common SDK initialization steps including startAppWithId
