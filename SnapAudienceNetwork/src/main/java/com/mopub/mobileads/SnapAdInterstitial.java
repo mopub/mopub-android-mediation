@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.LifecycleListener;
-import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.snap.adkit.dagger.AdKitApplication;
@@ -20,7 +19,6 @@ import com.snap.adkit.external.SnapAdKit;
 import com.snap.adkit.external.SnapAdKitEvent;
 import com.snap.adkit.external.SnapAdLoadFailed;
 import com.snap.adkit.external.SnapAdLoadSucceeded;
-import com.snap.adkit.external.SnapAdRewardEarned;
 import com.snap.adkit.external.SnapAdVisible;
 
 import java.util.Map;
@@ -31,7 +29,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.DID_DISAPPEAR;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
@@ -48,6 +45,46 @@ public class SnapAdInterstitial extends BaseAd {
 
     public SnapAdInterstitial() {
         mSnapAdAdapterConfiguration = new SnapAdAdapterConfiguration();
+    }
+
+    @NonNull
+    private final SnapAdKit snapAdKit = AdKitApplication.getSnapAdKit();
+
+    @Nullable
+    @Override
+    protected LifecycleListener getLifecycleListener() {
+        return null;
+    }
+
+    @Override
+    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity,
+                                            @NonNull AdData adData) {
+        return false;
+    }
+
+    @Override
+    protected void load(@NonNull Context context, @NonNull AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
+
+        setAutomaticImpressionAndClickTracking(false);
+
+        final Map<String, String> extras = adData.getExtras();
+
+        if (extras == null || extras.isEmpty()) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            if (mLoadListener != null) {
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            }
+            return;
+        }
+
+        mSlotId = extras.get(SLOT_ID_KEY);
+        if (!TextUtils.isEmpty(mSlotId)) {
+            snapAdKit.updateSlotId(mSlotId);
+        }
 
         snapAdKit.setupListener(new SnapAdEventListener() {
             @Override
@@ -90,60 +127,12 @@ public class SnapAdInterstitial extends BaseAd {
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdDismissed();
                     }
-                } else if (snapAdKitEvent instanceof SnapAdRewardEarned) {
-                    MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
-                            MoPubReward.DEFAULT_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
-
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
-                                MoPubReward.DEFAULT_REWARD_AMOUNT));
-                    }
                 } else {
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Received event from Snap " +
                             "Ad Kit: " + snapAdKitEvent.toString());
                 }
             }
         });
-    }
-
-    @NonNull
-    private final SnapAdKit snapAdKit = AdKitApplication.getSnapAdKit();
-
-    @Nullable
-    @Override
-    protected LifecycleListener getLifecycleListener() {
-        return null;
-    }
-
-    @Override
-    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity,
-                                            @NonNull AdData adData) {
-        return false;
-    }
-
-    @Override
-    protected void load(@NonNull Context context, @NonNull AdData adData) {
-        Preconditions.checkNotNull(context);
-        Preconditions.checkNotNull(adData);
-
-        setAutomaticImpressionAndClickTracking(false);
-
-        final Map<String, String> extras = adData.getExtras();
-
-        if (extras.isEmpty()) {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
-            return;
-        }
-
-        mSlotId = extras.get(SLOT_ID_KEY);
-        if (!TextUtils.isEmpty(mSlotId)) {
-            snapAdKit.updateSlotId(mSlotId);
-        }
 
         mSnapAdAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);

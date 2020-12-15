@@ -27,6 +27,7 @@ import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.DID_DISAPPEAR;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
@@ -43,68 +44,10 @@ public class SnapAdRewardedVideo extends BaseAd {
     private static final String SLOT_ID_KEY = "slotId";
 
     private static String mSlotId;
-
     private final SnapAdAdapterConfiguration mSnapAdAdapterConfiguration;
 
     public SnapAdRewardedVideo() {
         mSnapAdAdapterConfiguration = new SnapAdAdapterConfiguration();
-
-        snapAdKit.setupListener(new SnapAdEventListener() {
-            @Override
-            public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
-
-                if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
-                    MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
-
-                    if (mLoadListener != null) {
-                        mLoadListener.onAdLoaded();
-                    }
-                } else if (snapAdKitEvent instanceof SnapAdLoadFailed) {
-                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
-                            FULLSCREEN_LOAD_ERROR);
-
-                    if (mLoadListener != null) {
-                        mLoadListener.onAdLoadFailed(FULLSCREEN_LOAD_ERROR);
-                    }
-                } else if (snapAdKitEvent instanceof SnapAdVisible) {
-                    MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
-
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdShown();
-                    }
-                } else if (snapAdKitEvent instanceof SnapAdClicked) {
-                    MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
-
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdClicked();
-                    }
-                } else if (snapAdKitEvent instanceof SnapAdImpressionHappened) {
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Snap recorded impression: " +
-                            snapAdKitEvent.toString());
-
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdImpression();
-                    }
-                } else if (snapAdKitEvent instanceof SnapAdDismissed) {
-                    MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
-
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdDismissed();
-                    }
-                } else if (snapAdKitEvent instanceof SnapAdRewardEarned) {
-                    MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
-                            MoPubReward.DEFAULT_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
-
-                    if (mInteractionListener != null) {
-                        mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
-                                MoPubReward.DEFAULT_REWARD_AMOUNT));
-                    }
-                } else {
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Received event from Snap " +
-                            "Ad Kit: " + snapAdKitEvent.toString());
-                }
-            }
-        });
     }
 
     @NonNull
@@ -131,7 +74,7 @@ public class SnapAdRewardedVideo extends BaseAd {
 
         final Map<String, String> extras = adData.getExtras();
 
-        if (extras.isEmpty()) {
+        if (extras == null || extras.isEmpty()) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
@@ -146,6 +89,62 @@ public class SnapAdRewardedVideo extends BaseAd {
             snapAdKit.updateSlotId(mSlotId);
         }
 
+        snapAdKit.setupListener(new SnapAdEventListener() {
+            @Override
+            public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
+                if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
+                    MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoaded();
+                    }
+                } else if (snapAdKitEvent instanceof SnapAdLoadFailed) {
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                            FULLSCREEN_LOAD_ERROR.getIntCode(), FULLSCREEN_LOAD_ERROR);
+
+                    if (mLoadListener != null) {
+                        mLoadListener.onAdLoadFailed(FULLSCREEN_LOAD_ERROR);
+                    }
+                } else if (snapAdKitEvent instanceof SnapAdVisible) {
+                    MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdShown();
+                    }
+                } else if (snapAdKitEvent instanceof SnapAdClicked) {
+                    MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdClicked();
+                    }
+                } else if (snapAdKitEvent instanceof SnapAdImpressionHappened) {
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Snap recorded " +
+                            "impression: " + snapAdKitEvent.toString());
+
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdImpression();
+                    }
+                } else if (snapAdKitEvent instanceof SnapAdDismissed) {
+                    MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
+
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdDismissed();
+                    }
+                } else if (snapAdKitEvent instanceof SnapAdRewardEarned) {
+                    MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
+                            MoPubReward.DEFAULT_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
+
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
+                                MoPubReward.DEFAULT_REWARD_AMOUNT));
+                    }
+                } else {
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Received event " +
+                            "from Snap Ad Kit: " + snapAdKitEvent.toString());
+                }
+            }
+        });
+
         mSnapAdAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
@@ -154,13 +153,12 @@ public class SnapAdRewardedVideo extends BaseAd {
 
     @Override
     protected void show() {
-        try {
-            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
+        try {
             snapAdKit.playAd();
         } catch (Exception exception) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Snap " +
-                    "Audience Network Ads");
+            MoPubLog.log(getAdNetworkId(), CUSTOM_WITH_THROWABLE, ADAPTER_NAME, exception);
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
@@ -173,7 +171,7 @@ public class SnapAdRewardedVideo extends BaseAd {
 
     @Override
     protected void onInvalidate() {
-
+        // no-op
     }
 
     @NonNull

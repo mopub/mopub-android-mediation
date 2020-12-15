@@ -1,4 +1,8 @@
 ## Changelog
+  * 1.0.3.1.0
+    * This version of the adapters has been certified with Snap Audience Network 1.0.3.1 and MoPub SDK 5.15.0.
+    * Add support for new ad formats: banner, medium rectangle, and rewarded video.
+
   * 1.0.2.2
     * Service release. No functionality changes.
 
