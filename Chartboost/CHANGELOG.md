@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.2.0.1
+    * Fix a bug where Chartboost SDK initialization can get called multiple times unnecessarily.
+
   * 8.2.0.0
     * This version of the adapters has been certified with Chartboost 8.2.0 and MoPub 5.15.0.
     * Cache last available Interstitial and Rewarded Video data fetched from the MoPub dashboard.
