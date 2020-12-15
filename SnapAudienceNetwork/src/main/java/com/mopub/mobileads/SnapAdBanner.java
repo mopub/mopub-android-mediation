@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.ads.AdSize;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
@@ -23,6 +22,7 @@ import com.snap.adkit.external.SnapAdKitEvent;
 import com.snap.adkit.external.SnapAdLoadFailed;
 import com.snap.adkit.external.SnapAdLoadSucceeded;
 import com.snap.adkit.external.SnapAdRewardEarned;
+import com.snap.adkit.external.SnapAdSize;
 import com.snap.adkit.external.SnapAdVisible;
 import com.snap.adkit.external.SnapBannerAdImpressionRecorded;
 
@@ -88,11 +88,11 @@ class SnapAdBanner extends BaseAd {
             adUnitFormat = adUnitFormat.toLowerCase();
         }
 
-        AdSize adSize;
+        SnapAdSize adSize;
         if ("banner".equals(adUnitFormat)) {
-            adSize = AdSize.BANNER;
+            adSize = SnapAdSize.BANNER;
         } else if ("medium_rectangle".equals(adUnitFormat)) {
-            adSize = AdSize.MEDIUM_RECTANGLE;
+            adSize = SnapAdSize.MEDIUM_RECTANGLE;
         } else {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                     "SnapAudienceNetwork only supports ad sizes 320*50 and 300*250. " +
