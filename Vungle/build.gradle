@@ -1,7 +1,13 @@
-project.version = '6.9.1.0-early1'
+project.version = '6.9.1.0-RC1'
 project.ext.networkName = 'vungle'
 
 apply from: '../shared-build.gradle'
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
 
 def sdkSrcDependency = hasProperty("SdkSrcDependency") ? "$SdkSrcDependency".toBoolean() : false
 
@@ -9,7 +15,8 @@ dependencies {
     if (sdkSrcDependency) {
         implementation project(':vungle-android-sdk:publisher-sdk-android')
     } else {
-        implementation 'com.vungle.early-access:publisher-sdk-android:6.9.1-early1'
+        //implementation 'com.vungle.early-access:publisher-sdk-android:6.9.1-early1'
+        implementation (name: 'vungle-android-sdk-6.9.1-RC1', ext: 'aar')
 /*
         implementation "com.vungle:publisher-sdk-android:6.9.1"
 */
