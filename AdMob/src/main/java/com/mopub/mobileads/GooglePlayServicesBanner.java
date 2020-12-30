@@ -15,6 +15,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.query.AdInfo;
+import com.google.android.gms.ads.query.QueryInfo;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -36,6 +38,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.adMobTokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 import static com.mopub.mobileads.MoPubErrorCode.NO_FILL;
@@ -49,12 +52,15 @@ public class GooglePlayServicesBanner extends BaseAd {
     public static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
     public static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
     public static final String TEST_DEVICES_KEY = "testDevices";
+    public static final String ADM_KEY = "adm";
 
     private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
     @Nullable
     private AdView mGoogleAdView;
     @Nullable
     private String mAdUnitId;
+    @Nullable
+    private String mAdString;
     private Integer adWidth;
     private Integer adHeight;
 
@@ -92,6 +98,15 @@ public class GooglePlayServicesBanner extends BaseAd {
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
+
+        if (extras.containsKey(ADM_KEY)) {
+            mAdString = extras.get(ADM_KEY);
+            String requestID = AdInfo.getRequestId(mAdString);
+            QueryInfo queryInfo = adMobTokens.getIfPresent(requestID);
+            adMobTokens.invalidate(requestID);
+            AdInfo adInfo = new AdInfo(queryInfo, mAdString);
+            builder.setAdInfo(adInfo);
+        }
 
         // Publishers may append a content URL by passing it to the MoPubView.setLocalExtras() call.
         final String contentUrl = extras.get(CONTENT_URL_KEY);

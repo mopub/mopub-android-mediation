@@ -13,6 +13,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.query.AdInfo;
+import com.google.android.gms.ads.query.QueryInfo;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdCallback;
@@ -43,6 +45,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.adMobTokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesRewardedVideo extends BaseAd {
@@ -78,6 +81,9 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
      */
     public static final String TEST_DEVICES_KEY = "testDevices";
 
+    // TODO: Key name to be verified.
+    public static final String ADM_KEY = "adm";
+
     /**
      * String to represent the simple class name to be used in log entries.
      */
@@ -92,6 +98,9 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
      * Google Mobile Ads rewarded video ad unit ID.
      */
     private String mAdUnitId = "";
+
+    @Nullable
+    private String mAdString;
 
     /**
      * The Google Rewarded Video Ad instance.
@@ -206,6 +215,15 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
+
+        if (extras.containsKey(ADM_KEY)) {
+            mAdString = extras.get(ADM_KEY);
+            String requestID = AdInfo.getRequestId(mAdString);
+            QueryInfo queryInfo = adMobTokens.getIfPresent(requestID);
+            adMobTokens.invalidate(requestID);
+            AdInfo adInfo = new AdInfo(queryInfo, mAdString);
+            builder.setAdInfo(adInfo);
+        }
 
         // Publishers may append a content URL by passing it to the
         // GooglePlayServicesMediationSettings instance when initializing the MoPub SDK:

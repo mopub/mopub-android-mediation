@@ -131,10 +131,8 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         try {
             String biddingToken = generateQuery.get();
             return biddingToken;
-        } catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
-
-
 }

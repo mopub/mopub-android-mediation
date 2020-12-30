@@ -98,6 +98,7 @@ public class GooglePlayServicesInterstitial extends BaseAd {
             mAdString = extras.get(ADM_KEY);
             String requestID = AdInfo.getRequestId(mAdString);
             QueryInfo queryInfo = adMobTokens.getIfPresent(requestID);
+            adMobTokens.invalidate(requestID);
             AdInfo adInfo = new AdInfo(queryInfo, mAdString);
             builder.setAdInfo(adInfo);
         }
