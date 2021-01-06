@@ -129,7 +129,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
             }
         });
         try {
-            String biddingToken = generateQuery.get();
+            String biddingToken = generateQuery.get(500, TimeUnit.MILLISECONDS);
             return biddingToken;
         } catch (Exception e) {
             return null;
