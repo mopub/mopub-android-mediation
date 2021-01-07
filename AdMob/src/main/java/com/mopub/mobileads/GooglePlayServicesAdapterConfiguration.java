@@ -34,7 +34,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
-    protected static Cache<String, QueryInfo> scarTokens;
+    protected static Cache<String, QueryInfo> dv3Tokens;
 
     @NonNull
     @Override
@@ -92,7 +92,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
 
-        scarTokens = CacheBuilder.newBuilder()
+        dv3Tokens = CacheBuilder.newBuilder()
             .expireAfterWrite(15, TimeUnit.MINUTES)
             .build();
     }
@@ -121,7 +121,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
                     new QueryInfoGenerationCallback() {
                         @Override
                         public void onSuccess(QueryInfo queryInfo) {
-                            scarTokens.put(queryInfo.getRequestId(), queryInfo);
+                            dv3Tokens.put(queryInfo.getRequestId(), queryInfo);
                             biddingToken[0] = queryInfo.getQuery();
                         }
                     });

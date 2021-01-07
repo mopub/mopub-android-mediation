@@ -45,7 +45,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
-import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.scarTokens;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.dv3Tokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesRewardedVideo extends BaseAd {
@@ -219,8 +219,8 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
         if (extras.containsKey(ADM_KEY)) {
             mAdString = extras.get(ADM_KEY);
             String requestID = AdInfo.getRequestId(mAdString);
-            QueryInfo queryInfo = scarTokens.getIfPresent(requestID);
-            scarTokens.invalidate(requestID);
+            QueryInfo queryInfo = dv3Tokens.getIfPresent(requestID);
+            dv3Tokens.invalidate(requestID);
             AdInfo adInfo = new AdInfo(queryInfo, mAdString);
             builder.setAdInfo(adInfo);
         }
