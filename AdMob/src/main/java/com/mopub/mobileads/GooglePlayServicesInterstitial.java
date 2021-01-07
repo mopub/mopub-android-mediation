@@ -35,7 +35,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
-import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.adMobTokens;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.scarTokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesInterstitial extends BaseAd {
@@ -97,8 +97,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
         if (extras.containsKey(ADM_KEY)) {
             mAdString = extras.get(ADM_KEY);
             String requestID = AdInfo.getRequestId(mAdString);
-            QueryInfo queryInfo = adMobTokens.getIfPresent(requestID);
-            adMobTokens.invalidate(requestID);
+            QueryInfo queryInfo = scarTokens.getIfPresent(requestID);
+            scarTokens.invalidate(requestID);
             AdInfo adInfo = new AdInfo(queryInfo, mAdString);
             builder.setAdInfo(adInfo);
         }
