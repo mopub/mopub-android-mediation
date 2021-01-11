@@ -15,6 +15,7 @@ import com.mopub.common.logging.MoPubLog;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
@@ -56,10 +57,6 @@ public class ChartboostInterstitial extends BaseAd {
         Preconditions.checkNotNull(launcherActivity);
         Preconditions.checkNotNull(adData);
 
-        // We need to attempt to reinitialize Chartboost on each request, in case an interstitial has been
-        // loaded and used since then.
-        ChartboostShared.initializeSdk(launcherActivity, adData.getExtras());  // throws IllegalStateException
-
         // Always return true so that the lifecycle listener is registered even if an interstitial
         // did the initialization.
         return true;
@@ -77,6 +74,18 @@ public class ChartboostInterstitial extends BaseAd {
         if (extras.containsKey(ChartboostShared.LOCATION_KEY)) {
             String location = extras.get(ChartboostShared.LOCATION_KEY);
             mLocation = TextUtils.isEmpty(location) ? mLocation : location;
+        }
+
+        if (extras != null && !extras.isEmpty()) {
+            mChartboostAdapterConfiguration.setCachedInitializationParameters(context, extras);
+        }
+
+        try {
+            ChartboostAdapterConfiguration.initializeChartboostSdk(context, extras);
+        } catch (Exception initializationError) {
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, ADAPTER_NAME,
+                    "Chartboost initialization called by adapter " + ADAPTER_NAME +
+                            " has failed because of an exception", initializationError.getMessage());
         }
 
         // Chartboost delegation can be set to null on some cases in Chartboost SDK 8.0+.

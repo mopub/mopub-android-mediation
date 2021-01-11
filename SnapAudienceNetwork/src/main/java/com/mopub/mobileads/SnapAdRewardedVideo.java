@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.snap.adkit.dagger.AdKitApplication;
@@ -19,31 +20,34 @@ import com.snap.adkit.external.SnapAdKit;
 import com.snap.adkit.external.SnapAdKitEvent;
 import com.snap.adkit.external.SnapAdLoadFailed;
 import com.snap.adkit.external.SnapAdLoadSucceeded;
+import com.snap.adkit.external.SnapAdRewardEarned;
 import com.snap.adkit.external.SnapAdVisible;
 
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.DID_DISAPPEAR;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.FULLSCREEN_LOAD_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
+import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
-public class SnapAdInterstitial extends BaseAd {
-    private static final String ADAPTER_NAME = SnapAdInterstitial.class.getSimpleName();
+public class SnapAdRewardedVideo extends BaseAd {
+    private static final String ADAPTER_NAME = SnapAdRewardedVideo.class.getSimpleName();
     private static final String SLOT_ID_KEY = "slotId";
 
     private static String mSlotId;
-
     private final SnapAdAdapterConfiguration mSnapAdAdapterConfiguration;
 
-    public SnapAdInterstitial() {
+    public SnapAdRewardedVideo() {
         mSnapAdAdapterConfiguration = new SnapAdAdapterConfiguration();
     }
 
@@ -96,8 +100,8 @@ public class SnapAdInterstitial extends BaseAd {
                         mLoadListener.onAdLoaded();
                     }
                 } else if (snapAdKitEvent instanceof SnapAdLoadFailed) {
-                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
-                            FULLSCREEN_LOAD_ERROR);
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                            FULLSCREEN_LOAD_ERROR.getIntCode(), FULLSCREEN_LOAD_ERROR);
 
                     if (mLoadListener != null) {
                         mLoadListener.onAdLoadFailed(FULLSCREEN_LOAD_ERROR);
@@ -115,8 +119,8 @@ public class SnapAdInterstitial extends BaseAd {
                         mInteractionListener.onAdClicked();
                     }
                 } else if (snapAdKitEvent instanceof SnapAdImpressionHappened) {
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Snap recorded impression: " +
-                            snapAdKitEvent.toString());
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Snap recorded " +
+                            "impression: " + snapAdKitEvent.toString());
 
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdImpression();
@@ -127,9 +131,17 @@ public class SnapAdInterstitial extends BaseAd {
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdDismissed();
                     }
+                } else if (snapAdKitEvent instanceof SnapAdRewardEarned) {
+                    MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
+                            MoPubReward.DEFAULT_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
+
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
+                                MoPubReward.DEFAULT_REWARD_AMOUNT));
+                    }
                 } else {
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Received event from Snap " +
-                            "Ad Kit: " + snapAdKitEvent.toString());
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Received event " +
+                            "from Snap Ad Kit: " + snapAdKitEvent.toString());
                 }
             }
         });
@@ -137,24 +149,23 @@ public class SnapAdInterstitial extends BaseAd {
         mSnapAdAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
-        snapAdKit.loadInterstitial();
+        snapAdKit.loadRewarded();
     }
 
     @Override
     protected void show() {
-        try {
-            MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
+        try {
             snapAdKit.playAd();
         } catch (Exception exception) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Snap " +
-                    "Audience Network Ads");
+            MoPubLog.log(getAdNetworkId(), CUSTOM_WITH_THROWABLE, ADAPTER_NAME, exception);
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed((NETWORK_NO_FILL));
+                mInteractionListener.onAdFailed(VIDEO_PLAYBACK_ERROR);
             }
         }
     }

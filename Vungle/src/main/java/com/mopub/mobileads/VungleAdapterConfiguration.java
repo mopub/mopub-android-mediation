@@ -28,6 +28,12 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     private static VungleRouter sVungleRouter;
+    private static String sWithAutoRotate;
+
+    /**
+     * (Optional) Key for publisher to set on to initialize Vungle SDK
+     */
+    public static final String WITH_AUTO_ROTATE_KEY = "orientations";
 
     public VungleAdapterConfiguration() {
         sVungleRouter = VungleRouter.getInstance();
@@ -74,6 +80,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
                     networkInitializationSucceeded = true;
 
                 } else if (configuration != null && sVungleRouter != null) {
+                    sWithAutoRotate = configuration.get(WITH_AUTO_ROTATE_KEY);
                     final String mAppId = configuration.get(APP_ID_KEY);
                     if (TextUtils.isEmpty(mAppId)) {
                         MoPubLog.log(mAppId, CUSTOM, ADAPTER_NAME, "Vungle's initialization not " +
@@ -100,5 +107,9 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
             listener.onNetworkInitializationFinished(this.getClass(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
+    }
+
+    public static String getWithAutoRotate() {
+        return sWithAutoRotate;
     }
 }

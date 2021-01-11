@@ -93,7 +93,11 @@ public class VungleMediationConfiguration implements MediationSettings {
             }
         }
 
-        final String adOrientation = extras.get(Builder.EXTRA_ORIENTATION_KEY);
+        String adOrientation = extras.get(Builder.EXTRA_ORIENTATION_KEY);
+
+        if (TextUtils.isEmpty(adOrientation)) {
+            adOrientation = VungleAdapterConfiguration.getWithAutoRotate();
+        }
 
         if (!TextUtils.isEmpty(adOrientation)) {
             try {

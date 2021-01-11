@@ -20,7 +20,6 @@ import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.facebook.ads.AdError.BROKEN_MEDIA_ERROR_CODE;
 import static com.facebook.ads.AdError.CACHE_ERROR_CODE;
@@ -51,7 +50,6 @@ public class FacebookRewardedVideo extends BaseAd implements RewardedVideoAdExte
 
     private static final int ONE_HOURS_MILLIS = 60 * 60 * 1000;
     private static final String ADAPTER_NAME = FacebookRewardedVideo.class.getSimpleName();
-    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
     @Nullable
     private RewardedVideoAd mRewardedVideoAd;
     private String mPlacementId = "";
@@ -187,10 +185,10 @@ public class FacebookRewardedVideo extends BaseAd implements RewardedVideoAdExte
             mRewardedVideoAd.show();
         } else {
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                mInteractionListener.onAdFailed(VIDEO_PLAYBACK_ERROR);
             }
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+                    VIDEO_PLAYBACK_ERROR.getIntCode(), VIDEO_PLAYBACK_ERROR);
         }
     }
 

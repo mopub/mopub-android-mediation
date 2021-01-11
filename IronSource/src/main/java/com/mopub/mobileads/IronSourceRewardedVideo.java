@@ -116,7 +116,7 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
                 mInstanceId = instanceId;
             }
 
-            initIronSourceSDK(launcherActivity, applicationKey);
+            initIronSourceSDK(launcherActivity, applicationKey, extras);
             return true;
 
         } catch (Exception e) {
@@ -130,12 +130,12 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
         }
     }
 
-    private void initIronSourceSDK(Activity activity, String applicationKey) {
+    private void initIronSourceSDK(Activity activity, String applicationKey, Map<String, String> extras) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ironSource Rewarded Video initialization is called with applicationKey: " + applicationKey);
-
         IronSource.setISDemandOnlyRewardedVideoListener(this);
-        IronSource.setMediationType(MEDIATION_TYPE + IronSourceAdapterConfiguration.IRONSOURCE_ADAPTER_VERSION + "SDK" + IronSourceAdapterConfiguration.getMoPubSdkVersion());
-        IronSource.initISDemandOnly(activity, applicationKey, IronSource.AD_UNIT.REWARDED_VIDEO);
+
+        IronSource.AD_UNIT[] adUnitsToInit = mIronSourceAdapterConfiguration.getIronSourceAdUnitsToInitList(activity, extras);
+        IronSourceAdapterConfiguration.initIronSourceSDK(activity, applicationKey, adUnitsToInit);
     }
 
     @Override
@@ -157,6 +157,7 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
             mInstanceId = instanceId;
         }
 
+        mIronSourceAdapterConfiguration.retainIronSourceAdUnitsToInitPrefsIfNecessary(context,extras);
         mIronSourceAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 

@@ -200,10 +200,10 @@ public class VerizonRewardedVideo extends BaseAd {
                 if (verizonInterstitialAd != null) {
                     verizonInterstitialAd.show(activity);
                 } else {
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Show() called " +
-                            "before Verizon rewarded video ad was loaded.");
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Attempting to " +
+                            "show a Verizon rewarded video before it is ready.");
                     if (mLoadListener != null) {
-                        mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_INVALID_STATE);
+                        mLoadListener.onAdLoadFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
                     }
                 }
             }
