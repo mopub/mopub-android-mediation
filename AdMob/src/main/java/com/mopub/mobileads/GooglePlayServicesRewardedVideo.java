@@ -19,6 +19,7 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdCallback;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MediationSettings;
 import com.mopub.common.MoPubReward;
@@ -81,9 +82,6 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
      */
     public static final String TEST_DEVICES_KEY = "testDevices";
 
-    // TODO: Key name to be verified.
-    public static final String ADM_KEY = "adm";
-
     /**
      * String to represent the simple class name to be used in log entries.
      */
@@ -98,9 +96,6 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
      * Google Mobile Ads rewarded video ad unit ID.
      */
     private String mAdUnitId = "";
-
-    @Nullable
-    private String mAdString;
 
     /**
      * The Google Rewarded Video Ad instance.
@@ -216,12 +211,14 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
-        if (extras.containsKey(ADM_KEY)) {
-            mAdString = extras.get(ADM_KEY);
-            String requestID = AdInfo.getRequestId(mAdString);
-            QueryInfo queryInfo = dv3Tokens.getIfPresent(requestID);
+        if (extras.containsKey(DataKeys.ADM_KEY)) {
+            final String mAdString = extras.get(DataKeys.ADM_KEY);
+            final String requestID = AdInfo.getRequestId(mAdString);
+            final QueryInfo queryInfo = dv3Tokens.getIfPresent(requestID);
+
             dv3Tokens.invalidate(requestID);
-            AdInfo adInfo = new AdInfo(queryInfo, mAdString);
+
+            final AdInfo adInfo = new AdInfo(queryInfo, mAdString);
             builder.setAdInfo(adInfo);
         }
 
@@ -316,11 +313,11 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
             mRewardedAd.show(mWeakActivity.get(), mRewardedAdCallback);
         } else {
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(getMoPubRequestErrorCode(AdRequest.ERROR_CODE_NO_FILL));
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
         }
     }

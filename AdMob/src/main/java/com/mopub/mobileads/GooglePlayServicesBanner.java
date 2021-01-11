@@ -17,6 +17,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.query.AdInfo;
 import com.google.android.gms.ads.query.QueryInfo;
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -52,15 +53,12 @@ public class GooglePlayServicesBanner extends BaseAd {
     public static final String TAG_FOR_CHILD_DIRECTED_KEY = "tagForChildDirectedTreatment";
     public static final String TAG_FOR_UNDER_AGE_OF_CONSENT_KEY = "tagForUnderAgeOfConsent";
     public static final String TEST_DEVICES_KEY = "testDevices";
-    public static final String ADM_KEY = "adm";
 
     private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
     @Nullable
     private AdView mGoogleAdView;
     @Nullable
     private String mAdUnitId;
-    @Nullable
-    private String mAdString;
     private Integer adWidth;
     private Integer adHeight;
 
@@ -99,12 +97,14 @@ public class GooglePlayServicesBanner extends BaseAd {
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
 
-        if (extras.containsKey(ADM_KEY)) {
-            mAdString = extras.get(ADM_KEY);
-            String requestID = AdInfo.getRequestId(mAdString);
-            QueryInfo queryInfo = dv3Tokens.getIfPresent(requestID);
+        if (extras.containsKey(DataKeys.ADM_KEY)) {
+            final String mAdString = extras.get(DataKeys.ADM_KEY);
+            final String requestID = AdInfo.getRequestId(mAdString);
+            final QueryInfo queryInfo = dv3Tokens.getIfPresent(requestID);
+
             dv3Tokens.invalidate(requestID);
-            AdInfo adInfo = new AdInfo(queryInfo, mAdString);
+
+            final AdInfo adInfo = new AdInfo(queryInfo, mAdString);
             builder.setAdInfo(adInfo);
         }
 
@@ -213,10 +213,6 @@ public class GooglePlayServicesBanner extends BaseAd {
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(getMoPubErrorCode(loadAdError.getCode()));
             }
-        }
-
-        @Override
-        public void onAdLeftApplication() {
         }
 
         @Override

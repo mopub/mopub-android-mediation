@@ -1,10 +1,10 @@
-project.version = '19.5.0.3'
+project.version = '19.6.0.2'
 project.ext.networkName = 'admob_native'
 
 apply from: '../shared-build.gradle'
 
 dependencies {
     implementation "com.google.android.gms:play-services-ads:${sdkVersion}"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.guava:guava:30.0-android'
 }

@@ -31,6 +31,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 
 public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfiguration {
 
+    private static final String ADAPTER_NAME = GooglePlayServicesAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
@@ -93,8 +94,8 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         }
 
         dv3Tokens = CacheBuilder.newBuilder()
-            .expireAfterWrite(15, TimeUnit.MINUTES)
-            .build();
+                .expireAfterWrite(15, TimeUnit.MINUTES)
+                .build();
     }
 
     // MoPub collects GDPR consent on behalf of Google
@@ -113,25 +114,29 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
     }
 
     private String refreshBidderToken(final Context context) {
-        FutureTask<String> generateQuery = new FutureTask<>(new Callable<String>() {
+        final FutureTask<String> generateQuery = new FutureTask<>(new Callable<String>() {
             @Override
-            public String call() throws Exception {
+            public String call() {
                 final String[] biddingToken = {null};
+
                 QueryInfo.generate(context, AdFormat.INTERSTITIAL, new AdRequest.Builder().build(),
-                    new QueryInfoGenerationCallback() {
-                        @Override
-                        public void onSuccess(QueryInfo queryInfo) {
-                            dv3Tokens.put(queryInfo.getRequestId(), queryInfo);
-                            biddingToken[0] = queryInfo.getQuery();
-                        }
-                    });
+                        new QueryInfoGenerationCallback() {
+                            @Override
+                            public void onSuccess(QueryInfo queryInfo) {
+                                dv3Tokens.put(queryInfo.getRequestId(), queryInfo);
+                                biddingToken[0] = queryInfo.getQuery();
+                            }
+                        });
+
                 return biddingToken[0];
             }
         });
+
         try {
-            String biddingToken = generateQuery.get(500, TimeUnit.MILLISECONDS);
-            return biddingToken;
+            return generateQuery.get(500, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, ADAPTER_NAME, "Exception encountered while " +
+                    "refreshing the bid token.", e);
             return null;
         }
     }
