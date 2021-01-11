@@ -10,6 +10,7 @@ import com.mopub.utils.Utils
 class InMobiSDKAdapterConfiguration : BaseAdapterConfiguration() {
     companion object {
         var ACCOUNT_ID = "accountId"
+        var isSdkInitialised = false
     }
 
     override fun getAdapterVersion(): String {
@@ -29,21 +30,23 @@ class InMobiSDKAdapterConfiguration : BaseAdapterConfiguration() {
     }
 
     override fun initializeNetwork(context: Context, configuration: Map<String, String>?, onNetworkInitializationFinishedListener: OnNetworkInitializationFinishedListener) {
+        if (isSdkInitialised) {
+            return
+        }
         if (null != configuration) {
             val accountId = if (configuration.containsKey(ACCOUNT_ID)) configuration[ACCOUNT_ID] else null
             if (!accountId.isNullOrEmpty()) {
                 InMobiSdk.init(context, accountId, InMobiGDPR.gdprConsentDictionary) { error ->
                     if (null == error) {
+                        isSdkInitialised = true
                         onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
                     } else {
                         onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
                     }
                 }
-            } else {
-                onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
+                return
             }
-        } else {
-            onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
         }
+        onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
     }
 }
