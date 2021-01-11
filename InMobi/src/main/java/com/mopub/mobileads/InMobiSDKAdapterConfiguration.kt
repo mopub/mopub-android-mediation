@@ -32,7 +32,7 @@ class InMobiSDKAdapterConfiguration : BaseAdapterConfiguration() {
         if (null != configuration) {
             val accountId = if (configuration.containsKey(ACCOUNT_ID)) configuration[ACCOUNT_ID] else null
             if (!accountId.isNullOrEmpty()) {
-                InMobiSdk.init(context, accountId, InMobiGDPR.getGDPRConsentDictionary()) { error ->
+                InMobiSdk.init(context, accountId, InMobiGDPR.gdprConsentDictionary) { error ->
                     if (null == error) {
                         onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
                     } else {
@@ -40,8 +40,10 @@ class InMobiSDKAdapterConfiguration : BaseAdapterConfiguration() {
                     }
                 }
             } else {
-                onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
+                onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
             }
+        } else {
+            onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiSDKAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
         }
     }
 }
