@@ -2,8 +2,6 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -40,15 +38,12 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
-public class AdColonyRewardedVideo extends BaseAd {
+public class AdColonyRewardedVideo extends AdColonyBaseAd {
 
     private static final String ADAPTER_NAME = AdColonyRewardedVideo.class.getSimpleName();
 
     private static boolean sInitialized = false;
     private static LifecycleListener sLifecycleListener = new BaseLifecycleListener();
-
-    @NonNull
-    private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
 
     private AdColonyInterstitial mAd;
     private String mAdColonyClientOptions = "";
@@ -57,25 +52,13 @@ public class AdColonyRewardedVideo extends BaseAd {
     private String mAdUnitId = "";
     private boolean mIsLoading = false;
 
-    @NonNull
-    private static String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
-
-    @NonNull
-    @Override
-    public String getAdNetworkId() {
-        return mZoneId;
-    }
-
     private AdColonyAppOptions mAdColonyAppOptions;
 
     // For waiting and notifying the SDK:
-    private final Handler mHandler;
     private final ScheduledThreadPoolExecutor mScheduledThreadPoolExecutor;
 
     public AdColonyRewardedVideo() {
         mScheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
-        mHandler = new Handler(Looper.getMainLooper());
-        mAdColonyAdapterConfiguration = new AdColonyAdapterConfiguration();
     }
 
     @Nullable

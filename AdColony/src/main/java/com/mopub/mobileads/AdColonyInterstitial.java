@@ -2,8 +2,6 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,33 +26,16 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 
-public class AdColonyInterstitial extends BaseAd {
+public class AdColonyInterstitial extends AdColonyBaseAd {
 
     private static final String ADAPTER_NAME = AdColonyInterstitial.class.getSimpleName();
 
     private AdColonyInterstitialListener mAdColonyInterstitialListener;
-    private final Handler mHandler;
     private com.adcolony.sdk.AdColonyInterstitial mAdColonyInterstitial;
-
-    @NonNull
-    private String mZoneId = AdColonyAdapterConfiguration.DEFAULT_ZONE_ID;
-
-    @NonNull
-    public String getAdNetworkId() {
-        return mZoneId;
-    }
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) throws Exception {
         return false;
-    }
-
-    @NonNull
-    private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
-
-    public AdColonyInterstitial() {
-        mHandler = new Handler(Looper.getMainLooper());
-        mAdColonyAdapterConfiguration = new AdColonyAdapterConfiguration();
     }
 
     @Override
