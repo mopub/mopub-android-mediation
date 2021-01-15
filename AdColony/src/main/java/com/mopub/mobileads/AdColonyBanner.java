@@ -35,11 +35,6 @@ public class AdColonyBanner extends AdColonyBaseAd {
     private AdColonyAdView mAdColonyAdView;
 
     @Override
-    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) {
-        return false;
-    }
-
-    @Override
     protected void load(@NonNull final Context context,
                         @NonNull final AdData adData) {
         if (!(context instanceof Activity)) {

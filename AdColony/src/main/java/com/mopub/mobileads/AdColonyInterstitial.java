@@ -34,11 +34,6 @@ public class AdColonyInterstitial extends AdColonyBaseAd {
     private com.adcolony.sdk.AdColonyInterstitial mAdColonyInterstitial;
 
     @Override
-    protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) throws Exception {
-        return false;
-    }
-
-    @Override
     protected void load(@NonNull final Context context,
                         @NonNull final AdData adData) {
         Preconditions.checkNotNull(context);
