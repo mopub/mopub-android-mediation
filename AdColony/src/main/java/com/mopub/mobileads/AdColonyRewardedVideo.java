@@ -3,6 +3,7 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -73,7 +74,7 @@ public class AdColonyRewardedVideo extends BaseAd {
 
     public AdColonyRewardedVideo() {
         mScheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
-        mHandler = new Handler();
+        mHandler = new Handler(Looper.getMainLooper());
         mAdColonyAdapterConfiguration = new AdColonyAdapterConfiguration();
     }
 
