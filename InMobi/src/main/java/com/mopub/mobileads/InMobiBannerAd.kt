@@ -130,10 +130,7 @@ class InMobiBannerAd : BaseAd() {
                 setEnableAutoRefresh(false)
                 setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF)
 
-                val dm = DisplayMetrics()
-                val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-                val display = wm.defaultDisplay
-                display.getMetrics(dm)
+                val dm = resources.displayMetrics;
 
                 setExtras(Utils.extras)
 
