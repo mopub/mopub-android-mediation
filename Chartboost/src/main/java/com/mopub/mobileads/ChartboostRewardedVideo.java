@@ -23,6 +23,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.mobileads.MoPubErrorCode.FULLSCREEN_SHOW_ERROR;
+import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
 public class ChartboostRewardedVideo extends BaseAd {
 
@@ -172,7 +173,7 @@ public class ChartboostRewardedVideo extends BaseAd {
                             "Ensure that the context requesting the Rewarded Video is an Activity.");
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(FULLSCREEN_SHOW_ERROR);
+                mInteractionListener.onAdFailed(VIDEO_PLAYBACK_ERROR);
             }
         }
     }

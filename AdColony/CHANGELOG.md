@@ -1,4 +1,7 @@
 ## Changelog
+  * 4.3.1.1
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
   * 4.3.1.0
     * This version of the adapters has been certified with AdColony 4.3.1 and MoPub 5.15.0.
 
