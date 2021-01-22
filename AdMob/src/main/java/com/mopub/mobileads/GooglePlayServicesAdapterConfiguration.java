@@ -49,6 +49,7 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
+        Preconditions.checkNotNull(context);
         refreshBidderToken(context);
         return tokenReference.get();
     }
@@ -98,8 +99,9 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         }
 
         dv3Tokens = CacheBuilder.newBuilder()
-                .expireAfterWrite(15, TimeUnit.MINUTES)
-                .build();
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .build();
+        refreshBidderToken(context);
     }
 
     // MoPub collects GDPR consent on behalf of Google
