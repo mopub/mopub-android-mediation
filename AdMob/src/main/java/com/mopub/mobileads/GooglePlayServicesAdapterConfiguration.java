@@ -3,6 +3,7 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,21 +21,24 @@ import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.admob.BuildConfig;
+//import com.mopub.mobileads.admob.BuildConfig;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
 public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfiguration {
 
+    private static final String ADAPTER_NAME = GooglePlayServicesAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
+    private static final String MOPUB_NETWORK_NAME = "admob_native";
 
     protected static Cache<String, QueryInfo> dv3Tokens;
+    private AtomicReference<String> tokenReference = new AtomicReference<>(null);
+    private AtomicBoolean isComputingToken = new AtomicBoolean(false);
 
     @NonNull
     @Override
@@ -45,7 +49,8 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        return refreshBidderToken(context);
+        refreshBidderToken(context);
+        return tokenReference.get();
     }
 
     @NonNull
@@ -62,12 +67,12 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         final String adapterVersion = getAdapterVersion();
 
         return (!TextUtils.isEmpty(adapterVersion)) ?
-                adapterVersion.substring(0, adapterVersion.lastIndexOf('.')) : "";
+            adapterVersion.substring(0, adapterVersion.lastIndexOf('.')) : "";
     }
 
     @Override
     public void initializeNetwork(@NonNull Context context, @Nullable Map<String, String>
-            configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
+        configuration, @NonNull OnNetworkInitializationFinishedListener listener) {
 
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
@@ -80,16 +85,16 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
                 networkInitializationSucceeded = true;
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing AdMob has encountered " +
-                        "an exception.", e);
+                    "an exception.", e);
             }
         }
 
         if (networkInitializationSucceeded) {
             listener.onNetworkInitializationFinished(GooglePlayServicesAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
+                MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
         } else {
             listener.onNetworkInitializationFinished(GooglePlayServicesAdapterConfiguration.class,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
 
         dv3Tokens = CacheBuilder.newBuilder()
@@ -112,27 +117,22 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         return builder;
     }
 
-    private String refreshBidderToken(final Context context) {
-        FutureTask<String> generateQuery = new FutureTask<>(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                final String[] biddingToken = {null};
-                QueryInfo.generate(context, AdFormat.INTERSTITIAL, new AdRequest.Builder().build(),
-                    new QueryInfoGenerationCallback() {
-                        @Override
-                        public void onSuccess(QueryInfo queryInfo) {
-                            dv3Tokens.put(queryInfo.getRequestId(), queryInfo);
-                            biddingToken[0] = queryInfo.getQuery();
-                        }
-                    });
-                return biddingToken[0];
-            }
-        });
-        try {
-            String biddingToken = generateQuery.get(500, TimeUnit.MILLISECONDS);
-            return biddingToken;
-        } catch (Exception e) {
-            return null;
+    private void refreshBidderToken(final Context context) {
+        if (isComputingToken.compareAndSet(false, true)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    QueryInfo.generate(context, AdFormat.INTERSTITIAL, new AdRequest.Builder().build(),
+                        new QueryInfoGenerationCallback() {
+                            @Override
+                            public void onSuccess(QueryInfo queryInfo) {
+                                dv3Tokens.put(queryInfo.getRequestId(), queryInfo);
+                                tokenReference.set(queryInfo.getQuery());
+                            }
+                        });
+                    isComputingToken.set(false);
+                }
+            }).start();
         }
     }
 }
