@@ -1,4 +1,7 @@
 ## Changelog
+ * 6.2.0.2
+   * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
  * 6.2.0.1
    * Remove the call to set Facebook's test mode from the adapters.
 

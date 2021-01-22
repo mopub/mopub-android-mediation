@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.chartboost.sdk.Banner.BannerSize;
+import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostBannerListener;
 import com.chartboost.sdk.Events.ChartboostCacheError;
 import com.chartboost.sdk.Events.ChartboostCacheEvent;
@@ -29,10 +30,10 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
 
@@ -95,8 +96,16 @@ public class ChartboostBanner extends BaseAd {
                 mLocation = location;
             }
 
-            ChartboostShared.initializeSdk(context, extras);
             mChartboostAdapterConfiguration.setCachedInitializationParameters(context, extras);
+
+            try {
+                ChartboostAdapterConfiguration.initializeChartboostSdk(context, extras);
+            } catch (Exception initializationError) {
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, ADAPTER_NAME,
+                        "Chartboost initialization called by adapter " + ADAPTER_NAME +
+                                " has failed because of an exception", initializationError.getMessage());
+            }
+
         } catch (NullPointerException | IllegalStateException error) {
             logAndNotifyBannerFailed(true, LOAD_FAILED, NETWORK_INVALID_STATE,
                     null, null);

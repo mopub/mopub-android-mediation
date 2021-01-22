@@ -98,8 +98,8 @@ public class GooglePlayServicesAdapterConfiguration extends BaseAdapterConfigura
         }
 
         dv3Tokens = CacheBuilder.newBuilder()
-            .expireAfterWrite(15, TimeUnit.MINUTES)
-            .build();
+                .expireAfterWrite(15, TimeUnit.MINUTES)
+                .build();
     }
 
     // MoPub collects GDPR consent on behalf of Google

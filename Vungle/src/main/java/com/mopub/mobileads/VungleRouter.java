@@ -224,6 +224,13 @@ public class VungleRouter {
         } else {
             MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "There should not be this case. " +
                     "playAdForPlacement is called before an ad is loaded for Placement ID: " + placementId);
+
+            if (sVungleRouterListeners.containsKey(placementId)) {
+                VungleRouterListener routerListener = sVungleRouterListeners.get(placementId);
+                if (routerListener != null) {
+                    routerListener.onUnableToPlayAd(placementId, "Invalid/Inactive Placement Id");
+                }
+            }
         }
     }
 

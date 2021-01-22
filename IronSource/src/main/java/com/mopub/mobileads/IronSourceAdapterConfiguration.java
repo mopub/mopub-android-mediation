@@ -19,6 +19,7 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.ironsource.BuildConfig;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String INTERSTITIAL_KEY = "interstitial";
     private static final String MEDIATION_TYPE = "mopub";
     private static final String REWARDEDVIDEO_KEY = "rewardedvideo";
-
+    
     @NonNull
     @Override
     public String getAdapterVersion() {
@@ -83,40 +84,33 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
         Preconditions.checkNotNull(listener);
 
         boolean networkInitializationSucceeded = false;
-        final List<IronSource.AD_UNIT> adUnitsToInit = new ArrayList<>();
 
         synchronized (IronSourceAdapterConfiguration.class) {
             try {
-                if (configuration != null && context instanceof Activity) {
+                if (configuration != null) {
+                    if (!(context instanceof Activity)) {
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource's initialization via " +
+                                ADAPTER_NAME + " not started. An Activity Context is needed.");
+                        return;
+                    }
 
                     final String appKey = configuration.get(APPLICATION_KEY);
-                    final String rewardedVideoValue = configuration.get(REWARDEDVIDEO_KEY);
-                    final String interstitialValue = configuration.get(INTERSTITIAL_KEY);
-
-                    if (rewardedVideoValue.equals("true")) {
-                        adUnitsToInit.add(IronSource.AD_UNIT.REWARDED_VIDEO);
-                    }
-
-                    if (interstitialValue.equals("true")) {
-                        adUnitsToInit.add(IronSource.AD_UNIT.INTERSTITIAL);
-                    }
 
                     if (TextUtils.isEmpty(appKey)) {
                         MoPubLog.log(CUSTOM, "IronSource's initialization not" +
                                 " started. Ensure ironSource's " + APPLICATION_KEY +
                                 " is populated on the MoPub dashboard.");
                     } else {
-                        MoPubLog.log(CUSTOM, "IronSource's initialization ad units: " + adUnitsToInit.toString());
-                        IronSource.setMediationType(MEDIATION_TYPE + IRONSOURCE_ADAPTER_VERSION
-                                + "SDK" + getMoPubSdkVersion());
-                        IronSource.initISDemandOnly((Activity) context, appKey,
-                                adUnitsToInit.toArray(new IronSource.AD_UNIT[adUnitsToInit.size()]));
-
+                        IronSource.AD_UNIT[] adUnitsToInitList = getIronSourceAdUnitsToInitList(context, configuration);
+                        initIronSourceSDK((Activity) context, appKey, adUnitsToInitList);
                         networkInitializationSucceeded = true;
                     }
-                } else if (!(context instanceof Activity)) {
+
+                } else {
                     MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource's initialization via " +
-                            ADAPTER_NAME + " not started. An Activity Context is needed.");
+                            ADAPTER_NAME + " not started. No configuration information present to initialize." +
+                            "Make sure you pass applicationKey on MoPub UI " +
+                            "or via Mediated Network Configuration during MoPub initialization.");
                 }
             } catch (Exception e) {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "Initializing ironSource has encountered " +
@@ -128,6 +122,8 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
             listener.onNetworkInitializationFinished(IronSourceAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
         } else {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource's initialization via " +
+                    ADAPTER_NAME + " failed. Will attempt to initialize on the first ad request to ironSource.");
             listener.onNetworkInitializationFinished(IronSourceAdapterConfiguration.class,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
@@ -140,6 +136,73 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
         } else {
             Logger.enableLogging(1);
         }
+    }
+
+    public static void initIronSourceSDK(Activity activity, String appKey, IronSource.AD_UNIT[] adUnitsToInitList) {
+        IronSource.setMediationType(MEDIATION_TYPE + IRONSOURCE_ADAPTER_VERSION
+                + "SDK" + getMoPubSdkVersion());
+        IronSource.initISDemandOnly(activity, appKey, adUnitsToInitList);
+    }
+
+    /**
+     * IronSource Ad Units to initialize helper methods.
+     * IronSource can be configured with Interstitial only, Rewarded Video only modes. Publishers wanting to do this,
+     * must pass in the appropriate properties on network configuration details of iS on initialization.
+     * These helper methods facilitate the parsing, and reusing of these preferences by utilizing cached parameters.
+     **/
+
+    // Parses ad units to initialize preferences from configuration dictionary and logs the results
+    public IronSource.AD_UNIT[] getIronSourceAdUnitsToInitList(@NonNull Context context, @Nullable Map<String, String> configuration) {
+
+        // Parse ad units from config map parameter
+        IronSource.AD_UNIT[] adUnitsToInit = parseIronSourceAdUnitsToInit(configuration);
+
+        // If no config for ad units to init present, try cached parameters
+        if (adUnitsToInit.length == 0)
+            adUnitsToInit = parseIronSourceAdUnitsToInit(
+                    getCachedInitializationParameters(context)
+            );
+
+        return adUnitsToInit;
+    }
+
+    private IronSource.AD_UNIT[] parseIronSourceAdUnitsToInit(@Nullable Map<String, String> configuration) {
+        if (configuration == null || configuration.isEmpty())
+            return new IronSource.AD_UNIT[0];
+
+        List<IronSource.AD_UNIT> adUnitsToInit = new ArrayList<>();
+
+        final String rewardedVideoValue = configuration.get(REWARDEDVIDEO_KEY);
+        final String interstitialValue = configuration.get(INTERSTITIAL_KEY);
+
+        if (rewardedVideoValue != null && rewardedVideoValue.equals("true"))
+            adUnitsToInit.add(IronSource.AD_UNIT.REWARDED_VIDEO);
+
+        if (interstitialValue != null && interstitialValue.equals("true"))
+            adUnitsToInit.add(IronSource.AD_UNIT.INTERSTITIAL);
+
+        return adUnitsToInit.toArray(new IronSource.AD_UNIT[adUnitsToInit.size()]);
+    }
+
+    public void retainIronSourceAdUnitsToInitPrefsIfNecessary(@NonNull Context context, @Nullable Map<String, String> configuration) {
+        // No action needed if config is null as ad requests won't take place anyway
+        if (configuration == null)
+            return;
+
+        // No action needed if configuration already contains ad units to init
+        if (parseIronSourceAdUnitsToInit(configuration).length > 0)
+            return;
+
+        // Otherwise, if no ad units preferences present, then check if previous cached parameters contain it
+        // If so add them to configuration to reuse them
+        IronSource.AD_UNIT[] adUnitsToInit = parseIronSourceAdUnitsToInit(
+                getCachedInitializationParameters(context)
+        );
+        if (adUnitsToInit.length == 0)
+            return;
+
+        for (IronSource.AD_UNIT adUnit : adUnitsToInit)
+            configuration.put(adUnit.toString(), "true");
     }
 
     /**
