@@ -237,8 +237,8 @@ public class AdColonyRewardedVideo extends BaseAd {
         if (this.hasVideoAvailable()) {
             mAd.show();
         } else if (mInteractionListener != null) {
-            mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
-            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+            mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(), MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
         }
     }
 

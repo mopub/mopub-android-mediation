@@ -1,4 +1,4 @@
-project.version = '8.1.0.1'
+project.version = '8.2.0.3'
 project.ext.networkName = 'chartboost'
 
 apply from: '../shared-build.gradle'

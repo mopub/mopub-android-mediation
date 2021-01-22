@@ -1,4 +1,20 @@
 ## Changelog
+  * 3.6.0.1
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
+  * 3.6.0.0
+    * This version of the adapters has been certified with Unity Ads 3.6.0 and MoPub SDK 5.15.0.
+
+  * 3.5.1.0
+    * This version of the adapters has been certified with Unity Ads 3.5.1 and MoPub SDK 5.14.0.
+
+  * 3.5.0.0
+    * This version of the adapters has been certified with Unity Ads 3.5.0 and MoPub SDK 5.14.0.
+    * Set automatic impression and click tracking on for banners.
+
+  * 3.4.8.1
+    * This version of the adapters has been certified with Unity Ads 3.4.8 and MoPub SDK 5.14.0.
+
   * 3.4.8.0
     * This version of the adapters has been certified with Unity Ads 3.4.8 and MoPub SDK 5.13.1.
     * Note that, this adapter version is not certified using Android API 30. For Android 11 compatibility, expect an upcoming adapter release.

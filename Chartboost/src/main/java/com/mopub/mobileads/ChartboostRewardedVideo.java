@@ -17,11 +17,13 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.mobileads.MoPubErrorCode.FULLSCREEN_SHOW_ERROR;
+import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
 public class ChartboostRewardedVideo extends BaseAd {
 
@@ -52,6 +54,26 @@ public class ChartboostRewardedVideo extends BaseAd {
     }
 
     @Override
+    protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
+                                            @NonNull final AdData adData) {
+        Preconditions.checkNotNull(launcherActivity);
+        Preconditions.checkNotNull(adData);
+
+        // We need to attempt to reinitialize Chartboost on each request, in case a rewarded video has been
+        try {
+            ChartboostAdapterConfiguration.initializeChartboostSdk(launcherActivity, adData.getExtras());
+        } catch (Exception initializationError) {
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, ADAPTER_NAME,
+                    "Chartboost initialization called by adapter " + ADAPTER_NAME +
+                            " has failed because of an exception", initializationError.getMessage());
+        }
+
+        // Always return true so that the lifecycle listener is registered even if a rewarded video
+        // did the initialization.
+        return true;
+    }
+
+    @Override
     protected void load(@NonNull final Context context,
                         @NonNull final AdData adData) {
         Preconditions.checkNotNull(context);
@@ -59,12 +81,7 @@ public class ChartboostRewardedVideo extends BaseAd {
 
         setAutomaticImpressionAndClickTracking(false);
 
-        final Map<String, String> extras = adData.getExtras();
-        if (extras.containsKey(ChartboostShared.LOCATION_KEY)) {
-            String location = extras.get(ChartboostShared.LOCATION_KEY);
-            mLocation = TextUtils.isEmpty(location) ? mLocation : location;
-        }
-
+        // Activity check for context
         if (!(context instanceof Activity)) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Context passed to load " +
                     "was not an Activity. Failing the request.");
@@ -74,7 +91,16 @@ public class ChartboostRewardedVideo extends BaseAd {
             return;
         }
         mWeakActivity = new WeakReference<>((Activity) context);
-        
+
+        // Extract and parse extras
+        final Map<String, String> extras = adData.getExtras();
+        if (extras.containsKey(ChartboostShared.LOCATION_KEY)) {
+            String location = extras.get(ChartboostShared.LOCATION_KEY);
+            mLocation = TextUtils.isEmpty(location) ? mLocation : location;
+        }
+
+        mChartboostAdapterConfiguration.setCachedInitializationParameters(context, extras);
+
         // Chartboost delegation can be set to null on some cases in Chartboost SDK 8.0+.
         // We should set the delegation on each load request to prevent this.
         Chartboost.setDelegate(ChartboostShared.getDelegate());
@@ -83,28 +109,30 @@ public class ChartboostRewardedVideo extends BaseAd {
         // instance is still active and we should fail.
         if (ChartboostShared.getDelegate().hasLoadLocation(mLocation) &&
                 ChartboostShared.getDelegate().getLoadListener(mLocation) != mLoadListener) {
-            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
             return;
         }
 
+        // If there's no listener present, register the new listener
         try {
             ChartboostShared.getDelegate().registerLoadListener(mLocation, mLoadListener);
         } catch (NullPointerException | IllegalStateException e) {
-            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+
             return;
         }
 
         ChartboostShared.getDelegate().registerRewardedVideoLocation(mLocation);
         setUpMediationSettingsForRequest(adData.getAdUnit(), extras);
 
+        // Request rewarded video. If it's already cached, directly show it.
         if (Chartboost.hasRewardedVideo(mLocation)) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
                     "Chartboost already has the rewarded video ready. Calling didCacheRewardedVideo.");
@@ -145,7 +173,7 @@ public class ChartboostRewardedVideo extends BaseAd {
                             "Ensure that the context requesting the Rewarded Video is an Activity.");
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(FULLSCREEN_SHOW_ERROR);
+                mInteractionListener.onAdFailed(VIDEO_PLAYBACK_ERROR);
             }
         }
     }
@@ -166,21 +194,6 @@ public class ChartboostRewardedVideo extends BaseAd {
     @NonNull
     public String getAdNetworkId() {
         return mLocation;
-    }
-
-    @Override
-    protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
-                                            @NonNull final AdData adData) {
-        Preconditions.checkNotNull(launcherActivity);
-        Preconditions.checkNotNull(adData);
-
-        // We need to attempt to reinitialize Chartboost on each request, in case a rewarded video has been
-        // loaded and used since then.
-        ChartboostShared.initializeSdk(launcherActivity, adData.getExtras());  // throws IllegalStateException
-
-        // Always return true so that the lifecycle listener is registered even if a rewarded video
-        // did the initialization.
-        return true;
     }
 
     private static final class ChartboostLifecycleListener implements LifecycleListener {

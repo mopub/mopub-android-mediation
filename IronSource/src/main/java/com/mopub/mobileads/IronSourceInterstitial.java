@@ -75,7 +75,7 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
                 mInstanceId = instanceId;
             }
 
-            initIronSourceSDK(launcherActivity,applicationKey);
+            initIronSourceSDK(launcherActivity, applicationKey, extras);
             return true;
 
         } catch (Exception e) {
@@ -89,13 +89,12 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
         }
     }
 
-    private void initIronSourceSDK(Activity activity, String appKey) {
+    private void initIronSourceSDK(Activity activity, String appKey, Map<String, String> extras) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ironSource Interstitial initialization is called with applicationKey: " + appKey);
-
         IronSource.setISDemandOnlyInterstitialListener(this);
-        IronSource.setMediationType(MEDIATION_TYPE + IronSourceAdapterConfiguration.IRONSOURCE_ADAPTER_VERSION +
-                "SDK" + IronSourceAdapterConfiguration.getMoPubSdkVersion());
-        IronSource.initISDemandOnly(activity, appKey, IronSource.AD_UNIT.INTERSTITIAL);
+
+        IronSource.AD_UNIT[] adUnitsToInit = mIronSourceAdapterConfiguration.getIronSourceAdUnitsToInitList(activity, extras);
+        IronSourceAdapterConfiguration.initIronSourceSDK(activity, appKey, adUnitsToInit);
     }
 
     @NonNull
@@ -128,6 +127,7 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
             mInstanceId = instanceId;
         }
 
+        mIronSourceAdapterConfiguration.retainIronSourceAdUnitsToInitPrefsIfNecessary(context,extras);
         mIronSourceAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLifecycleManager.getInstance((Activity) context).addLifecycleListener(lifecycleListener);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);

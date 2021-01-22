@@ -1,4 +1,20 @@
 ## Changelog
+  * 8.2.0.3
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
+  * 8.2.0.2
+    * Prevent Chartboost SDK from initializing same configuration cases.
+
+  * 8.2.0.1
+    * Fix a bug where Chartboost SDK initialization can get called multiple times unnecessarily.
+
+  * 8.2.0.0
+    * This version of the adapters has been certified with Chartboost 8.2.0 and MoPub 5.15.0.
+    * Cache last available Interstitial and Rewarded Video data fetched from the MoPub dashboard.
+
+  * 8.1.0.2
+    * Add missing `InteractionListener` methods to fullscreen interaction listener.
+
   * 8.1.0.1
     * Fail banner load requests for Android API below 21. Chartboost 8.0.1 and above currently doesn't support displaying of banners for devices with Android API below 21.
 

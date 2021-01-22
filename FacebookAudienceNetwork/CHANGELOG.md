@@ -1,4 +1,14 @@
 ## Changelog
+ * 6.2.0.2
+   * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
+ * 6.2.0.1
+   * Remove the call to set Facebook's test mode from the adapters.
+
+ * 6.2.0.0
+   * **Facebook's test mode was accidentally enabled in this version. Please use v6.2.0.1 instead.**
+   * This version of the adapters has been certified with Facebook Audience Network 6.2.0 and MoPub 5.14.0.
+
  * 6.1.0.0
    * This version of the adapters has been certified with Facebook Audience Network 6.1.0 and MoPub 5.13.1.
 

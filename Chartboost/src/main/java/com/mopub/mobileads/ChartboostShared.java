@@ -48,95 +48,7 @@ public class ChartboostShared {
     public static final String LOCATION_KEY = "location";
     public static final String LOCATION_DEFAULT = "Default";
 
-    private static final String APP_ID_KEY = "appId";
-    private static final String APP_SIGNATURE_KEY = "appSignature";
     private static final String ADAPTER_NAME = ChartboostShared.class.getSimpleName();
-
-    @Nullable
-    private static String mAppId;
-    @Nullable
-    private static String mAppSignature;
-
-    /**
-     * Initialize the Chartboost SDK for the provided application id and app signature.
-     */
-    public static synchronized boolean initializeSdk(@NonNull Context context,
-                                                     @NonNull Map<String, String> serverExtras) {
-        Preconditions.checkNotNull(context);
-        Preconditions.checkNotNull(serverExtras);
-
-        // Pass the user consent from the MoPub SDK to Chartboost as per GDPR
-        PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
-
-        final boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
-        final boolean shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest();
-
-        if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
-            if (shouldAllowLegitimateInterest) {
-                boolean isExplicitNoConsent = personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.EXPLICIT_NO
-                        || personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.DNT;
-                addChartboostPrivacyConsent(context, !isExplicitNoConsent);
-            } else {
-                addChartboostPrivacyConsent(context, canCollectPersonalInfo);
-            }
-        }
-
-        // Validate Chartboost args
-        if (!serverExtras.containsKey(APP_ID_KEY)) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-
-            throw new IllegalStateException("Chartboost rewarded video initialization" +
-                    " failed due to missing application ID.");
-        }
-
-        if (!serverExtras.containsKey(APP_SIGNATURE_KEY)) {
-            MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-
-            throw new IllegalStateException("Chartboost rewarded video initialization" +
-                    " failed due to missing application signature.");
-        }
-
-        final String appId = serverExtras.get(APP_ID_KEY);
-        final String appSignature = serverExtras.get(APP_SIGNATURE_KEY);
-
-        if (!TextUtils.isEmpty(appId) && !TextUtils.isEmpty(appSignature)) {
-            if (appId.equals(mAppId) && appSignature.equals(mAppSignature)) {
-                // We don't need to reinitialize.
-                return false;
-            }
-        }
-
-        mAppId = appId;
-        mAppSignature = appSignature;
-
-        // Perform all the common SDK initialization steps including startAppWithId
-        Chartboost.startWithAppId(context, mAppId, mAppSignature);
-        Chartboost.setMediation(Chartboost.CBMediation.CBMediationMoPub, MoPub.SDK_VERSION,
-                new ChartboostAdapterConfiguration().getAdapterVersion());
-        Chartboost.setDelegate(sDelegate);
-        Chartboost.setAutoCacheAds(false);
-        return true;
-    }
-
-    private static void addChartboostPrivacyConsent(Context context, boolean canCollectPersonalInfo) {
-        if (context == null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Skipped setting Chartboost Privacy consent " +
-                    "as context is null.");
-            return;
-        }
-
-        if (canCollectPersonalInfo) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Setting Chartboost GDPR data use consent as BEHAVIORAL");
-            Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
-        } else {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Setting Chartboost GDPR data use consent as NON_BEHAVIORAL");
-            Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
-        }
-    }
 
     @NonNull
     public static ChartboostSingletonDelegate getDelegate() {
@@ -175,6 +87,30 @@ public class ChartboostShared {
 
             @Override
             public void onAdImpression() {
+            }
+
+            @Override
+            public void onAdDismissed() {
+            }
+
+            @Override
+            public void onAdComplete(MoPubReward moPubReward) {
+            }
+
+            @Override
+            public void onAdCollapsed() {
+            }
+
+            @Override
+            public void onAdExpanded() {
+            }
+
+            @Override
+            public void onAdPauseAutoRefresh() {
+            }
+
+            @Override
+            public void onAdResumeAutoRefresh() {
             }
         };
 
@@ -497,7 +433,5 @@ public class ChartboostShared {
     static void reset() {
         // Clears all the locations to load and other state.
         sDelegate = new ChartboostSingletonDelegate();
-        mAppId = null;
-        mAppSignature = null;
     }
 }

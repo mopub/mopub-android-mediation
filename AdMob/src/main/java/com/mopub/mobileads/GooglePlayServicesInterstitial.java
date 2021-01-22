@@ -214,13 +214,6 @@ public class GooglePlayServicesInterstitial extends BaseAd {
         }
 
         @Override
-        public void onAdLeftApplication() {
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdClicked();
-            }
-        }
-
-        @Override
         public void onAdLoaded() {
             MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 

@@ -39,7 +39,7 @@
         android:textColor="@android:color/darker_gray" />
 
 
-    <com.mopub.nativeads.MediaLayout
+    <com.mopub.nativeads.GooglePlayServicesMediaLayout
         android:id="@+id/native_media_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
