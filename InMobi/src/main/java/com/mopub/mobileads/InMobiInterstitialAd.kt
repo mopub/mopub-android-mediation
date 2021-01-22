@@ -144,6 +144,7 @@ open class InMobiInterstitialAd : BaseAd() {
                     })
 
             mInMobiInterstitial?.run {
+                setExtras(Utils.extras)
                 load(adMarkup.toByteArray())
             }
         } catch (sdkNotInitExe: SdkNotInitializedException) {
