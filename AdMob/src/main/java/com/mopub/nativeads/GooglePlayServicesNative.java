@@ -14,6 +14,9 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.query.AdInfo;
+import com.google.android.gms.ads.query.QueryInfo;
+import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.GooglePlayServicesAdapterConfiguration;
@@ -36,6 +39,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.dv3Tokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 /**
@@ -452,6 +456,17 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
             AdRequest.Builder requestBuilder = new AdRequest.Builder();
             requestBuilder.setRequestAgent("MoPub");
+
+            if (localExtras.containsKey(DataKeys.ADM_KEY)) {
+                final String mAdString = (String) localExtras.get(DataKeys.ADM_KEY);
+                final String requestID = AdInfo.getRequestId(mAdString);
+                final QueryInfo queryInfo = dv3Tokens.getIfPresent(requestID);
+
+                dv3Tokens.invalidate(requestID);
+
+                final AdInfo adInfo = new AdInfo(queryInfo, mAdString);
+                requestBuilder.setAdInfo(adInfo);
+            }
 
             // Publishers may append a content URL by passing it to the MoPubNative.setLocalExtras() call.
             final String contentUrl = (String) localExtras.get(KEY_CONTENT_URL);

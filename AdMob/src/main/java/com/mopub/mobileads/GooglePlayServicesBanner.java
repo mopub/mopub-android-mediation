@@ -17,6 +17,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.query.AdInfo;
 import com.google.android.gms.ads.query.QueryInfo;
+import com.google.common.cache.Cache;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
@@ -39,10 +40,11 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
-import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.dv3Tokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 import static com.mopub.mobileads.MoPubErrorCode.NO_FILL;
+
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.dv3Tokens;
 
 public class GooglePlayServicesBanner extends BaseAd {
     /*

@@ -1,6 +1,6 @@
 ## Changelog
   * 19.6.0.2
-    * Add support for DV360.
+    * Add support for DV360 demand.
 
   * 19.6.0.1
     * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
