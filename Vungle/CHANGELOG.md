@@ -1,7 +1,10 @@
 ## Changelog
-  * 6.9.1.0-early1
-    * This version of the adapters has been certified with Vungle 6.9.1-early1 and MoPub SDK 5.14.0.
+  * 6.9.1.0
+    * This version of the adapters has been certified with Vungle 6.9.1 and MoPub SDK 5.14.0.
     * New callback `onAdViewed` is now used and mapped for MoPub's `onAdImpression`.
+
+  * 6.8.1.2
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
 
   * 6.8.1.1
     * Support `orientations` data passing through MoPub initialize in Android and Unity Android. 

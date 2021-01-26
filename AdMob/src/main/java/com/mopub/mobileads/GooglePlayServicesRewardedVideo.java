@@ -298,11 +298,11 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
             mRewardedAd.show(mWeakActivity.get(), mRewardedAdCallback);
         } else {
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(getMoPubRequestErrorCode(AdRequest.ERROR_CODE_NO_FILL));
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
         }
     }

@@ -1,4 +1,10 @@
 ## Changelog
+ * 7.1.0.1.0
+    * This version of the adapters has been certified with ironSource 7.1.0.1 and MoPub SDK 5.15.0.
+
+ * 7.0.4.1.1
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
  * 7.0.4.1.0
     * This version of the adapters has been certified with ironSource 7.0.4.1 and MoPub SDK 5.15.0.
     * Only for side by side mediation cases, ironSource adapters now optionally accept ad unit types to initialize. [Related documentation here.](https://developers.mopub.com/publishers/mediation/networks/ironsource/)

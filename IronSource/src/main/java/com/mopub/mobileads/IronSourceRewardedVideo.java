@@ -31,6 +31,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.MoPubErrorCode.VIDEO_PLAYBACK_ERROR;
 
 public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewardedVideoListener {
 
@@ -233,11 +234,15 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
         MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource Rewarded Video failed to show for instance " +
                 instanceId + " (current instance: " + getAdNetworkId() + " )");
         MoPubLog.log(instanceId, SHOW_FAILED, ADAPTER_NAME,
-                IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError).getIntCode(),
-                IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
+                VIDEO_PLAYBACK_ERROR.getIntCode(),
+                VIDEO_PLAYBACK_ERROR);
+
+        if (ironSourceError != null && ironSourceError.getErrorMessage() != null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource error: " + ironSourceError.toString());
+        }
 
         if (mInteractionListener != null) {
-            mInteractionListener.onAdFailed(IronSourceAdapterConfiguration.getMoPubErrorCode(ironSourceError));
+            mInteractionListener.onAdFailed(VIDEO_PLAYBACK_ERROR);
         }
     }
 

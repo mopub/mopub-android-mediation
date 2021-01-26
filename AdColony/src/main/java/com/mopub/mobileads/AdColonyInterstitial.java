@@ -3,6 +3,7 @@ package com.mopub.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,7 +53,7 @@ public class AdColonyInterstitial extends BaseAd {
     private AdColonyAdapterConfiguration mAdColonyAdapterConfiguration;
 
     public AdColonyInterstitial() {
-        mHandler = new Handler();
+        mHandler = new Handler(Looper.getMainLooper());
         mAdColonyAdapterConfiguration = new AdColonyAdapterConfiguration();
     }
 

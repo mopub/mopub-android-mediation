@@ -1,4 +1,7 @@
 ## Changelog
+  * 1.8.2.1
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
   * 1.8.2.0
     * This version of the adapters has been certified with Verizon 1.8.2 and MoPub 5.15.0.
 

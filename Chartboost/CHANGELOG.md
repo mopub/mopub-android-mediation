@@ -1,4 +1,7 @@
 ## Changelog
+  * 8.2.0.3
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
   * 8.2.0.2
     * Prevent Chartboost SDK from initializing same configuration cases.
 
