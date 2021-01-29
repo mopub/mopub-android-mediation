@@ -1,6 +1,6 @@
 ## Changelog
   * 6.9.1.0
-    * This version of the adapters has been certified with Vungle 6.9.1 and MoPub SDK 5.14.0.
+    * This version of the adapters has been certified with Vungle 6.9.1 and MoPub SDK 5.15.0.
     * New callback `onAdViewed` is now used and mapped for MoPub's `onAdImpression`.
 
   * 6.8.1.2
