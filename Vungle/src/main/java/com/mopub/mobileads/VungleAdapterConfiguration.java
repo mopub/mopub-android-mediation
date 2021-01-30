@@ -56,7 +56,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
         if (token != null) {
             tokenReference.set(token);
         }
-        MoPubLog.log(CUSTOM, ADAPTER_NAME, "Vungle's getBiddingToken: " + tokenReference.get());
+
         return tokenReference.get();
     }
 

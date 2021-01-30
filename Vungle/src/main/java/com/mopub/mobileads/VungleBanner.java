@@ -30,6 +30,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
@@ -331,9 +332,9 @@ public class VungleBanner extends BaseAd {
 
         @Override
         public void onAdViewed(@NonNull String placementReferenceId) {
-            if (mPlacementId.equals(placementReferenceId)) {
 
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdViewed, Vungle banner ad logged impression. Placement id - Placement ID: " + placementReferenceId);
+            if (mPlacementId.equals(placementReferenceId)) {
+                MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME, "onAdViewed, Vungle banner ad logged impression. Placement id - Placement ID: " + placementReferenceId);
 
                 mHandler.post(new Runnable() {
                     @Override
