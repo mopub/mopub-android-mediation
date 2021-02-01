@@ -272,8 +272,8 @@ public class VungleInterstitial extends BaseAd {
 
         @Override
         public void onAdViewed(@NonNull String placementReferenceId) {
-            if (mPlacementId.equals(placementReferenceId)) {
 
+            if (mPlacementId.equals(placementReferenceId)) {
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdViewed - Placement ID: " + placementReferenceId);
 
                 mHandler.post(new Runnable() {
