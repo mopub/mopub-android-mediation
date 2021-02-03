@@ -26,11 +26,13 @@ import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.DID_DISAPPEAR;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLICATION;
 
 public class VerizonNative extends CustomEventNative {
@@ -43,9 +45,10 @@ public class VerizonNative extends CustomEventNative {
     private static final String SITE_ID_KEY = "siteId";
     private static final String AD_IMPRESSION_EVENT_ID = "adImpression";
 
+    private final VerizonAdapterConfiguration verizonAdapterConfiguration;
+
     private VerizonStaticNativeAd verizonStaticNativeAd;
     private VerizonNativeListener verizonNativeListener;
-    private VerizonAdapterConfiguration verizonAdapterConfiguration;
     private CustomEventNativeListener customEventNativeListener;
     private static String mPlacementId;
 
@@ -251,6 +254,8 @@ public class VerizonNative extends CustomEventNative {
                         verizonStaticNativeAd.setStarRating(rating);
                         verizonStaticNativeAd.addExtra(COMP_ID_RATING, ratingArray[0]);
                     } catch (NumberFormatException e) {
+                        MoPubLog.log(CUSTOM_WITH_THROWABLE, ADAPTER_NAME, "Exception occurred" +
+                                " while parsing Verizon's native ad rating.", e);
                     }
                 }
             }
@@ -356,6 +361,8 @@ public class VerizonNative extends CustomEventNative {
         public void onEvent(final NativeAd nativeAd, final String source, final String eventId,
                             final Map<String, Object> arguments) {
             if (AD_IMPRESSION_EVENT_ID.equals(eventId)) {
+                MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
                 VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
 
                     @Override
