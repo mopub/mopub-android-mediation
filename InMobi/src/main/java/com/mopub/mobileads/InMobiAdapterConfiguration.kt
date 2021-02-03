@@ -70,8 +70,8 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
     }
 
     companion object {
-        const val ACCOUNT_ID_KEY = "accountid"
-        const val PLACEMENT_ID_KEY = "placementid"
+        const val ACCOUNT_ID_KEY = "accountId"
+        const val PLACEMENT_ID_KEY = "placementId"
         const val CONSENT_KEY = "gdpr"
         val ADAPTER_NAME: String = InMobiAdapterConfiguration::class.java.simpleName
         var isInMobiSdkInitialised = false
