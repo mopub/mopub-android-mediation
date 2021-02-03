@@ -1,4 +1,4 @@
-package com.mopub.utils
+package com.mopub.mobileads.utils
 
 import com.inmobi.ads.InMobiAdRequestStatus
 import com.mopub.common.MoPub
