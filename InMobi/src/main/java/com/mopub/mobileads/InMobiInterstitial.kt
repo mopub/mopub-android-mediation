@@ -47,20 +47,36 @@ open class InMobiInterstitial : BaseAd() {
         setAutomaticImpressionAndClickTracking(false)
         val extras: Map<String, String> = adData.extras
 
-        try {
-            val accountId = InMobiAdapterConfiguration.getAccountId(extras)
-            InMobiSdk.init(context, accountId, InMobiAdapterConfiguration.getInMobiConsentDictionary()) { }
-
-            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
-
-        } catch (error: Exception) {
-            onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                    "InMobi interstitial request failed",
-                    ADAPTER_NAME, mLoadListener, null)
-            return
+        if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
+            loadInterstitial(context, adData, extras);
+        } else {
+            try {
+                val accountId = InMobiAdapterConfiguration.getAccountId(extras)
+                val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
+                    InMobiAdapterConfiguration.getInMobiConsentDictionary()
+                }
+                InMobiSdk.init(context, accountId, consentObject) {
+                    it?.let {
+                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi interstitial request failed due to InMobi initialization failure. Reason: " + it.message,
+                                InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                    } ?: run {
+                        loadInterstitial(context, adData, extras);
+                    }
+                }
+            } catch (error: Exception) {
+                onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                        "InMobi interstitial request failed",
+                        ADAPTER_NAME, mLoadListener, null)
+                return
+            }
         }
+    }
+
+    private fun loadInterstitial(context: Context, adData: AdData, extras: Map<String, String>) {
 
         try {
+            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
             mInMobiInterstitial = InMobiInterstitial(context, mPlacementId!!, object : InterstitialAdEventListener() {
 
                 override fun onAdLoadSucceeded(ad: InMobiInterstitial, info: AdMetaInfo) {
@@ -129,6 +145,7 @@ open class InMobiInterstitial : BaseAd() {
                 MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME,
                         "Ad markup for InMobi interstitial ad request is not present. Will make traditional ad request ")
                 mInMobiInterstitial?.run {
+                    setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
                     load()
                 }
             }
@@ -145,7 +162,6 @@ open class InMobiInterstitial : BaseAd() {
                     ADAPTER_NAME, mLoadListener, null)
             return
         }
-
     }
 
     override fun show() {

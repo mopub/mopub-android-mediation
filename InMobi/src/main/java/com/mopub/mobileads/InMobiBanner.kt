@@ -55,19 +55,33 @@ open class InMobiBanner : BaseAd() {
         setAutomaticImpressionAndClickTracking(false)
         val extras: Map<String, String> = adData.extras
 
-        try {
-            val accountId = InMobiAdapterConfiguration.getAccountId(extras)
-            InMobiSdk.init(context, accountId, InMobiAdapterConfiguration.getInMobiConsentDictionary()) { }
-
-            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
-
-        } catch (error: Exception) {
-            onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                    "InMobi banner request failed",
-                    ADAPTER_NAME, mLoadListener, null)
-            return
+        if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
+            loadBanner(context, adData, extras);
+        } else {
+            try {
+                val accountId = InMobiAdapterConfiguration.getAccountId(extras)
+                val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
+                    InMobiAdapterConfiguration.getInMobiConsentDictionary()
+                }
+                InMobiSdk.init(context, accountId, consentObject) {
+                    it?.let {
+                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi banner request failed due to InMobi initialization failure. Reason: " + it.message,
+                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                    } ?: run {
+                        loadBanner(context, adData, extras);
+                    }
+                }
+            } catch (error: Exception) {
+                onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                        "InMobi banner request failed",
+                        ADAPTER_NAME, mLoadListener, null)
+                return
+            }
         }
+    }
 
+    private fun loadBanner(context: Context, adData: AdData, extras: Map<String, String>) {
         if (adData.adWidth == null || adData.adHeight == null) {
             onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
                     "InMobi banner request failed. Banner Width and Height not provided. Please provide a width and height.",
@@ -86,6 +100,8 @@ open class InMobiBanner : BaseAd() {
         }
 
         try {
+            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
+
             mInMobiBanner = InMobiBanner(context, mPlacementId!!)
             mInMobiBanner!!.run {
                 setListener(object : BannerAdEventListener() {
@@ -135,12 +151,11 @@ open class InMobiBanner : BaseAd() {
 
                 setEnableAutoRefresh(false)
                 setAnimationType(InMobiBanner.AnimationType.ANIMATION_OFF)
-                setExtras(InMobiAdapterConfiguration.getInMobiAdRequestExtras())
 
                 val dm = resources.displayMetrics;
 
                 layoutParams = FrameLayout.LayoutParams(
-                        (adWidth  * dm.density).roundToInt(),
+                        (adWidth * dm.density).roundToInt(),
                         (adHeight * dm.density).roundToInt())
 
                 MoPubLog.log(adNetworkId, AdapterLogEvent.LOAD_ATTEMPTED, ADAPTER_NAME)
@@ -151,6 +166,7 @@ open class InMobiBanner : BaseAd() {
                                     "using markup: " + adMarkup)
                     load(adMarkup.toByteArray())
                 } else {
+                    setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
                     MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME,
                             "Ad markup for InMobi banner ad request is not present. Will make traditional ad request ")
                     load()

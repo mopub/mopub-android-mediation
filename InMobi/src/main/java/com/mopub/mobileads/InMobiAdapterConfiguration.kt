@@ -11,9 +11,9 @@ import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM
 import com.mopub.common.privacy.ConsentStatus
 import com.mopub.mobileads.inmobi.BuildConfig
-import com.mopub.mobileads.utils.Utils
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.reflect.Field
 
 open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
 
@@ -25,7 +25,7 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
     }
 
     override fun getBiddingToken(context: Context): String? {
-        return InMobiSdk.getToken(Utils.extras, null)
+        return InMobiSdk.getToken(inMobiTPExtras, null)
     }
 
     override fun getMoPubNetworkName(): String {
@@ -50,16 +50,22 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
 
         try {
             val accountId = getAccountId(configuration)
-            InMobiSdk.init(context, accountId, getInMobiConsentDictionary()) { }
-            isInMobiSdkInitialised = true
-            onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
-            return
-
+            val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
+                getInMobiConsentDictionary()
+            }
+            InMobiSdk.init(context, accountId, consentObject) {
+                if (it == null) {
+                    isInMobiSdkInitialised = true
+                    onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
+                } else {
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: " + it.message)
+                    onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
+                }
+            }
         } catch (e: Exception) {
             MoPubLog.log(AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobi initialization failed with an exception." +
                     initializationErrorInfo, e)
             onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
-            return
         }
     }
 
@@ -67,10 +73,11 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         const val ACCOUNT_ID_KEY = "accountid"
         const val PLACEMENT_ID_KEY = "placementid"
         const val CONSENT_KEY = "gdpr"
-        val ADAPTER_NAME: String = InMobiAdapterConfiguration::class.java.getSimpleName()
+        val ADAPTER_NAME: String = InMobiAdapterConfiguration::class.java.simpleName
         var isInMobiSdkInitialised = false
         val initializationErrorInfo = "InMobi will attempt to initialize on the first ad request using server extras values from MoPub UI. " +
                 "If you're using InMobi for Advanced Bidding, and initializing InMobi outside and before MoPub, you may disregard this error."
+        val inMobiTPExtras: Map<String, String>
 
         fun getInMobiConsentDictionary(): JSONObject? {
             val consentObject = JSONObject()
@@ -117,15 +124,8 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             }
         }
 
-        fun getInMobiAdRequestExtras(): Map<String, String> {
-            val map: MutableMap<String, String> = HashMap()
-            map["tp"] = "c_mopub"
-            map["tp-ver"] = MoPub.SDK_VERSION
-            return map
-        }
-
         fun getAccountId(dict: Map<String, String>): String {
-            val accountIdErrorMessage = "Please make sure you provide correct Placement ID information on MoPub UI."
+            val accountIdErrorMessage = "Please make sure you provide correct Account ID information on MoPub UI."
             val accountIdString: String? = dict[ACCOUNT_ID_KEY]
             if (accountIdString.isNullOrEmpty()) {
                 throw Exception("InMobi Account ID parameter is null or empty. " +
@@ -202,6 +202,21 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             loadListener?.onAdLoadFailed(moPubErrorCode)
             interactionListener?.onAdFailed(moPubErrorCode)
 
+        }
+
+        init {
+            val map: MutableMap<String, String> = HashMap()
+            map["tp"] = "c_mopub"
+            try {
+                val mopubSdkClassRef = Class.forName(MoPub::class.java.name)
+                val mopubSdkVersionRef: Field = mopubSdkClassRef.getDeclaredField("SDK_VERSION")
+                val moPubSDKVersion = mopubSdkVersionRef[null].toString()
+                map["tp-ver"] = moPubSDKVersion
+            } catch (e: Exception) {
+                MoPubLog.log(MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobiUtils",
+                        "Something went wrong while getting the MoPub SDK version", e)
+            }
+            inMobiTPExtras = map
         }
     }
 }

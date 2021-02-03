@@ -48,20 +48,35 @@ open class InMobiRewarded : BaseAd() {
         setAutomaticImpressionAndClickTracking(false)
         val extras: Map<String, String> = adData.extras
 
-        try {
-            val accountId = InMobiAdapterConfiguration.getAccountId(extras)
-            InMobiSdk.init(context, accountId, InMobiAdapterConfiguration.getInMobiConsentDictionary()) { }
-
-            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
-
-        } catch (error: Exception) {
-            onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                    "InMobi rewarded video request failed",
-                    ADAPTER_NAME, mLoadListener, null)
-            return
+        if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
+            loadRewarded(context, adData, extras)
+        } else {
+            try {
+                val accountId = InMobiAdapterConfiguration.getAccountId(extras)
+                val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
+                    InMobiAdapterConfiguration.getInMobiConsentDictionary()
+                }
+                InMobiSdk.init(context, accountId, consentObject) {
+                    it?.let {
+                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi rewarded request failed due to InMobi initialization failure. Reason: " + it.message,
+                                InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                    } ?: run {
+                        loadRewarded(context, adData, extras)
+                    }
+                }
+            } catch (error: Exception) {
+                onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                        "InMobi rewarded video request failed",
+                        ADAPTER_NAME, mLoadListener, null)
+                return
+            }
         }
+    }
 
+    private fun loadRewarded(context: Context, adData: AdData, extras: Map<String, String>) {
         try {
+            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
             mInMobiRewardedVideo = InMobiInterstitial(context, mPlacementId!!, object : InterstitialAdEventListener() {
 
                 override fun onAdLoadSucceeded(ad: InMobiInterstitial, info: AdMetaInfo) {
@@ -157,6 +172,7 @@ open class InMobiRewarded : BaseAd() {
                 MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME,
                         "Ad markup for InMobi rewarded video ad request is not present. Will make traditional ad request ")
                 mInMobiRewardedVideo?.run {
+                    setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
                     load()
                 }
             }
