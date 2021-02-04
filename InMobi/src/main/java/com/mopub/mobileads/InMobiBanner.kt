@@ -16,6 +16,7 @@ import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithError
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
+import java.lang.Error
 import kotlin.math.roundToInt
 
 open class InMobiBanner : BaseAd() {
@@ -56,28 +57,27 @@ open class InMobiBanner : BaseAd() {
         val extras: Map<String, String> = adData.extras
 
         if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
-            loadBanner(context, adData, extras);
+            loadBanner(context, adData, extras)
         } else {
-            try {
-                val accountId = InMobiAdapterConfiguration.getAccountId(extras)
-                val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
-                    InMobiAdapterConfiguration.getInMobiConsentDictionary()
+            InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
+                override fun onSuccess() {
+                    loadBanner(context, adData, extras)
                 }
-                InMobiSdk.init(context, accountId, consentObject) {
-                    it?.let {
+
+                override fun onFailure(error: Error?, exception: Exception?) {
+                    error?.let {
                         onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failure. Reason: " + it.message,
+                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
                                 com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    } ?: run {
-                        loadBanner(context, adData, extras);
+                    }
+
+                    exception?.let {
+                        onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi banner request failed due to InMobi initialization failed with an exception.",
+                                ADAPTER_NAME, mLoadListener, null)
                     }
                 }
-            } catch (error: Exception) {
-                onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                        "InMobi banner request failed",
-                        ADAPTER_NAME, mLoadListener, null)
-                return
-            }
+            })
         }
     }
 

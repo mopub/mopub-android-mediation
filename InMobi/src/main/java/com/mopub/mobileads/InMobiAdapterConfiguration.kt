@@ -13,6 +13,7 @@ import com.mopub.common.privacy.ConsentStatus
 import com.mopub.mobileads.inmobi.BuildConfig
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.Error
 import java.lang.reflect.Field
 
 open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
@@ -48,30 +49,31 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             return
         }
 
-        try {
-            val accountId = getAccountId(configuration)
-            val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
-                getInMobiConsentDictionary()
+        initialiseInMobi(configuration, context, object : InitCompletionListener {
+            override fun onSuccess() {
+                onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
             }
-            InMobiSdk.init(context, accountId, consentObject) {
-                if (it == null) {
-                    isInMobiSdkInitialised = true
-                    onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
-                } else {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: " + it.message)
-                    onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
+
+            override fun onFailure(error: Error?, exception: Exception?) {
+                error?.let {
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: ${it.message}")
                 }
+                exception?.let {
+                    MoPubLog.log(AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobi initialization failed with an exception. $initializationErrorInfo", it)
+                }
+                onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
             }
-        } catch (e: Exception) {
-            MoPubLog.log(AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobi initialization failed with an exception." +
-                    initializationErrorInfo, e)
-            onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
-        }
+        })
+    }
+
+    interface InitCompletionListener {
+        fun onSuccess()
+        fun onFailure(error: Error?, exception: Exception?)
     }
 
     companion object {
-        const val ACCOUNT_ID_KEY = "accountId"
-        const val PLACEMENT_ID_KEY = "placementId"
+        const val ACCOUNT_ID_KEY = "accountid"
+        const val PLACEMENT_ID_KEY = "placementid"
         const val CONSENT_KEY = "gdpr"
         val ADAPTER_NAME: String = InMobiAdapterConfiguration::class.java.simpleName
         var isInMobiSdkInitialised = false
@@ -109,6 +111,25 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             }
 
             return consentObject
+        }
+
+        fun initialiseInMobi(configuration: Map<String, String>, context: Context, initCompletionListener: InitCompletionListener) {
+            try {
+                val accountId = getAccountId(configuration)
+                val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
+                    getInMobiConsentDictionary()
+                }
+                InMobiSdk.init(context, accountId, consentObject) {
+                    if (it == null) {
+                        isInMobiSdkInitialised = true
+                        initCompletionListener.onSuccess()
+                    } else {
+                        initCompletionListener.onFailure(it, null)
+                    }
+                }
+            } catch (e: Exception) {
+                initCompletionListener.onFailure(null, e)
+            }
         }
 
         // TODO: Revision needed

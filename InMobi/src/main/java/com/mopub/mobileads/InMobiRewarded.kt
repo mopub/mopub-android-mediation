@@ -15,6 +15,7 @@ import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithError
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
+import java.lang.Error
 
 open class InMobiRewarded : BaseAd() {
 
@@ -51,26 +52,25 @@ open class InMobiRewarded : BaseAd() {
         if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
             loadRewarded(context, adData, extras)
         } else {
-            try {
-                val accountId = InMobiAdapterConfiguration.getAccountId(extras)
-                val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
-                    InMobiAdapterConfiguration.getInMobiConsentDictionary()
+            InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
+                override fun onSuccess() {
+                    loadRewarded(context, adData, extras)
                 }
-                InMobiSdk.init(context, accountId, consentObject) {
-                    it?.let {
+
+                override fun onFailure(error: Error?, exception: Exception?) {
+                    error?.let {
                         onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi rewarded request failed due to InMobi initialization failure. Reason: " + it.message,
+                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
+                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                    }
+
+                    exception?.let {
+                        onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi banner request failed due to InMobi initialization failed with an exception.",
                                 InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    } ?: run {
-                        loadRewarded(context, adData, extras)
                     }
                 }
-            } catch (error: Exception) {
-                onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                        "InMobi rewarded video request failed",
-                        ADAPTER_NAME, mLoadListener, null)
-                return
-            }
+            })
         }
     }
 
