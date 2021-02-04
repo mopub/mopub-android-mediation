@@ -177,7 +177,7 @@ class InMobiBanner : BaseAd() {
                     "Attempting to create InMobi interstitial object before InMobi SDK is initialized caused failure" +
                             "Please make sure InMobi is properly initialized. InMobi will attempt to initialize on next ad request.",
                     ADAPTER_NAME, mLoadListener, null)
-        } catch (npe: NullPointerException) {
+        } catch (e: Exception) {
             onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
                     "InMobi banner request failed. Placement Id is null. " +
                             "Please make sure you set valid Placement Id on MoPub UI.",

@@ -7,14 +7,12 @@ import com.inmobi.ads.InMobiAdRequestStatus
 import com.inmobi.ads.InMobiInterstitial
 import com.inmobi.ads.exceptions.SdkNotInitializedException
 import com.inmobi.ads.listeners.InterstitialAdEventListener
-import com.inmobi.sdk.InMobiSdk
 import com.mopub.common.DataKeys
 import com.mopub.common.LifecycleListener
 import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithError
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
-import java.lang.Error
 
 class InMobiInterstitial : BaseAd() {
 
@@ -147,7 +145,7 @@ class InMobiInterstitial : BaseAd() {
                     "Attempting to create InMobi interstitial object before InMobi SDK is initialized caused failure" +
                             "Please make sure InMobi is properly initialized. InMobi will attempt to initialize on next ad request.",
                     ADAPTER_NAME, mLoadListener, null)
-        } catch (npe: NullPointerException) {
+        } catch (e: Exception) {
             onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
                     "InMobi interstitial request failed. Placement Id is null. " +
                             "Please make sure you set valid Placement Id on MoPub UI.",
@@ -157,7 +155,17 @@ class InMobiInterstitial : BaseAd() {
     }
 
     override fun show() {
-        super.show()
-        mInMobiInterstitial?.show()
+        MoPubLog.log(adNetworkId, AdapterLogEvent.SHOW_ATTEMPTED, ADAPTER_NAME)
+
+        if (mInMobiInterstitial?.isReady == true) {
+            mInMobiInterstitial?.show()
+        } else {
+            MoPubLog.log(adNetworkId, AdapterLogEvent.SHOW_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR.intCode,
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR)
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR)
+            }
+        }
     }
 }

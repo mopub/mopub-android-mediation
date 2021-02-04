@@ -76,7 +76,7 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
     companion object {
         const val ACCOUNT_ID_KEY = "accountid"
         const val PLACEMENT_ID_KEY = "placementid"
-        const val CONSENT_KEY = "gdpr"
+
         val ADAPTER_NAME: String = InMobiAdapterConfiguration::class.java.simpleName
         var isInMobiSdkInitialised = false
         val initializationErrorInfo = "InMobi will attempt to initialize on the first ad request using server extras values from MoPub UI. " +
@@ -92,7 +92,7 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
 
             try {
                 MoPub.getPersonalInformationManager()?.let { personalInfoManager ->
-                    consentObject.put(CONSENT_KEY, "1")
+                    consentObject.put(InMobiSdk.IM_GDPR_CONSENT_GDPR_APPLIES, "1")
                     consentObject.put(InMobiSdk.IM_GDPR_CONSENT_IAB, null)
                     if (shouldAllowLegitimateInterest) {
                         if (personalInfoManager.personalInfoConsentStatus == ConsentStatus.EXPLICIT_NO
@@ -107,7 +107,7 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
                         consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, false)
                     }
                 } ?: run {
-                    consentObject.put(CONSENT_KEY, "0")
+                    consentObject.put(InMobiSdk.IM_GDPR_CONSENT_GDPR_APPLIES, "0")
                     consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, false)
                 }
             } catch (e: JSONException) {
@@ -140,11 +140,10 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         fun getMoPubErrorCode(statusCode: InMobiAdRequestStatus.StatusCode?): MoPubErrorCode {
             return when (statusCode) {
                 InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR -> MoPubErrorCode.INTERNAL_ERROR
-                InMobiAdRequestStatus.StatusCode.REQUEST_INVALID -> MoPubErrorCode.NETWORK_INVALID_STATE
                 InMobiAdRequestStatus.StatusCode.NETWORK_UNREACHABLE -> MoPubErrorCode.NO_CONNECTION
                 InMobiAdRequestStatus.StatusCode.NO_FILL -> MoPubErrorCode.NO_FILL
                 InMobiAdRequestStatus.StatusCode.REQUEST_TIMED_OUT -> MoPubErrorCode.NETWORK_TIMEOUT
-                InMobiAdRequestStatus.StatusCode.SERVER_ERROR -> MoPubErrorCode.NETWORK_INVALID_STATE
+                InMobiAdRequestStatus.StatusCode.REQUEST_INVALID, InMobiAdRequestStatus.StatusCode.SERVER_ERROR -> MoPubErrorCode.NETWORK_INVALID_STATE
                 else -> MoPubErrorCode.UNSPECIFIED
             }
         }
