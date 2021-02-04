@@ -16,7 +16,7 @@ import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWi
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
 import java.lang.Error
 
-open class InMobiInterstitial : BaseAd() {
+class InMobiInterstitial : BaseAd() {
 
     companion object {
         val ADAPTER_NAME: String = InMobiInterstitial::class.java.simpleName

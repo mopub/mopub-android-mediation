@@ -17,7 +17,7 @@ import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWi
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
 import java.lang.Error
 
-open class InMobiRewarded : BaseAd() {
+class InMobiRewarded : BaseAd() {
 
     companion object {
         val ADAPTER_NAME: String = InMobiRewarded::class.java.simpleName

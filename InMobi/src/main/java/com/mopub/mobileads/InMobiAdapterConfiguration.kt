@@ -16,7 +16,7 @@ import org.json.JSONObject
 import java.lang.Error
 import java.lang.reflect.Field
 
-open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
+class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
 
     private val adapterVersionName = BuildConfig.VERSION_NAME
     private val networkName = BuildConfig.NETWORK_NAME

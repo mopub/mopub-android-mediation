@@ -19,7 +19,7 @@ import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWi
 import java.lang.Error
 import kotlin.math.roundToInt
 
-open class InMobiBanner : BaseAd() {
+class InMobiBanner : BaseAd() {
 
     companion object {
         val ADAPTER_NAME: String = InMobiBanner::class.java.simpleName
