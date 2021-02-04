@@ -58,16 +58,16 @@ open class InMobiRewarded : BaseAd() {
                 }
 
                 override fun onFailure(error: Error?, exception: Exception?) {
-                    error?.let {
-                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
-                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    }
-
                     exception?.let {
                         onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
                                 "InMobi banner request failed due to InMobi initialization failed with an exception.",
                                 InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                    } ?: run {
+                        error?.let {
+                            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                    "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
+                                    com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                        }
                     }
                 }
             })
@@ -165,16 +165,12 @@ open class InMobiRewarded : BaseAd() {
                 MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME,
                         "Ad markup for InMobi rewarded video ad request is present. Will make Advanced Bidding ad request " +
                                 "using markup: " + adMarkup)
-                mInMobiRewardedVideo?.run {
-                    load(adMarkup.toByteArray())
-                }
+                mInMobiRewardedVideo!!.load(adMarkup.toByteArray())
             } else {
                 MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME,
                         "Ad markup for InMobi rewarded video ad request is not present. Will make traditional ad request ")
-                mInMobiRewardedVideo?.run {
-                    setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
-                    load()
-                }
+                mInMobiRewardedVideo!!.setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
+                mInMobiRewardedVideo!!.load()
             }
 
         } catch (inMobiSdkNotInitializedException: SdkNotInitializedException) {

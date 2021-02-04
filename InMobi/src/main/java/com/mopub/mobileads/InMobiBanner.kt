@@ -65,16 +65,16 @@ open class InMobiBanner : BaseAd() {
                 }
 
                 override fun onFailure(error: Error?, exception: Exception?) {
-                    error?.let {
-                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
-                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    }
-
                     exception?.let {
                         onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
                                 "InMobi banner request failed due to InMobi initialization failed with an exception.",
                                 ADAPTER_NAME, mLoadListener, null)
+                    } ?: run {
+                        error?.let {
+                            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                    "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
+                                    com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                        }
                     }
                 }
             })

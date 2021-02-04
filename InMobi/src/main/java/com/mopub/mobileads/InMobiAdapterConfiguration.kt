@@ -55,12 +55,14 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             }
 
             override fun onFailure(error: Error?, exception: Exception?) {
-                error?.let {
-                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: ${it.message}")
-                }
                 exception?.let {
                     MoPubLog.log(AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobi initialization failed with an exception. $initializationErrorInfo", it)
+                } ?: run {
+                    error?.let {
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: ${it.message}")
+                    }
                 }
+
                 onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
             }
         })
@@ -80,6 +82,8 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         val initializationErrorInfo = "InMobi will attempt to initialize on the first ad request using server extras values from MoPub UI. " +
                 "If you're using InMobi for Advanced Bidding, and initializing InMobi outside and before MoPub, you may disregard this error."
         val inMobiTPExtras: Map<String, String>
+        private val accountIdErrorMessage = "Please make sure you provide correct Account ID information on MoPub UI."
+        private val placementIdErrorMessage = "Please make sure you provide correct Placement ID information on MoPub UI."
 
         fun getInMobiConsentDictionary(): JSONObject? {
             val consentObject = JSONObject()
@@ -146,7 +150,6 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         }
 
         fun getAccountId(dict: Map<String, String>): String {
-            val accountIdErrorMessage = "Please make sure you provide correct Account ID information on MoPub UI."
             val accountIdString: String? = dict[ACCOUNT_ID_KEY]
             if (accountIdString.isNullOrEmpty()) {
                 throw Exception("InMobi Account ID parameter is null or empty. " +
@@ -157,7 +160,6 @@ open class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         }
 
         fun getPlacementId(dict: Map<String, String>): Long {
-            val placementIdErrorMessage = "Please make sure you provide correct Placement ID information on MoPub UI."
             val placementIdString: String? = dict[PLACEMENT_ID_KEY]
             if (placementIdString.isNullOrEmpty()) {
                 throw Exception("InMobi Placement ID parameter is null or empty. " +

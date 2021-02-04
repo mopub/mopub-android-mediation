@@ -57,16 +57,16 @@ open class InMobiInterstitial : BaseAd() {
                 }
 
                 override fun onFailure(error: Error?, exception: Exception?) {
-                    error?.let {
-                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
-                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    }
-
                     exception?.let {
                         onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
                                 "InMobi banner request failed due to InMobi initialization failed with an exception.",
                                 InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                    } ?: run {
+                        error?.let {
+                            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                    "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
+                                    com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                        }
                     }
                 }
             })
@@ -125,11 +125,6 @@ open class InMobiInterstitial : BaseAd() {
                     MoPubLog.log(adNetworkId, AdapterLogEvent.DID_DISAPPEAR, ADAPTER_NAME)
                     mInteractionListener?.onAdDismissed()
                 }
-
-                override fun onRewardsUnlocked(inMobiInterstitial: InMobiInterstitial,
-                                               rewards: Map<Any, Any>?) {
-                    // no-op
-                }
             })
 
             MoPubLog.log(adNetworkId, AdapterLogEvent.LOAD_ATTEMPTED, ADAPTER_NAME)
@@ -138,16 +133,13 @@ open class InMobiInterstitial : BaseAd() {
                 MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME,
                         "Ad markup for InMobi interstitial ad request is present. Will make Advanced Bidding ad request " +
                                 "using markup: " + adMarkup)
-                mInMobiInterstitial?.run {
-                    load(adMarkup.toByteArray())
-                }
+                mInMobiInterstitial!!.load(adMarkup.toByteArray())
+
             } else {
                 MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME,
                         "Ad markup for InMobi interstitial ad request is not present. Will make traditional ad request ")
-                mInMobiInterstitial?.run {
-                    setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
-                    load()
-                }
+                mInMobiInterstitial!!.setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
+                mInMobiInterstitial!!.load()
             }
 
         } catch (inMobiSdkNotInitializedException: SdkNotInitializedException) {
