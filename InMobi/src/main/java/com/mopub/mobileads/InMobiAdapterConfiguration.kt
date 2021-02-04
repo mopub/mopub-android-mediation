@@ -14,6 +14,7 @@ import com.mopub.mobileads.inmobi.BuildConfig
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.Error
+import java.lang.NullPointerException
 import java.lang.reflect.Field
 
 class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
@@ -151,7 +152,7 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         fun getAccountId(dict: Map<String, String>): String {
             val accountIdString: String? = dict[ACCOUNT_ID_KEY]
             if (accountIdString.isNullOrEmpty()) {
-                throw Exception("InMobi Account ID parameter is null or empty. " +
+                throw NullPointerException("InMobi Account ID parameter is null or empty. " +
                         accountIdErrorMessage)
             } else {
                 return accountIdString
@@ -161,7 +162,7 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         fun getPlacementId(dict: Map<String, String>): Long {
             val placementIdString: String? = dict[PLACEMENT_ID_KEY]
             if (placementIdString.isNullOrEmpty()) {
-                throw Exception("InMobi Placement ID parameter is null or empty. " +
+                throw NullPointerException("InMobi Placement ID parameter is null or empty. " +
                         placementIdErrorMessage)
             }
 
