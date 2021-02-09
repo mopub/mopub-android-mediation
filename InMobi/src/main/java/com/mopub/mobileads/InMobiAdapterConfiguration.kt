@@ -39,10 +39,6 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
     }
 
     override fun initializeNetwork(context: Context, configuration: Map<String, String>?, onNetworkInitializationFinishedListener: OnNetworkInitializationFinishedListener) {
-        if (isInMobiSdkInitialised) {
-            return
-        }
-
         if (configuration.isNullOrEmpty()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Network configuration map is empty. Cannot parse Account ID value for initialization"
                     + initializationErrorInfo)
@@ -75,58 +71,21 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
     }
 
     companion object {
-        const val ACCOUNT_ID_KEY = "accountid"
-        const val PLACEMENT_ID_KEY = "placementid"
+        const val ACCOUNT_ID_KEY = "accountId"
+        const val PLACEMENT_ID_KEY = "placementId"
 
         val ADAPTER_NAME: String = InMobiAdapterConfiguration::class.java.simpleName
-        var isInMobiSdkInitialised = false
         val initializationErrorInfo = "InMobi will attempt to initialize on the first ad request using server extras values from MoPub UI. " +
                 "If you're using InMobi for Advanced Bidding, and initializing InMobi outside and before MoPub, you may disregard this error."
         val inMobiTPExtras: Map<String, String>
         private val accountIdErrorMessage = "Please make sure you provide correct Account ID information on MoPub UI."
         private val placementIdErrorMessage = "Please make sure you provide correct Placement ID information on MoPub UI."
 
-        fun getInMobiConsentDictionary(): JSONObject? {
-            val consentObject = JSONObject()
-            val canCollectPersonalInfo = MoPub.canCollectPersonalInformation()
-            val shouldAllowLegitimateInterest = MoPub.shouldAllowLegitimateInterest()
-
-            try {
-                MoPub.getPersonalInformationManager()?.let { personalInfoManager ->
-                    consentObject.put(InMobiSdk.IM_GDPR_CONSENT_GDPR_APPLIES, "1")
-                    consentObject.put(InMobiSdk.IM_GDPR_CONSENT_IAB, null)
-                    if (shouldAllowLegitimateInterest) {
-                        if (personalInfoManager.personalInfoConsentStatus == ConsentStatus.EXPLICIT_NO
-                                || personalInfoManager.personalInfoConsentStatus == ConsentStatus.DNT) {
-                            consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, false)
-                        } else {
-                            consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, true)
-                        }
-                    } else if (canCollectPersonalInfo) {
-                        consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, true)
-                    } else {
-                        consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, false)
-                    }
-                } ?: run {
-                    consentObject.put(InMobiSdk.IM_GDPR_CONSENT_GDPR_APPLIES, "0")
-                    consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, false)
-                }
-            } catch (e: JSONException) {
-                MoPubLog.log(AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobi cannot obtain consent because of error: ", e)
-            }
-
-            return consentObject
-        }
-
         fun initialiseInMobi(configuration: Map<String, String>, context: Context, initCompletionListener: InitCompletionListener) {
             try {
                 val accountId = getAccountId(configuration)
-                val consentObject = InMobiGDPR.gdprConsentDictionary ?: run {
-                    getInMobiConsentDictionary()
-                }
-                InMobiSdk.init(context, accountId, consentObject) {
+                InMobiSdk.init(context, accountId, null) {
                     if (it == null) {
-                        isInMobiSdkInitialised = true
                         initCompletionListener.onSuccess()
                     } else {
                         initCompletionListener.onFailure(it, null)

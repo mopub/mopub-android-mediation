@@ -46,29 +46,25 @@ class InMobiInterstitial : BaseAd() {
         setAutomaticImpressionAndClickTracking(false)
         val extras: Map<String, String> = adData.extras
 
-        if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
-            loadInterstitial(context, adData, extras)
-        } else {
-            InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
-                override fun onSuccess() {
-                    loadInterstitial(context, adData, extras)
-                }
+        InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
+            override fun onSuccess() {
+                loadInterstitial(context, adData, extras)
+            }
 
-                override fun onFailure(error: Error?, exception: Exception?) {
-                    exception?.let {
-                        onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failed with an exception.",
-                                InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    } ?: run {
-                        error?.let {
-                            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                    "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
-                                    com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                        }
+            override fun onFailure(error: Error?, exception: Exception?) {
+                exception?.let {
+                    onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                            "InMobi banner request failed due to InMobi initialization failed with an exception.",
+                            InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                } ?: run {
+                    error?.let {
+                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
+                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
                     }
                 }
-            })
-        }
+            }
+        })
     }
 
     private fun loadInterstitial(context: Context, adData: AdData, extras: Map<String, String>) {
@@ -167,8 +163,8 @@ class InMobiInterstitial : BaseAd() {
             MoPubLog.log(adNetworkId, AdapterLogEvent.SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.FULLSCREEN_SHOW_ERROR.intCode,
                     MoPubErrorCode.FULLSCREEN_SHOW_ERROR)
-            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "InMobi interstitial is still loading." +
-                    " Please wait for load success callback")
+            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "nMobi interstitial is not ready yet. " +
+                    "It is still loading. Please make sure ad is loaded.")
         }
     }
 }

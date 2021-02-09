@@ -56,29 +56,25 @@ class InMobiBanner : BaseAd() {
         setAutomaticImpressionAndClickTracking(false)
         val extras: Map<String, String> = adData.extras
 
-        if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
-            loadBanner(context, adData, extras)
-        } else {
-            InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
-                override fun onSuccess() {
-                    loadBanner(context, adData, extras)
-                }
+        InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
+            override fun onSuccess() {
+                loadBanner(context, adData, extras)
+            }
 
-                override fun onFailure(error: Error?, exception: Exception?) {
-                    exception?.let {
-                        onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failed with an exception.",
-                                ADAPTER_NAME, mLoadListener, null)
-                    } ?: run {
-                        error?.let {
-                            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                    "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
-                                    com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                        }
+            override fun onFailure(error: Error?, exception: Exception?) {
+                exception?.let {
+                    onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                            "InMobi banner request failed due to InMobi initialization failed with an exception.",
+                            ADAPTER_NAME, mLoadListener, null)
+                } ?: run {
+                    error?.let {
+                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
+                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
                     }
                 }
-            })
-        }
+            }
+        })
     }
 
     private fun loadBanner(context: Context, adData: AdData, extras: Map<String, String>) {
@@ -180,7 +176,7 @@ class InMobiBanner : BaseAd() {
         } catch (npe: NullPointerException) {
             onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
                     "InMobi banner request failed. Placement Id is null. " +
-                    "Please make sure you set valid Placement Id on MoPub UI.",
+                            "Please make sure you set valid Placement Id on MoPub UI.",
                     ADAPTER_NAME, mLoadListener, null)
         } catch (e: Exception) {
             onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,

@@ -7,7 +7,6 @@ import com.inmobi.ads.InMobiAdRequestStatus
 import com.inmobi.ads.InMobiInterstitial
 import com.inmobi.ads.exceptions.SdkNotInitializedException
 import com.inmobi.ads.listeners.InterstitialAdEventListener
-import com.inmobi.sdk.InMobiSdk
 import com.mopub.common.DataKeys
 import com.mopub.common.LifecycleListener
 import com.mopub.common.MoPubReward
@@ -17,10 +16,10 @@ import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWi
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
 import java.lang.Error
 
-class InMobiRewarded : BaseAd() {
+class InMobiRewardedVideo : BaseAd() {
 
     companion object {
-        val ADAPTER_NAME: String = InMobiRewarded::class.java.simpleName
+        val ADAPTER_NAME: String = InMobiRewardedVideo::class.java.simpleName
     }
 
     private var mPlacementId: Long? = null
@@ -49,29 +48,25 @@ class InMobiRewarded : BaseAd() {
         setAutomaticImpressionAndClickTracking(false)
         val extras: Map<String, String> = adData.extras
 
-        if (InMobiAdapterConfiguration.isInMobiSdkInitialised) {
-            loadRewarded(context, adData, extras)
-        } else {
-            InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
-                override fun onSuccess() {
-                    loadRewarded(context, adData, extras)
-                }
+        InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
+            override fun onSuccess() {
+                loadRewarded(context, adData, extras)
+            }
 
-                override fun onFailure(error: Error?, exception: Exception?) {
-                    exception?.let {
-                        onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failed with an exception.",
-                                InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    } ?: run {
-                        error?.let {
-                            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                    "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
-                                    com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                        }
+            override fun onFailure(error: Error?, exception: Exception?) {
+                exception?.let {
+                    onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                            "InMobi banner request failed due to InMobi initialization failed with an exception.",
+                            InMobiBanner.ADAPTER_NAME, mLoadListener, null)
+                } ?: run {
+                    error?.let {
+                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
+                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
                     }
                 }
-            })
-        }
+            }
+        })
     }
 
     private fun loadRewarded(context: Context, adData: AdData, extras: Map<String, String>) {
@@ -198,8 +193,8 @@ class InMobiRewarded : BaseAd() {
             MoPubLog.log(adNetworkId, AdapterLogEvent.SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.FULLSCREEN_SHOW_ERROR.intCode,
                     MoPubErrorCode.FULLSCREEN_SHOW_ERROR)
-            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "InMobi rewarded video ad is still loading." +
-                    " Please wait for load success callback")
+            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "nMobi Rewarded video is not ready yet. " +
+                    "It is still loading. Please make sure ad is loaded.")
         }
     }
 }
