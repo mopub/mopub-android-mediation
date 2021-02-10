@@ -86,11 +86,12 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
                 val accountId = getAccountId(configuration)
                 InMobiSdk.init(context, accountId, null) {
                     if (it == null) {
-                        initCompletionListener.onSuccess()
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization success.")
                     } else {
-                        initCompletionListener.onFailure(it, null)
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: ${it.message}")
                     }
                 }
+                initCompletionListener.onSuccess()
             } catch (e: Exception) {
                 initCompletionListener.onFailure(null, e)
             }

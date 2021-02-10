@@ -14,7 +14,6 @@ import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithError
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
-import java.lang.Error
 
 class InMobiRewardedVideo : BaseAd() {
 
@@ -190,10 +189,11 @@ class InMobiRewardedVideo : BaseAd() {
         if (mInMobiRewardedVideo?.isReady == true) {
             mInMobiRewardedVideo?.show()
         } else {
-            MoPubLog.log(adNetworkId, AdapterLogEvent.SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR.intCode,
-                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR)
-            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "nMobi Rewarded video is not ready yet. " +
+            onInMobiAdFailWithEvent(AdapterLogEvent.SHOW_FAILED, adNetworkId,
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR,
+                    "InMobi rewarded video show failed",
+                    ADAPTER_NAME, null, mInteractionListener)
+            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "InMobi Rewarded video is not ready yet. " +
                     "It is still loading. Please make sure ad is loaded.")
         }
     }
