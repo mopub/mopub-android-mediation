@@ -141,9 +141,8 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
 
         if (!sIsInitialized.getAndSet(true)) {
             final Map<String, String> extras = adData.getExtras();
-            if (TextUtils.isEmpty(extras.get(KEY_EXTRA_APPLICATION_ID))) {
-                MobileAds.initialize(launcherActivity);
-            }
+
+            MobileAds.initialize(launcherActivity);
 
             mAdUnitId = extras.get(KEY_EXTRA_AD_UNIT_ID);
             if (TextUtils.isEmpty(mAdUnitId)) {
@@ -295,8 +294,6 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                             mInteractionListener.onAdShown();
                             mInteractionListener.onAdImpression();
                         }
-
-                        mRewardedAd = null;
                     }
 
                     @Override
@@ -311,6 +308,8 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                         if (mInteractionListener != null) {
                             mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
                         }
+
+                        mRewardedAd = null;
                     }
 
                     @Override

@@ -156,6 +156,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
                         if (mInteractionListener != null) {
                             mInteractionListener.onAdDismissed();
                         }
+
+                        mGoogleInterstitialAd = null;
                     }
 
                     @Override
@@ -170,6 +172,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
                         if (mInteractionListener != null) {
                             mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
                         }
+
+                        mGoogleInterstitialAd = null;
                     }
 
                     @Override
@@ -180,9 +184,6 @@ public class GooglePlayServicesInterstitial extends BaseAd {
                             mInteractionListener.onAdShown();
                             mInteractionListener.onAdImpression();
                         }
-
-                        // Setting the reference to null so it won't be shown again
-                        mGoogleInterstitialAd = null;
                     }
                 });
             }
