@@ -160,10 +160,11 @@ class InMobiInterstitial : BaseAd() {
         if (mInMobiInterstitial?.isReady == true) {
             mInMobiInterstitial?.show()
         } else {
-            MoPubLog.log(adNetworkId, AdapterLogEvent.SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR.intCode,
-                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR)
-            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "nMobi interstitial is not ready yet. " +
+            onInMobiAdFailWithEvent(AdapterLogEvent.SHOW_FAILED, adNetworkId,
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR,
+                    "InMobi interstitial show failed",
+                    ADAPTER_NAME, null, mInteractionListener)
+            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "InMobi interstitial is not ready yet. " +
                     "It is still loading. Please make sure ad is loaded.")
         }
     }
