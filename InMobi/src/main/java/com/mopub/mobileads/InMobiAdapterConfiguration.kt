@@ -84,6 +84,10 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
         fun initialiseInMobi(configuration: Map<String, String>, context: Context, initCompletionListener: InitCompletionListener) {
             try {
                 val accountId = getAccountId(configuration)
+                /*
+                 Intentionally ignoring the init results here. As MoPub expects inline callback.
+                 Refer https://github.com/mopub/mopub-android-mediation/pull/311#discussion_r573167988
+                 */
                 InMobiSdk.init(context, accountId, null) {
                     if (it == null) {
                         MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization success.")
