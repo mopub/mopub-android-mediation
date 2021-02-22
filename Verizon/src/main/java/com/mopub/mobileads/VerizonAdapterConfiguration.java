@@ -39,7 +39,7 @@ import static com.verizon.ads.VASAds.ERROR_NO_FILL;
 public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String ADAPTER_NAME = VerizonAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String BIDDING_TOKEN_VERSION = "1.1";
+    private static final String BIDDING_TOKEN_VERSION = "1.2";
     private static final String EDITION_NAME_KEY = "editionName";
     private static final String EDITION_VERSION_KEY = "editionVersion";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;

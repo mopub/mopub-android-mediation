@@ -1,4 +1,7 @@
 ## Changelog
+  * 19.6.0.2
+    * Make `GooglePlayServicesNativeAd.java` public, and update the deprecated usage of `setMediaAspectRatio()` and `NativeAdOptions` orientations.
+
   * 19.6.0.1
     * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
 
