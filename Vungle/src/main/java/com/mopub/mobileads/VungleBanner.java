@@ -13,6 +13,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
@@ -62,6 +63,7 @@ public class VungleBanner extends BaseAd {
     private AtomicBoolean mPendingRequestBanner = new AtomicBoolean(false);
     private AdConfig mAdConfig = new AdConfig();
     @Nullable private View mAdView;
+    @Nullable private String mAdMarkup;
 
     public VungleBanner() {
         mHandler = new Handler(Looper.getMainLooper());
@@ -127,20 +129,25 @@ public class VungleBanner extends BaseAd {
             mAdConfig.setMuted(true); // start muted by default
         }
 
+        mAdMarkup = extras.get(DataKeys.ADM_KEY);
+        if (TextUtils.isEmpty(mAdMarkup)) {
+            mAdMarkup = null;
+        }
+
         if (AdSize.isBannerAdSize(vungleAdSize)) {
-            if (sVungleRouter.isBannerAdPlayable(mPlacementId, vungleAdSize)) {
+            if (sVungleRouter.isBannerAdPlayable(mPlacementId, mAdMarkup, vungleAdSize)) {
                 mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
                 MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
             } else {
-                sVungleRouter.loadBannerAd(mPlacementId, vungleAdSize, mVungleRouterListener);
+                sVungleRouter.loadBannerAd(mPlacementId, mAdMarkup, vungleAdSize, mVungleRouterListener);
                 MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
             }
         } else if (VUNGLE_MREC == vungleAdSize) {
-            if (sVungleRouter.isAdPlayableForPlacement(mPlacementId)) {
+            if (sVungleRouter.isAdPlayableForPlacement(mPlacementId, mAdMarkup)) {
                 mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
                 MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
             } else {
-                sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+                sVungleRouter.loadAdForPlacement(mPlacementId, mAdMarkup, null, mVungleRouterListener);
                 MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
             }
         } else {
@@ -214,6 +221,7 @@ public class VungleBanner extends BaseAd {
         }
 
         mVungleRouterListener = null;
+        mAdMarkup = null;
     }
 
     @Nullable
@@ -322,9 +330,9 @@ public class VungleBanner extends BaseAd {
                 mIsPlaying = true;
                 //Let's load it again to mimic auto-cache
                 if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-                    sVungleRouter.loadBannerAd(mPlacementId, mAdConfig.getAdSize(), mVungleRouterListener);
+                    sVungleRouter.loadBannerAd(mPlacementId, null, mAdConfig.getAdSize(), mVungleRouterListener);
                 } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
-                    sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+                    sVungleRouter.loadAdForPlacement(mPlacementId, null, null, mVungleRouterListener);
                 }
             }
         }
@@ -406,14 +414,14 @@ public class VungleBanner extends BaseAd {
                                 boolean loadSucceeded = false;
 								
                                 if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-                                    mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId,
+                                    mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId, mAdMarkup,
                                             mAdConfig.getAdSize());
                                     if (mVungleBannerAd != null) {
                                         loadSucceeded = true;
                                         layout.addView(mVungleBannerAd);
                                     }
                                 } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
-                                    mVungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, mAdConfig);
+                                    mVungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, mAdMarkup, mAdConfig);
                                     if (mVungleMrecAd != null) {
                                         View adView = mVungleMrecAd.renderNativeView();
                                         if (adView != null) {
