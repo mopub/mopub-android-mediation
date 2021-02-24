@@ -8,6 +8,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.logging.MoPubLog;
@@ -56,6 +57,7 @@ public class VungleRewardedVideo extends BaseAd {
 
     private String mAdUnitId;
     private String mCustomerId;
+    @Nullable private String mAdMarkup;
 
     public VungleRewardedVideo() {
         sVungleRouter = VungleRouter.getInstance();
@@ -106,7 +108,8 @@ public class VungleRewardedVideo extends BaseAd {
 
         setAutomaticImpressionAndClickTracking(false);
 
-        if (!validateIdsInExtras(adData.getExtras())) {
+        final Map<String, String> extras = adData.getExtras();
+        if (!validateIdsInExtras(extras)) {
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
             }
@@ -119,9 +122,14 @@ public class VungleRewardedVideo extends BaseAd {
 
         mCustomerId = adData.getCustomerId();
 
+        mAdMarkup = extras.get(DataKeys.ADM_KEY);
+        if (TextUtils.isEmpty(mAdMarkup)) {
+            mAdMarkup = null;
+        }
+
         if (sVungleRouter.isVungleInitialized()) {
             if (sVungleRouter.isValidPlacement(mPlacementId)) {
-                sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRewardedRouterListener);
+                sVungleRouter.loadAdForPlacement(mPlacementId, mAdMarkup, null, mVungleRewardedRouterListener);
             } else {
                 MoPubLog.log(getAdNetworkId(), CUSTOM, "Invalid or Inactive Placement ID: " + mPlacementId);
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Invalid or Inactive Placement ID: " +
@@ -152,7 +160,7 @@ public class VungleRewardedVideo extends BaseAd {
         final AdConfig adConfig = new AdConfig();
         setUpMediationSettingsForRequest(adConfig);
 
-        sVungleRouter.playAdForPlacement(mPlacementId, adConfig);
+        sVungleRouter.playAdForPlacement(mPlacementId, mAdMarkup, adConfig);
         mIsPlaying = true;
     }
 
@@ -162,6 +170,7 @@ public class VungleRewardedVideo extends BaseAd {
                 mPlacementId);
         sVungleRouter.removeRouterListener(mPlacementId);
         mVungleRewardedRouterListener = null;
+        mAdMarkup = null;
     }
 
     //private functions
