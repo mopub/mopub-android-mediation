@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.logging.MoPubLog;
 import com.vungle.warren.AdConfig;
@@ -61,7 +63,7 @@ public class VungleInterstitial extends BaseAd {
     private String mPlacementId;
     private AdConfig mAdConfig;
     private boolean mIsPlaying;
-
+    @Nullable private String mAdMarkup;
 
     public VungleInterstitial() {
         mHandler = new Handler(Looper.getMainLooper());
@@ -106,7 +108,12 @@ public class VungleInterstitial extends BaseAd {
         mAdConfig = new AdConfig();
         VungleMediationConfiguration.adConfigWithExtras(mAdConfig, extras);
 
-        sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+        mAdMarkup = extras.get(DataKeys.ADM_KEY);
+        if (TextUtils.isEmpty(mAdMarkup)) {
+            mAdMarkup = null;
+        }
+
+        sVungleRouter.loadAdForPlacement(mPlacementId, mAdMarkup, mAdConfig, mVungleRouterListener);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
@@ -114,9 +121,9 @@ public class VungleInterstitial extends BaseAd {
     protected void show() {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
-        if (sVungleRouter.isAdPlayableForPlacement(mPlacementId)) {
+        if (sVungleRouter.isAdPlayableForPlacement(mPlacementId, mAdMarkup)) {
 
-            sVungleRouter.playAdForPlacement(mPlacementId, mAdConfig);
+            sVungleRouter.playAdForPlacement(mPlacementId, mAdMarkup, mAdConfig);
             mIsPlaying = true;
         } else {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "SDK tried to show a Vungle interstitial ad before it " +
@@ -144,6 +151,7 @@ public class VungleInterstitial extends BaseAd {
         sVungleRouter.removeRouterListener(mPlacementId);
         mVungleRouterListener = null;
         mAdConfig = null;
+        mAdMarkup = null;
     }
 
     @Nullable
