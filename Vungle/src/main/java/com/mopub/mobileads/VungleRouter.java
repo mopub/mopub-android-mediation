@@ -15,7 +15,6 @@ import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.AdConfig.AdSize;
-import com.vungle.warren.AdRequest;
 import com.vungle.warren.Banners;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -24,7 +23,6 @@ import com.vungle.warren.Plugin;
 import com.vungle.warren.Vungle;
 import com.vungle.warren.VungleApiClient;
 import com.vungle.warren.VungleBanner;
-import com.vungle.warren.VungleNativeAd;
 import com.vungle.warren.VungleSettings;
 import com.vungle.warren.error.VungleException;
 
@@ -266,10 +264,6 @@ public class VungleRouter {
                 }
             }
         }
-    }
-
-    VungleNativeAd getVungleMrecAd(String placementId, @Nullable String adMarkup, AdConfig adConfig) {
-        return Vungle.getNativeAd(placementId, adMarkup, adConfig, playAdCallback);
     }
 
     VungleBanner getVungleBannerAd(@NonNull String placementId, @Nullable String adMarkup, @NonNull AdSize adSize) {
