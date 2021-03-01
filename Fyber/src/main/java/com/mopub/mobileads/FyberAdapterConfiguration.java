@@ -34,6 +34,7 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.MoPubErrorCode;
+import com.mopub.mobileads.fyber.BuildConfig;
 
 import java.util.Map;
 
