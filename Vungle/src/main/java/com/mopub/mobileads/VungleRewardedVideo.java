@@ -338,11 +338,11 @@ public class VungleRewardedVideo extends BaseAd {
 
                 mIsPlaying = false;
                 if (mInteractionListener != null) {
-                    mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                    mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
                 }
 
-                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
-                        MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                        MoPubErrorCode.NETWORK_NO_FILL);
             }
         }
 

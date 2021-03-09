@@ -318,8 +318,6 @@ public class VungleBanner extends BaseAd {
                 //Let's load it again to mimic auto-cache
                 if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
                     sVungleRouter.loadBannerAd(mPlacementId, null, mAdConfig.getAdSize(), mVungleRouterListener);
-                } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
-                    sVungleRouter.loadAdForPlacement(mPlacementId, null, null, mVungleRouterListener);
                 }
             }
         }
@@ -344,10 +342,11 @@ public class VungleBanner extends BaseAd {
 
         @Override
         public void onUnableToPlayAd(@NonNull String placementReferenceId, String reason) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onUnableToPlayAd - Placement ID: " +
-                    placementReferenceId + ", reason: " + reason);
             if (mPlacementId.equals(placementReferenceId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onUnableToPlayAd - Placement ID: " +
+                        placementReferenceId + ", reason: " + reason);
                 mIsPlaying = false;
+
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
