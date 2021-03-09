@@ -316,10 +316,6 @@ public class VungleInterstitial extends BaseAd {
                                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                                     MoPubErrorCode.NETWORK_NO_FILL);
                         }
-
-                        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                                MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                                MoPubErrorCode.NETWORK_NO_FILL);
                     }
                 });
             }
