@@ -254,8 +254,9 @@ public class VungleRouter {
         if (isAdPlayableForPlacement(placementId, adMarkup)) {
             Vungle.playAd(placementId, adMarkup, adConfig, playAdCallback);
         } else {
-            MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "There should not be this case. " +
-                    "playAdForPlacement is called before an ad is loaded for Placement ID: " + placementId);
+            //ad got busted
+            MoPubLog.log(placementId, CUSTOM, ADAPTER_NAME, "playAdForPlacement() is called before" +
+                    " an ad is loaded for Placement ID:  " + placementId);
 
             if (sVungleRouterListeners.containsKey(placementId)) {
                 VungleRouterListener routerListener = sVungleRouterListeners.get(placementId);
