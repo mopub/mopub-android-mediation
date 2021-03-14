@@ -227,34 +227,34 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
         int age = 0;
         String zipCode = null;
         if (extras != null) {
-            if (extras.containsKey(FyberMopubMediationDefs.KEY_KEYWORDS)) {
-                keywords = (String) extras.get(FyberMopubMediationDefs.KEY_KEYWORDS);
+            if (extras.containsKey(FyberMoPubMediationDefs.KEY_KEYWORDS)) {
+                keywords = (String) extras.get(FyberMoPubMediationDefs.KEY_KEYWORDS);
             }
 
             // Set the age variable as defined on IaMediationActivity class.
             // in case the variable is not initialized, the variable will not be in use
 
-            if (extras.containsKey(FyberMopubMediationDefs.KEY_AGE)) {
+            if (extras.containsKey(FyberMoPubMediationDefs.KEY_AGE)) {
                 try {
-                    age = Integer.valueOf(extras.get(FyberMopubMediationDefs.KEY_AGE));
+                    age = Integer.valueOf(extras.get(FyberMoPubMediationDefs.KEY_AGE));
                 } catch (NumberFormatException e) {
                     log("local extra contains Invalid Age");
                 }
             }
 
             //in case the variable is not initialized, the variable will not be in use
-            if (extras.containsKey(FyberMopubMediationDefs.KEY_ZIPCODE)) {
-                zipCode = (String) extras.get(FyberMopubMediationDefs.KEY_ZIPCODE);
+            if (extras.containsKey(FyberMoPubMediationDefs.KEY_ZIPCODE)) {
+                zipCode = (String) extras.get(FyberMoPubMediationDefs.KEY_ZIPCODE);
             }
 
             // Set the gender variable as defined on IaMediationActivity class.
             // in case the variable is not initialized, the variable will not be in use
 
-            if (extras.containsKey(FyberMopubMediationDefs.KEY_GENDER)) {
-                String genderStr = extras.get(FyberMopubMediationDefs.KEY_GENDER)    ;
-                if (FyberMopubMediationDefs.GENDER_MALE.equals(genderStr)) {
+            if (extras.containsKey(FyberMoPubMediationDefs.KEY_GENDER)) {
+                String genderStr = extras.get(FyberMoPubMediationDefs.KEY_GENDER)    ;
+                if (FyberMoPubMediationDefs.GENDER_MALE.equals(genderStr)) {
                     gender = InneractiveUserConfig.Gender.MALE;
-                } else if (FyberMopubMediationDefs.GENDER_FEMALE.equals(genderStr)) {
+                } else if (FyberMoPubMediationDefs.GENDER_FEMALE.equals(genderStr)) {
                     gender = InneractiveUserConfig.Gender.FEMALE;
                 }
             }

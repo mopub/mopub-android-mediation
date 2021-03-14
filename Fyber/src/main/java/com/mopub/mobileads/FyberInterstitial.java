@@ -97,8 +97,8 @@ public class FyberInterstitial extends BaseAd {
     final Map<String, String> extras = adData.getExtras();
 
     // Set variables from MoPub console.
-    final String appId = extras == null ? null : extras.get(FyberMopubMediationDefs.REMOTE_KEY_APP_ID);
-    final String spotId = extras == null ? null : extras.get(FyberMopubMediationDefs.REMOTE_KEY_SPOT_ID);
+    final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
+    final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
     if (TextUtils.isEmpty(spotId)) {
       log("No spotID defined for ad unit. Cannot load interstitial");
@@ -113,7 +113,7 @@ public class FyberInterstitial extends BaseAd {
     // If we've received an appId for this unit, try initializing the Fyber Marketplace SDK, if it was not already initialized
     if (!TextUtils.isEmpty(appId)) {
       FyberAdapterConfiguration.initializeFyberMarketplace(context, appId, extras.containsKey(
-              FyberMopubMediationDefs.REMOTE_KEY_DEBUG),
+              FyberMoPubMediationDefs.REMOTE_KEY_DEBUG),
               new FyberAdapterConfiguration.OnFyberAdapterConfigurationResolvedListener() {
                 @Override
                 public void onFyberAdapterConfigurationResolved(

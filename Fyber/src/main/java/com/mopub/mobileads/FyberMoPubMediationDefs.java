@@ -17,11 +17,11 @@ package com.mopub.mobileads;
 
 /**
  * Public mediation related definitions class.
- * <br>Used mainly by our custom adapter classes, in order to read data from Mopub's local and remote extras
+ * <br>Used mainly by our custom adapter classes, in order to read data from MoPub's local and remote extras
  * <br>If you would like to pass parameters to Fyber
  * <br>Please look at the mediation sample, and use values from this definition class
  */
-public class FyberMopubMediationDefs {
+public class FyberMoPubMediationDefs {
 	
 	// Local params definitions. Ad passed through local extras
 	public final static String KEY_GENDER = "gender";
