@@ -59,7 +59,6 @@ public class FyberRewardedVideo extends BaseAd {
 
     InneractiveAdSpot mRewardedSpot;
     Activity mParentActivity;
-    private boolean mRewarded = false;
 
     @Override
     protected LifecycleListener getLifecycleListener() {
@@ -146,7 +145,6 @@ public class FyberRewardedVideo extends BaseAd {
 
                     // We fire the reward when the video completes
                     if (mInteractionListener != null) {
-                        mInteractionListener.onAdComplete(mRewarded ? MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.DEFAULT_REWARD_AMOUNT) : MoPubReward.failure());
                         mInteractionListener.onAdDismissed();
                     }
                 }
@@ -220,8 +218,7 @@ public class FyberRewardedVideo extends BaseAd {
                  */
                 @Override
                 public void onCompleted() {
-                    mRewarded = true;
-                    log("Got video content completed event. Do not report reward back just yet. wait for dismiss");
+                    log("Got video content completed event");
                 }
 
                 @Override
@@ -236,7 +233,9 @@ public class FyberRewardedVideo extends BaseAd {
             fullscreenUnitController.setRewardedListener(new InneractiveFullScreenAdRewardedListener() {
                 @Override
                 public void onAdRewarded(InneractiveAdSpot adSpot) {
-                    mRewarded = true;
+                    if (mInteractionListener != null) {
+                        mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.DEFAULT_REWARD_AMOUNT));
+                    }
                 }
             });
 
