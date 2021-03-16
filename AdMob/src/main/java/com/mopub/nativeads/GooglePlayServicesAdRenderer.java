@@ -12,9 +12,9 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.ads.formats.AdChoicesView;
-import com.google.android.gms.ads.formats.MediaView;
-import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.gms.ads.nativead.AdChoicesView;
+import com.google.android.gms.ads.nativead.MediaView;
+import com.google.android.gms.ads.nativead.NativeAdView;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.nativeads.GooglePlayServicesNative.GooglePlayServicesNativeAd;
 
@@ -111,37 +111,37 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
             mViewHolderMap.put(view, viewHolder);
         }
 
-        UnifiedNativeAdView unifiedAdView = new UnifiedNativeAdView(view.getContext());
+        NativeAdView nativeAdView = new NativeAdView(view.getContext());
 
-        updateUnifiedAdview(nativeAd, viewHolder, unifiedAdView);
-        insertGoogleUnifiedAdView(unifiedAdView, view, nativeAd.shouldSwapMargins());
+        updateNativeAdview(nativeAd, viewHolder, nativeAdView);
+        insertGoogleNativeAdView(nativeAdView, view, nativeAd.shouldSwapMargins());
     }
 
     /**
-     * This method will add the given Google unified ad view into the view hierarchy of the given
+     * This method will add the given Google native ad view into the view hierarchy of the given
      * MoPub native ad view.
      *
-     * @param googleUnifiedAdView Google's unified ad view to be added as a parent to the MoPub's
-     *                            view.
-     * @param moPubNativeAdView   MoPub's native ad view created by this renderer.
-     * @param swapMargins         {@code true} if the margins need to be swapped, {@code false}
-     *                            otherwise.
+     * @param googleNativeAdView Google's native ad view to be added as a parent to the MoPub's
+     *                           view.
+     * @param moPubNativeAdView  MoPub's native ad view created by this renderer.
+     * @param swapMargins        {@code true} if the margins need to be swapped, {@code false}
+     *                           otherwise.
      */
-    private static void insertGoogleUnifiedAdView(UnifiedNativeAdView googleUnifiedAdView,
-                                                  View moPubNativeAdView,
-                                                  boolean swapMargins) {
+    private static void insertGoogleNativeAdView(NativeAdView googleNativeAdView,
+                                                 View moPubNativeAdView,
+                                                 boolean swapMargins) {
 
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (moPubNativeAdView instanceof FrameLayout
                 && moPubNativeAdView.getId() == ID_WRAPPING_FRAME) {
 
-            googleUnifiedAdView.setId(ID_GOOGLE_NATIVE_VIEW);
+            googleNativeAdView.setId(ID_GOOGLE_NATIVE_VIEW);
             FrameLayout outerFrame = (FrameLayout) moPubNativeAdView;
             View actualView = outerFrame.getChildAt(0);
 
             if (swapMargins) {
-                // Google unified ad view renders the AdChoices icon in one of the four corners of
+                // Google native ad view renders the AdChoices icon in one of the four corners of
                 // its view. If a margin is specified on the actual ad view, the AdChoices view
                 // might be rendered outside the actual ad view. Moving the margins from the
                 // actual ad view to Google native ad view will make sure that the AdChoices icon
@@ -154,16 +154,16 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
                         actualViewParams.topMargin,
                         actualViewParams.rightMargin,
                         actualViewParams.bottomMargin);
-                googleUnifiedAdView.setLayoutParams(googleNativeAdViewParams);
+                googleNativeAdView.setLayoutParams(googleNativeAdViewParams);
                 actualViewParams.setMargins(0, 0, 0, 0);
             } else {
-                googleUnifiedAdView.setLayoutParams(new ViewGroup.LayoutParams(
+                googleNativeAdView.setLayoutParams(new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
 
             outerFrame.removeView(actualView);
-            googleUnifiedAdView.addView(actualView);
-            outerFrame.addView(googleUnifiedAdView);
+            googleNativeAdView.addView(actualView);
+            outerFrame.addView(googleNativeAdView);
         } else {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Couldn't add Google native ad view. Wrapping view not found.");
         }
@@ -177,43 +177,43 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
      *                               set to the native ad view.
      * @param staticNativeViewHolder a static native view holder object containing the mapped
      *                               views from the view binder.
-     * @param unifiedAdView          the Google unified ad view in the view hierarchy.
+     * @param nativeAdView           the Google native ad view in the view hierarchy.
      */
 
 
-    private void updateUnifiedAdview(GooglePlayServicesNativeAd staticNativeAd,
-                                     GoogleStaticNativeViewHolder staticNativeViewHolder,
-                                     UnifiedNativeAdView unifiedAdView) {
+    private void updateNativeAdview(GooglePlayServicesNativeAd staticNativeAd,
+                                    GoogleStaticNativeViewHolder staticNativeViewHolder,
+                                    NativeAdView nativeAdView) {
         NativeRendererHelper.addTextView(
                 staticNativeViewHolder.mTitleView, staticNativeAd.getTitle());
-        unifiedAdView.setHeadlineView(staticNativeViewHolder.mTitleView);
+        nativeAdView.setHeadlineView(staticNativeViewHolder.mTitleView);
         NativeRendererHelper.addTextView(
                 staticNativeViewHolder.mTextView, staticNativeAd.getText());
-        unifiedAdView.setBodyView(staticNativeViewHolder.mTextView);
+        nativeAdView.setBodyView(staticNativeViewHolder.mTextView);
         if (staticNativeViewHolder.mMediaView != null) {
-            MediaView mediaview = new MediaView(unifiedAdView.getContext());
+            MediaView mediaview = new MediaView(nativeAdView.getContext());
             staticNativeViewHolder.mMediaView.removeAllViews();
             staticNativeViewHolder.mMediaView.addView(mediaview);
-            unifiedAdView.setMediaView(mediaview);
-
+            nativeAdView.setMediaView(mediaview);
         }
+
         NativeRendererHelper.addTextView(staticNativeViewHolder.mCallToActionView,
                 staticNativeAd.getCallToAction());
-        unifiedAdView.setCallToActionView(staticNativeViewHolder.mCallToActionView);
+        nativeAdView.setCallToActionView(staticNativeViewHolder.mCallToActionView);
         NativeImageHelper.loadImageView(staticNativeAd.getIconImageUrl(),
                 staticNativeViewHolder.mIconImageView);
-        unifiedAdView.setImageView(staticNativeViewHolder.mIconImageView);
+        nativeAdView.setImageView(staticNativeViewHolder.mIconImageView);
         if (staticNativeAd.getAdvertiser() != null) {
             NativeRendererHelper.addTextView(
                     staticNativeViewHolder.mAdvertiserTextView, staticNativeAd.getAdvertiser());
-            unifiedAdView.setAdvertiserView(staticNativeViewHolder.mAdvertiserTextView);
+            nativeAdView.setAdvertiserView(staticNativeViewHolder.mAdvertiserTextView);
         }
         // Add the AdChoices icon to the container if one is provided by the publisher.
         if (staticNativeViewHolder.mAdChoicesIconContainer != null) {
-            AdChoicesView adChoicesView = new AdChoicesView(unifiedAdView.getContext());
+            AdChoicesView adChoicesView = new AdChoicesView(nativeAdView.getContext());
             staticNativeViewHolder.mAdChoicesIconContainer.removeAllViews();
             staticNativeViewHolder.mAdChoicesIconContainer.addView(adChoicesView);
-            unifiedAdView.setAdChoicesView(adChoicesView);
+            nativeAdView.setAdChoicesView(adChoicesView);
         }
 
         // Set the privacy information icon to null as the Google Mobile Ads SDK automatically
@@ -221,7 +221,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         NativeRendererHelper.addPrivacyInformationIcon(
                 staticNativeViewHolder.mPrivacyInformationIconImageView, null, null);
 
-        unifiedAdView.setNativeAd(staticNativeAd.getUnifiedNativeAd());
+        nativeAdView.setNativeAd(staticNativeAd.getNativeAd());
     }
 
     @Override
@@ -253,7 +253,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         @Nullable
         FrameLayout mAdChoicesIconContainer;
         @Nullable
-        MediaLayout mMediaView;
+        GooglePlayServicesMediaLayout mMediaView;
 
         private static final GoogleStaticNativeViewHolder EMPTY_VIEW_HOLDER =
                 new GoogleStaticNativeViewHolder();
@@ -275,7 +275,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
                 viewHolder.mPrivacyInformationIconImageView =
                         (ImageView) view.findViewById(viewBinder.privacyInformationIconImageId);
                 viewHolder.mMediaView =
-                        (MediaLayout) view.findViewById(viewBinder.mediaLayoutId);
+                        (GooglePlayServicesMediaLayout) view.findViewById(viewBinder.mediaLayoutId);
                 Map<String, Integer> extraViews = viewBinder.extras;
                 Integer starRatingTextViewId = extraViews.get(VIEW_BINDER_KEY_STAR_RATING);
                 if (starRatingTextViewId != null) {

@@ -14,6 +14,8 @@ import com.mopub.mobileads.vungle.BuildConfig;
 import com.vungle.warren.Vungle;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
@@ -28,6 +30,14 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     private static VungleRouter sVungleRouter;
+    private static String sWithAutoRotate;
+
+    /**
+     * (Optional) Key for publisher to set on to initialize Vungle SDK
+     */
+    public static final String WITH_AUTO_ROTATE_KEY = "orientations";
+
+    private AtomicReference<String> tokenReference = new AtomicReference<>(null);
 
     public VungleAdapterConfiguration() {
         sVungleRouter = VungleRouter.getInstance();
@@ -42,8 +52,12 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        final String bidToken = Vungle.getAvailableBidTokens(10);
-        return bidToken;
+        String token = Vungle.getAvailableBidTokens(context, 10);
+        if (token != null) {
+            tokenReference.set(token);
+        }
+
+        return tokenReference.get();
     }
 
     @NonNull
@@ -74,6 +88,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
                     networkInitializationSucceeded = true;
 
                 } else if (configuration != null && sVungleRouter != null) {
+                    sWithAutoRotate = configuration.get(WITH_AUTO_ROTATE_KEY);
                     final String mAppId = configuration.get(APP_ID_KEY);
                     if (TextUtils.isEmpty(mAppId)) {
                         MoPubLog.log(mAppId, CUSTOM, ADAPTER_NAME, "Vungle's initialization not " +
@@ -100,5 +115,9 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
             listener.onNetworkInitializationFinished(this.getClass(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
+    }
+
+    public static String getWithAutoRotate() {
+        return sWithAutoRotate;
     }
 }

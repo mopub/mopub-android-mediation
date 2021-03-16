@@ -1,10 +1,23 @@
 ## Changelog
+  * 3.4.1.1.1
+     * Pass `AdCallSource` data for Pangle SDK to collect ad source information.
+
+  * 3.4.1.1.0
+     * This version of the adapters has been certified with Pangle 3.4.1.1 and MoPub SDK 5.15.0.
+
+  * 3.4.0.0.0
+     * This version of the adapters has been certified with Pangle 3.4.0.0 and MoPub SDK 5.15.0.
+
+  * 3.1.7.4.0
+     * This version of the adapters has been certified with Pangle 3.1.7.4 and MoPub SDK 5.14.0.
+     * Pangle SDK 3.1.7.4 resolves an issue that causes reporting discrepancy for Advanced Bidding ads.
+
   * 3.1.5.5.0
-    * This version of the adapters has been certified with Pangle 3.1.5.5 and MoPub SDK 5.14.1.
+    * This version of the adapters has been certified with Pangle 3.1.5.5 and MoPub SDK 5.14.0.
 
   * 3.1.5.4.1
     * Add support for banner format. 
-    * This version of the adapters has been certified with Pangle 3.1.5.4 and MoPub SDK 5.14.1.
+    * This version of the adapters has been certified with Pangle 3.1.5.4 and MoPub SDK 5.14.0.
 
   * 3.1.5.4.0
     * This version of the adapters has been certified with Pangle 3.1.5.4 and MoPub SDK 5.13.1.

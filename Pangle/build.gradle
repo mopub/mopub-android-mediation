@@ -1,4 +1,4 @@
-project.version = '3.1.5.5.0'
+project.version = '3.4.1.1.1'
 project.ext.networkName = 'pangle'
 
 apply from: '../shared-build.gradle'

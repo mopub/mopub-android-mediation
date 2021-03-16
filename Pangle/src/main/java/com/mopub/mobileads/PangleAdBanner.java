@@ -285,6 +285,11 @@ public class PangleAdBanner extends BaseAd {
                     public void onCancel() {
                         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallback onCancel()");
                     }
+
+                    @Override
+                    public void onRefuse() {
+                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Pangle DislikeInteractionCallback onRefuse()");
+                    }
                 });
             }
         }

@@ -12,8 +12,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.GooglePlayServicesAdapterConfiguration;
@@ -91,7 +91,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
     /**
      * Flag to determine whether or not the adapter has been initialized.
      */
-    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
+    private static final AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     /**
      * String to store the AdMob ad unit ID.
@@ -99,7 +99,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
     private static String mAdUnitId;
 
     @NonNull
-    private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
+    private final GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
 
     public GooglePlayServicesNative() {
         mGooglePlayServicesAdapterConfiguration = new GooglePlayServicesAdapterConfiguration();
@@ -140,7 +140,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
      * The {@link GooglePlayServicesNativeAd} class is used to load and map Google native
      * ads to MoPub native ads.
      */
-    static class GooglePlayServicesNativeAd extends BaseNativeAd {
+    public static class GooglePlayServicesNativeAd extends BaseNativeAd {
 
         // Native ad assets.
         private String mTitle;
@@ -166,9 +166,9 @@ public class GooglePlayServicesNative extends CustomEventNative {
         private CustomEventNativeListener mCustomEventNativeListener;
 
         /**
-         * A Google unified ad.
+         * A Google native ad.
          */
-        private UnifiedNativeAd mUnifiedNativeAd;
+        private com.google.android.gms.ads.nativead.NativeAd mNativeAd;
 
         public GooglePlayServicesNativeAd(
                 CustomEventNativeListener customEventNativeListener) {
@@ -318,10 +318,10 @@ public class GooglePlayServicesNative extends CustomEventNative {
         }
 
         /**
-         * @return The unified native ad.
+         * @return The native ad.
          */
-        public UnifiedNativeAd getUnifiedNativeAd() {
-            return mUnifiedNativeAd;
+        public NativeAd getNativeAd() {
+            return mNativeAd;
         }
 
         /**
@@ -349,7 +349,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
             // Get the preferred image orientation from the local extras.
             if (localExtras.containsKey(KEY_EXTRA_ORIENTATION_PREFERENCE)
                     && isValidOrientationExtra(localExtras.get(KEY_EXTRA_ORIENTATION_PREFERENCE))) {
-                optionsBuilder.setImageOrientation(
+                optionsBuilder.setMediaAspectRatio(
                         (int) localExtras.get(KEY_EXTRA_ORIENTATION_PREFERENCE));
             }
 
@@ -363,15 +363,16 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
             NativeAdOptions adOptions = optionsBuilder.build();
 
+
             AdLoader adLoader =
-                    builder.forUnifiedNativeAd(
-                            new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+                    builder.forNativeAd(
+                            new NativeAd.OnNativeAdLoadedListener() {
                                 @Override
-                                public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                                    if (!isValidUnifiedAd(unifiedNativeAd)) {
+                                public void onNativeAdLoaded(NativeAd nativeAd) {
+                                    if (!isValidNativeAd(nativeAd)) {
                                         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
-                                                "The Google native unified ad is missing one or " +
-                                                        "more required assets, failing request.");
+                                                "The Google native ad is missing one or more " +
+                                                        "required assets, failing request.");
 
                                         mCustomEventNativeListener.onNativeAdFailed(
                                                 NativeErrorCode.NETWORK_NO_FILL);
@@ -382,18 +383,18 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                         return;
                                     }
 
-                                    mUnifiedNativeAd = unifiedNativeAd;
-                                    List<com.google.android.gms.ads.formats.NativeAd.Image> images =
-                                            unifiedNativeAd.getImages();
+                                    mNativeAd = nativeAd;
+                                    List<com.google.android.gms.ads.nativead.NativeAd.Image> images =
+                                            nativeAd.getImages();
                                     List<String> imageUrls = new ArrayList<>();
-                                    com.google.android.gms.ads.formats.NativeAd.Image mainImage =
+                                    com.google.android.gms.ads.nativead.NativeAd.Image mainImage =
                                             images.get(0);
 
                                     // Assuming that the URI provided is an URL.
                                     imageUrls.add(mainImage.getUri().toString());
 
-                                    com.google.android.gms.ads.formats.NativeAd.Image iconImage =
-                                            unifiedNativeAd.getIcon();
+                                    com.google.android.gms.ads.nativead.NativeAd.Image iconImage =
+                                            nativeAd.getIcon();
                                     // Assuming that the URI provided is an URL.
                                     imageUrls.add(iconImage.getUri().toString());
                                     preCacheImages(context, imageUrls);
@@ -521,9 +522,9 @@ public class GooglePlayServicesNative extends CustomEventNative {
                 return false;
             }
             Integer preference = (Integer) extra;
-            return (preference == NativeAdOptions.ORIENTATION_ANY
-                    || preference == NativeAdOptions.ORIENTATION_LANDSCAPE
-                    || preference == NativeAdOptions.ORIENTATION_PORTRAIT);
+            return (preference == NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_ANY
+                    || preference == NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_LANDSCAPE
+                    || preference == NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_PORTRAIT);
         }
 
         /**
@@ -550,17 +551,17 @@ public class GooglePlayServicesNative extends CustomEventNative {
          * (title, text, main image url, icon url and call to action) for it to be correctly
          * mapped to a {@link GooglePlayServicesNativeAd}.
          *
-         * @param unifiedNativeAd to be checked if it is valid.
+         * @param nativeAd to be checked if it is valid.
          * @return {@code true} if the given native ad has all the necessary assets to
          * create a {@link GooglePlayServicesNativeAd}, {@code false} otherwise.
          */
 
-        private boolean isValidUnifiedAd(UnifiedNativeAd unifiedNativeAd) {
-            return (unifiedNativeAd.getHeadline() != null && unifiedNativeAd.getBody() != null
-                    && unifiedNativeAd.getImages() != null && unifiedNativeAd.getImages().size() > 0
-                    && unifiedNativeAd.getImages().get(0) != null
-                    && unifiedNativeAd.getIcon() != null
-                    && unifiedNativeAd.getCallToAction() != null);
+        private boolean isValidNativeAd(NativeAd nativeAd) {
+            return (nativeAd.getHeadline() != null && nativeAd.getBody() != null
+                    && nativeAd.getImages() != null && nativeAd.getImages().size() > 0
+                    && nativeAd.getImages().get(0) != null
+                    && nativeAd.getIcon() != null
+                    && nativeAd.getCallToAction() != null);
         }
 
         @Override
@@ -574,14 +575,14 @@ public class GooglePlayServicesNative extends CustomEventNative {
             // Called when an ad is no longer displayed to a user.
 
             mCustomEventNativeListener = null;
-            mUnifiedNativeAd.cancelUnconfirmedClick();
+            mNativeAd.cancelUnconfirmedClick();
         }
 
         @Override
         public void destroy() {
             // Called when the ad will never be displayed again.
-            if (mUnifiedNativeAd != null) {
-                mUnifiedNativeAd.destroy();
+            if (mNativeAd != null) {
+                mNativeAd.destroy();
             }
         }
 
@@ -597,8 +598,8 @@ public class GooglePlayServicesNative extends CustomEventNative {
                     new NativeImageHelper.ImageListener() {
                         @Override
                         public void onImagesCached() {
-                            if (mUnifiedNativeAd != null) {
-                                prepareUnifiedNativeAd(mUnifiedNativeAd);
+                            if (mNativeAd != null) {
+                                prepareNativeAd(mNativeAd);
                                 mCustomEventNativeListener.onNativeAdLoaded(
                                         GooglePlayServicesNativeAd.this);
 
@@ -621,29 +622,29 @@ public class GooglePlayServicesNative extends CustomEventNative {
          * This method will map the Google native ad loaded to this
          * {@link GooglePlayServicesNativeAd}.
          *
-         * @param unifiedNativeAd that needs to be mapped to this native ad.
+         * @param nativeAd that needs to be mapped to this native ad.
          */
-        private void prepareUnifiedNativeAd(UnifiedNativeAd unifiedNativeAd) {
-            List<com.google.android.gms.ads.formats.NativeAd.Image> images =
-                    unifiedNativeAd.getImages();
+        private void prepareNativeAd(NativeAd nativeAd) {
+            List<com.google.android.gms.ads.nativead.NativeAd.Image> images =
+                    nativeAd.getImages();
             setMainImageUrl(images.get(0).getUri().toString());
 
-            com.google.android.gms.ads.formats.NativeAd.Image icon = unifiedNativeAd.getIcon();
+            com.google.android.gms.ads.nativead.NativeAd.Image icon = nativeAd.getIcon();
             setIconImageUrl(icon.getUri().toString());
-            setCallToAction(unifiedNativeAd.getCallToAction());
-            setTitle(unifiedNativeAd.getHeadline());
+            setCallToAction(nativeAd.getCallToAction());
+            setTitle(nativeAd.getHeadline());
 
-            setText(unifiedNativeAd.getBody());
-            if (unifiedNativeAd.getStarRating() != null) {
-                setStarRating(unifiedNativeAd.getStarRating());
+            setText(nativeAd.getBody());
+            if (nativeAd.getStarRating() != null) {
+                setStarRating(nativeAd.getStarRating());
             }
             // Add store asset if available.
-            if (unifiedNativeAd.getStore() != null) {
-                setStore(unifiedNativeAd.getStore());
+            if (nativeAd.getStore() != null) {
+                setStore(nativeAd.getStore());
             }
             // Add price asset if available.
-            if (unifiedNativeAd.getPrice() != null) {
-                setPrice(unifiedNativeAd.getPrice());
+            if (nativeAd.getPrice() != null) {
+                setPrice(nativeAd.getPrice());
             }
         }
     }

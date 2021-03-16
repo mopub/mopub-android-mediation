@@ -78,21 +78,6 @@ public class AppLovinBanner extends BaseAd {
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         AppLovinPrivacySettings.setHasUserConsent(canCollectPersonalInfo, context);
 
-        // SDK versions BELOW 7.1.0 require a instance of an Activity to be passed in as the context
-        if (AppLovinSdk.VERSION_CODE < 710 && !(context instanceof Activity)) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Unable to request AppLovin banner. Invalid context provided");
-
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
-
-            return;
-        }
-
         String adUnitFormat = extras.get(ADUNIT_FORMAT);
         if (!TextUtils.isEmpty(adUnitFormat)) {
             adUnitFormat = adUnitFormat.toLowerCase();

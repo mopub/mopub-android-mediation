@@ -5,7 +5,7 @@ We have separated network adapters from our MoPub SDK repository to enable an in
 
 ## Need Help?
 
-You can find Mediation Integration Tool [here](https://developers.mopub.com/docs/mediation/integrate/). Additional documentation can be found [here](https://developers.mopub.com/publishers/mediation/).
+You can find Mediation Integration Tool [here](https://developers.mopub.com/publishers/mediation/integrate/). Additional documentation can be found [here](https://developers.mopub.com/publishers/mediation/).
 
 ## New Pull Requests?
 

@@ -1,4 +1,4 @@
-project.version = '6.8.1.0'
+project.version = '6.9.1.0'
 project.ext.networkName = 'vungle'
 
 apply from: '../shared-build.gradle'

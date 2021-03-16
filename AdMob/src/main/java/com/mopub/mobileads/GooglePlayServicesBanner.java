@@ -201,10 +201,6 @@ public class GooglePlayServicesBanner extends BaseAd {
         }
 
         @Override
-        public void onAdLeftApplication() {
-        }
-
-        @Override
         public void onAdLoaded() {
             final int receivedWidth = mGoogleAdView.getAdSize().getWidth();
             final int receivedHeight = mGoogleAdView.getAdSize().getHeight();

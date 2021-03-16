@@ -27,7 +27,8 @@ dependencies {
                    project(':Tapjoy'),
                    project(':UnityAds'),
                    project(':Verizon'),
-                   project(':Vungle')
+                   project(':Vungle'),
+                   project(':SnapAudienceNetwork')
 
     // If any of the adapters have locally committed lib dependencies, include them in the apk.
     runtimeOnly fileTree(dir: rootProject.projectDir,

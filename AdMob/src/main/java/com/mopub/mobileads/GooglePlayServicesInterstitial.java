@@ -7,12 +7,14 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -47,8 +49,9 @@ public class GooglePlayServicesInterstitial extends BaseAd {
 
     @NonNull
     private static final String ADAPTER_NAME = GooglePlayServicesInterstitial.class.getSimpleName();
-    private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
+    private final GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
     private InterstitialAd mGoogleInterstitialAd;
+    private Context mContext;
     @Nullable
     private String mAdUnitId;
 
@@ -60,6 +63,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
     protected void load(@NonNull final Context context, @NonNull final AdData adData) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(adData);
+
+        mContext = context;
 
         setAutomaticImpressionAndClickTracking(false);
 
@@ -79,10 +84,6 @@ public class GooglePlayServicesInterstitial extends BaseAd {
 
             return;
         }
-
-        mGoogleInterstitialAd = new InterstitialAd(context);
-        mGoogleInterstitialAd.setAdListener(new InterstitialAdListener());
-        mGoogleInterstitialAd.setAdUnitId(mAdUnitId);
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
@@ -137,7 +138,69 @@ public class GooglePlayServicesInterstitial extends BaseAd {
         MobileAds.setRequestConfiguration(requestConfiguration);
 
         final AdRequest adRequest = builder.build();
-        mGoogleInterstitialAd.loadAd(adRequest);
+
+        InterstitialAd.load(context, mAdUnitId, adRequest, new InterstitialAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                mGoogleInterstitialAd = interstitialAd;
+
+                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoaded();
+                }
+
+                mGoogleInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdDismissed();
+                        }
+
+                        mGoogleInterstitialAd = null;
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(AdError adError) {
+                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show " +
+                                "Google interstitial. " + adError.getMessage());
+
+                        MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
+                                MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                MoPubErrorCode.NETWORK_NO_FILL);
+
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                        }
+
+                        mGoogleInterstitialAd = null;
+                    }
+
+                    @Override
+                    public void onAdShowedFullScreenContent() {
+                        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdShown();
+                            mInteractionListener.onAdImpression();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Google " +
+                        "interstitial. " + loadAdError.getMessage());
+
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
+            }
+        });
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
@@ -146,9 +209,25 @@ public class GooglePlayServicesInterstitial extends BaseAd {
     protected void show() {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
-        if (mGoogleInterstitialAd.isLoaded()) {
-            mGoogleInterstitialAd.show();
+        if (mGoogleInterstitialAd != null) {
+            if (mContext instanceof Activity) {
+                mGoogleInterstitialAd.show((Activity) mContext);
+            } else {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Google" +
+                        " interstitial because context is not an Activity.");
+
+                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
+            }
         } else {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Google" +
+                    " interstitial because it wasn't ready yet.");
+
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
                     MoPubErrorCode.NETWORK_NO_FILL);
@@ -162,7 +241,6 @@ public class GooglePlayServicesInterstitial extends BaseAd {
     @Override
     protected void onInvalidate() {
         if (mGoogleInterstitialAd != null) {
-            mGoogleInterstitialAd.setAdListener(null);
             mGoogleInterstitialAd = null;
         }
     }
@@ -186,79 +264,5 @@ public class GooglePlayServicesInterstitial extends BaseAd {
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity,
                                             @NonNull AdData adData) {
         return false;
-    }
-
-    private class InterstitialAdListener extends AdListener {
-        /*
-         * Google Play Services AdListener implementation
-         */
-        @Override
-        public void onAdClosed() {
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdDismissed();
-            }
-        }
-
-        @Override
-        public void onAdFailedToLoad(LoadAdError loadAdError) {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    getMoPubErrorCode(loadAdError.getCode()).getIntCode(),
-                    getMoPubErrorCode(loadAdError.getCode()));
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Google " +
-                    "interstitial with message: " + loadAdError.getMessage() + ". Caused by: " +
-                    loadAdError.getCause());
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(getMoPubErrorCode(loadAdError.getCode()));
-            }
-        }
-
-        @Override
-        public void onAdLeftApplication() {
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdClicked();
-            }
-        }
-
-        @Override
-        public void onAdLoaded() {
-            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoaded();
-            }
-        }
-
-        @Override
-        public void onAdOpened() {
-            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
-
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdShown();
-                mInteractionListener.onAdImpression();
-            }
-        }
-
-        /**
-         * Converts a given Google Mobile Ads SDK error code into {@link MoPubErrorCode}.
-         *
-         * @param error Google Mobile Ads SDK error code.
-         * @return an equivalent MoPub SDK error code for the given Google Mobile Ads SDK error
-         * code.
-         */
-        private MoPubErrorCode getMoPubErrorCode(int error) {
-            switch (error) {
-                case AdRequest.ERROR_CODE_INTERNAL_ERROR:
-                    return MoPubErrorCode.INTERNAL_ERROR;
-                case AdRequest.ERROR_CODE_INVALID_REQUEST:
-                    return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
-                case AdRequest.ERROR_CODE_NETWORK_ERROR:
-                    return MoPubErrorCode.NO_CONNECTION;
-                case AdRequest.ERROR_CODE_NO_FILL:
-                    return MoPubErrorCode.NO_FILL;
-                default:
-                    return MoPubErrorCode.UNSPECIFIED;
-            }
-        }
     }
 }
