@@ -42,7 +42,11 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
     private static final String ADAPTER_NAME = IronSourceInterstitial.class.getSimpleName();
 
     // Network identifier of ironSource
+    @NonNull
     private String mInstanceId = IronSourceAdapterConfiguration.DEFAULT_INSTANCE_ID;
+
+    @Nullable
+    private Activity mInterstitialActivity;
 
     @NonNull
     protected String getAdNetworkId() {
@@ -53,6 +57,8 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) {
         Preconditions.checkNotNull(launcherActivity);
         Preconditions.checkNotNull(adData);
+
+        mInterstitialActivity=launcherActivity;
 
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         IronSource.setConsent(canCollectPersonalInfo);
@@ -75,7 +81,8 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
                 mInstanceId = instanceId;
             }
 
-            initIronSourceSDK(launcherActivity, applicationKey, extras);
+            Context context = launcherActivity.getApplicationContext();
+            initIronSourceSDK(context, applicationKey, extras);
             return true;
 
         } catch (Exception e) {
@@ -89,12 +96,12 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
         }
     }
 
-    private void initIronSourceSDK(Activity activity, String appKey, Map<String, String> extras) {
+    private void initIronSourceSDK(Context context, String appKey, Map<String, String> extras) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ironSource Interstitial initialization is called with applicationKey: " + appKey);
         IronSource.setISDemandOnlyInterstitialListener(this);
 
-        IronSource.AD_UNIT[] adUnitsToInit = mIronSourceAdapterConfiguration.getIronSourceAdUnitsToInitList(activity, extras);
-        IronSourceAdapterConfiguration.initIronSourceSDK(activity, appKey, adUnitsToInit);
+        IronSource.AD_UNIT[] adUnitsToInit = mIronSourceAdapterConfiguration.getIronSourceAdUnitsToInitList(context, extras);
+        IronSourceAdapterConfiguration.initIronSourceSDK(context, appKey, adUnitsToInit);
     }
 
     @NonNull
@@ -133,12 +140,19 @@ public class IronSourceInterstitial extends BaseAd implements ISDemandOnlyInters
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
         final String adMarkup = extras.get(DataKeys.ADM_KEY);
-        if(!TextUtils.isEmpty(adMarkup)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "ADM field is populated. Will make Advanced Bidding request.");
-            IronSource.loadISDemandOnlyInterstitialWithAdm(mInstanceId, adMarkup);
-        } else {
-            IronSource.loadISDemandOnlyInterstitial(mInstanceId);
+
+        if ( mInterstitialActivity!=null ){
+            if(!TextUtils.isEmpty(adMarkup)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "ADM field is populated. Will make Advanced Bidding request.");
+                IronSource.loadISDemandOnlyInterstitialWithAdm(mInterstitialActivity,mInstanceId, adMarkup);
+            } else {
+                IronSource.loadISDemandOnlyInterstitial(mInterstitialActivity,mInstanceId);
+            }
+        }else {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to load  interstitial as the activity is null.");
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
+
     }
 
     @Override

@@ -27,7 +27,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
 public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
-    public static final String IRONSOURCE_ADAPTER_VERSION = "500";
+    public static final String IRONSOURCE_ADAPTER_VERSION = "510";
     public static final String DEFAULT_INSTANCE_ID = "0";
 
     private static final String ADAPTER_NAME = IronSourceAdapterConfiguration.class.getSimpleName();
@@ -88,11 +88,7 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
         synchronized (IronSourceAdapterConfiguration.class) {
             try {
                 if (configuration != null) {
-                    if (!(context instanceof Activity)) {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "IronSource's initialization via " +
-                                ADAPTER_NAME + " not started. An Activity Context is needed.");
-                        return;
-                    }
+
 
                     final String appKey = configuration.get(APPLICATION_KEY);
 
@@ -100,9 +96,9 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
                         MoPubLog.log(CUSTOM, "IronSource's initialization not" +
                                 " started. Ensure ironSource's " + APPLICATION_KEY +
                                 " is populated on the MoPub dashboard.");
-                    } else {
+                    } else if ( context != null ){
                         IronSource.AD_UNIT[] adUnitsToInitList = getIronSourceAdUnitsToInitList(context, configuration);
-                        initIronSourceSDK((Activity) context, appKey, adUnitsToInitList);
+                        initIronSourceSDK(context, appKey, adUnitsToInitList);
                         networkInitializationSucceeded = true;
                     }
 
@@ -138,10 +134,10 @@ public class IronSourceAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    public static void initIronSourceSDK(Activity activity, String appKey, IronSource.AD_UNIT[] adUnitsToInitList) {
+    public static void initIronSourceSDK(Context context, String appKey, IronSource.AD_UNIT[] adUnitsToInitList) {
         IronSource.setMediationType(MEDIATION_TYPE + IRONSOURCE_ADAPTER_VERSION
                 + "SDK" + getMoPubSdkVersion());
-        IronSource.initISDemandOnly(activity, appKey, adUnitsToInitList);
+        IronSource.initISDemandOnly(context, appKey, adUnitsToInitList);
     }
 
     /**

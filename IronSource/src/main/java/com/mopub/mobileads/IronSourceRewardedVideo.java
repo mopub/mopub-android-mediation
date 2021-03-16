@@ -49,6 +49,9 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
     @NonNull
     private String mInstanceId = IronSourceAdapterConfiguration.DEFAULT_INSTANCE_ID;
 
+    @Nullable
+    private Activity mRewardedVideoActivity;
+
     @NonNull
     @Override
     protected String getAdNetworkId() {
@@ -96,6 +99,8 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
         Preconditions.checkNotNull(launcherActivity);
         Preconditions.checkNotNull(adData);
 
+        mRewardedVideoActivity = launcherActivity;
+
         boolean canCollectPersonalInfo = MoPub.canCollectPersonalInformation();
         IronSource.setConsent(canCollectPersonalInfo);
 
@@ -117,7 +122,8 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
                 mInstanceId = instanceId;
             }
 
-            initIronSourceSDK(launcherActivity, applicationKey, extras);
+            Context context = launcherActivity.getApplicationContext();
+            initIronSourceSDK(context, applicationKey, extras);
             return true;
 
         } catch (Exception e) {
@@ -131,12 +137,12 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
         }
     }
 
-    private void initIronSourceSDK(Activity activity, String applicationKey, Map<String, String> extras) {
+    private void initIronSourceSDK(Context context, String applicationKey, Map<String, String> extras) {
         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "ironSource Rewarded Video initialization is called with applicationKey: " + applicationKey);
         IronSource.setISDemandOnlyRewardedVideoListener(this);
 
-        IronSource.AD_UNIT[] adUnitsToInit = mIronSourceAdapterConfiguration.getIronSourceAdUnitsToInitList(activity, extras);
-        IronSourceAdapterConfiguration.initIronSourceSDK(activity, applicationKey, adUnitsToInit);
+        IronSource.AD_UNIT[] adUnitsToInit = mIronSourceAdapterConfiguration.getIronSourceAdUnitsToInitList(context, extras);
+        IronSourceAdapterConfiguration.initIronSourceSDK(context, applicationKey, adUnitsToInit);
     }
 
     @Override
@@ -164,12 +170,19 @@ public class IronSourceRewardedVideo extends BaseAd implements ISDemandOnlyRewar
 
         final String adMarkup = extras.get(DataKeys.ADM_KEY);
 
-        if(!TextUtils.isEmpty(adMarkup)) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "ADM field is populated. Will make Advanced Bidding request.");
-            IronSource.loadISDemandOnlyRewardedVideoWithAdm(mInstanceId, adMarkup);
-        } else {
-            IronSource.loadISDemandOnlyRewardedVideo(mInstanceId);
+        if( mRewardedVideoActivity != null ){
+            if(!TextUtils.isEmpty(adMarkup)) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "ADM field is populated. Will make Advanced Bidding request.");
+                IronSource.loadISDemandOnlyRewardedVideoWithAdm(mRewardedVideoActivity,mInstanceId, adMarkup);
+            } else {
+                IronSource.loadISDemandOnlyRewardedVideo(mRewardedVideoActivity,mInstanceId);
+            }
+        }else{
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to load  rewarded video as the activity is null.");
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
         }
+
     }
 
     protected boolean hasVideoAvailable() {
