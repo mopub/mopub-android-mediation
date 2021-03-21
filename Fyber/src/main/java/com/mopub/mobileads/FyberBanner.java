@@ -1,18 +1,3 @@
-/* Copyright 2020 Fyber N.V.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License
- */
-
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -46,48 +31,40 @@ import com.mopub.mobileads.MoPubErrorCode;
 
 import java.util.Map;
 
+import static com.mopub.common.DataKeys.ADUNIT_FORMAT;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.MoPubErrorCode.INLINE_LOAD_ERROR;
 
-/**
- * Implements Fyber's banner Mopub's custom event class
- */
 public class FyberBanner extends BaseAd {
-  // Mopub log tag definition
+
+  private static final String ADAPTER_NAME = FyberBanner.class.getSimpleName();
   private final static String LOG_TAG = "FyberBannerForMopub";
 
-  String mSpotId;
+  private final FyberAdapterConfiguration mFyberAdapterConfiguration;
 
-  /**
-   * The Spot object for the banner
-   */
-  InneractiveAdSpot mBannerSpot;
+  public FyberBanner() {
+    mFyberAdapterConfiguration = new FyberAdapterConfiguration();
+  }
 
-  /**
-   * The parent ad layout
-   */
-  ViewGroup mAdLayout;
-
-  /**
-   * Called by the Mopub infra-structure when Mopub requests a banner from Fyber Marketplace
-   *
-   * @param context
-   * @param spotId
-   * @param localExtras
-   */
-
+  private String mSpotId;
+  private InneractiveAdSpot mBannerSpot;
+  private ViewGroup mAdLayout;
 
   private void requestBanner(final Context context, String spotId, Map<String, String> localExtras) {
     FyberAdapterConfiguration.updateGdprConsentStatusFromMopub();
 
     mSpotId = spotId;
   
-    // Destroy previous ad
     if (mBannerSpot != null) {
       mBannerSpot.destroy();
     }
   
     mBannerSpot = InneractiveAdSpotManager.get().createSpot();
-    // Set your mediation name and version
     mBannerSpot.setMediationName(InneractiveMediationName.MOPUB);
     mBannerSpot.setMediationVersion(MoPub.SDK_VERSION);
   
@@ -96,26 +73,24 @@ public class FyberBanner extends BaseAd {
   
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
     FyberAdapterConfiguration.updateRequestFromExtras(request, localExtras);
-  
-    // Load an Ad
+
     mBannerSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
       @Override
       public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
         if (adSpot != mBannerSpot) {
-          log("Wrong Banner Spot: Received - " + adSpot + ", Actual - " + mBannerSpot);
+          MoPubLog.log(LOAD_FAILED, "Wrong Banner Spot received - " + adSpot + ", Actual - " + mBannerSpot);
           return;
         }
-      
-        log("on ad loaded successfully");
-      
-        // Create a parent layout for the Banner Ad
+
         mAdLayout = new FrameLayout(context);
         InneractiveAdViewUnitController controller = (InneractiveAdViewUnitController) mBannerSpot
                 .getSelectedUnitController();
         controller.setEventsListener(new InneractiveAdViewEventsListener() {
           @Override
           public void onAdImpression(InneractiveAdSpot adSpot) {
-            log("onAdImpression");
+            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
             if (mInteractionListener != null) {
               mInteractionListener.onAdImpression();
             }
@@ -123,7 +98,8 @@ public class FyberBanner extends BaseAd {
         
           @Override
           public void onAdClicked(InneractiveAdSpot adSpot) {
-            log("onAdClicked");
+            MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+
             if (mInteractionListener != null) {
               mInteractionListener.onAdClicked();
             }
@@ -137,18 +113,20 @@ public class FyberBanner extends BaseAd {
           @Override
           public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
             log("onAdWillOpenExternalApp");
-            // customEventListener.onLeaveApplication();
             // Don't call the onLeaveApplication() API since it causes a false Click event on MoPub
           }
         
           @Override
           public void onAdEnteredErrorState(InneractiveAdSpot adSpot, AdDisplayError error) {
-            log("onAdEnteredErrorState - " + error.getMessage());
+            MoPubLog.log(CUSTOM, "onAdEnteredErrorState - " + error.getMessage());
+
             if (error instanceof WebViewRendererProcessHasGoneError) {
               if (mInteractionListener != null) {
                 mInteractionListener.onAdFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
+                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
               } else if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
               }
             }
           }
@@ -184,7 +162,6 @@ public class FyberBanner extends BaseAd {
       @Override
       public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
                                                InneractiveErrorCode errorCode) {
-        log("on ad failed loading with Error: " + errorCode);
         if (mLoadListener != null) {
           if (errorCode == InneractiveErrorCode.CONNECTION_ERROR) {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_CONNECTION);
@@ -195,6 +172,8 @@ public class FyberBanner extends BaseAd {
           } else {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.SERVER_ERROR);
           }
+          MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, INLINE_LOAD_ERROR.getIntCode(),
+                  errorCode);
         }
       }
     });
@@ -202,12 +181,8 @@ public class FyberBanner extends BaseAd {
     mBannerSpot.requestAd(request);
   }
 
-  /**
-   * Called when an ad view should be cleared
-   */
   @Override
   protected void onInvalidate() {
-    log("onInvalidate called by Mopub");
     if (mBannerSpot != null) {
       mBannerSpot.destroy();
       mBannerSpot = null;
@@ -236,24 +211,47 @@ public class FyberBanner extends BaseAd {
     Preconditions.checkNotNull(context);
     Preconditions.checkNotNull(adData);
 
-    log("load banner requested");
-
     setAutomaticImpressionAndClickTracking(false);
 
     final Map<String, String> extras = adData.getExtras();
-    // Set variables from MoPub console.
     final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
     final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
-    if (TextUtils.isEmpty(spotId)) {
-      log("No spotID defined for ad unit. Cannot load banner");
+    mFyberAdapterConfiguration.setCachedInitializationParameters(context, extras);
+
+    String adUnitFormat = extras.get(ADUNIT_FORMAT);
+    if (!TextUtils.isEmpty(adUnitFormat)) {
+      adUnitFormat = adUnitFormat.toLowerCase();
+    }
+
+    final boolean isBannerFormat = "banner".equalsIgnoreCase(adUnitFormat);
+    final boolean isMrecFormat = "medium_rectangle".equalsIgnoreCase(adUnitFormat);
+
+    if (!isBannerFormat && !isMrecFormat) {
+      MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+              "Fyber only supports 320*50, 728*90 and 300*250 sized ads. " +
+                      "Please ensure your MoPub ad unit's format is either Banner or Medium Rectangle.");
+      MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+              MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+              MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
       if (mLoadListener != null) {
         mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
       }
       return;
     }
 
-    // If we've received an appId for this unit, try initializing the Fyber Marketplace SDK, if it was not already initialized
+    if (TextUtils.isEmpty(spotId)) {
+      MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+              MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+              MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
+      if (mLoadListener != null) {
+        mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+      }
+      return;
+    }
+
     if (!TextUtils.isEmpty(appId)) {
       FyberAdapterConfiguration.initializeFyberMarketplace(context, appId, extras.containsKey(
               FyberMoPubMediationDefs.REMOTE_KEY_DEBUG),
@@ -262,9 +260,12 @@ public class FyberBanner extends BaseAd {
                 public void onFyberAdapterConfigurationResolved(
                         OnFyberMarketplaceInitializedListener.FyberInitStatus status) {
                   //note - we try to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
-                  if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY || status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
+                  if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY
+                          || status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                     requestBanner(context, spotId, extras);
                   } else if (mLoadListener != null) {
+                    MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, INLINE_LOAD_ERROR.getIntCode(),
+                            INLINE_LOAD_ERROR);
                       mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                   }
                 }
@@ -272,6 +273,9 @@ public class FyberBanner extends BaseAd {
     } else if (InneractiveAdManager.wasInitialized()) {
       requestBanner(context, spotId, extras);
     } else if (mLoadListener != null) {
+        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+              MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+              MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
     }
   }

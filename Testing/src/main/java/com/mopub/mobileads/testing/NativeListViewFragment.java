@@ -17,10 +17,8 @@ import androidx.fragment.app.Fragment;
 import com.mopub.nativeads.FacebookAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesViewBinder;
-import com.mopub.nativeads.MediaViewBinder;
 import com.mopub.nativeads.MoPubAdAdapter;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
-import com.mopub.nativeads.MoPubVideoNativeAdRenderer;
 import com.mopub.nativeads.PangleAdRenderer;
 import com.mopub.nativeads.PangleAdViewBinder;
 import com.mopub.nativeads.RequestParameters;
@@ -83,19 +81,7 @@ public class NativeListViewFragment extends Fragment {
                         .sponsoredTextId(R.id.native_sponsored_text_view)
                         .build());
 
-        // Set up a renderer for a video native ad.
-        final MoPubVideoNativeAdRenderer videoAdRenderer = new MoPubVideoNativeAdRenderer(
-                new MediaViewBinder.Builder(R.layout.video_ad_list_item)
-                        .titleId(R.id.native_title)
-                        .textId(R.id.native_text)
-                        .mediaLayoutId(R.id.native_media_layout)
-                        .iconImageId(R.id.native_icon_image)
-                        .callToActionId(R.id.native_cta)
-                        .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
-                        .sponsoredTextId(R.id.native_sponsored_text_view)
-                        .build());
-
-        // Set up a renderer for Facebook video ads.
+        // Set up a renderer for Facebook ads.
         final FacebookAdRenderer facebookAdRenderer = new FacebookAdRenderer(
                 new FacebookAdRenderer.FacebookViewBinder.Builder(R.layout.native_ad_fan_list_item)
                         .titleId(R.id.native_title)
@@ -145,7 +131,6 @@ public class NativeListViewFragment extends Fragment {
         mAdAdapter.registerAdRenderer(googlePlayServicesAdRenderer);
         mAdAdapter.registerAdRenderer(facebookAdRenderer);
         mAdAdapter.registerAdRenderer(staticAdRender);
-        mAdAdapter.registerAdRenderer(videoAdRenderer);
         mAdAdapter.registerAdRenderer(pangleAdRenderer);
         listView.setAdapter(mAdAdapter);
 

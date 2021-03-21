@@ -81,18 +81,40 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
         Preconditions.checkNotNull(nativeAd);
 
         NativeRendererHelper.addTextView(verizonNativeViewHolder.titleView, nativeAd.getTitle());
-        ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "title")).prepareView(verizonNativeViewHolder.titleView);
+        NativeViewComponent titleComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "title"));
+        if (titleComponent != null) {
+            titleComponent.prepareView(verizonNativeViewHolder.titleView);
+        }
+
         NativeRendererHelper.addTextView(verizonNativeViewHolder.textView, nativeAd.getText());
-        ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "body")).prepareView(verizonNativeViewHolder.textView);
+        NativeViewComponent bodyComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "body"));
+        if (bodyComponent != null) {
+            bodyComponent.prepareView(verizonNativeViewHolder.textView);
+        }
+
         NativeRendererHelper.addTextView(verizonNativeViewHolder.callToActionView, nativeAd.getCallToAction());
-        ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "callToAction")).prepareView(verizonNativeViewHolder.callToActionView);
+        NativeViewComponent callToActionComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "callToAction"));
+        if (callToActionComponent != null) {
+            callToActionComponent.prepareView(verizonNativeViewHolder.callToActionView);
+        }
+
         NativeRendererHelper.addTextView(verizonNativeViewHolder.sponsoredTextView, nativeAd.getSponsored());
-        ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "disclaimer")).prepareView(verizonNativeViewHolder.sponsoredTextView);
+        NativeViewComponent disclaimerComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "disclaimer"));
+        if (disclaimerComponent != null) {
+            disclaimerComponent.prepareView(verizonNativeViewHolder.sponsoredTextView);
+        }
 
         NativeImageHelper.loadImageView(nativeAd.getMainImageUrl(), verizonNativeViewHolder.mainImageView);
-        ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "mainImage")).prepareView(verizonNativeViewHolder.mainImageView);
+        NativeViewComponent mainImageComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "mainImage"));
+        if (mainImageComponent != null) {
+            mainImageComponent.prepareView(verizonNativeViewHolder.mainImageView);
+        }
+
         NativeImageHelper.loadImageView(nativeAd.getIconImageUrl(), verizonNativeViewHolder.iconImageView);
-        ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "iconImage")).prepareView(verizonNativeViewHolder.iconImageView);
+        NativeViewComponent iconImageComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "iconImage"));
+        if (iconImageComponent != null) {
+            iconImageComponent.prepareView(verizonNativeViewHolder.iconImageView);
+        }
     }
 
     private void updateVideoView(@NonNull final VerizonNativeViewHolder verizonNativeViewHolder,

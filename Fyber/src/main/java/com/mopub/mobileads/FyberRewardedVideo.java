@@ -1,18 +1,3 @@
-/* Copyright 2020 Fyber N.V.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License
- */
-
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -37,6 +22,7 @@ import com.fyber.inneractive.sdk.external.VideoContentListener;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
+import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.AdData;
 import com.mopub.mobileads.BaseAd;
@@ -44,17 +30,26 @@ import com.mopub.mobileads.MoPubErrorCode;
 
 import java.util.Map;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.MoPubErrorCode.FULLSCREEN_LOAD_ERROR;
 
-/**
- * Implements Fyber's rewarded video Mopub's custom event class
- */
 public class FyberRewardedVideo extends BaseAd {
-    // Mopub log tag definition
     private final static String LOG_TAG = "FyberRewardedVideoForMopub";
+    private static final String ADAPTER_NAME = FyberRewardedVideo.class.getSimpleName();
 
-    /** Cache the spot id, and return when getAdNetworkId is called.
-     * Initialized to "", because getAdNetworkId cannot return null */
+    private final FyberAdapterConfiguration mFyberAdapterConfiguration;
+
+    public FyberRewardedVideo() {
+        mFyberAdapterConfiguration = new FyberAdapterConfiguration();
+    }
+
     private String mSpotId = "";
 
     InneractiveAdSpot mRewardedSpot;
@@ -78,15 +73,18 @@ public class FyberRewardedVideo extends BaseAd {
 
     @Override
     protected void load(@NonNull Context context, @NonNull AdData adData) throws Exception {
-        log("load rewarded requested");
+        Preconditions.checkNotNull(adData);
 
-        // Set variables from MoPub console.
+        MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
+
         final Map<String, String> extras = adData.getExtras();
         final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
         final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
         if (TextUtils.isEmpty(spotId)) {
-            log("No spotID defined for ad unit. Cannot load rewarded");
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
@@ -95,7 +93,6 @@ public class FyberRewardedVideo extends BaseAd {
 
         mSpotId = spotId;
 
-        // If we've received an appId for this unit, try initializing the Fyber Marketplace SDK, if it was not already initialized
         if (!TextUtils.isEmpty(appId)) {
             FyberAdapterConfiguration.initializeFyberMarketplace(context.getApplicationContext(), appId, extras.containsKey(
                     FyberMoPubMediationDefs.REMOTE_KEY_DEBUG),
@@ -107,6 +104,9 @@ public class FyberRewardedVideo extends BaseAd {
                             if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY || status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                                 requestRewarded(extras);
                             } else if (mLoadListener != null) {
+                                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                                 mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                             }
                         }
@@ -114,8 +114,12 @@ public class FyberRewardedVideo extends BaseAd {
         } else if (InneractiveAdManager.wasInitialized()) {
             requestRewarded(extras);
         } else if (mLoadListener != null) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
+        mFyberAdapterConfiguration.setCachedInitializationParameters(context, extras);
     }
 
     @Override
@@ -128,22 +132,16 @@ public class FyberRewardedVideo extends BaseAd {
 
     @Override
     public void show() {
-        log("showVideo called for rewarded");
-        // check if the ad is ready
+        MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
+
         if (mRewardedSpot != null && mRewardedSpot.isReady()) {
 
             InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController)mRewardedSpot.getSelectedUnitController();
             fullscreenUnitController.setEventsListener(new InneractiveFullscreenAdEventsListener() {
 
-                /**
-                 * Called by Fyber Marketplace when an interstitial ad activity is closed
-                 * @param adSpot Spot object
-                 */
                 @Override
                 public void onAdDismissed(InneractiveAdSpot adSpot) {
-                    log("onAdDismissed");
-
-                    // We fire the reward when the video completes
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Fyber interstitial is dismissed");
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdDismissed();
                     }
@@ -155,55 +153,40 @@ public class FyberRewardedVideo extends BaseAd {
                  */
                 @Override
                 public void onAdImpression(InneractiveAdSpot adSpot) {
-                    log("onAdImpression");
+                    MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdShown();
                         mInteractionListener.onAdImpression();
                     }
                 }
 
-                /**
-                 * Called by Fyber Marketplace when an interstitial ad is clicked
-                 * @param adSpot Spot object
-                 */
                 @Override
                 public void onAdClicked(InneractiveAdSpot adSpot) {
+                    MoPubLog.log(getAdNetworkId(), CLICKED, ADAPTER_NAME);
+
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdClicked();
                     }
-                    log("onAdClicked");
                 }
 
-                /**
-                 * Called by Fyber Marketplace when an interstitial ad opened an external application
-                 * @param adSpot Spot object
-                 */
                 @Override
                 public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
                     log("onAdWillOpenExternalApp");
                     // Don't call the onLeaveApplication() API since it causes a false Click event on MoPub
                 }
 
-                /**
-                 * Called when an ad has entered an error state, this will only happen when the ad is being shown
-                 * @param adSpot the relevant ad spot
-                 */
                 @Override
                 public void onAdEnteredErrorState(InneractiveAdSpot adSpot, AdDisplayError error) {
                     log("onAdEnteredErrorState - " + error.getMessage());
                 }
 
-                /**
-                 * Called by Fyber Marketplace when Fyber Marketplace's internal browser, which was opened by this interstitial, was closed
-                 * @param adSpot Spot object
-                 */
                 @Override
                 public void onAdWillCloseInternalBrowser(InneractiveAdSpot adSpot) {
                     log("onAdWillCloseInternalBrowser");
                 }
             });
 
-            // Add video content controller, for controlling video ads
             InneractiveFullscreenVideoContentController videoContentController = new InneractiveFullscreenVideoContentController();
             videoContentController.setEventsListener(new VideoContentListener() {
                 @Override
@@ -211,19 +194,15 @@ public class FyberRewardedVideo extends BaseAd {
                         // Nothing to do here
                 }
 
-                /**
-                 * Called by Fyber Marketplace when an Interstitial video ad was played to the end
-                 * <br>Can be used for incentive flow
-                 * <br>Note: This event does not indicate that the interstitial was closed
-                 */
                 @Override
                 public void onCompleted() {
-                    log("Got video content completed event");
+                    /* Got video content completed event. Do not report reward back just yet.*/
                 }
 
                 @Override
                 public void onPlayerError() {
-                    log("Got video content play error event");
+                    MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, "Video content play error event");
+
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
                     }
@@ -239,15 +218,13 @@ public class FyberRewardedVideo extends BaseAd {
                 }
             });
 
-            // Now add the content controller to the unit controller
             fullscreenUnitController.addContentController(videoContentController);
-
             fullscreenUnitController.show(mParentActivity);
         } else {
             if (mInteractionListener != null) {
+                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.EXPIRED);
                 mInteractionListener.onAdFailed(MoPubErrorCode.EXPIRED);
             }
-            log("The rewarded ad is not ready yet.");
         }
     }
 
@@ -264,7 +241,6 @@ public class FyberRewardedVideo extends BaseAd {
         }
 
         mRewardedSpot = InneractiveAdSpotManager.get().createSpot();
-        // Set your mediation name and version
         mRewardedSpot.setMediationName(InneractiveMediationName.MOPUB);
         mRewardedSpot.setMediationVersion(MoPub.SDK_VERSION);
 
@@ -274,29 +250,19 @@ public class FyberRewardedVideo extends BaseAd {
         InneractiveAdRequest request = new InneractiveAdRequest(mSpotId);
         FyberAdapterConfiguration.updateRequestFromExtras(request, localExtras);
 
-        // Load ad
         mRewardedSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
 
-            /**
-             * Called by Fyber Marketplace when an interstitial is ready for display
-             * @param adSpot Spot object
-             */
             @Override
             public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
-                log("on ad loaded successfully");
+                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+
                 if (mLoadListener != null) {
                     mLoadListener.onAdLoaded();
                 }
             }
 
-            /**
-             * Called by Fyber Marketplace when an interstitial fails loading
-             * @param adSpot Spot object
-             * @param errorCode the failure's error.
-             */
             @Override
             public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot, InneractiveErrorCode errorCode) {
-                log("Failed loading rewarded with error: " + errorCode);
                 if (mLoadListener != null) {
                     if (errorCode == InneractiveErrorCode.CONNECTION_ERROR) {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_CONNECTION);
@@ -308,16 +274,14 @@ public class FyberRewardedVideo extends BaseAd {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.SERVER_ERROR);
                     }
                 }
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
+                        errorCode);
             }
         });
 
         mRewardedSpot.requestAd(request);
     }
 
-    /**
-     * MopubLog helper
-     * @param message
-     */
     private void log(String message) {
         MoPubLog.log(CUSTOM, LOG_TAG, message);
     }
