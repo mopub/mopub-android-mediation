@@ -78,8 +78,8 @@ public class FyberRewardedVideo extends BaseAd {
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
         final Map<String, String> extras = adData.getExtras();
-        final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
-        final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
+        final String appId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
+        final String spotId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
         if (TextUtils.isEmpty(spotId)) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
@@ -135,22 +135,18 @@ public class FyberRewardedVideo extends BaseAd {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (mRewardedSpot != null && mRewardedSpot.isReady()) {
-
             InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController)mRewardedSpot.getSelectedUnitController();
             fullscreenUnitController.setEventsListener(new InneractiveFullscreenAdEventsListener() {
 
                 @Override
                 public void onAdDismissed(InneractiveAdSpot adSpot) {
                     MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Fyber interstitial is dismissed");
+
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdDismissed();
                     }
                 }
 
-                /**
-                 * Called by Fyber Marketplace when an interstitial ad activity is shown
-                 * @param adSpot Spot object
-                 */
                 @Override
                 public void onAdImpression(InneractiveAdSpot adSpot) {
                     MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
@@ -172,18 +168,19 @@ public class FyberRewardedVideo extends BaseAd {
 
                 @Override
                 public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
-                    log("onAdWillOpenExternalApp");
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillOpenExternalApp");
                     // Don't call the onLeaveApplication() API since it causes a false Click event on MoPub
                 }
 
                 @Override
                 public void onAdEnteredErrorState(InneractiveAdSpot adSpot, AdDisplayError error) {
-                    log("onAdEnteredErrorState - " + error.getMessage());
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnteredErrorState - " +
+                            error.getMessage());
                 }
 
                 @Override
                 public void onAdWillCloseInternalBrowser(InneractiveAdSpot adSpot) {
-                    log("onAdWillCloseInternalBrowser");
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillCloseInternalBrowser");
                 }
             });
 
@@ -280,9 +277,5 @@ public class FyberRewardedVideo extends BaseAd {
         });
 
         mRewardedSpot.requestAd(request);
-    }
-
-    private void log(String message) {
-        MoPubLog.log(CUSTOM, LOG_TAG, message);
     }
 }

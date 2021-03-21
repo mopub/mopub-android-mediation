@@ -39,9 +39,7 @@ import static com.mopub.mobileads.MoPubErrorCode.INLINE_LOAD_ERROR;
 
 public class FyberInterstitial extends BaseAd {
 
-  private final static String LOG_TAG = "FyberInterstitialForMopub";
   private static final String ADAPTER_NAME = FyberInterstitial.class.getSimpleName();
-
   private final FyberAdapterConfiguration mFyberAdapterConfiguration;
 
   public FyberInterstitial() {
@@ -83,8 +81,8 @@ public class FyberInterstitial extends BaseAd {
 
     final Map<String, String> extras = adData.getExtras();
 
-    final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
-    final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
+    final String appId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
+    final String spotId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
     if (TextUtils.isEmpty(spotId)) {
       MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
@@ -167,18 +165,19 @@ public class FyberInterstitial extends BaseAd {
 
         @Override
         public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
-          log("onAdWillOpenExternalApp");
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillOpenExternalApp");
           // Don't call the onLeaveApplication() API since it causes a false Click event on MoPub
         }
 
         @Override
         public void onAdEnteredErrorState(InneractiveAdSpot adSpot, AdDisplayError error) {
-          log("onAdEnteredErrorState - " + error.getMessage());
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnteredErrorState - " +
+                  error.getMessage());
         }
 
         @Override
         public void onAdWillCloseInternalBrowser(InneractiveAdSpot adSpot) {
-          log("onAdWillCloseInternalBrowser");
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillCloseInternalBrowser");
         }
       });
 
@@ -186,8 +185,10 @@ public class FyberInterstitial extends BaseAd {
       videoContentController.setEventsListener(new VideoContentListener() {
         @Override
         public void onProgress(int totalDurationInMsec, int positionInMsec) {
-          log("Got video content progress: total time = " + totalDurationInMsec
-                  + " position = " + positionInMsec);
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Got video content progress: total time = " +
+                  totalDurationInMsec +
+                  " position = " +
+                  positionInMsec);
         }
 
         @Override
@@ -271,9 +272,5 @@ public class FyberInterstitial extends BaseAd {
     });
 
     mInterstitialSpot.requestAd(request);
-  }
-
-  private void log(String message) {
-    MoPubLog.log(CUSTOM, LOG_TAG, message);
   }
 }

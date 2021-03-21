@@ -43,8 +43,6 @@ import static com.mopub.mobileads.MoPubErrorCode.INLINE_LOAD_ERROR;
 public class FyberBanner extends BaseAd {
 
   private static final String ADAPTER_NAME = FyberBanner.class.getSimpleName();
-  private final static String LOG_TAG = "FyberBannerForMopub";
-
   private final FyberAdapterConfiguration mFyberAdapterConfiguration;
 
   public FyberBanner() {
@@ -107,12 +105,12 @@ public class FyberBanner extends BaseAd {
         
           @Override
           public void onAdWillCloseInternalBrowser(InneractiveAdSpot adSpot) {
-            log("onAdWillCloseInternalBrowser");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillCloseInternalBrowser");
           }
         
           @Override
           public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
-            log("onAdWillOpenExternalApp");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillOpenExternalApp");
             // Don't call the onLeaveApplication() API since it causes a false Click event on MoPub
           }
         
@@ -133,7 +131,8 @@ public class FyberBanner extends BaseAd {
         
           @Override
           public void onAdExpanded(InneractiveAdSpot adSpot) {
-            log("onAdExpanded");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdExpanded");
+
             if (mInteractionListener != null) {
               mInteractionListener.onAdExpanded();
             }
@@ -141,12 +140,13 @@ public class FyberBanner extends BaseAd {
         
           @Override
           public void onAdResized(InneractiveAdSpot adSpot) {
-            log("onAdResized");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdResized");
           }
         
           @Override
           public void onAdCollapsed(InneractiveAdSpot adSpot) {
-            log("onAdCollapsed");
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdCollapsed");
+
             if (mInteractionListener != null) {
               mInteractionListener.onAdCollapsed();
             }
@@ -214,8 +214,8 @@ public class FyberBanner extends BaseAd {
     setAutomaticImpressionAndClickTracking(false);
 
     final Map<String, String> extras = adData.getExtras();
-    final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
-    final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
+    final String appId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
+    final String spotId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
     mFyberAdapterConfiguration.setCachedInitializationParameters(context, extras);
 
@@ -302,13 +302,5 @@ public class FyberBanner extends BaseAd {
   @Nullable
   protected View getAdView() {
     return mAdLayout;
-  }
-
-  /**
-   * MopubLog helper
-   * @param message
-   */
-  private void log(String message) {
-    MoPubLog.log(CUSTOM, LOG_TAG, message);
   }
 }
