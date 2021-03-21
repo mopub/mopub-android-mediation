@@ -31,7 +31,6 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
     public final static String KEY_FYBER_APP_ID = "appID";
     public final static String KEY_FYBER_DEBUG = "debug";
 
-    private static final String TAG = "FyberAdapterConfig";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
 
@@ -80,7 +79,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                                                                    OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                                                        listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
                                                    } else if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.INVALID_APP_ID) {
-                                                       log("Attempted to initialize Fyber MarketPlace with wrong app id - " + appId);
+                                                       MoPubLog.log(CUSTOM, "Attempted to initialize Fyber Marketplace with wrong app id - " + appId);
                                                        listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
                                                    } else {
                                                        listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
@@ -142,12 +141,12 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
             /* Only set the GDPR consent flag, if GDPR is applied. If GDPR is not applied,
-            canCollectPersonalInformation returns true, but there is no explicit consent*/
-                MoPubLog.log(CUSTOM, "Fyber sdk will user gdpr consent from mopub. GdprConsent- "
-                        + personalInfoManager.canCollectPersonalInformation());
+            canCollectPersonalInformation returns true, but there is no explicit consent */
+                MoPubLog.log(CUSTOM, "Fyber sdk will use gdpr consent from MoPub. GdprConsent - " +
+                        personalInfoManager.canCollectPersonalInformation());
                 return personalInfoManager.canCollectPersonalInformation();
             } else if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.UNKNOWN && MoPub.shouldAllowLegitimateInterest()) {
-                MoPubLog.log(CUSTOM, "Gdpr result from mopub is unkown and publisher allowed liegitmateInterset. GdprConsent - true");
+                MoPubLog.log(CUSTOM, "Gdpr result from MoPub is unknown and publisher allowed legitimateInterest. GdprConsent - true");
                 return true;
             } else {
                 MoPubLog.log(CUSTOM, "Fyber sdk has not found any Gdpr values");
@@ -177,7 +176,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                 try {
                     age = Integer.valueOf(extras.get(FyberMoPubMediationDefs.KEY_AGE));
                 } catch (NumberFormatException e) {
-                    log("local extra contains Invalid Age");
+                    MoPubLog.log(CUSTOM, "local extra contains Invalid Age");
                 }
             }
 
@@ -214,9 +213,5 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                 request.setKeywords(keywords);
             }
         }
-    }
-
-    private static void log(String message) {
-        MoPubLog.log(CUSTOM, TAG, message);
     }
 }
