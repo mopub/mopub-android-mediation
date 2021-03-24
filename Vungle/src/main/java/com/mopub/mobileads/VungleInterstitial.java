@@ -33,18 +33,6 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.WILL_LEAVE_APPLI
 @Keep
 public class VungleInterstitial extends BaseAd {
 
-    /*
-     * These keys can be used with MoPubInterstitial.setLocalExtras()
-     * to pass additional parameters to the SDK.
-     */
-    @Deprecated
-    public static final String SOUND_ENABLED_KEY = "vungleSoundEnabled";
-    @Deprecated
-    public static final String FLEX_VIEW_CLOSE_TIME_KEY = "vungleFlexViewCloseTimeInSec";
-    @Deprecated
-    public static final String ORDINAL_VIEW_COUNT_KEY = "vungleOrdinalViewCount";
-    @Deprecated
-    public static final String AD_ORIENTATION_KEY = "vungleAdOrientation";
 
     /*
      * APP_ID_KEY is intended for MoPub internal use. Do not modify.
