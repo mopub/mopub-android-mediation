@@ -51,10 +51,10 @@ public class GooglePlayServicesInterstitial extends BaseAd {
 
     @NonNull
     private static final String ADAPTER_NAME = GooglePlayServicesInterstitial.class.getSimpleName();
-    private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
+    private static String DEFAULT_AD_UNIT_ID = "default";
+
+    private final GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
     private InterstitialAd mGoogleInterstitialAd;
-    @Nullable
-    private String mAdUnitId;
 
     public GooglePlayServicesInterstitial() {
         mGooglePlayServicesAdapterConfiguration = new GooglePlayServicesAdapterConfiguration();
@@ -68,25 +68,15 @@ public class GooglePlayServicesInterstitial extends BaseAd {
         setAutomaticImpressionAndClickTracking(false);
 
         final Map<String, String> extras = adData.getExtras();
-        if (extrasAreValid(extras)) {
-            mAdUnitId = extras.get(AD_UNIT_ID_KEY);
+        if (extras.containsKey(AD_UNIT_ID_KEY)) {
+            DEFAULT_AD_UNIT_ID = extras.get(AD_UNIT_ID_KEY);
 
             mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(context, extras);
-        } else {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-            }
-
-            return;
         }
 
         mGoogleInterstitialAd = new InterstitialAd(context);
         mGoogleInterstitialAd.setAdListener(new InterstitialAdListener());
-        mGoogleInterstitialAd.setAdUnitId(mAdUnitId);
+        mGoogleInterstitialAd.setAdUnitId(DEFAULT_AD_UNIT_ID);
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
@@ -188,13 +178,9 @@ public class GooglePlayServicesInterstitial extends BaseAd {
         return null;
     }
 
-    private boolean extrasAreValid(Map<String, String> extras) {
-        return extras.containsKey(AD_UNIT_ID_KEY);
-    }
-
     @NonNull
     public String getAdNetworkId() {
-        return mAdUnitId == null ? "" : mAdUnitId;
+        return DEFAULT_AD_UNIT_ID;
     }
 
     @Override

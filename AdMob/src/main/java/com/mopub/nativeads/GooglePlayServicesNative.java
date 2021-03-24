@@ -95,15 +95,15 @@ public class GooglePlayServicesNative extends CustomEventNative {
     /**
      * Flag to determine whether or not the adapter has been initialized.
      */
-    private static AtomicBoolean sIsInitialized = new AtomicBoolean(false);
+    private static final AtomicBoolean sIsInitialized = new AtomicBoolean(false);
 
     /**
      * String to store the AdMob ad unit ID.
      */
-    private static String mAdUnitId;
+    private static String DEFAULT_AD_UNIT_ID = "default";
 
     @NonNull
-    private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
+    private final GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
 
     public GooglePlayServicesNative() {
         mGooglePlayServicesAdapterConfiguration = new GooglePlayServicesAdapterConfiguration();
@@ -124,18 +124,12 @@ public class GooglePlayServicesNative extends CustomEventNative {
             MobileAds.initialize(context);
         }
 
-        mAdUnitId = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
-        if (TextUtils.isEmpty(mAdUnitId)) {
-            customEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL);
-
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    NativeErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    NativeErrorCode.NETWORK_NO_FILL);
-            return;
+        if (serverExtras.containsKey(KEY_EXTRA_AD_UNIT_ID)) {
+            DEFAULT_AD_UNIT_ID = serverExtras.get(KEY_EXTRA_AD_UNIT_ID);
         }
 
         GooglePlayServicesNativeAd nativeAd = new GooglePlayServicesNativeAd(customEventNativeListener);
-        nativeAd.loadAd(context, mAdUnitId, localExtras);
+        nativeAd.loadAd(context, DEFAULT_AD_UNIT_ID, localExtras);
 
         mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(context, serverExtras);
     }
@@ -664,6 +658,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
     }
 
     private static String getAdNetworkId() {
-        return mAdUnitId;
+        return DEFAULT_AD_UNIT_ID;
     }
 }

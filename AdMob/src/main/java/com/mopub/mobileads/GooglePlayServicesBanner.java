@@ -17,7 +17,6 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.query.AdInfo;
 import com.google.android.gms.ads.query.QueryInfo;
-import com.google.common.cache.Cache;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
@@ -40,11 +39,10 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
+import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.dv3Tokens;
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
 import static com.mopub.mobileads.MoPubErrorCode.NO_FILL;
-
-import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.dv3Tokens;
 
 public class GooglePlayServicesBanner extends BaseAd {
     /*
@@ -57,10 +55,11 @@ public class GooglePlayServicesBanner extends BaseAd {
     public static final String TEST_DEVICES_KEY = "testDevices";
 
     private static final String ADAPTER_NAME = GooglePlayServicesBanner.class.getSimpleName();
+    private static String DEFAULT_AD_UNIT_ID = "default";
+
     @Nullable
     private AdView mGoogleAdView;
     @Nullable
-    private String mAdUnitId;
     private Integer adWidth;
     private Integer adHeight;
 
@@ -73,11 +72,13 @@ public class GooglePlayServicesBanner extends BaseAd {
         adHeight = adData.getAdHeight();
         final Map<String, String> extras = adData.getExtras();
 
-        mAdUnitId = extras.get(AD_UNIT_ID_KEY);
+        if (extras.containsKey(AD_UNIT_ID_KEY)) {
+            DEFAULT_AD_UNIT_ID = extras.get(AD_UNIT_ID_KEY);
+        }
 
         mGoogleAdView = new AdView(context);
         mGoogleAdView.setAdListener(new AdViewListener());
-        mGoogleAdView.setAdUnitId(mAdUnitId);
+        mGoogleAdView.setAdUnitId(DEFAULT_AD_UNIT_ID);
 
         final AdSize adSize = (adWidth == null || adHeight == null || adWidth <= 0 || adHeight <= 0)
                 ? null
@@ -189,7 +190,7 @@ public class GooglePlayServicesBanner extends BaseAd {
 
     @NonNull
     public String getAdNetworkId() {
-        return mAdUnitId == null ? "" : mAdUnitId;
+        return DEFAULT_AD_UNIT_ID;
     }
 
     @Override

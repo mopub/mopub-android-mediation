@@ -95,7 +95,7 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
     /**
      * Google Mobile Ads rewarded video ad unit ID.
      */
-    private String mAdUnitId = "";
+    private static String DEFAULT_AD_UNIT_ID = "default";
 
     /**
      * The Google Rewarded Video Ad instance.
@@ -116,7 +116,7 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
      * The AdMob adapter configuration to use to cache network IDs from AdMob
      */
     @NonNull
-    private GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
+    private final GooglePlayServicesAdapterConfiguration mGooglePlayServicesAdapterConfiguration;
 
     public GooglePlayServicesRewardedVideo() {
         sIsInitialized = new AtomicBoolean(false);
@@ -134,7 +134,7 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
     protected String getAdNetworkId() {
         // Google rewarded videos do not have a unique identifier for each ad; using ad unit ID as
         // an identifier for all ads.
-        return mAdUnitId;
+        return DEFAULT_AD_UNIT_ID;
     }
 
     @Override
@@ -159,16 +159,8 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                 MobileAds.initialize(launcherActivity, extras.get(KEY_EXTRA_APPLICATION_ID));
             }
 
-            mAdUnitId = extras.get(KEY_EXTRA_AD_UNIT_ID);
-            if (TextUtils.isEmpty(mAdUnitId)) {
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                        MoPubErrorCode.NETWORK_NO_FILL);
-
-                if (mLoadListener != null) {
-                    mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                }
-                return false;
+            if (extras.containsKey(KEY_EXTRA_AD_UNIT_ID)) {
+                DEFAULT_AD_UNIT_ID = extras.get(KEY_EXTRA_AD_UNIT_ID);
             }
 
             mGooglePlayServicesAdapterConfiguration.setCachedInitializationParameters(launcherActivity,
@@ -185,16 +177,8 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
 
         final Map<String, String> extras = adData.getExtras();
 
-        mAdUnitId = extras.get(KEY_EXTRA_AD_UNIT_ID);
-        if (TextUtils.isEmpty(mAdUnitId)) {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
-            }
-            return;
+        if (extras.containsKey(KEY_EXTRA_AD_UNIT_ID)) {
+            DEFAULT_AD_UNIT_ID = extras.get(KEY_EXTRA_AD_UNIT_ID);
         }
 
         if (!(context instanceof Activity)) {
@@ -206,7 +190,7 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
             return;
         }
         mWeakActivity = new WeakReference<>((Activity) context);
-        mRewardedAd = new RewardedAd(context, mAdUnitId);
+        mRewardedAd = new RewardedAd(context, DEFAULT_AD_UNIT_ID);
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
