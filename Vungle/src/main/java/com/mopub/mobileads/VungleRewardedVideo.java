@@ -204,20 +204,10 @@ public class VungleRewardedVideo extends BaseAd {
     }
 
     private void setUpMediationSettingsForRequest(AdConfig adConfig) {
-        VungleMediationConfiguration globalMediationSettings =
-                MoPubRewardedVideoManager.getGlobalMediationSettings(VungleMediationConfiguration.class);
-        if (globalMediationSettings == null) {
-            // pubs are using older adapter version
-            globalMediationSettings = MoPubRewardedVideoManager
-                    .getGlobalMediationSettings(VungleMediationSettings.class);
-        }
-
-        VungleMediationConfiguration instanceMediationSettings =
-                MoPubRewardedVideoManager.getInstanceMediationSettings(VungleMediationConfiguration.class, mAdUnitId);
-        if (instanceMediationSettings == null) {
-            instanceMediationSettings = MoPubRewardedVideoManager
-                    .getInstanceMediationSettings(VungleMediationSettings.class, mAdUnitId);
-        }
+        VungleMediationConfiguration globalMediationSettings = MoPubRewardedAdManager
+                .getGlobalMediationSettings(VungleMediationConfiguration.class);
+        VungleMediationConfiguration instanceMediationSettings = MoPubRewardedAdManager
+                .getInstanceMediationSettings(VungleMediationConfiguration.class, mAdUnitId);
         // Local options override global options.
         if (instanceMediationSettings != null) {
             modifyAdConfig(adConfig, instanceMediationSettings);
@@ -371,81 +361,6 @@ public class VungleRewardedVideo extends BaseAd {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * @see com.mopub.mobileads.VungleMediationConfiguration
-     * @deprecated
-     */
-    @Deprecated
-    public static class VungleMediationSettings extends VungleMediationConfiguration {
-
-        public static class Builder extends VungleMediationConfiguration.Builder {
-
-            @Override
-            public Builder withUserId(@NonNull final String userId) {
-                super.withUserId(userId);
-                return this;
-            }
-
-            @Override
-            public Builder withCancelDialogTitle(@NonNull final String title) {
-                super.withCancelDialogTitle(title);
-                return this;
-            }
-
-            @Override
-            public Builder withCancelDialogBody(@NonNull final String body) {
-                super.withCancelDialogBody(body);
-                return this;
-            }
-
-            @Override
-            public Builder withCancelDialogCloseButton(@NonNull final String buttonText) {
-                super.withCancelDialogCloseButton(buttonText);
-                return this;
-            }
-
-            @Override
-            public Builder withCancelDialogKeepWatchingButton(@NonNull final String buttonText) {
-                super.withCancelDialogKeepWatchingButton(buttonText);
-                return this;
-            }
-
-            @Deprecated
-            @Override
-            public Builder withSoundEnabled(boolean isSoundEnabled) {
-                super.withSoundEnabled(isSoundEnabled);
-                return this;
-            }
-
-            @Override
-            public Builder withStartMuted(boolean isStartMuted) {
-                super.withStartMuted(isStartMuted);
-                return this;
-            }
-
-            @Override
-            public Builder withOrdinalViewCount(int ordinalViewCount) {
-                super.withOrdinalViewCount(ordinalViewCount);
-                return this;
-            }
-
-            @Override
-            public Builder withAutoRotate(@AdConfig.Orientation int adOrientation) {
-                super.withAutoRotate(adOrientation);
-                return this;
-            }
-
-            @Override
-            public VungleMediationSettings build() {
-                return new VungleMediationSettings(this);
-            }
-        }
-
-        private VungleMediationSettings(@NonNull final Builder builder) {
-            super(builder);
         }
     }
 }
