@@ -31,6 +31,9 @@ class VungleNetworkSettings {
     }
 
     static VungleSettings getVungleSettings() {
+        if (sVungleSettings == null) {
+            sVungleSettings = new VungleSettings.Builder().disableBannerRefresh().build();
+        }
         return sVungleSettings;
     }
 
