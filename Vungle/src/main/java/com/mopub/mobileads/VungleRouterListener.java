@@ -2,6 +2,8 @@ package com.mopub.mobileads;
 
 import androidx.annotation.NonNull;
 
+import com.vungle.warren.error.VungleException;
+
 public interface VungleRouterListener {
 
     void onAdEnd(String placementId);
@@ -16,8 +18,10 @@ public interface VungleRouterListener {
 
     void onAdViewed(@NonNull String placementId);
 
-    void onUnableToPlayAd(@NonNull String placementId, String reason);
+    void onAdPlayError(@NonNull String placementId, VungleException exception);
 
-    void onAdAvailabilityUpdate(@NonNull String placementId, boolean isAdAvailable);
+    void onAdLoadError(@NonNull String placementId, VungleException exception);
+
+    void onAdLoaded(@NonNull String placementId);
 
 }
