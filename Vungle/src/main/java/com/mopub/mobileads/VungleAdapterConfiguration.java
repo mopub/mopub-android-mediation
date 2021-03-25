@@ -37,7 +37,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
      */
     public static final String WITH_AUTO_ROTATE_KEY = "orientations";
 
-    private AtomicReference<String> tokenReference = new AtomicReference<>(null);
+    private final AtomicReference<String> tokenReference = new AtomicReference<>(null);
 
     public VungleAdapterConfiguration() {
         sVungleRouter = VungleRouter.getInstance();
@@ -52,7 +52,8 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        String token = Vungle.getAvailableBidTokens(context, 10);
+        int maxSize = 1024 * 1024; // 1MB
+        String token = Vungle.getAvailableBidTokensBySize(context, maxSize);
         if (token != null) {
             tokenReference.set(token);
         }
