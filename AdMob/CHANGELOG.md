@@ -45,7 +45,7 @@
     * Fix native ad static images not displayed/clickable. This allows Google to manage the image asset within their `MediaView`.
 
   * 19.3.0.1
-    * Add support for the new `onRewardedAdFailedToLoad(LoadAdError loadAdError)` to handle load failures.
+    * Add support for the new `onRewardedAdFailedToLoad(LoadAdError loadAdError)` to handle load failures. 
 
   * 19.3.0.0
     * This version of the adapters has been certified with AdMob 19.3.0 and MoPub 5.13.1.
@@ -60,7 +60,7 @@
 
   * 19.1.0.1
     * Refactor non-native adapter classes to use the new consolidated API from MoPub.
-    * Remove banner size mapping checks to fully take advantage of adaptive banner.
+    * Remove banner size mapping checks to fully take advantage of adaptive banner. 
     * This and newer adapter versions are only compatible with 5.13.0+ MoPub SDK.
 
   * 19.1.0.0
@@ -101,7 +101,7 @@
 
   * 18.2.0.0
     * This version of the adapters has been certified with AdMob 18.2.0.
-    * Use `RequestConfiguration` in place of `AdRequest.Builder` to pass targeting data to Google.
+    * Use `RequestConfiguration` in place of `AdRequest.Builder` to pass targeting data to Google. 
 
   * 17.2.1.1
     * Add support for AndroidX. This is the minimum version compatible with MoPub 5.9.0.
@@ -131,7 +131,7 @@
 
   * 17.1.2.3
     * **Note**: This version is only compatible with the 5.5.0+ release of the MoPub SDK.
-    * Add the `GooglePlayServicesAdapterConfiguration` class to:
+    * Add the `GooglePlayServicesAdapterConfiguration` class to: 
          * pre-initialize the AdMob SDK during MoPub SDK initialization process
          * store adapter and SDK versions for logging purpose
     * Streamline adapter logs via `MoPubLog` to make debugging more efficient. For more details, check the [Android Initialization guide](https://developers.mopub.com/docs/android/initialization/) and [Writing Custom Events guide](https://developers.mopub.com/docs/android/custom-events/).
@@ -148,7 +148,7 @@
 
   * 17.0.0.2
     * Add a null check when calling AdMob's `isLoaded()` for rewarded video ads.
-
+    
   * 17.0.0.1
     * Fix a bug where AdMob's native ads disappear when scrolling through a ListView/RecyclerView using MoPub's Ad Placer technology.
 
@@ -195,11 +195,11 @@
 
   * 15.0.0.0
     * This version of the adapters has been certified with AdMob 15.0.0.
-	* Implement AdMob's onRewardedVideoCompleted() callback.
+	* Implement AdMob's onRewardedVideoCompleted() callback. 
     * [Known Issue] AdMob's native ads are occasionally removed from the view hierarchy when a ListView/RecyclerView is scrolled.
 
   * 11.8.0.0
     * This version of the adapters has been certified with AdMob 11.8.0.
-
+	
   * Initial Commit
   	* Adapters moved from [mopub-android-sdk](https://github.com/mopub/mopub-android-sdk) to [mopub-android-mediation](https://github.com/mopub/mopub-android-mediation/)
