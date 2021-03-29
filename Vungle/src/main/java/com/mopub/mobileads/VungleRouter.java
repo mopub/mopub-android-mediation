@@ -360,6 +360,15 @@ public class VungleRouter {
         @Override
         public void onAdViewed(String id) {
             MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdViewed - Placement ID: " + id);
+
+            VungleRouterListener targetListener = sVungleRouterListeners.get(id);
+            if (targetListener != null) {
+                targetListener.onAdViewed(id);
+            } else {
+                MoPubLog.log(id, CUSTOM, ADAPTER_NAME, "onAdViewed - VungleRouterListener is not found for " +
+                        "Placement ID: " + id);
+            }
+
         }
     };
 

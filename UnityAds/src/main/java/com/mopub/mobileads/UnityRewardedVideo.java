@@ -147,13 +147,13 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
         MoPubLog.log(SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (mLauncherActivity == null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show Unity interstitial as the activity calling it is null.");
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show Unity rewarded video as the activity calling it is null.");
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
-                    MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
             return;
         }
@@ -175,11 +175,11 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
 
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Attempted to show Unity rewarded video before it was available.");
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
         }
     }
@@ -265,19 +265,19 @@ public class UnityRewardedVideo extends BaseAd implements IUnityAdsExtendedListe
                 metadata.commit();
             }
 
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show Unity interstitial with error message: " + message);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Failed to show Unity rewarded video with error message: " + message);
             MoPubLog.log(SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                    MoPubErrorCode.NETWORK_NO_FILL);
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
 
             UnityAds.removeListener(UnityRewardedVideo.this);
 
         } else if (mLoadListener != null) {
-            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity interstitial failed with error message: " + message);
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unity rewarded video failed with error message: " + message);
             MoPubLog.log(LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.UNSPECIFIED.getIntCode(),
                     MoPubErrorCode.UNSPECIFIED);

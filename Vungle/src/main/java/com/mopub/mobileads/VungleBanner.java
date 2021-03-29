@@ -30,6 +30,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
@@ -319,10 +320,23 @@ public class VungleBanner extends BaseAd {
                     placementReferenceId);
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
-                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
-                        "Vungle banner ad logged impression. Placement id" + placementReferenceId);
-                mHandler.post(new Runnable() {
+                //Let's load it again to mimic auto-cache
+                if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
+                    sVungleRouter.loadBannerAd(mPlacementId, mAdConfig.getAdSize(), mVungleRouterListener);
+                } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
+                    sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+                }
+            }
+        }
 
+
+        @Override
+        public void onAdViewed(@NonNull String placementReferenceId) {
+
+            if (mPlacementId.equals(placementReferenceId)) {
+                MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME, "onAdViewed, Vungle banner ad logged impression. Placement id - Placement ID: " + placementReferenceId);
+
+                mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (mInteractionListener != null) {
@@ -330,13 +344,6 @@ public class VungleBanner extends BaseAd {
                         }
                     }
                 });
-
-                //Let's load it again to mimic auto-cache
-                if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-                    sVungleRouter.loadBannerAd(mPlacementId, mAdConfig.getAdSize(), mVungleRouterListener);
-                } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
-                    sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
-                }
             }
         }
 

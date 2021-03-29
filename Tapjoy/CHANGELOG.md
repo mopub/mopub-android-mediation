@@ -1,4 +1,7 @@
 ## Changelog
+  * 12.8.0.0
+    * This version of the adapters has been certified with Tapjoy 12.8.0 and MoPub SDK 5.16.3.
+
   * 12.7.1.1
     * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
 

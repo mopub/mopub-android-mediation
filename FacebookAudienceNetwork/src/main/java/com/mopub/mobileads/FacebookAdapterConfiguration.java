@@ -34,8 +34,8 @@ public class FacebookAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static Boolean isNativeBanner;
 
-    private AtomicReference<String> tokenReference = new AtomicReference<>(null);
-    private AtomicBoolean isComputingToken = new AtomicBoolean(false);
+    private final AtomicReference<String> tokenReference = new AtomicReference<>(null);
+    private final AtomicBoolean isComputingToken = new AtomicBoolean(false);
 
     @NonNull
     @Override

@@ -1,4 +1,7 @@
 ## Changelog
+  * 3.6.0.1
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
   * 3.6.0.0
     * This version of the adapters has been certified with Unity Ads 3.6.0 and MoPub SDK 5.15.0.
 

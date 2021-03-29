@@ -13,7 +13,8 @@ import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.VerizonAdapterConfiguration;
 import com.verizon.ads.VideoPlayerView;
-import com.verizon.ads.videoplayer.VerizonVideoPlayerView;
+import com.verizon.ads.verizonnativecontroller.NativeViewComponent;
+import com.verizon.ads.videoplayer.VerizonVideoPlayer;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -29,7 +30,7 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
     @NonNull
     private final ViewBinder viewBinder;
     @Nullable
-    private VideoPlayerView videoPlayerView;
+    private VerizonVideoPlayer verizonVideoPlayer;
 
     /**
      * Constructs a native ad renderer with a view binder.
@@ -61,8 +62,9 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
             viewHolderMap.put(view, verizonNativeViewHolder);
         }
 
-        updateViews(verizonNativeViewHolder, verizonStaticNativeAd);
+        updateViews(verizonNativeViewHolder, verizonStaticNativeAd, view.getContext());
         updateVideoView(verizonNativeViewHolder, verizonStaticNativeAd.getExtras());
+        verizonStaticNativeAd.getNativeAd().registerContainerView((ViewGroup) view);
         NativeRendererHelper.updateExtras(view, viewBinder.extras, verizonStaticNativeAd.getExtras());
     }
 
@@ -73,16 +75,46 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
     }
 
     private void updateViews(@NonNull final VerizonNativeViewHolder verizonNativeViewHolder,
-                             @NonNull final VerizonNative.VerizonStaticNativeAd nativeAd) {
+                             @NonNull final VerizonNative.VerizonStaticNativeAd nativeAd,
+                             @NonNull final Context context) {
         Preconditions.checkNotNull(verizonNativeViewHolder);
         Preconditions.checkNotNull(nativeAd);
 
         NativeRendererHelper.addTextView(verizonNativeViewHolder.titleView, nativeAd.getTitle());
+        NativeViewComponent titleComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "title"));
+        if (titleComponent != null) {
+            titleComponent.prepareView(verizonNativeViewHolder.titleView);
+        }
+
         NativeRendererHelper.addTextView(verizonNativeViewHolder.textView, nativeAd.getText());
+        NativeViewComponent bodyComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "body"));
+        if (bodyComponent != null) {
+            bodyComponent.prepareView(verizonNativeViewHolder.textView);
+        }
+
         NativeRendererHelper.addTextView(verizonNativeViewHolder.callToActionView, nativeAd.getCallToAction());
+        NativeViewComponent callToActionComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "callToAction"));
+        if (callToActionComponent != null) {
+            callToActionComponent.prepareView(verizonNativeViewHolder.callToActionView);
+        }
+
+        NativeRendererHelper.addTextView(verizonNativeViewHolder.sponsoredTextView, nativeAd.getSponsored());
+        NativeViewComponent disclaimerComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "disclaimer"));
+        if (disclaimerComponent != null) {
+            disclaimerComponent.prepareView(verizonNativeViewHolder.sponsoredTextView);
+        }
 
         NativeImageHelper.loadImageView(nativeAd.getMainImageUrl(), verizonNativeViewHolder.mainImageView);
+        NativeViewComponent mainImageComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "mainImage"));
+        if (mainImageComponent != null) {
+            mainImageComponent.prepareView(verizonNativeViewHolder.mainImageView);
+        }
+
         NativeImageHelper.loadImageView(nativeAd.getIconImageUrl(), verizonNativeViewHolder.iconImageView);
+        NativeViewComponent iconImageComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "iconImage"));
+        if (iconImageComponent != null) {
+            iconImageComponent.prepareView(verizonNativeViewHolder.iconImageView);
+        }
     }
 
     private void updateVideoView(@NonNull final VerizonNativeViewHolder verizonNativeViewHolder,
@@ -90,28 +122,30 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
         try {
             Preconditions.checkNotNull(verizonNativeViewHolder);
 
-            if (videoPlayerView != null) {
-                videoPlayerView.unload(); //stops multiple videos from playing.
+            if (verizonVideoPlayer != null) {
+                verizonVideoPlayer.unload(); //stops multiple videos from playing.
             }
 
             if (extras != null && verizonNativeViewHolder.videoView != null) {
 
-                videoPlayerView = new VerizonVideoPlayerView(verizonNativeViewHolder.videoView.getContext());
+                verizonVideoPlayer = new VerizonVideoPlayer(verizonNativeViewHolder.videoView.getContext());
+                VideoPlayerView videoPlayerView = new VideoPlayerView(verizonNativeViewHolder.videoView.getContext());
                 final FrameLayout.LayoutParams videoParams = new FrameLayout.LayoutParams(FrameLayout
                         .LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
 
+                videoPlayerView.bindPlayer(verizonVideoPlayer);
                 verizonNativeViewHolder.videoView.addView(videoPlayerView, videoParams);
 
                 final String url = (String) extras.get(VerizonNative.COMP_ID_VIDEO);
 
                 if (url != null) {
                     verizonNativeViewHolder.videoView.setVisibility(View.VISIBLE);
-                    videoPlayerView.load(url);
+                    verizonVideoPlayer.load(url);
 
                     VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            videoPlayerView.play();
+                            verizonVideoPlayer.play();
                         }
                     });
                 } else {

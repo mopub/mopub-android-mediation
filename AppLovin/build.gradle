@@ -1,4 +1,4 @@
-project.version = '9.14.12.0'
+project.version = '10.0.1.0'
 project.ext.networkName = 'applovin_sdk'
 
 apply from: '../shared-build.gradle'
