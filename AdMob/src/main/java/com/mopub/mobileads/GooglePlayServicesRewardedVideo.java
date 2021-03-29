@@ -10,14 +10,15 @@ import androidx.annotation.Nullable;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.query.AdInfo;
 import com.google.android.gms.ads.query.QueryInfo;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdCallback;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
@@ -26,7 +27,6 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,12 +50,6 @@ import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.dv3Toke
 import static com.mopub.mobileads.GooglePlayServicesAdapterConfiguration.forwardNpaIfSet;
 
 public class GooglePlayServicesRewardedVideo extends BaseAd {
-
-    /**
-     * Key to obtain AdMob application ID from the server extras provided by MoPub.
-     */
-    public static final String KEY_EXTRA_APPLICATION_ID = "appid";
-
     /**
      * Key to obtain AdMob ad unit ID from the extras provided by MoPub.
      */
@@ -103,14 +97,9 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
     private RewardedAd mRewardedAd;
 
     /**
-     * Flag to determine whether or not the Google Rewarded Video Ad instance has loaded.
+     * The current context with which to request and show the ad.
      */
-    private boolean mIsLoaded;
-
-    /**
-     * A Weak reference of the activity used to show the Google Rewarded Video Ad
-     */
-    private WeakReference<Activity> mWeakActivity;
+    private Context mContext;
 
     /**
      * The AdMob adapter configuration to use to cache network IDs from AdMob
@@ -132,8 +121,6 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        // Google rewarded videos do not have a unique identifier for each ad; using ad unit ID as
-        // an identifier for all ads.
         return DEFAULT_AD_UNIT_ID;
     }
 
@@ -146,18 +133,14 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
-                                            @NonNull final AdData adData)
-            throws Exception {
+                                            @NonNull final AdData adData) {
         Preconditions.checkNotNull(launcherActivity);
         Preconditions.checkNotNull(adData);
 
         if (!sIsInitialized.getAndSet(true)) {
             final Map<String, String> extras = adData.getExtras();
-            if (TextUtils.isEmpty(extras.get(KEY_EXTRA_APPLICATION_ID))) {
-                MobileAds.initialize(launcherActivity);
-            } else {
-                MobileAds.initialize(launcherActivity, extras.get(KEY_EXTRA_APPLICATION_ID));
-            }
+
+            MobileAds.initialize(launcherActivity);
 
             if (extras.containsKey(KEY_EXTRA_AD_UNIT_ID)) {
                 DEFAULT_AD_UNIT_ID = extras.get(KEY_EXTRA_AD_UNIT_ID);
@@ -173,7 +156,12 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
 
     @Override
     protected void load(@NonNull final Context context, @NonNull final AdData adData) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(adData);
+
         setAutomaticImpressionAndClickTracking(false);
+
+        mContext = context;
 
         final Map<String, String> extras = adData.getExtras();
 
@@ -183,14 +171,12 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
 
         if (!(context instanceof Activity)) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Context passed to load " +
-                    "was not an Activity. This is a bug in MoPub.");
+                    "was not an Activity.");
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             }
             return;
         }
-        mWeakActivity = new WeakReference<>((Activity) context);
-        mRewardedAd = new RewardedAd(context, DEFAULT_AD_UNIT_ID);
 
         final AdRequest.Builder builder = new AdRequest.Builder();
         builder.setRequestAgent("MoPub");
@@ -280,119 +266,131 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
         MobileAds.setRequestConfiguration(requestConfiguration);
 
         final AdRequest adRequest = builder.build();
-        mRewardedAd.loadAd(adRequest, mRewardedAdLoadCallback);
+        RewardedAd.load(context, DEFAULT_AD_UNIT_ID, adRequest, new RewardedAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
+                Preconditions.checkNotNull(rewardedAd);
+
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoaded();
+                }
+
+                MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
+
+                mRewardedAd = rewardedAd;
+                mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                    @Override
+                    public void onAdImpression() {
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdImpression();
+                        }
+                    }
+
+                    @Override
+                    public void onAdShowedFullScreenContent() {
+                        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdShown();
+                        }
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(AdError adError) {
+                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show " +
+                                "Google rewarded video. " + adError.getMessage());
+
+                        MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
+                                MoPubErrorCode.FULLSCREEN_SHOW_ERROR.getIntCode(),
+                                MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+                        }
+
+                        mRewardedAd = null;
+                    }
+
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
+
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdDismissed();
+                        }
+
+                        mRewardedAd = null;
+                    }
+                });
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                Preconditions.checkNotNull(loadAdError);
+
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load " +
+                        "Google rewarded video. " + loadAdError.getMessage());
+
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
+                        MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Google " +
+                        "interstitial with message: " + loadAdError.getMessage() + ". Caused by: " +
+                        loadAdError.getCause());
+
+                if (mLoadListener != null) {
+                    mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+                }
+
+                mRewardedAd = null;
+            }
+        });
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-    }
-
-    private boolean hasVideoAvailable() {
-        return mRewardedAd != null && mIsLoaded;
     }
 
     @Override
     protected void show() {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
-        if (hasVideoAvailable() && mWeakActivity != null && mWeakActivity.get() != null) {
-            mRewardedAd.show(mWeakActivity.get(), mRewardedAdCallback);
+        if (mRewardedAd != null) {
+            if (mContext instanceof Activity) {
+                mRewardedAd.show((Activity) mContext, new OnUserEarnedRewardListener() {
+                    @Override
+                    public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+                        Preconditions.checkNotNull(rewardItem);
+
+                        MoPubLog.log(getAdNetworkId(), SHOULD_REWARD,
+                                ADAPTER_NAME, rewardItem.getAmount(), rewardItem.getType());
+
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdComplete(MoPubReward.success(rewardItem.getType(),
+                                    rewardItem.getAmount()));
+                        }
+                    }
+                });
+            } else {
+                MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
+                        MoPubErrorCode.FULLSCREEN_SHOW_ERROR.getIntCode(),
+                        MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+                }
+
+            }
         } else {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show " +
+                    "Google rewarded video because it wasn't ready yet.");
+
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
-                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR.getIntCode(),
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
             }
         }
-    }
-
-    private RewardedAdLoadCallback mRewardedAdLoadCallback = new RewardedAdLoadCallback() {
-        @Override
-        public void onRewardedAdLoaded() {
-            mIsLoaded = true;
-            MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoaded();
-            }
-        }
-
-        @Override
-        public void onRewardedAdFailedToLoad(LoadAdError loadAdError) {
-            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to load Google " +
-                    "rewarded video with message: " + loadAdError.getMessage() + ". Caused by: " +
-                    loadAdError.getCause());
-
-            if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(getMoPubRequestErrorCode(loadAdError.getCode()));
-            }
-        }
-    };
-
-    private RewardedAdCallback mRewardedAdCallback = new RewardedAdCallback() {
-        @Override
-        public void onRewardedAdOpened() {
-            MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
-
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdShown();
-                mInteractionListener.onAdImpression();
-            }
-        }
-
-        @Override
-        public void onRewardedAdClosed() {
-            MoPubLog.log(getAdNetworkId(), DID_DISAPPEAR, ADAPTER_NAME);
-
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdDismissed();
-            }
-        }
-
-        @Override
-        public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-            MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
-                    rewardItem.getAmount(), rewardItem.getType());
-
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdComplete(MoPubReward.success(rewardItem.getType(),
-                        rewardItem.getAmount()));
-            }
-        }
-
-        @Override
-        public void onRewardedAdFailedToShow(AdError error) {
-            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Google " +
-                    "rewarded video with message: " + error.getMessage() + ". Caused by: " +
-                    error.getCause());
-
-            if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
-            }
-        }
-    };
-
-    /**
-     * Converts a given Google Mobile Ads SDK Ad Request error code into {@link MoPubErrorCode}.
-     *
-     * @param error Google Mobile Ads SDK Ad Request error code.
-     * @return an equivalent MoPub SDK error code for the given Google Mobile Ads SDK Ad Request
-     * error code.
-     */
-    private MoPubErrorCode getMoPubRequestErrorCode(int error) {
-        switch (error) {
-            case AdRequest.ERROR_CODE_INTERNAL_ERROR:
-                return MoPubErrorCode.INTERNAL_ERROR;
-            case AdRequest.ERROR_CODE_INVALID_REQUEST:
-                return MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR;
-            case AdRequest.ERROR_CODE_NETWORK_ERROR:
-                return MoPubErrorCode.NO_CONNECTION;
-            case AdRequest.ERROR_CODE_NO_FILL:
-                return MoPubErrorCode.NO_FILL;
-        }
-        return MoPubErrorCode.UNSPECIFIED;
     }
 
     public static final class GooglePlayServicesMediationSettings implements MediationSettings {
