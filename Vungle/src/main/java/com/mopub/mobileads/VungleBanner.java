@@ -308,7 +308,7 @@ public class VungleBanner extends BaseAd {
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
                 //Let's load it again to mimic auto-cache
-                if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
+                if (AdSize.isBannerAdSize(mAdConfig.getAdSize()) && mAdMarkup == null) {
                     sVungleRouter.loadBannerAd(mPlacementId, null, mAdConfig.getAdSize(), mVungleRouterListener);
                 }
             }
