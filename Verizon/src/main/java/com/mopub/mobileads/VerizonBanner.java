@@ -22,7 +22,6 @@ import com.verizon.ads.CreativeInfo;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
-import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.inlineplacement.AdSize;
 import com.verizon.ads.inlineplacement.InlineAdFactory;
 import com.verizon.ads.inlineplacement.InlineAdView;
@@ -61,7 +60,7 @@ public class VerizonBanner extends BaseAd {
     private String mPlacementId;
 
     @NonNull
-    private VerizonAdapterConfiguration verizonAdapterConfiguration;
+    private final VerizonAdapterConfiguration verizonAdapterConfiguration;
 
     public VerizonBanner() {
         verizonAdapterConfiguration = new VerizonAdapterConfiguration();
@@ -99,7 +98,7 @@ public class VerizonBanner extends BaseAd {
                 application = ((Activity) context).getApplication();
             }
 
-            if (!StandardEdition.initialize(application, siteId)) {
+            if (!VASAds.initialize(application, siteId)) {
                 logAndNotifyBannerFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, true);
             }
         }
