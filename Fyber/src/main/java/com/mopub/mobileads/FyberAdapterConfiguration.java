@@ -124,15 +124,11 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
     }
 
     public static void updateGdprConsentStatusFromMopub() {
-        InneractiveAdManager.GdprConsentSource gdprConsentSource = InneractiveAdManager.getGdprStatusSource();
-
-        if (gdprConsentSource == null || gdprConsentSource == InneractiveAdManager.GdprConsentSource.External) {
-            final Boolean mopubGdpr = extractGdprFromMoPub();
-            if (mopubGdpr == null) {
-                InneractiveAdManager.clearGdprConsentData();
-            } else {
-                InneractiveAdManager.setGdprConsent(mopubGdpr, InneractiveAdManager.GdprConsentSource.External);
-            }
+        final Boolean mopubGdpr = extractGdprFromMoPub();
+        if (mopubGdpr == null) {
+            InneractiveAdManager.clearGdprConsentData();
+        } else {
+            InneractiveAdManager.setGdprConsent(mopubGdpr, InneractiveAdManager.GdprConsentSource.External);
         }
     }
 
