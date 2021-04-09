@@ -19,6 +19,7 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.AdConfig.AdSize;
+import com.vungle.warren.BannerAdConfig;
 import com.vungle.warren.error.VungleException;
 
 import java.util.Map;
@@ -147,10 +148,10 @@ public class VungleBanner extends BaseAd {
         }
     }
 
-    private AdConfig.AdSize getVungleAdSize(@NonNull final AdData adData) {
+    private AdSize getVungleAdSize(@NonNull final AdData adData) {
         final Map<String, String> extras = adData.getExtras();
 
-        AdConfig.AdSize adSizeType = null;
+        AdSize adSizeType = null;
         int adWidthInDp = adData.getAdWidth() != null ? adData.getAdWidth() : 0;
         int adHeightInDp = adData.getAdHeight() != null ? adData.getAdHeight() : 0;
 
@@ -405,8 +406,8 @@ public class VungleBanner extends BaseAd {
                             boolean loadSucceeded = false;
 
                             if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-                                mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementId, mAdMarkup,
-                                        mAdConfig.getAdSize());
+                                mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementId,
+                                        mAdMarkup, new BannerAdConfig(mAdConfig));
                                 if (mVungleBannerAd != null) {
                                     loadSucceeded = true;
                                     layout.addView(mVungleBannerAd);
