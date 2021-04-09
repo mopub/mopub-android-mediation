@@ -54,14 +54,14 @@ public class FyberBanner extends BaseAd {
   private ViewGroup mAdLayout;
 
   private void requestBanner(final Context context, String spotId, Map<String, String> localExtras) {
-    FyberAdapterConfiguration.updateGdprConsentStatusFromMopub();
+    FyberAdapterConfiguration.updateGdprConsentStatusFromMoPub();
 
     mSpotId = spotId;
-  
+
     if (mBannerSpot != null) {
       mBannerSpot.destroy();
     }
-  
+
     mBannerSpot = InneractiveAdSpotManager.get().createSpot();
     mBannerSpot.setMediationName(InneractiveMediationName.MOPUB);
     mBannerSpot.setMediationVersion(MoPub.SDK_VERSION);
@@ -69,7 +69,7 @@ public class FyberBanner extends BaseAd {
     InneractiveAdViewUnitController controller = new InneractiveAdViewUnitController();
     mBannerSpot.addUnitController(controller);
   
-    InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+    final InneractiveAdRequest request = new InneractiveAdRequest(spotId);
     FyberAdapterConfiguration.updateRequestFromExtras(request, localExtras);
 
     mBannerSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
@@ -183,6 +183,7 @@ public class FyberBanner extends BaseAd {
 
   @Override
   protected void onInvalidate() {
+
     if (mBannerSpot != null) {
       mBannerSpot.destroy();
       mBannerSpot = null;
@@ -214,8 +215,8 @@ public class FyberBanner extends BaseAd {
     setAutomaticImpressionAndClickTracking(false);
 
     final Map<String, String> extras = adData.getExtras();
-    final String appId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
-    final String spotId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
+    final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
+    final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
     mFyberAdapterConfiguration.setCachedInitializationParameters(context, extras);
 
@@ -259,7 +260,7 @@ public class FyberBanner extends BaseAd {
                 @Override
                 public void onFyberAdapterConfigurationResolved(
                         OnFyberMarketplaceInitializedListener.FyberInitStatus status) {
-                  //note - we try to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
+                  //note - Fyber tries to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
                   if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY
                           || status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                     requestBanner(context, spotId, extras);
@@ -286,7 +287,7 @@ public class FyberBanner extends BaseAd {
    */
   protected void show() {
     if (mBannerSpot != null && mBannerSpot.getSelectedUnitController() != null && mAdLayout != null) {
-      InneractiveAdViewUnitController controller = (InneractiveAdViewUnitController) mBannerSpot
+      final InneractiveAdViewUnitController controller = (InneractiveAdViewUnitController) mBannerSpot
               .getSelectedUnitController();
 
       controller.bindView(mAdLayout);
@@ -303,4 +304,5 @@ public class FyberBanner extends BaseAd {
   protected View getAdView() {
     return mAdLayout;
   }
+
 }

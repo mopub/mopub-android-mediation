@@ -47,7 +47,7 @@ public class FyberInterstitial extends BaseAd {
   }
 
   InneractiveAdSpot mInterstitialSpot;
-  String mSpotId;
+  private String mSpotId;
 
   @Nullable
   Context mContext;
@@ -61,7 +61,7 @@ public class FyberInterstitial extends BaseAd {
   @NonNull
   @Override
   protected String getAdNetworkId() {
-    return mSpotId;
+    return mSpotId == null ? "" : mSpotId;
   }
 
   @Override
@@ -74,15 +74,13 @@ public class FyberInterstitial extends BaseAd {
     Preconditions.checkNotNull(context);
     Preconditions.checkNotNull(adData);
 
-    MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
-
     mContext = context;
     setAutomaticImpressionAndClickTracking(false);
 
     final Map<String, String> extras = adData.getExtras();
 
-    final String appId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
-    final String spotId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
+    final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
+    final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
     if (TextUtils.isEmpty(spotId)) {
       MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
@@ -103,7 +101,7 @@ public class FyberInterstitial extends BaseAd {
                 @Override
                 public void onFyberAdapterConfigurationResolved(
                         OnFyberMarketplaceInitializedListener.FyberInitStatus status) {
-                  //note - we try to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
+                  //note - Fyber tries to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
                   if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY || status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                     requestInterstitial(context, spotId, extras);
                   } else if (mLoadListener != null) {
@@ -115,6 +113,7 @@ public class FyberInterstitial extends BaseAd {
                 }
               });
     } else if (InneractiveAdManager.wasInitialized()) {
+      MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
       requestInterstitial(context, spotId, extras);
     } else if (mLoadListener != null) {
       MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
@@ -131,7 +130,8 @@ public class FyberInterstitial extends BaseAd {
     MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
     if (mInterstitialSpot != null && mInterstitialSpot.isReady()) {
-      InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController) mInterstitialSpot
+
+      final InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController) mInterstitialSpot
               .getSelectedUnitController();
       fullscreenUnitController.setEventsListener(new InneractiveFullscreenAdEventsListener() {
 
@@ -186,9 +186,7 @@ public class FyberInterstitial extends BaseAd {
         @Override
         public void onProgress(int totalDurationInMsec, int positionInMsec) {
           MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Got video content progress: total time = " +
-                  totalDurationInMsec +
-                  " position = " +
-                  positionInMsec);
+                  totalDurationInMsec + " position = " + positionInMsec);
         }
 
         @Override
@@ -202,12 +200,12 @@ public class FyberInterstitial extends BaseAd {
         }
       });
 
-
       fullscreenUnitController.addContentController(videoContentController);
 
       fullscreenUnitController.show((Activity) mContext);
     } else {
       MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+
       if (mInteractionListener != null) {
         mInteractionListener.onAdFailed(MoPubErrorCode.EXPIRED);
       }
@@ -224,7 +222,7 @@ public class FyberInterstitial extends BaseAd {
   private void requestInterstitial(final Context context, String spotId, Map<String, String> localExtras) {
     mContext = context;
 
-    FyberAdapterConfiguration.updateGdprConsentStatusFromMopub();
+    FyberAdapterConfiguration.updateGdprConsentStatusFromMoPub();
 
     if (mInterstitialSpot != null) {
       mInterstitialSpot.destroy();
@@ -237,7 +235,7 @@ public class FyberInterstitial extends BaseAd {
     InneractiveFullscreenUnitController fullscreenUnitController = new InneractiveFullscreenUnitController();
     mInterstitialSpot.addUnitController(fullscreenUnitController);
 
-    InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+    final InneractiveAdRequest request = new InneractiveAdRequest(spotId);
     FyberAdapterConfiguration.updateRequestFromExtras(request, localExtras);
 
     mInterstitialSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
@@ -254,20 +252,19 @@ public class FyberInterstitial extends BaseAd {
       @Override
       public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
                                                InneractiveErrorCode errorCode) {
-
+        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
+                errorCode);
         if (mLoadListener != null) {
           if (errorCode == InneractiveErrorCode.CONNECTION_ERROR) {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_CONNECTION);
           } else if (errorCode == InneractiveErrorCode.CONNECTION_TIMEOUT) {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_TIMEOUT);
           } else if (errorCode == InneractiveErrorCode.NO_FILL) {
-            mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
           } else {
-            mLoadListener.onAdLoadFailed(MoPubErrorCode.SERVER_ERROR);
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.UNSPECIFIED);
           }
         }
-        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
-                errorCode);
       }
     });
 

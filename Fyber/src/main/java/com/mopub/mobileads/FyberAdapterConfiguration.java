@@ -33,6 +33,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
 
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    private static final String ADAPTER_NAME = FyberAdapterConfiguration.class.getSimpleName();
 
     @NonNull
     @Override
@@ -64,8 +65,16 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
+        if (configuration == null) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "Fyber initialization failed. Configuration is null." +
+                    "Note that initialization on the first app launch is a no-op. It will attempt again on first ad request.");
+            listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            return;
+        }
+
         if (configuration != null && !configuration.isEmpty()) {
             final String appId = configuration.get(KEY_FYBER_APP_ID);
+
             if (!TextUtils.isEmpty(appId)) {
                 initializeFyberMarketplace(context, appId,
                                            configuration.containsKey(KEY_FYBER_DEBUG),
@@ -73,10 +82,9 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                                                @Override
                                                public void onFyberAdapterConfigurationResolved(
                                                        OnFyberMarketplaceInitializedListener.FyberInitStatus status) {
-                                                   if (status ==
-                                                       OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY ||
-                                                           status ==
-                                                                   OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
+
+                                                   if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY ||
+                                                           status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                                                        listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);
                                                    } else if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.INVALID_APP_ID) {
                                                        MoPubLog.log(CUSTOM, "Attempted to initialize Fyber Marketplace with wrong app id - " + appId);
@@ -87,7 +95,10 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                                                }
                                            });
             } else {
-                MoPubLog.log(CUSTOM_WITH_THROWABLE, "No Fyber app id given in configuration object. Initialization postponed. You can use FyberAdapterConfiguration.KEY_FYBER_APP_ID as your configuration key");
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "No Fyber app id given in configuration object. " +
+                        "Initialization postponed. You can use FyberAdapterConfiguration.KEY_FYBER_APP_ID as your configuration key");
+                listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+
             }
         }
     }
@@ -95,7 +106,6 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
     public static void initializeFyberMarketplace(Context context, String appId, boolean debugMode, @NonNull
     final OnFyberAdapterConfigurationResolvedListener listener) {
         synchronized (FyberAdapterConfiguration.class) {
-            // Just to be on the safe side, wrap initialize with exception handling
             if (debugMode) {
                 InneractiveAdManager.setLogLevel(Log.VERBOSE);
             }
@@ -104,14 +114,12 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                 InneractiveAdManager.initialize(context, appId,
                                                 new OnFyberMarketplaceInitializedListener() {
                                                     @Override
-                                                    public void onFyberMarketplaceInitialized(
-                                                            FyberInitStatus status) {
+                                                    public void onFyberMarketplaceInitialized(FyberInitStatus status) {
                                                         listener.onFyberAdapterConfigurationResolved(status);
-                                                    }
-                                                });
+                                                    }});
             } else if (!appId.equals(InneractiveAdManager.getAppId())) {
                 MoPubLog.log(CUSTOM, "Fyber Marketplace was initialized with appId " + InneractiveAdManager.getAppId() +
-                        " and now requests initialization with another appId (" + appId + ") You may have configured the wrong appId on the MoPub console?\n" +
+                        " and now requests initialization with another appId (" + appId + ") You may have configured the wrong appId on the MoPub console.\n" +
                         " you can only use a single appId and it's related spots");
                 listener.onFyberAdapterConfigurationResolved(
                         OnFyberMarketplaceInitializedListener.FyberInitStatus.INVALID_APP_ID);
@@ -123,8 +131,9 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    public static void updateGdprConsentStatusFromMopub() {
+    public static void updateGdprConsentStatusFromMoPub() {
         final Boolean mopubGdpr = extractGdprFromMoPub();
+
         if (mopubGdpr == null) {
             InneractiveAdManager.clearGdprConsentData();
         } else {
@@ -137,15 +146,15 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
 
         if (personalInfoManager != null && personalInfoManager.gdprApplies() == Boolean.TRUE) {
             /* Only set the GDPR consent flag, if GDPR is applied. If GDPR is not applied,
-            canCollectPersonalInformation returns true, but there is no explicit consent */
-                MoPubLog.log(CUSTOM, "Fyber sdk will use gdpr consent from MoPub. GdprConsent - " +
-                        personalInfoManager.canCollectPersonalInformation());
+            canCollectPersonalInformation returns true, but there is no explicit consent*/
+                MoPubLog.log(CUSTOM, "Fyber will user GDPR consent collected by MoPub."
+                        + personalInfoManager.canCollectPersonalInformation());
                 return personalInfoManager.canCollectPersonalInformation();
             } else if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.UNKNOWN && MoPub.shouldAllowLegitimateInterest()) {
-                MoPubLog.log(CUSTOM, "Gdpr result from MoPub is unknown and publisher allowed legitimateInterest. GdprConsent - true");
+                MoPubLog.log(CUSTOM, "GDPR result from MoPub is unknown and publisher allowed liegitmate interset.");
                 return true;
             } else {
-                MoPubLog.log(CUSTOM, "Fyber sdk has not found any Gdpr values");
+                MoPubLog.log(CUSTOM, "Fyber has not found any GDPR values");
             }
         return null;
     }
@@ -154,7 +163,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
      * Internal interface to bridge the gap between the custom event classes and the initializeNetwork
      */
     public interface OnFyberAdapterConfigurationResolvedListener {
-        public void onFyberAdapterConfigurationResolved(
+        public void onFyberAdapterConfigurationResolved (
                 OnFyberMarketplaceInitializedListener.FyberInitStatus status);
     }
 

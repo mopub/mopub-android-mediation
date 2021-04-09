@@ -35,15 +35,15 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_SUCCESS;
 import static com.mopub.mobileads.MoPubErrorCode.FULLSCREEN_LOAD_ERROR;
 
 public class FyberRewardedVideo extends BaseAd {
-    private final static String LOG_TAG = "FyberRewardedVideoForMopub";
-    private static final String ADAPTER_NAME = FyberRewardedVideo.class.getSimpleName();
 
+    private static final String ADAPTER_NAME = FyberRewardedVideo.class.getSimpleName();
     private final FyberAdapterConfiguration mFyberAdapterConfiguration;
 
     public FyberRewardedVideo() {
@@ -54,6 +54,7 @@ public class FyberRewardedVideo extends BaseAd {
 
     InneractiveAdSpot mRewardedSpot;
     Activity mParentActivity;
+    private boolean mRewarded = false;
 
     @Override
     protected LifecycleListener getLifecycleListener() {
@@ -67,6 +68,9 @@ public class FyberRewardedVideo extends BaseAd {
 
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity, @NonNull AdData adData) throws Exception {
+        Preconditions.checkNotNull(launcherActivity);
+        Preconditions.checkNotNull(adData);
+
         mParentActivity = launcherActivity;
         return false;
     }
@@ -74,12 +78,13 @@ public class FyberRewardedVideo extends BaseAd {
     @Override
     protected void load(@NonNull Context context, @NonNull AdData adData) throws Exception {
         Preconditions.checkNotNull(adData);
+        Preconditions.checkNotNull(context);
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
         final Map<String, String> extras = adData.getExtras();
-        final String appId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
-        final String spotId = extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
+        final String appId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_APP_ID);
+        final String spotId = extras == null ? null : extras.get(FyberMoPubMediationDefs.REMOTE_KEY_SPOT_ID);
 
         if (TextUtils.isEmpty(spotId)) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
@@ -100,7 +105,7 @@ public class FyberRewardedVideo extends BaseAd {
                         @Override
                         public void onFyberAdapterConfigurationResolved(
                                 OnFyberMarketplaceInitializedListener.FyberInitStatus status) {
-                            //note - we try to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
+                            //note - Fyber tries to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
                             if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY || status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                                 requestRewarded(extras);
                             } else if (mLoadListener != null) {
@@ -135,12 +140,11 @@ public class FyberRewardedVideo extends BaseAd {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         if (mRewardedSpot != null && mRewardedSpot.isReady()) {
-            InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController)mRewardedSpot.getSelectedUnitController();
+            final InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController)mRewardedSpot.getSelectedUnitController();
             fullscreenUnitController.setEventsListener(new InneractiveFullscreenAdEventsListener() {
-
                 @Override
                 public void onAdDismissed(InneractiveAdSpot adSpot) {
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Fyber interstitial is dismissed");
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Fyber interstitial has been dismissed");
 
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdDismissed();
@@ -194,6 +198,7 @@ public class FyberRewardedVideo extends BaseAd {
                 @Override
                 public void onCompleted() {
                     /* Got video content completed event. Do not report reward back just yet.*/
+                    MoPubLog.log(CUSTOM, ADAPTER_NAME, "Video content completed event. Do not report reward back yet.");
                 }
 
                 @Override
@@ -201,7 +206,7 @@ public class FyberRewardedVideo extends BaseAd {
                     MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, "Video content play error event");
 
                     if (mInteractionListener != null) {
-                        mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                        mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
                     }
                 }
             });
@@ -210,7 +215,11 @@ public class FyberRewardedVideo extends BaseAd {
                 @Override
                 public void onAdRewarded(InneractiveAdSpot adSpot) {
                     if (mInteractionListener != null) {
-                        mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL, MoPubReward.DEFAULT_REWARD_AMOUNT));
+                        MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, MoPubReward.DEFAULT_REWARD_AMOUNT,
+                                MoPubReward.NO_REWARD_LABEL);
+                        mInteractionListener.onAdComplete(mRewarded ?
+                                MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
+                                        MoPubReward.DEFAULT_REWARD_AMOUNT) : MoPubReward.failure());
                     }
                 }
             });
@@ -231,20 +240,21 @@ public class FyberRewardedVideo extends BaseAd {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
 
-        FyberAdapterConfiguration.updateGdprConsentStatusFromMopub();
+        FyberAdapterConfiguration.updateGdprConsentStatusFromMoPub();
 
         if (mRewardedSpot != null) {
             mRewardedSpot.destroy();
         }
 
         mRewardedSpot = InneractiveAdSpotManager.get().createSpot();
+
         mRewardedSpot.setMediationName(InneractiveMediationName.MOPUB);
         mRewardedSpot.setMediationVersion(MoPub.SDK_VERSION);
 
         InneractiveFullscreenUnitController fullscreenUnitController = new InneractiveFullscreenUnitController();
         mRewardedSpot.addUnitController(fullscreenUnitController);
 
-        InneractiveAdRequest request = new InneractiveAdRequest(mSpotId);
+        final InneractiveAdRequest request = new InneractiveAdRequest(mSpotId);
         FyberAdapterConfiguration.updateRequestFromExtras(request, localExtras);
 
         mRewardedSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
@@ -260,19 +270,19 @@ public class FyberRewardedVideo extends BaseAd {
 
             @Override
             public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot, InneractiveErrorCode errorCode) {
+                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
+                        errorCode);
                 if (mLoadListener != null) {
                     if (errorCode == InneractiveErrorCode.CONNECTION_ERROR) {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_CONNECTION);
-                    } else if  (errorCode == InneractiveErrorCode.CONNECTION_TIMEOUT) {
+                    } else if (errorCode == InneractiveErrorCode.CONNECTION_TIMEOUT) {
                         mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_TIMEOUT);
                     } else if (errorCode == InneractiveErrorCode.NO_FILL) {
-                        mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
+                        mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
                     } else {
-                        mLoadListener.onAdLoadFailed(MoPubErrorCode.SERVER_ERROR);
+                        mLoadListener.onAdLoadFailed(MoPubErrorCode.UNSPECIFIED);
                     }
                 }
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
-                        errorCode);
             }
         });
 
