@@ -16,6 +16,7 @@ import com.mopub.common.privacy.PersonalInfoManager;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.AdConfig.AdSize;
 import com.vungle.warren.Banners;
+import com.vungle.warren.BannerAdConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
@@ -223,7 +224,7 @@ public class VungleRouter {
 
             case INITIALIZED:
                 addRouterListener(placementId, routerListener);
-                Banners.loadBanner(placementId, adMarkup, adSize, loadAdCallback);
+                Banners.loadBanner(placementId, adMarkup, new BannerAdConfig(adSize), loadAdCallback);
                 break;
         }
     }
@@ -247,11 +248,12 @@ public class VungleRouter {
         Vungle.playAd(placementId, adMarkup, adConfig, playAdCallback);
     }
 
-    VungleBanner getVungleBannerAd(@NonNull String placementId, @Nullable String adMarkup, @NonNull AdSize adSize) {
+    VungleBanner getVungleBannerAd(@NonNull String placementId, @Nullable String adMarkup,
+                                   @NonNull BannerAdConfig adConfig) {
         Preconditions.checkNotNull(placementId);
-        Preconditions.checkNotNull(adSize);
+        Preconditions.checkNotNull(adConfig);
 
-        return Banners.getBanner(placementId, adMarkup, adSize, playAdCallback);
+        return Banners.getBanner(placementId, adMarkup, adConfig, playAdCallback);
     }
 
     /**
