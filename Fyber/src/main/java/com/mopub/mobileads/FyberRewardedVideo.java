@@ -54,7 +54,6 @@ public class FyberRewardedVideo extends BaseAd {
 
     InneractiveAdSpot mRewardedSpot;
     Activity mParentActivity;
-    private boolean mRewarded = false;
 
     @Override
     protected LifecycleListener getLifecycleListener() {
@@ -217,9 +216,8 @@ public class FyberRewardedVideo extends BaseAd {
                     if (mInteractionListener != null) {
                         MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME, MoPubReward.DEFAULT_REWARD_AMOUNT,
                                 MoPubReward.NO_REWARD_LABEL);
-                        mInteractionListener.onAdComplete(mRewarded ?
-                                MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
-                                        MoPubReward.DEFAULT_REWARD_AMOUNT) : MoPubReward.failure());
+                        mInteractionListener.onAdComplete(MoPubReward.success(MoPubReward.NO_REWARD_LABEL,
+                                MoPubReward.DEFAULT_REWARD_AMOUNT));
                     }
                 }
             });
