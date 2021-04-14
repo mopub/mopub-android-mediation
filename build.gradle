@@ -33,6 +33,7 @@ subprojects {
         maven { url 'https://dl.bintray.com/ironsource-mobile/android-sdk'}
         maven { url 'https://sdk.tapjoy.com/' }
         maven { url  "https://chartboostmobile.bintray.com/Chartboost" }
+        maven { url 'https://maven.ogury.co' }
         maven { url "https://jitpack.io" }
     }
 

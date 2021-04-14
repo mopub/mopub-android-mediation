@@ -1,0 +1,8 @@
+project.version = '5.0.9.0'
+project.ext.networkName = 'ogury'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "co.ogury:ogury-sdk:${sdkVersion}"
+}

@@ -23,6 +23,7 @@ dependencies {
                    project(':Chartboost'),
                    project(':FacebookAudienceNetwork'),
                    project(':IronSource'),
+                   project(':Ogury'),
                    project(':Pangle'),
                    project(':ReferenceNetwork'),
                    project(':Tapjoy'),
