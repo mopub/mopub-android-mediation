@@ -9,12 +9,8 @@ import com.mopub.common.OnNetworkInitializationFinishedListener
 import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM
-import com.mopub.common.privacy.ConsentStatus
+import com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE
 import com.mopub.mobileads.inmobi.BuildConfig
-import org.json.JSONException
-import org.json.JSONObject
-import java.lang.Error
-import java.lang.NullPointerException
 import java.lang.reflect.Field
 
 class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
@@ -39,6 +35,15 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
     }
 
     override fun initializeNetwork(context: Context, configuration: Map<String, String>?, onNetworkInitializationFinishedListener: OnNetworkInitializationFinishedListener) {
+        when (MoPubLog.getLogLevel()) {
+            MoPubLog.LogLevel.DEBUG, MoPubLog.LogLevel.INFO -> {
+                InMobiSdk.setLogLevel(InMobiSdk.LogLevel.DEBUG)
+            }
+            MoPubLog.LogLevel.NONE -> {
+                InMobiSdk.setLogLevel(InMobiSdk.LogLevel.NONE)
+            }
+        }
+
         if (configuration.isNullOrEmpty()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Network configuration map is empty. Cannot parse Account ID value for initialization"
                     + initializationErrorInfo)
@@ -46,62 +51,50 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             return
         }
 
-        initialiseInMobi(configuration, context, object : InitCompletionListener {
-            override fun onSuccess() {
-                onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
-            }
-
-            override fun onFailure(error: Error?, exception: Exception?) {
-                exception?.let {
-                    MoPubLog.log(AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobi initialization failed with an exception. $initializationErrorInfo", it)
-                } ?: run {
-                    error?.let {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: ${it.message}")
-                    }
-                }
-
-                onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR)
-            }
-        })
+        initializeInMobi(configuration, context, null)
+        onNetworkInitializationFinishedListener.onNetworkInitializationFinished(InMobiAdapterConfiguration::class.java, MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS)
     }
 
-    interface InitCompletionListener {
+    interface InMobiInitCompletionListener {
         fun onSuccess()
-        fun onFailure(error: Error?, exception: Exception?)
+        fun onFailure(error: Throwable)
     }
+
+    class InMobiPlacementIdException(message: String): Exception(message)
+    class InMobiAccountIdException(message: String): Exception(message)
 
     companion object {
-        const val ACCOUNT_ID_KEY = "accountId"
-        const val PLACEMENT_ID_KEY = "placementId"
+        private const val ACCOUNT_ID_KEY = "accountid"
+        private const val PLACEMENT_ID_KEY = "placementid"
 
         val ADAPTER_NAME: String = InMobiAdapterConfiguration::class.java.simpleName
-        val initializationErrorInfo = "InMobi will attempt to initialize on the first ad request using server extras values from MoPub UI. " +
+        private const val initializationErrorInfo = "InMobi will attempt to initialize on the first ad request using server extras values from MoPub UI. " +
                 "If you're using InMobi for Advanced Bidding, and initializing InMobi outside and before MoPub, you may disregard this error."
         val inMobiTPExtras: Map<String, String>
-        private val accountIdErrorMessage = "Please make sure you provide correct Account ID information on MoPub UI."
-        private val placementIdErrorMessage = "Please make sure you provide correct Placement ID information on MoPub UI."
+        private const val accountIdErrorMessage = "Please make sure you provide correct Account ID information on MoPub UI or network configuration on initialization."
+        private const val placementIdErrorMessage = "Please make sure you provide correct Placement ID information on MoPub UI."
 
-        fun initialiseInMobi(configuration: Map<String, String>, context: Context, initCompletionListener: InitCompletionListener) {
+        fun initializeInMobi(configuration: Map<String, String>, context: Context, inMobiInitCompletionListener: InMobiInitCompletionListener?) {
             try {
                 val accountId = getAccountId(configuration)
-                /*
-                 Intentionally ignoring the init results here. As MoPub expects inline callback.
-                 Refer https://github.com/mopub/mopub-android-mediation/pull/311#discussion_r573167988
-                 */
-                InMobiSdk.init(context, accountId, null) {
-                    if (it == null) {
+                InMobiSdk.init(context, accountId, null) { error ->
+                    if (error == null) {
                         MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization success.")
+                        inMobiInitCompletionListener?.onSuccess()
                     } else {
-                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: ${it.message}")
+                        MoPubLog.log(CUSTOM, ADAPTER_NAME, "InMobi initialization failure. Reason: ${error.message}")
+                        inMobiInitCompletionListener?.onFailure(error)
                     }
                 }
-                initCompletionListener.onSuccess()
+            } catch (accountIdException: InMobiAccountIdException) {
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, accountIdException.localizedMessage, accountIdException)
+                inMobiInitCompletionListener?.onFailure(accountIdException)
             } catch (e: Exception) {
-                initCompletionListener.onFailure(null, e)
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, e.localizedMessage, e)
+                inMobiInitCompletionListener?.onFailure(e)
             }
         }
 
-        // TODO: Revision needed
         fun getMoPubErrorCode(statusCode: InMobiAdRequestStatus.StatusCode?): MoPubErrorCode {
             return when (statusCode) {
                 InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR -> MoPubErrorCode.INTERNAL_ERROR
@@ -113,33 +106,33 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             }
         }
 
-        fun getAccountId(dict: Map<String, String>): String {
+        private fun getAccountId(dict: Map<String, String>): String {
             val accountIdString: String? = dict[ACCOUNT_ID_KEY]
-            if (accountIdString.isNullOrEmpty()) {
-                throw NullPointerException("InMobi Account ID parameter is null or empty. " +
+            return if (accountIdString.isNullOrEmpty()) {
+                throw InMobiAccountIdException("InMobi Account ID parameter is null or empty. " +
                         accountIdErrorMessage)
             } else {
-                return accountIdString
+                accountIdString
             }
         }
 
         fun getPlacementId(dict: Map<String, String>): Long {
             val placementIdString: String? = dict[PLACEMENT_ID_KEY]
             if (placementIdString.isNullOrEmpty()) {
-                throw NullPointerException("InMobi Placement ID parameter is null or empty. " +
+                throw InMobiPlacementIdException("InMobi Placement ID parameter is null or empty. " +
                         placementIdErrorMessage)
             }
 
             try {
                 val placementIdLong = placementIdString.toLong()
                 if (placementIdLong <= 0) {
-                    throw Exception("InMobi Placement ID parameter is incorrect, it should be greater than 0. " +
+                    throw InMobiPlacementIdException("InMobi Placement ID parameter is incorrect, it evaluates to less than or equal to 0. " +
                             placementIdErrorMessage)
                 }
                 return placementIdLong
 
             } catch (e: NumberFormatException) {
-                throw Exception("InMobi Placement ID parameter is incorrect, cannot cast it to Long, it has to be a long value. " +
+                throw InMobiPlacementIdException("InMobi Placement ID parameter is incorrect, cannot cast it to Long, it has to be a proper Long value per InMobi's placement requirements. " +
                         placementIdErrorMessage)
             }
         }
@@ -150,13 +143,13 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
          * @param loadListener - Populate only if the failure is load related.
          * @param interactionListener - Populate only if the failure is interaction related.
          */
-        fun onInMobiAdFailWithError(error: Exception,
+        fun onInMobiAdFailWithError(error: Throwable,
                                     moPubErrorCode: MoPubErrorCode,
                                     errorMessage: String?,
                                     adapterName: String,
                                     loadListener: AdLifecycleListener.LoadListener?,
                                     interactionListener: AdLifecycleListener.InteractionListener?) {
-            MoPubLog.log(AdapterLogEvent.CUSTOM_WITH_THROWABLE, error)
+            MoPubLog.log(CUSTOM_WITH_THROWABLE, error)
             onInMobiAdFail(errorMessage, moPubErrorCode, adapterName, loadListener, interactionListener)
         }
 
@@ -177,6 +170,12 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
             onInMobiAdFail(errorMessage, moPubErrorCode, adapterName, loadListener, interactionListener)
         }
 
+        /**
+         * Call for a load or interaction related failure with an event.
+         *
+         * @param loadListener - Populate only if the failure is load related.
+         * @param interactionListener - Populate only if the failure is interaction related.
+         */
         private fun onInMobiAdFail(errorMessage: String?,
                                    moPubErrorCode: MoPubErrorCode,
                                    adapterName: String,
@@ -188,19 +187,20 @@ class InMobiAdapterConfiguration : BaseAdapterConfiguration() {
 
             loadListener?.onAdLoadFailed(moPubErrorCode)
             interactionListener?.onAdFailed(moPubErrorCode)
-
         }
 
         init {
             val map: MutableMap<String, String> = HashMap()
             map["tp"] = "c_mopub"
             try {
-                val mopubSdkClassRef = Class.forName(MoPub::class.java.name)
-                val mopubSdkVersionRef: Field = mopubSdkClassRef.getDeclaredField("SDK_VERSION")
-                val moPubSDKVersion = mopubSdkVersionRef[null].toString()
-                map["tp-ver"] = moPubSDKVersion
+                val moPubSdkClassRef = Class.forName(MoPub::class.java.name)
+                val moPubSdkVersionRef: Field = moPubSdkClassRef.getDeclaredField("SDK_VERSION")
+                moPubSdkVersionRef[null]?.let {
+                    val moPubSDKVersion = it.toString()
+                    map["tp-ver"] = moPubSDKVersion
+                }
             } catch (e: Exception) {
-                MoPubLog.log(MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE, "InMobiUtils",
+                MoPubLog.log(CUSTOM_WITH_THROWABLE, "InMobiUtils",
                         "Something went wrong while getting the MoPub SDK version", e)
             }
             inMobiTPExtras = map

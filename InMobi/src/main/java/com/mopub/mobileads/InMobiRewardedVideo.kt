@@ -14,6 +14,7 @@ import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithError
 import com.mopub.mobileads.InMobiAdapterConfiguration.Companion.onInMobiAdFailWithEvent
+import com.mopub.mobileads.InMobiAdapterConfiguration.InMobiPlacementIdException
 
 class InMobiRewardedVideo : BaseAd() {
 
@@ -47,30 +48,31 @@ class InMobiRewardedVideo : BaseAd() {
         setAutomaticImpressionAndClickTracking(false)
         val extras: Map<String, String> = adData.extras
 
-        InMobiAdapterConfiguration.initialiseInMobi(extras, context, object : InMobiAdapterConfiguration.InitCompletionListener {
+        try {
+            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
+        } catch (placementIdException: InMobiPlacementIdException) {
+            onInMobiAdFailWithError(placementIdException, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                    "InMobi rewarded video request failed. Placement Id is not available or incorrect. " +
+                            "Please make sure you set valid Placement Id on MoPub UI.",
+                    ADAPTER_NAME, mLoadListener, null)
+            return
+        }
+
+        InMobiAdapterConfiguration.initializeInMobi(extras, context, object : InMobiAdapterConfiguration.InMobiInitCompletionListener {
             override fun onSuccess() {
-                loadRewarded(context, adData, extras)
+                loadRewarded(context, extras)
             }
 
-            override fun onFailure(error: Error?, exception: Exception?) {
-                exception?.let {
-                    onInMobiAdFailWithError(it, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                            "InMobi banner request failed due to InMobi initialization failed with an exception.",
-                            InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                } ?: run {
-                    error?.let {
-                        onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                                "InMobi banner request failed due to InMobi initialization failed with a reason: ${error.message}",
-                                com.mopub.mobileads.InMobiBanner.ADAPTER_NAME, mLoadListener, null)
-                    }
-                }
+            override fun onFailure(error: Throwable) {
+                onInMobiAdFailWithError(error, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                        "InMobi rewarded video request failed due to InMobi initialization failed with an exception.",
+                        ADAPTER_NAME, mLoadListener, null)
             }
         })
     }
 
-    private fun loadRewarded(context: Context, adData: AdData, extras: Map<String, String>) {
+    private fun loadRewarded(context: Context, extras: Map<String, String>) {
         try {
-            mPlacementId = InMobiAdapterConfiguration.getPlacementId(extras)
             mInMobiRewardedVideo = InMobiInterstitial(context, mPlacementId!!, object : InterstitialAdEventListener() {
 
                 override fun onAdLoadSucceeded(ad: InMobiInterstitial, info: AdMetaInfo) {
@@ -172,29 +174,24 @@ class InMobiRewardedVideo : BaseAd() {
                     "Attempting to create InMobi rewarded video object before InMobi SDK is initialized caused failure" +
                             "Please make sure InMobi is properly initialized. InMobi will attempt to initialize on next ad request.",
                     ADAPTER_NAME, mLoadListener, null)
-        } catch (npe: NullPointerException) {
-            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                    "InMobi rewarded video request failed. Placement Id is null. " +
-                            "Please make sure you set valid Placement Id on MoPub UI.",
-                    ADAPTER_NAME, mLoadListener, null)
         } catch (e: Exception) {
-            onInMobiAdFailWithEvent(AdapterLogEvent.LOAD_FAILED, adNetworkId, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
-                    "InMobi rewarded video failed due to configuration issue",
+            onInMobiAdFailWithError(e, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR,
+                    "InMobi rewarded video failed due to a configuration issue",
                     ADAPTER_NAME, mLoadListener, null)
-            return
         }
     }
 
     override fun show() {
+        MoPubLog.log(adNetworkId, AdapterLogEvent.SHOW_ATTEMPTED, ADAPTER_NAME)
+
         if (mInMobiRewardedVideo?.isReady == true) {
             mInMobiRewardedVideo?.show()
         } else {
             onInMobiAdFailWithEvent(AdapterLogEvent.SHOW_FAILED, adNetworkId,
                     MoPubErrorCode.FULLSCREEN_SHOW_ERROR,
-                    "InMobi rewarded video show failed",
+                    "InMobi rewarded video show failed, because InMobi interstitial is not ready yet. " +
+                            "Please ensure interstitial is loaded first.",
                     ADAPTER_NAME, null, mInteractionListener)
-            MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "InMobi Rewarded video is not ready yet. " +
-                    "It is still loading. Please make sure ad is loaded.")
         }
     }
 }
