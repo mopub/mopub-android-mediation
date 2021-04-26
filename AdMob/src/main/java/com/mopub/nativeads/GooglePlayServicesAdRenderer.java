@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
@@ -198,6 +199,7 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         nativeAdView.setBodyView(staticNativeViewHolder.mTextView);
         if (staticNativeViewHolder.mMediaView != null) {
             MediaView mediaview = new MediaView(nativeAdView.getContext());
+            mediaview.setImageScaleType(ScaleType.CENTER_CROP);
             staticNativeViewHolder.mMediaView.removeAllViews();
             staticNativeViewHolder.mMediaView.addView(mediaview);
             nativeAdView.setMediaView(mediaview);
