@@ -77,7 +77,7 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
         setAutomaticImpressionAndClickTracking(false);
 
         mAdUnitId = OguryAdapterConfiguration.getAdUnitId(adData.getExtras());
-        OguryBannerAdSize adSize = getBannerAdSize(adData.getAdWidth(), adData.getAdHeight());
+        final OguryBannerAdSize adSize = getBannerAdSize(adData.getAdWidth(), adData.getAdHeight());
 
         if (!OguryAdapterConfiguration.isAdUnitIdValid(mAdUnitId) || adSize == null) {
             if (adSize == null) {
