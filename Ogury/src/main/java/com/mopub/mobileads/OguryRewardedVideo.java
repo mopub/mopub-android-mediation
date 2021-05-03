@@ -26,7 +26,7 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
     private static final String ADAPTER_NAME = OguryRewardedVideo.class.getSimpleName();
 
     private String mAdUnitId;
-    private OguryOptinVideoAd mOptinVideo;
+    private OguryOptinVideoAd mOptInVideo;
     private OguryAdListenerHelper mListenerHelper;
 
     @Nullable
@@ -38,17 +38,16 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        if (mAdUnitId == null) {
-            return "";
-        }
-        return mAdUnitId;
+        return mAdUnitId == null ? mAdUnitId : "";
     }
 
     @Override
     protected boolean checkAndInitializeSdk(
             @NonNull Activity launcherActivity,
             @NonNull AdData adData) {
-        return false;
+        final boolean wasInitialized = OguryAdapterConfiguration.startOgurySDKIfNecessary(launcherActivity, adData.getExtras());
+        OguryAdapterConfiguration.updateConsent();
+        return wasInitialized;
     }
 
     @Override
@@ -60,32 +59,29 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
 
         setAutomaticImpressionAndClickTracking(false);
 
-        OguryInitializer.startOgurySDKIfNecessary(context, adData.getExtras());
-        OguryInitializer.updateConsent();
-
-        mAdUnitId = OguryConfigurationParser.getAdUnitId(adData.getExtras());
-        if (!OguryConfigurationParser.isAdUnitIdValid(mAdUnitId)) {
+        mAdUnitId = OguryAdapterConfiguration.getAdUnitId(adData.getExtras());
+        if (!OguryAdapterConfiguration.isAdUnitIdValid(mAdUnitId)) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             }
             return;
         }
 
-        mOptinVideo = new OguryOptinVideoAd(context, mAdUnitId);
+        mOptInVideo = new OguryOptinVideoAd(context, mAdUnitId);
         mListenerHelper = new OguryAdListenerHelper(ADAPTER_NAME, mAdUnitId);
 
         mListenerHelper.setLoadListener(mLoadListener);
-        mOptinVideo.setListener(this);
-        mOptinVideo.load();
+        mOptInVideo.setListener(this);
+        mOptInVideo.load();
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
     @Override
     protected void show() {
-        if (mOptinVideo == null || !mOptinVideo.isLoaded()) {
+        if (mOptInVideo == null || !mOptInVideo.isLoaded()) {
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             if (mInteractionListener != null) {
@@ -94,7 +90,7 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
             return;
         }
         mListenerHelper.setInteractionListener(mInteractionListener);
-        mOptinVideo.show();
+        mOptInVideo.show();
 
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
     }
@@ -102,7 +98,7 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
     @Override
     protected void onInvalidate() {
         mListenerHelper = null;
-        mOptinVideo = null;
+        mOptInVideo = null;
     }
 
     /**

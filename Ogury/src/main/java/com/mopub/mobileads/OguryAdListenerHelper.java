@@ -44,7 +44,7 @@ public class OguryAdListenerHelper {
     public void onAdError(OguryError error) {
         MoPubLog.log(mAdUnitId, CUSTOM, mAdapterName, "Ad failed to show/load with error code " + error.getErrorCode());
 
-        MoPubErrorCode errorCode = getMoPubErrorCodeForError(error);
+        final MoPubErrorCode errorCode = getMoPubErrorCodeForError(error);
         if (mInteractionListener != null) {
             MoPubLog.log(mAdUnitId, SHOW_FAILED, mAdapterName, errorCode.getIntCode(), errorCode);
             mInteractionListener.onAdFailed(errorCode);

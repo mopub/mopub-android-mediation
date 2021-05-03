@@ -15,6 +15,7 @@ import com.ogury.ed.OguryBannerAdListener;
 import com.ogury.ed.OguryBannerAdSize;
 import com.ogury.ed.OguryBannerAdView;
 
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 
@@ -26,6 +27,25 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
     private OguryBannerAdView mBanner;
     private OguryAdListenerHelper mListenerHelper;
 
+    public static OguryBannerAdSize getBannerAdSize(Integer iAdWidth, Integer iAdHeight) {
+        final int adWidth = (iAdWidth != null) ? iAdWidth : 0;
+        final int adHeight = (iAdHeight != null) ? iAdHeight : 0;
+        if (canIncludeSize(OguryBannerAdSize.SMALL_BANNER_320x50, adWidth, adHeight)) {
+            return OguryBannerAdSize.SMALL_BANNER_320x50;
+        } else if (canIncludeSize(OguryBannerAdSize.MPU_300x250, adWidth, adHeight)) {
+            return OguryBannerAdSize.MPU_300x250;
+        }
+        return null;
+    }
+
+    private static boolean canIncludeSize(OguryBannerAdSize oguryBannerAdSize, int mopubWidth, int mopubHeight) {
+        if (mopubHeight < oguryBannerAdSize.getHeight() || mopubWidth < oguryBannerAdSize.getWidth()) {
+            return false;
+        }
+        float maxRatio = 1.5f;
+        return (!(mopubHeight >= oguryBannerAdSize.getHeight() * maxRatio)) && (!(mopubWidth >= oguryBannerAdSize.getWidth() * maxRatio));
+    }
+
     @Nullable
     @Override
     protected LifecycleListener getLifecycleListener() {
@@ -35,17 +55,16 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        if (mAdUnitId == null) {
-            return "";
-        }
-        return mAdUnitId;
+        return mAdUnitId == null ? mAdUnitId : "";
     }
 
     @Override
     protected boolean checkAndInitializeSdk(
             @NonNull Activity launcherActivity,
             @NonNull AdData adData) {
-        return false;
+        final boolean wasInitialized = OguryAdapterConfiguration.startOgurySDKIfNecessary(launcherActivity, adData.getExtras());
+        OguryAdapterConfiguration.updateConsent();
+        return wasInitialized;
     }
 
     @Override
@@ -57,17 +76,17 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
 
         setAutomaticImpressionAndClickTracking(false);
 
-        OguryInitializer.startOgurySDKIfNecessary(context, adData.getExtras());
-        OguryInitializer.updateConsent();
-
-        mAdUnitId = OguryConfigurationParser.getAdUnitId(adData.getExtras());
+        mAdUnitId = OguryAdapterConfiguration.getAdUnitId(adData.getExtras());
         OguryBannerAdSize adSize = getBannerAdSize(adData.getAdWidth(), adData.getAdHeight());
 
-        if (!OguryConfigurationParser.isAdUnitIdValid(mAdUnitId) || adSize == null) {
+        if (!OguryAdapterConfiguration.isAdUnitIdValid(mAdUnitId) || adSize == null) {
+            if (adSize == null) {
+                MoPubLog.log(CUSTOM, ADAPTER_NAME, "Ogury only supports 320x50 and 300x250 banner sizes. The requested size is either too small or too big to fit any of those sizes.");
+            }
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             }
             return;
         }
@@ -84,34 +103,10 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
     }
 
-    public static OguryBannerAdSize getBannerAdSize(Integer iAdWidth, Integer iAdHeight) {
-        int adWidth = (iAdWidth != null) ? iAdWidth : 0;
-        int adHeight = (iAdHeight != null) ? iAdHeight : 0;
-        if (canIncludeSize(OguryBannerAdSize.SMALL_BANNER_320x50, adWidth, adHeight)) {
-            return OguryBannerAdSize.SMALL_BANNER_320x50;
-        } else if (canIncludeSize(OguryBannerAdSize.MPU_300x250, adWidth, adHeight)) {
-            return OguryBannerAdSize.MPU_300x250;
-        }
-        return null;
-    }
-
-    private static boolean canIncludeSize(OguryBannerAdSize oguryBannerAdSize, int mopubWidth, int mopubHeight) {
-        if ((mopubHeight < oguryBannerAdSize.getHeight()) || (mopubWidth < oguryBannerAdSize.getWidth())) {
-            return false;
-        }
-        float maxRatio = 1.5f;
-        return (!(mopubHeight >= oguryBannerAdSize.getHeight() * maxRatio)) && (!(mopubWidth >= oguryBannerAdSize.getWidth() * maxRatio));
-    }
-
     @Nullable
     @Override
     protected View getAdView() {
         return mBanner;
-    }
-
-    @Override
-    protected void show() {
-        mListenerHelper.setInteractionListener(mInteractionListener);
     }
 
     @Override
@@ -129,6 +124,7 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
 
     @Override
     public void onAdLoaded() {
+        mListenerHelper.setInteractionListener(mInteractionListener);
         mListenerHelper.onAdLoaded();
     }
 

@@ -35,17 +35,16 @@ public class OguryInterstitial extends BaseAd implements OguryInterstitialAdList
     @NonNull
     @Override
     protected String getAdNetworkId() {
-        if (mAdUnitId == null) {
-            return "";
-        }
-        return mAdUnitId;
+        return mAdUnitId == null ? mAdUnitId : "";
     }
 
     @Override
     protected boolean checkAndInitializeSdk(
             @NonNull Activity launcherActivity,
             @NonNull AdData adData) {
-        return false;
+        final boolean wasInitialized = OguryAdapterConfiguration.startOgurySDKIfNecessary(launcherActivity, adData.getExtras());
+        OguryAdapterConfiguration.updateConsent();
+        return wasInitialized;
     }
 
     @Override
@@ -57,15 +56,12 @@ public class OguryInterstitial extends BaseAd implements OguryInterstitialAdList
 
         setAutomaticImpressionAndClickTracking(false);
 
-        OguryInitializer.startOgurySDKIfNecessary(context, adData.getExtras());
-        OguryInitializer.updateConsent();
-
-        mAdUnitId = OguryConfigurationParser.getAdUnitId(adData.getExtras());
-        if (!OguryConfigurationParser.isAdUnitIdValid(mAdUnitId)) {
+        mAdUnitId = OguryAdapterConfiguration.getAdUnitId(adData.getExtras());
+        if (!OguryAdapterConfiguration.isAdUnitIdValid(mAdUnitId)) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
             }
             return;
         }
