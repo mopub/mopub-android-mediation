@@ -130,7 +130,7 @@ public class MoPubSampleActivity extends AppCompatActivity
         }
 
         final SdkConfiguration.Builder configBuilder = new SdkConfiguration.Builder(
-                "b195f8dd8ded45fe847ad89ed1d016da");
+                "5c6dc07a547346b0b58f4716b08a9b2f");
         if (BuildConfig.DEBUG) {
             configBuilder.withLogLevel(DEBUG);
         } else {

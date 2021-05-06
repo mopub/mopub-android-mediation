@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.mopub.mobileads.mbridge.MBridgeAdRenderer;
 import com.mopub.nativeads.AdapterHelper;
 import com.mopub.nativeads.FacebookAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
@@ -184,7 +185,16 @@ public class NativeManualFragment extends Fragment {
                         .callToActionId(R.id.native_cta)
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
-
+        // Set up a renderer for MBridge ads.
+        final MBridgeAdRenderer mBridgeAdRenderer = new MBridgeAdRenderer(
+                new MBridgeAdRenderer.ViewBinder.Builder(R.layout.native_ad_mbridge_list_item)
+                        .titleId(R.id.native_title)
+                        .textId(R.id.native_text)
+                        .mediaViewId(R.id.native_main_image)
+                        .iconImageId(R.id.native_icon_image)
+                        .callToActionId(R.id.native_cta)
+                        .adChoicesId(R.id.native_privacy_information_icon_image)
+                        .build());
         // The first renderer that can handle a particular native ad gets used.
         // We are prioritizing network renderers.
 
@@ -194,6 +204,7 @@ public class NativeManualFragment extends Fragment {
         mMoPubNative.registerAdRenderer(pangleAdRenderer);
         mMoPubNative.registerAdRenderer(referenceNativeAdRenderer);
         mMoPubNative.registerAdRenderer(moPubStaticNativeAdRenderer);
+        mMoPubNative.registerAdRenderer(mBridgeAdRenderer);
 
         mMoPubNative.makeRequest(mRequestParameters);
 

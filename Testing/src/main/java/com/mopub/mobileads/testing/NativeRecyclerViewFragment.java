@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.mopub.mobileads.mbridge.MBridgeAdRenderer;
+import com.mopub.mobileads.mbridge.MBridgeNative;
 import com.mopub.nativeads.FacebookAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesViewBinder;
@@ -150,6 +152,16 @@ public class NativeRecyclerViewFragment extends Fragment {
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
 
+        // Set up a renderer for MBridge ads.
+        final MBridgeAdRenderer mBridgeAdRenderer = new MBridgeAdRenderer(
+                new MBridgeAdRenderer.ViewBinder.Builder(R.layout.native_ad_mbridge_list_item)
+                        .titleId(R.id.native_title)
+                        .textId(R.id.native_text)
+                        .mediaViewId(R.id.native_main_image)
+                        .iconImageId(R.id.native_icon_image)
+                        .callToActionId(R.id.native_cta)
+                        .adChoicesId(R.id.native_privacy_information_icon_image)
+                        .build());
         // The first renderer that can handle a particular native ad gets used.
         // We are prioritizing network renderers.
         mRecyclerAdapter.registerAdRenderer(verizonNativeAdRenderer);
@@ -158,6 +170,7 @@ public class NativeRecyclerViewFragment extends Fragment {
         mRecyclerAdapter.registerAdRenderer(pangleAdRenderer);
         mRecyclerAdapter.registerAdRenderer(referenceNativeAdRenderer);
         mRecyclerAdapter.registerAdRenderer(moPubStaticNativeAdRenderer);
+        mRecyclerAdapter.registerAdRenderer(mBridgeAdRenderer);
 
         mRecyclerView.setAdapter(mRecyclerAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));

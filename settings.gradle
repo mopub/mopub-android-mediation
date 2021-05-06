@@ -14,7 +14,8 @@ include ':AdColony',
         ':UnityAds',
         ':Verizon',
         ':Vungle',
-        ':SnapAudienceNetwork'
+        ':SnapAudienceNetwork',
+        ':MBridge'
 
 // Test App
 if (file('Testing').exists()) {
