@@ -38,12 +38,25 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
         return null;
     }
 
+    /**
+     * This function determine if a banner of the provided size can be fitted in the space of the
+     * parent banner.
+     *
+     * It will return false if:
+     * - either the width or height is smaller than the provided Ogury's size.
+     * - the padding around the Ogury's banner is too large (more than 50% of the actual size of the banner).
+     *
+     * @param oguryBannerAdSize One of Ogury's supported banner size.
+     * @param mopubWidth Width of the parent banner. Act as a ceiling.
+     * @param mopubHeight Height of the parent banner. Act as a ceiling.
+     * @return true if a banner of the provided size can fit in mopubWidth x mopubHeight, false otherwise.
+     */
     private static boolean canIncludeSize(OguryBannerAdSize oguryBannerAdSize, int mopubWidth, int mopubHeight) {
         if (mopubHeight < oguryBannerAdSize.getHeight() || mopubWidth < oguryBannerAdSize.getWidth()) {
             return false;
         }
         float maxRatio = 1.5f;
-        return (!(mopubHeight >= oguryBannerAdSize.getHeight() * maxRatio)) && (!(mopubWidth >= oguryBannerAdSize.getWidth() * maxRatio));
+        return mopubHeight <= oguryBannerAdSize.getHeight() * maxRatio && mopubWidth <= oguryBannerAdSize.getWidth() * maxRatio;
     }
 
     @Nullable
