@@ -52,7 +52,7 @@ public class VungleAdapterConfiguration extends BaseAdapterConfiguration {
     @Nullable
     @Override
     public String getBiddingToken(@NonNull Context context) {
-        int maxSize = 1024 * 1024; // 1MB
+        int maxSize = 1024; // 1KB
         String token = Vungle.getAvailableBidTokensBySize(context, maxSize);
         if (token != null) {
             tokenReference.set(token);
