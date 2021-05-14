@@ -39,9 +39,7 @@ import static com.mopub.mobileads.MoPubErrorCode.INLINE_LOAD_ERROR;
 
 public class FyberInterstitial extends BaseAd {
 
-  private final static String LOG_TAG = "FyberInterstitialForMopub";
   private static final String ADAPTER_NAME = FyberInterstitial.class.getSimpleName();
-
   private final FyberAdapterConfiguration mFyberAdapterConfiguration;
 
   public FyberInterstitial() {
@@ -49,7 +47,7 @@ public class FyberInterstitial extends BaseAd {
   }
 
   InneractiveAdSpot mInterstitialSpot;
-  String mSpotId;
+  private String mSpotId;
 
   @Nullable
   Context mContext;
@@ -63,7 +61,7 @@ public class FyberInterstitial extends BaseAd {
   @NonNull
   @Override
   protected String getAdNetworkId() {
-    return mSpotId;
+    return mSpotId == null ? "" : mSpotId;
   }
 
   @Override
@@ -75,8 +73,6 @@ public class FyberInterstitial extends BaseAd {
   protected void load(final @NonNull Context context, @NonNull AdData adData) throws Exception {
     Preconditions.checkNotNull(context);
     Preconditions.checkNotNull(adData);
-
-    MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
     mContext = context;
     setAutomaticImpressionAndClickTracking(false);
@@ -105,7 +101,7 @@ public class FyberInterstitial extends BaseAd {
                 @Override
                 public void onFyberAdapterConfigurationResolved(
                         OnFyberMarketplaceInitializedListener.FyberInitStatus status) {
-                  //note - we try to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
+                  //note - Fyber tries to load ads when "FAILED" because an ad request will re-attempt to initialize the relevant parts of the SDK.
                   if (status == OnFyberMarketplaceInitializedListener.FyberInitStatus.SUCCESSFULLY || status == OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED) {
                     requestInterstitial(context, spotId, extras);
                   } else if (mLoadListener != null) {
@@ -117,6 +113,7 @@ public class FyberInterstitial extends BaseAd {
                 }
               });
     } else if (InneractiveAdManager.wasInitialized()) {
+      MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
       requestInterstitial(context, spotId, extras);
     } else if (mLoadListener != null) {
       MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
@@ -134,7 +131,7 @@ public class FyberInterstitial extends BaseAd {
 
     if (mInterstitialSpot != null && mInterstitialSpot.isReady()) {
 
-      InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController) mInterstitialSpot
+      final InneractiveFullscreenUnitController fullscreenUnitController = (InneractiveFullscreenUnitController) mInterstitialSpot
               .getSelectedUnitController();
       fullscreenUnitController.setEventsListener(new InneractiveFullscreenAdEventsListener() {
 
@@ -168,18 +165,19 @@ public class FyberInterstitial extends BaseAd {
 
         @Override
         public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
-          log("onAdWillOpenExternalApp");
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillOpenExternalApp");
           // Don't call the onLeaveApplication() API since it causes a false Click event on MoPub
         }
 
         @Override
         public void onAdEnteredErrorState(InneractiveAdSpot adSpot, AdDisplayError error) {
-          log("onAdEnteredErrorState - " + error.getMessage());
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdEnteredErrorState - " +
+                  error.getMessage());
         }
 
         @Override
         public void onAdWillCloseInternalBrowser(InneractiveAdSpot adSpot) {
-          log("onAdWillCloseInternalBrowser");
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdWillCloseInternalBrowser");
         }
       });
 
@@ -187,8 +185,8 @@ public class FyberInterstitial extends BaseAd {
       videoContentController.setEventsListener(new VideoContentListener() {
         @Override
         public void onProgress(int totalDurationInMsec, int positionInMsec) {
-          log("Got video content progress: total time = " + totalDurationInMsec
-                  + " position = " + positionInMsec);
+          MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Got video content progress: total time = " +
+                  totalDurationInMsec + " position = " + positionInMsec);
         }
 
         @Override
@@ -224,7 +222,7 @@ public class FyberInterstitial extends BaseAd {
   private void requestInterstitial(final Context context, String spotId, Map<String, String> localExtras) {
     mContext = context;
 
-    FyberAdapterConfiguration.updateGdprConsentStatusFromMopub();
+    FyberAdapterConfiguration.updateGdprConsentStatus();
 
     if (mInterstitialSpot != null) {
       mInterstitialSpot.destroy();
@@ -237,7 +235,7 @@ public class FyberInterstitial extends BaseAd {
     InneractiveFullscreenUnitController fullscreenUnitController = new InneractiveFullscreenUnitController();
     mInterstitialSpot.addUnitController(fullscreenUnitController);
 
-    InneractiveAdRequest request = new InneractiveAdRequest(spotId);
+    final InneractiveAdRequest request = new InneractiveAdRequest(spotId);
     FyberAdapterConfiguration.updateRequestFromExtras(request, localExtras);
 
     mInterstitialSpot.setRequestListener(new InneractiveAdSpot.RequestListener() {
@@ -254,27 +252,22 @@ public class FyberInterstitial extends BaseAd {
       @Override
       public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
                                                InneractiveErrorCode errorCode) {
-
+        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
+                errorCode);
         if (mLoadListener != null) {
           if (errorCode == InneractiveErrorCode.CONNECTION_ERROR) {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_CONNECTION);
           } else if (errorCode == InneractiveErrorCode.CONNECTION_TIMEOUT) {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_TIMEOUT);
           } else if (errorCode == InneractiveErrorCode.NO_FILL) {
-            mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_FILL);
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
           } else {
-            mLoadListener.onAdLoadFailed(MoPubErrorCode.SERVER_ERROR);
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.UNSPECIFIED);
           }
         }
-        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, FULLSCREEN_LOAD_ERROR.getIntCode(),
-                errorCode);
       }
     });
 
     mInterstitialSpot.requestAd(request);
-  }
-
-  private void log(String message) {
-    MoPubLog.log(CUSTOM, LOG_TAG, message);
   }
 }
