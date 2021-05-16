@@ -29,11 +29,11 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THRO
 public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
 
     public final static String KEY_FYBER_APP_ID = "appID";
-    public final static String KEY_FYBER_DEBUG = "debug";
 
-    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
-    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String ADAPTER_NAME = FyberAdapterConfiguration.class.getSimpleName();
+    private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
+    private final static String KEY_FYBER_DEBUG = "debug";
+    private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
 
     @NonNull
     @Override
@@ -65,9 +65,9 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(listener);
 
-        if (configuration == null) {
+        if (configuration == null || configuration.isEmpty()) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Fyber initialization failed. Configuration is null." +
-                    "Note that initialization on the first app launch is a no-op. It will attempt again on first ad request.");
+                    "Note that initialization on the first app launch is a no-op. It will be attempted again on subsequent ad requests.");
             listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             return;
         }
@@ -96,7 +96,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                                            });
             } else {
                 MoPubLog.log(CUSTOM_WITH_THROWABLE, "No Fyber app id given in configuration object. " +
-                        "Initialization postponed. You can use FyberAdapterConfiguration.KEY_FYBER_APP_ID as your configuration key");
+                        "Initialization postponed until the next ad request.");
                 listener.onNetworkInitializationFinished(FyberAdapterConfiguration.class, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
 
             }
@@ -131,7 +131,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
         }
     }
 
-    public static void updateGdprConsentStatusFromMoPub() {
+    public static void updateGdprConsentStatus() {
         final Boolean mopubGdpr = extractGdprFromMoPub();
 
         if (mopubGdpr == null) {
@@ -151,7 +151,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                         + personalInfoManager.canCollectPersonalInformation());
                 return personalInfoManager.canCollectPersonalInformation();
             } else if (personalInfoManager.getPersonalInfoConsentStatus() == ConsentStatus.UNKNOWN && MoPub.shouldAllowLegitimateInterest()) {
-                MoPubLog.log(CUSTOM, "GDPR result from MoPub is unknown and publisher allowed liegitmate interset.");
+                MoPubLog.log(CUSTOM, "GDPR result from MoPub is unknown and publisher allowed legitimate interest.");
                 return true;
             } else {
                 MoPubLog.log(CUSTOM, "Fyber has not found any GDPR values");
@@ -181,7 +181,7 @@ public class FyberAdapterConfiguration extends BaseAdapterConfiguration {
                 try {
                     age = Integer.valueOf(extras.get(FyberMoPubMediationDefs.KEY_AGE));
                 } catch (NumberFormatException e) {
-                    MoPubLog.log(CUSTOM, "local extra contains Invalid Age");
+                    MoPubLog.log(CUSTOM, "localExtras contains Invalid Age");
                 }
             }
 

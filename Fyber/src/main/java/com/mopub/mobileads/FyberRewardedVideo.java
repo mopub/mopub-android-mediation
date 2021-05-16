@@ -62,7 +62,7 @@ public class FyberRewardedVideo extends BaseAd {
 
     @Override
     protected String getAdNetworkId() {
-        return mSpotId;
+        return mSpotId == null ? "" : mSpotId;
     }
 
     @Override
@@ -143,7 +143,7 @@ public class FyberRewardedVideo extends BaseAd {
             fullscreenUnitController.setEventsListener(new InneractiveFullscreenAdEventsListener() {
                 @Override
                 public void onAdDismissed(InneractiveAdSpot adSpot) {
-                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Fyber interstitial has been dismissed");
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Fyber rewarded video has been dismissed");
 
                     if (mInteractionListener != null) {
                         mInteractionListener.onAdDismissed();
@@ -205,7 +205,7 @@ public class FyberRewardedVideo extends BaseAd {
                     MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, "Video content play error event");
 
                     if (mInteractionListener != null) {
-                        mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
+                        mInteractionListener.onAdFailed(MoPubErrorCode.AD_SHOW_ERROR);
                     }
                 }
             });
@@ -235,10 +235,11 @@ public class FyberRewardedVideo extends BaseAd {
     private void requestRewarded(Map<String, String> localExtras) {
 
         if (mParentActivity == null || TextUtils.isEmpty(mSpotId)) {
+            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
             mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
         }
 
-        FyberAdapterConfiguration.updateGdprConsentStatusFromMoPub();
+        FyberAdapterConfiguration.updateGdprConsentStatus();
 
         if (mRewardedSpot != null) {
             mRewardedSpot.destroy();

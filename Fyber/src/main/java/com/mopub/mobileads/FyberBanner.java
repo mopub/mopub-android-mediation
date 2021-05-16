@@ -54,12 +54,13 @@ public class FyberBanner extends BaseAd {
   private ViewGroup mAdLayout;
 
   private void requestBanner(final Context context, String spotId, Map<String, String> localExtras) {
-    FyberAdapterConfiguration.updateGdprConsentStatusFromMoPub();
+    FyberAdapterConfiguration.updateGdprConsentStatus();
 
     mSpotId = spotId;
 
     if (mBannerSpot != null) {
       mBannerSpot.destroy();
+      mBannerSpot = null;
     }
 
     mBannerSpot = InneractiveAdSpotManager.get().createSpot();
@@ -76,7 +77,10 @@ public class FyberBanner extends BaseAd {
       @Override
       public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
         if (adSpot != mBannerSpot) {
-          MoPubLog.log(LOAD_FAILED, "Wrong Banner Spot received - " + adSpot + ", Actual - " + mBannerSpot);
+          MoPubLog.log(getAdNetworkId(), LOAD_FAILED, "Wrong Banner Spot received - " + adSpot + ", Actual - " + mBannerSpot);
+          if (mLoadListener != null) {
+            mLoadListener.onAdLoadFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+          }
           return;
         }
 
@@ -120,11 +124,11 @@ public class FyberBanner extends BaseAd {
 
             if (error instanceof WebViewRendererProcessHasGoneError) {
               if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
                 MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME);
+                mInteractionListener.onAdFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
               } else if (mLoadListener != null) {
-                mLoadListener.onAdLoadFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME);
+                mLoadListener.onAdLoadFailed(MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED);
               }
             }
           }
@@ -162,6 +166,9 @@ public class FyberBanner extends BaseAd {
       @Override
       public void onInneractiveFailedAdRequest(InneractiveAdSpot adSpot,
                                                InneractiveErrorCode errorCode) {
+        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, INLINE_LOAD_ERROR.getIntCode(),
+                errorCode);
+
         if (mLoadListener != null) {
           if (errorCode == InneractiveErrorCode.CONNECTION_ERROR) {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.NO_CONNECTION);
@@ -172,8 +179,6 @@ public class FyberBanner extends BaseAd {
           } else {
             mLoadListener.onAdLoadFailed(MoPubErrorCode.SERVER_ERROR);
           }
-          MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, INLINE_LOAD_ERROR.getIntCode(),
-                  errorCode);
         }
       }
     });
@@ -199,7 +204,7 @@ public class FyberBanner extends BaseAd {
   @NonNull
   @Override
   protected String getAdNetworkId() {
-    return mSpotId;
+    return mSpotId == null ? "" : mSpotId;
   }
 
   @Override
@@ -226,9 +231,9 @@ public class FyberBanner extends BaseAd {
     }
 
     final boolean isBannerFormat = "banner".equalsIgnoreCase(adUnitFormat);
-    final boolean isMrecFormat = "medium_rectangle".equalsIgnoreCase(adUnitFormat);
+    final boolean isMrectFormat = "medium_rectangle".equalsIgnoreCase(adUnitFormat);
 
-    if (!isBannerFormat && !isMrecFormat) {
+    if (!isBannerFormat && !isMrectFormat) {
       MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
               "Fyber only supports 320*50, 728*90 and 300*250 sized ads. " +
                       "Please ensure your MoPub ad unit's format is either Banner or Medium Rectangle.");
