@@ -287,26 +287,34 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                 mRewardedAd = rewardedAd;
                 mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                     @Override
-                    public void onAdShowedFullScreenContent() {
-                        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
-
+                    public void onAdImpression() {
                         if (mInteractionListener != null) {
-                            mInteractionListener.onAdShown();
                             mInteractionListener.onAdImpression();
                         }
                     }
 
                     @Override
-                    public void onAdFailedToShowFullScreenContent(AdError adError) {
+                    public void onAdShowedFullScreenContent() {
+                        MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdShown();
+                        }
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                        Preconditions.checkNotNull(adError);
+
                         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show " +
                                 "Google rewarded video. " + adError.getMessage());
 
                         MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                                MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
-                                MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                                MoPubErrorCode.FULLSCREEN_SHOW_ERROR.getIntCode(),
+                                MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
 
                         if (mInteractionListener != null) {
-                            mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                            mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
                         }
 
                         mRewardedAd = null;
@@ -372,11 +380,11 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                 });
             } else {
                 MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                        MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
-                        MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                        MoPubErrorCode.FULLSCREEN_SHOW_ERROR.getIntCode(),
+                        MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
 
                 if (mInteractionListener != null) {
-                    mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                    mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
                 }
 
             }
@@ -385,11 +393,11 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
                     "Google rewarded video because it wasn't ready yet.");
 
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(),
-                    MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR.getIntCode(),
+                    MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                mInteractionListener.onAdFailed(MoPubErrorCode.FULLSCREEN_SHOW_ERROR);
             }
         }
     }
@@ -404,6 +412,8 @@ public class GooglePlayServicesRewardedVideo extends BaseAd {
         }
 
         public GooglePlayServicesMediationSettings(@NonNull Bundle bundle) {
+            Preconditions.checkNotNull(bundle);
+
             if (bundle.containsKey(KEY_CONTENT_URL)) {
                 contentUrl = bundle.getString(KEY_CONTENT_URL);
             }

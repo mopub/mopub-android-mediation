@@ -142,6 +142,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
         InterstitialAd.load(context, mAdUnitId, adRequest, new InterstitialAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                Preconditions.checkNotNull(interstitialAd);
+
                 mGoogleInterstitialAd = interstitialAd;
 
                 MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
@@ -161,7 +163,9 @@ public class GooglePlayServicesInterstitial extends BaseAd {
                     }
 
                     @Override
-                    public void onAdFailedToShowFullScreenContent(AdError adError) {
+                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                        Preconditions.checkNotNull(adError);
+
                         MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show " +
                                 "Google interstitial. " + adError.getMessage());
 
@@ -182,6 +186,12 @@ public class GooglePlayServicesInterstitial extends BaseAd {
 
                         if (mInteractionListener != null) {
                             mInteractionListener.onAdShown();
+                        }
+                    }
+
+                    @Override
+                    public void onAdImpression() {
+                        if (mInteractionListener != null) {
                             mInteractionListener.onAdImpression();
                         }
                     }
@@ -190,6 +200,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
 
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                Preconditions.checkNotNull(loadAdError);
+
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                         MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
                         MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
@@ -263,6 +275,8 @@ public class GooglePlayServicesInterstitial extends BaseAd {
     @Override
     protected boolean checkAndInitializeSdk(@NonNull Activity launcherActivity,
                                             @NonNull AdData adData) {
+        Preconditions.checkNotNull(launcherActivity);
+        Preconditions.checkNotNull(adData);
         return false;
     }
 }

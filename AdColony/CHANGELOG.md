@@ -1,4 +1,10 @@
 ## Changelog
+  * 4.5.0.1
+    * Remove mopub-sdk as a required dependency from POM file.
+
+  * 4.5.0.0
+    * This version of the adapters has been certified with AdColony 4.5.0 and MoPub 5.16.4.
+
   * 4.4.1.0
     * This version of the adapters has been certified with AdColony 4.4.1 and MoPub 5.15.0.
 

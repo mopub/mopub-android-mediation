@@ -572,8 +572,9 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
         @Override
         public void clear(@NonNull View view) {
-            // Called when an ad is no longer displayed to a user.
+            Preconditions.checkNotNull(view);
 
+            // Called when an ad is no longer displayed to a user.
             mCustomEventNativeListener = null;
             mNativeAd.cancelUnconfirmedClick();
         }

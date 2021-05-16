@@ -1,8 +1,8 @@
-project.version = '3.4.1.1.1'
+project.version = '3.5.1.1.0'
 project.ext.networkName = 'pangle'
 
 apply from: '../shared-build.gradle'
 
 dependencies {
-    implementation "com.bytedance.sdk:pangle-sdk:${sdkVersion}"
+    implementation "com.pangle.global:ads-sdk:${sdkVersion}"
 }
