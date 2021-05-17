@@ -1,4 +1,37 @@
 ## Changelog
+  * 20.1.0.0
+   * This version of the adapters has been certified with AdMob 20.1.0 and MoPub 5.16.4.
+
+  * 20.0.0.2
+   * Remove mopub-sdk as a required dependency from POM file.
+
+  * 20.0.0.1
+    * Set MediaView's scale type to `CENTER_CROP` to fix native ad alignment issues.
+
+  * 20.0.0.0
+    * This version of the adapters has been certified with AdMob 20.0.0 and MoPub 5.16.4.
+
+  * 19.8.0.0
+    * This version of the adapters has been certified with AdMob 19.8.0 and MoPub 5.16.3.
+    * Align impression tracking for non-native ad formats based on Google's `onAdImpression()` callback.
+
+  * 19.7.0.1
+    * Service release. No code changes.
+
+  * 19.7.0.0
+    * This version of the adapters has been certified with AdMob 19.7.0 and MoPub 5.16.0.
+    * Refactor interstitial, rewarded video, and native based on new API guidelines from Google. No action items for publishers.
+
+  * 19.6.0.2
+    * Make `GooglePlayServicesNativeAd.java` public, and update the deprecated usage of `setMediaAspectRatio()` and `NativeAdOptions` orientations.
+
+  * 19.6.0.1
+    * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
+  * 19.6.0.0
+    * This version of the adapters has been certified with AdMob 19.6.0 and MoPub 5.15.0.
+    * Remove the deprecated `onAdLeftApplication()` callback. As a result, click is no longer tracked for interstitial (in addition to rewarded video).
+
   * 19.5.0.3
     * Fail rewarded video playback errors using `VIDEO_PLAYBACK_ERROR` so publishers can request for the next rewarded video.
 

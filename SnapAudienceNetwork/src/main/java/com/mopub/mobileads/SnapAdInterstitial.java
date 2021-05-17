@@ -10,12 +10,12 @@ import androidx.annotation.Nullable;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.snap.adkit.SnapAdKit;
 import com.snap.adkit.dagger.AdKitApplication;
-import com.snap.adkit.external.AdsExternalEventListener;
 import com.snap.adkit.external.SnapAdClicked;
 import com.snap.adkit.external.SnapAdDismissed;
+import com.snap.adkit.external.SnapAdEventListener;
 import com.snap.adkit.external.SnapAdImpressionHappened;
+import com.snap.adkit.external.SnapAdKit;
 import com.snap.adkit.external.SnapAdKitEvent;
 import com.snap.adkit.external.SnapAdLoadFailed;
 import com.snap.adkit.external.SnapAdLoadSucceeded;
@@ -71,7 +71,7 @@ public class SnapAdInterstitial extends BaseAd {
 
         final Map<String, String> extras = adData.getExtras();
 
-        if (extras.isEmpty()) {
+        if (extras == null || extras.isEmpty()) {
             MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR.getIntCode(),
                     MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
@@ -83,12 +83,12 @@ public class SnapAdInterstitial extends BaseAd {
 
         mSlotId = extras.get(SLOT_ID_KEY);
         if (!TextUtils.isEmpty(mSlotId)) {
-            snapAdKit.updateTweak(mSlotId);
+            snapAdKit.updateSlotId(mSlotId);
         }
 
-        snapAdKit.setUpListener(new AdsExternalEventListener() {
+        snapAdKit.setupListener(new SnapAdEventListener() {
             @Override
-            public void onEvent(SnapAdKitEvent snapAdKitEvent) {
+            public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
                 if (snapAdKitEvent instanceof SnapAdLoadSucceeded) {
                     MoPubLog.log(getAdNetworkId(), LOAD_SUCCESS, ADAPTER_NAME);
 
@@ -137,7 +137,7 @@ public class SnapAdInterstitial extends BaseAd {
         mSnapAdAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
-        snapAdKit.loadAds();
+        snapAdKit.loadInterstitial();
     }
 
     @Override
@@ -145,7 +145,7 @@ public class SnapAdInterstitial extends BaseAd {
         try {
             MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
-            snapAdKit.playAds();
+            snapAdKit.playAd();
         } catch (Exception exception) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to show Snap " +
                     "Audience Network Ads");

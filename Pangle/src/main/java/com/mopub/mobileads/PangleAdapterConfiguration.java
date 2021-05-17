@@ -19,6 +19,9 @@ import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.pangle.BuildConfig;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
@@ -157,11 +160,31 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
                     .debug(MoPubLog.getLogLevel() == MoPubLog.LogLevel.DEBUG)
                     .supportMultiProcess(sIsSupportMultiProcess)
                     /* true for support multi-process environment, false for single-process */
+                    .data(getAdCallSource().toString())
                     .build());
 
             getPangleSdkManager().setGdpr(MoPub.canCollectPersonalInformation() ? 0 : 1);
             sIsSDKInitialized = true;
         }
+    }
+
+    private static JSONArray getAdCallSource() {
+        JSONArray adCallSource = new JSONArray();
+
+        try {
+            JSONObject mediationObject = new JSONObject();
+            mediationObject.putOpt("name", "mediation");
+            mediationObject.putOpt("value", "mopub");
+            adCallSource.put(mediationObject);
+
+            JSONObject adapterVersionObject = new JSONObject();
+            adapterVersionObject.putOpt("name", "adapter_version");
+            adapterVersionObject.putOpt("value", "1.2.0");
+            adCallSource.put(adapterVersionObject);
+        } catch (Throwable exception) {
+            MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdCallSource encounter parsing error: " + exception.getLocalizedMessage());
+        }
+        return adCallSource;
     }
 
     private static boolean hasWakeLockPermission(Context context) {

@@ -303,10 +303,21 @@ public class VungleRewardedVideo extends BaseAd {
 
                 if (mInteractionListener != null) {
                     mInteractionListener.onAdShown();
-                    mInteractionListener.onAdImpression();
                 }
 
                 MoPubLog.log(getAdNetworkId(), SHOW_SUCCESS, ADAPTER_NAME);
+            }
+        }
+
+        @Override
+        public void onAdViewed(@NonNull String placementReferenceId) {
+
+            if (mPlacementId.equals(placementReferenceId)) {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdViewed - Placement ID: " + placementReferenceId);
+
+                if (mInteractionListener != null) {
+                    mInteractionListener.onAdImpression();
+                }
             }
         }
 

@@ -19,6 +19,8 @@ class VerizonNativeViewHolder {
     @Nullable
     TextView callToActionView;
     @Nullable
+    TextView sponsoredTextView;
+    @Nullable
     FrameLayout videoView;
     @Nullable
     ImageView mainImageView;
@@ -43,6 +45,7 @@ class VerizonNativeViewHolder {
             viewHolder.callToActionView = view.findViewById(viewBinder.callToActionId);
             viewHolder.mainImageView = view.findViewById(viewBinder.mainImageId);
             viewHolder.iconImageView = view.findViewById(viewBinder.iconImageId);
+            viewHolder.sponsoredTextView = view.findViewById(viewBinder.sponsoredTextId);
 
             if (viewBinder.extras.get(VerizonNative.COMP_ID_VIDEO) != null) {
                 viewHolder.videoView = view.findViewById(viewBinder.extras.get(VerizonNative.COMP_ID_VIDEO));

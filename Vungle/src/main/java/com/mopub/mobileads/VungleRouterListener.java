@@ -14,6 +14,8 @@ public interface VungleRouterListener {
 
     void onAdStart(@NonNull String placementId);
 
+    void onAdViewed(@NonNull String placementId);
+
     void onUnableToPlayAd(@NonNull String placementId, String reason);
 
     void onAdAvailabilityUpdate(@NonNull String placementId, boolean isAdAvailable);

@@ -191,9 +191,9 @@ public class TapjoyRewardedVideo extends BaseAd {
         if (hasVideoAvailable()) {
             tjPlacement.showContent();
         } else {
-            MoPubLog.log(mPlacementName, SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.NETWORK_NO_FILL.getIntCode(), MoPubErrorCode.NETWORK_NO_FILL);
+            MoPubLog.log(mPlacementName, SHOW_FAILED, ADAPTER_NAME, MoPubErrorCode.VIDEO_PLAYBACK_ERROR.getIntCode(), MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
             }
         }
     }
@@ -308,7 +308,9 @@ public class TapjoyRewardedVideo extends BaseAd {
         public void onVideoError(TJPlacement tjPlacement, String message) {
             MoPubLog.log(mPlacementName, CUSTOM, ADAPTER_NAME, "Tapjoy rewarded video failed for placement " +
                     tjPlacement + "with error" + message);
-
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+            }
         }
 
         @Override
