@@ -17,10 +17,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.mopub.mobileads.mbridge.MBridgeAdRenderer;
 import com.mopub.nativeads.FacebookAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesViewBinder;
+import com.mopub.nativeads.MintegralAdRenderer;
 import com.mopub.nativeads.MoPubNativeAdLoadedListener;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.MoPubStreamAdPlacer;
@@ -135,9 +135,9 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
                         .adChoicesRelativeLayoutId(R.id.native_privacy_information_icon_layout)
                         .build());
 
-        // Set up a renderer for MBridge ads.
-        final MBridgeAdRenderer mBridgeAdRenderer = new MBridgeAdRenderer(
-                new MBridgeAdRenderer.ViewBinder.Builder(R.layout.native_ad_mbridge_list_item)
+        // Set up a renderer for Mintegral ads
+        final MintegralAdRenderer mintegralAdRenderer = new MintegralAdRenderer(
+                new MintegralAdRenderer.ViewBinder.Builder(R.layout.native_ad_list_item)
                         .titleId(R.id.native_title)
                         .textId(R.id.native_text)
                         .mediaViewId(R.id.native_main_image)
@@ -145,6 +145,7 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
                         .callToActionId(R.id.native_cta)
                         .adChoicesId(R.id.native_privacy_information_icon_image)
                         .build());
+
         // This ad placer is used to automatically insert ads into the ViewPager.
         mStreamAdPlacer = new MoPubStreamAdPlacer(getActivity());
 
@@ -156,7 +157,7 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
         mStreamAdPlacer.registerAdRenderer(pangleAdRenderer);
         mStreamAdPlacer.registerAdRenderer(referenceNativeAdRenderer);
         mStreamAdPlacer.registerAdRenderer(moPubStaticNativeAdRenderer);
-        mStreamAdPlacer.registerAdRenderer(mBridgeAdRenderer);
+        mStreamAdPlacer.registerAdRenderer(mintegralAdRenderer);
         mStreamAdPlacer.setAdLoadedListener(this);
 
         mPagerAdapter = new CustomPagerAdapter(getChildFragmentManager(), mStreamAdPlacer);

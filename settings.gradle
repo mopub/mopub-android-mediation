@@ -8,14 +8,14 @@ include ':AdColony',
         ':FacebookAudienceNetwork',
         ':InMobi',
         ':IronSource',
+        ':Mintegral',
         ':Pangle',
         ':ReferenceNetwork',
         ':Tapjoy',
         ':UnityAds',
         ':Verizon',
         ':Vungle',
-        ':SnapAudienceNetwork',
-        ':MBridge'
+        ':SnapAudienceNetwork'
 
 // Test App
 if (file('Testing').exists()) {
