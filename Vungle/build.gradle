@@ -9,6 +9,6 @@ dependencies {
     if (sdkSrcDependency) {
         implementation project(':vungle-android-sdk:publisher-sdk-android')
     } else {
-        implementation 'com.github.Vungle:vungle-android-sdk:6.10.1-RC2'
+        implementation 'com.github.Vungle:vungle-android-sdk:6.10.1-early1-RC2'
     }
 }
