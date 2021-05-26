@@ -11,8 +11,8 @@ import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.snapaudiencenetwork.BuildConfig;
-import com.snap.adkit.SnapAdKit;
 import com.snap.adkit.dagger.AdKitApplication;
+import com.snap.adkit.external.SnapAdKit;
 
 import java.util.Map;
 
@@ -73,7 +73,7 @@ public class SnapAdAdapterConfiguration extends BaseAdapterConfiguration {
                     if (!TextUtils.isEmpty(appId)) {
                         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Initializing Snap Ad Kit.");
 
-                        snapAdKit.register(appId);
+                        snapAdKit.register(appId, null);
                         networkInitializationSucceeded = true;
                     } else {
                         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Snap Ad Kit's initialization not " +

@@ -1,12 +1,19 @@
-language: node_js
-node_js:
-- "8.16.0"
-cache: npm
+language: android
+android:
+    components:
+        - tools
+        - platform-tools
 git:
  submodules: false
 before_install:
+  - yes | sdkmanager "platforms;android-30"
   - git submodule add https://${GITHUB_KEY}@github.com/mopub/android-mediation.git
   - git submodule init
+  - git submodule update --remote --recursive
+  - openssl aes-256-cbc -K $encrypted_6afd0fc9428e_key -iv $encrypted_6afd0fc9428e_iv -in secring.gpg.enc -out secring.gpg -d
+  - nvm install v14.16.0
+  - node --version
+  - npm install
   - npm i -g grunt-cli
   - npm i -g firebase-tools@latest
 script:

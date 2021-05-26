@@ -20,7 +20,6 @@ import com.verizon.ads.Configuration;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.Logger;
 import com.verizon.ads.VASAds;
-import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.utils.ThreadUtils;
 
 import org.json.JSONException;
@@ -39,7 +38,7 @@ import static com.verizon.ads.VASAds.ERROR_NO_FILL;
 public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
     private static final String ADAPTER_NAME = VerizonAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
-    private static final String BIDDING_TOKEN_VERSION = "1.1";
+    private static final String BIDDING_TOKEN_VERSION = "1.2";
     private static final String EDITION_NAME_KEY = "editionName";
     private static final String EDITION_VERSION_KEY = "editionVersion";
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
@@ -137,7 +136,7 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (context instanceof Application && StandardEdition.initialize((Application) context,
+                if (context instanceof Application && VASAds.initialize((Application) context,
                         finalSiteId)) {
                     listener.onNetworkInitializationFinished(VerizonAdapterConfiguration.class,
                             MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);

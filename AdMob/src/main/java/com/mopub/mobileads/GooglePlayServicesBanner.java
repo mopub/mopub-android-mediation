@@ -178,10 +178,20 @@ public class GooglePlayServicesBanner extends BaseAd {
     @Override
     protected boolean checkAndInitializeSdk(@NonNull final Activity launcherActivity,
                                             @NonNull final AdData adData) {
+        Preconditions.checkNotNull(launcherActivity);
+        Preconditions.checkNotNull(adData);
+
         return false;
     }
 
     private class AdViewListener extends AdListener {
+        @Override
+        public void onAdImpression() {
+            if (mInteractionListener != null) {
+                mInteractionListener.onAdImpression();
+            }
+        }
+
         @Override
         public void onAdClosed() {
         }
@@ -198,10 +208,6 @@ public class GooglePlayServicesBanner extends BaseAd {
             if (mLoadListener != null) {
                 mLoadListener.onAdLoadFailed(getMoPubErrorCode(loadAdError.getCode()));
             }
-        }
-
-        @Override
-        public void onAdLeftApplication() {
         }
 
         @Override

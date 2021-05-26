@@ -18,7 +18,6 @@ import com.verizon.ads.CreativeInfo;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
-import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 
@@ -51,7 +50,7 @@ public class VerizonInterstitial extends BaseAd {
     private String mPlacementId;
 
     @NonNull
-    private VerizonAdapterConfiguration verizonAdapterConfiguration;
+    private final VerizonAdapterConfiguration verizonAdapterConfiguration;
 
     public VerizonInterstitial() {
         verizonAdapterConfiguration = new VerizonAdapterConfiguration();
@@ -92,7 +91,7 @@ public class VerizonInterstitial extends BaseAd {
             }
 
 
-            if (!StandardEdition.initialize(application, siteId)) {
+            if (!VASAds.initialize(application, siteId)) {
                 logAndNotifyInterstitialFailed(LOAD_FAILED, ADAPTER_CONFIGURATION_ERROR, true);
             }
         }
