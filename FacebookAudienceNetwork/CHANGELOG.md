@@ -1,4 +1,22 @@
 ## Changelog
+ * 6.5.0.0
+  * This version of the adapters has been certified with Facebook Audience Network 6.5.0 and MoPub 5.17.0.
+
+ * 6.4.0.1
+  * Remove mopub-sdk as a required dependency from POM file.
+
+ * 6.4.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 6.4.0 and MoPub 5.16.4.
+
+ * 6.3.0.0
+   * This version of the adapters has been certified with Facebook Audience Network 6.3.0 and MoPub 5.16.0.
+
+ * 6.2.1.0
+   * This version of the adapters has been certified with Facebook Audience Network 6.2.1 and MoPub 5.15.0.
+
+ * 6.2.0.2
+   * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.
+
  * 6.2.0.1
    * Remove the call to set Facebook's test mode from the adapters.
 

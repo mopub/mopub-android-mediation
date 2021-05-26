@@ -40,6 +40,8 @@ if (!project.ext.has("networkName")) {
     project.ext.networkName = project.ext.artifactName
 }
 
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 android {
     defaultConfig {
@@ -54,6 +56,51 @@ android {
     }
 }
 
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        pom.groupId = 'com.mopub.mediation'
+        pom.artifactId = project.ext.artifactName
+        pom.version = project.version
+        pom.project {
+            name 'MoPub Network Mediation'
+            description "${project.name} Adapter for MoPub Mediation"
+            url 'https://github.com/mopub/mopub-android-mediation'
+
+            scm {
+                connection 'scm:git:https://github.com/mopub/mopub-android-mediation.git'
+                developerConnection 'scm:git:https://github.com/mopub/mopub-android-mediation.git'
+                url 'https://github.com/mopub/mopub-android-mediation'
+            }
+
+            licenses {
+                license {
+                    name 'MoPub SDK License Agreement'
+                    url 'http://www.mopub.com/legal/sdk-license-agreement'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'mopub'
+                    name 'MoPub (a division of Twitter, Inc.)'
+                    email 'support@mopub.com'
+                }
+            }
+        }
+
+         pom.whenConfigured {
+            pom -> pom.dependencies.clear()
+        }
+        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            authentication(userName: System.getenv("SONATYPE_USER"), password: System.getenv("SONATYPE_PASS"))
+        }
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    }
+}
 
 // Copy the final (release) .aar file into the top level /libs directory.
 

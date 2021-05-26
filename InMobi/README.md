@@ -1,5 +1,5 @@
 ## Overview
-  * This folder contains advanced bidding adapters used to mediate InMobi.
+  * This folder contains adapters to integrate InMobi for Advanced Bidding purposes
   * To download and integrate the InMobi Ads SDK, please check [this tutorial](https://support.inmobi.com/monetize/android-guidelines/#page__getting-started-with-android-sdk).
 
 ## Adapter integration

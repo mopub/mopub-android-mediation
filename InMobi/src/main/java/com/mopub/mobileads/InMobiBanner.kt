@@ -79,7 +79,7 @@ class InMobiBanner : BaseAd() {
     }
 
     private fun loadBanner(context: Context, adData: AdData, extras: Map<String, String>) {
-        val (adWidth, adHeight) = getAdSize(adData) ?: run {
+        val (adWidth, adHeight) = getAdSize(adData) ?: kotlin.run {
             MoPubLog.log(AdapterLogEvent.CUSTOM, ADAPTER_NAME, "Failing InMobi banner ad request. Ad size data incorrect.")
             return
         }
