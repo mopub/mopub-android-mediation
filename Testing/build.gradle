@@ -22,6 +22,7 @@ dependencies {
                    project(':AppLovin'),
                    project(':Chartboost'),
                    project(':FacebookAudienceNetwork'),
+                   project(':Fyber'),
                    project(':IronSource'),
                    project(':Pangle'),
                    project(':ReferenceNetwork'),

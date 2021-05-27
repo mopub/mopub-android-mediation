@@ -32,8 +32,8 @@ subprojects {
         maven { url 'https://artifact.bytedance.com/repository/pangle' }
         maven { url 'https://dl.bintray.com/ironsource-mobile/android-sdk'}
         maven { url 'https://sdk.tapjoy.com/' }
-        maven { url  "https://chartboostmobile.bintray.com/Chartboost" }
         maven { url "https://jitpack.io" }
+        maven { url 'https://artifactory.verizonmedia.com/artifactory/maven'}
     }
 
     if (project.name == 'Testing')

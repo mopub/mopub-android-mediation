@@ -16,7 +16,6 @@ import com.verizon.ads.Component;
 import com.verizon.ads.CreativeInfo;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.VASAds;
-import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.nativeplacement.NativeAd;
 import com.verizon.ads.nativeplacement.NativeAdFactory;
 
@@ -102,7 +101,7 @@ public class VerizonNative extends CustomEventNative {
                 application = ((Activity) context).getApplication();
             }
 
-            if (!StandardEdition.initialize(application, siteId)) {
+            if (!VASAds.initialize(application, siteId)) {
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "Failed to initialize " +
                         "the Verizon SDK");
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,

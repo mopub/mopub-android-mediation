@@ -12,9 +12,10 @@ import androidx.annotation.Nullable;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.VerizonAdapterConfiguration;
+import com.verizon.ads.VideoPlayer;
 import com.verizon.ads.VideoPlayerView;
+import com.verizon.ads.verizonnativecontroller.NativeVideoComponent;
 import com.verizon.ads.verizonnativecontroller.NativeViewComponent;
-import com.verizon.ads.videoplayer.VerizonVideoPlayer;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -30,7 +31,7 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
     @NonNull
     private final ViewBinder viewBinder;
     @Nullable
-    private VerizonVideoPlayer verizonVideoPlayer;
+    private VideoPlayer videoPlayer;
 
     /**
      * Constructs a native ad renderer with a view binder.
@@ -62,8 +63,9 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
             viewHolderMap.put(view, verizonNativeViewHolder);
         }
 
-        updateViews(verizonNativeViewHolder, verizonStaticNativeAd, view.getContext());
-        updateVideoView(verizonNativeViewHolder, verizonStaticNativeAd.getExtras());
+        final Context context = view.getContext();
+        updateViews(verizonNativeViewHolder, verizonStaticNativeAd, context);
+        updateVideoView(verizonNativeViewHolder, verizonStaticNativeAd, context);
         verizonStaticNativeAd.getNativeAd().registerContainerView((ViewGroup) view);
         NativeRendererHelper.updateExtras(view, viewBinder.extras, verizonStaticNativeAd.getExtras());
     }
@@ -79,6 +81,7 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
                              @NonNull final Context context) {
         Preconditions.checkNotNull(verizonNativeViewHolder);
         Preconditions.checkNotNull(nativeAd);
+        Preconditions.checkNotNull(context);
 
         NativeRendererHelper.addTextView(verizonNativeViewHolder.titleView, nativeAd.getTitle());
         NativeViewComponent titleComponent = ((NativeViewComponent) nativeAd.getNativeAd().getComponent(context, "title"));
@@ -118,34 +121,42 @@ public class VerizonNativeAdRenderer implements MoPubAdRenderer<VerizonNative.Ve
     }
 
     private void updateVideoView(@NonNull final VerizonNativeViewHolder verizonNativeViewHolder,
-                                 @Nullable final Map<String, Object> extras) {
+                                 @NonNull final VerizonNative.VerizonStaticNativeAd verizonNativeAd, @NonNull Context context) {
+
         try {
             Preconditions.checkNotNull(verizonNativeViewHolder);
+            Preconditions.checkNotNull(verizonNativeAd);
+            Preconditions.checkNotNull(context);
 
-            if (verizonVideoPlayer != null) {
-                verizonVideoPlayer.unload(); //stops multiple videos from playing.
+            if (videoPlayer != null) {
+                videoPlayer.unload(); //stops multiple videos from playing.
             }
+
+            final Map<String, Object> extras = verizonNativeAd.getExtras();
 
             if (extras != null && verizonNativeViewHolder.videoView != null) {
 
-                verizonVideoPlayer = new VerizonVideoPlayer(verizonNativeViewHolder.videoView.getContext());
-                VideoPlayerView videoPlayerView = new VideoPlayerView(verizonNativeViewHolder.videoView.getContext());
+                final NativeVideoComponent nativeVideoComponent = (NativeVideoComponent) verizonNativeAd.getNativeAd().getComponent(
+                        "video");
+                videoPlayer = nativeVideoComponent.getVideoPlayer(context);
+                final VideoPlayerView videoPlayerView = new VideoPlayerView(verizonNativeViewHolder.videoView.getContext());
                 final FrameLayout.LayoutParams videoParams = new FrameLayout.LayoutParams(FrameLayout
                         .LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
 
-                videoPlayerView.bindPlayer(verizonVideoPlayer);
+                videoPlayerView.bindPlayer(videoPlayer);
                 verizonNativeViewHolder.videoView.addView(videoPlayerView, videoParams);
 
                 final String url = (String) extras.get(VerizonNative.COMP_ID_VIDEO);
 
                 if (url != null) {
                     verizonNativeViewHolder.videoView.setVisibility(View.VISIBLE);
-                    verizonVideoPlayer.load(url);
+                    videoPlayer.load(url);
 
                     VerizonAdapterConfiguration.postOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            verizonVideoPlayer.play();
+
+                            videoPlayer.play();
                         }
                     });
                 } else {

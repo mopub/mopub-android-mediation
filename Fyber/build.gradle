@@ -1,0 +1,10 @@
+project.version = '7.8.2.0'
+project.ext.networkName = 'fyber'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.fyber.vamp:core-sdk:${sdkVersion}"
+    implementation "com.fyber.vamp:video-kit:${sdkVersion}"
+    implementation "com.fyber.vamp:mraid-kit:${sdkVersion}"
+}

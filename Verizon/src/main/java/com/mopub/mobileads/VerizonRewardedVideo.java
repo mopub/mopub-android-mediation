@@ -20,7 +20,6 @@ import com.verizon.ads.CreativeInfo;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.RequestMetadata;
 import com.verizon.ads.VASAds;
-import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.interstitialplacement.InterstitialAd;
 import com.verizon.ads.interstitialplacement.InterstitialAdFactory;
 
@@ -54,7 +53,7 @@ public class VerizonRewardedVideo extends BaseAd {
     private boolean rewarded = false;
 
     @NonNull
-    private VerizonAdapterConfiguration verizonAdapterConfiguration;
+    private final VerizonAdapterConfiguration verizonAdapterConfiguration;
 
     public VerizonRewardedVideo() {
         verizonAdapterConfiguration = new VerizonAdapterConfiguration();
@@ -118,7 +117,7 @@ public class VerizonRewardedVideo extends BaseAd {
         if (!VASAds.isInitialized()) {
             final Application application = launcherActivity.getApplication();
 
-            if (!StandardEdition.initialize(application, siteId)) {
+            if (!VASAds.initialize(application, siteId)) {
                 MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
                         ADAPTER_CONFIGURATION_ERROR.getIntCode(), ADAPTER_CONFIGURATION_ERROR);
                 if (mLoadListener != null) {
