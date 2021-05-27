@@ -12,21 +12,17 @@ import com.inmobi.ads.InMobiNative
 import com.inmobi.ads.exceptions.SdkNotInitializedException
 import com.inmobi.ads.listeners.NativeAdEventListener
 import com.inmobi.ads.listeners.VideoEventListener
-import com.inmobi.sdk.InMobiSdk
 import com.mopub.common.DataKeys
 import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.mobileads.InMobiAdapterConfiguration
 import com.mopub.mobileads.InMobiBanner
-import java.lang.ref.WeakReference
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 class InMobiNative : CustomEventNative() {
 
     private var inMobiStaticNativeAd: InMobiNativeAd? = null
     private var mPlacementId: Long = 0
-    private var mContext: WeakReference<Context>? = null
     private var mNativeListener: CustomEventNativeListener? = null
 
     override fun loadNativeAd(
@@ -35,7 +31,6 @@ class InMobiNative : CustomEventNative() {
         localExtras: Map<String, Any>,
         serverExtras: Map<String, String>
     ) {
-        mContext = WeakReference(context)
         mNativeListener = customEventNativeListener
 
         try {
@@ -52,7 +47,7 @@ class InMobiNative : CustomEventNative() {
             context,
             object : InMobiAdapterConfiguration.InMobiInitCompletionListener {
                 override fun onSuccess() {
-                    loadNative(serverExtras, customEventNativeListener)
+                    loadNative(context, serverExtras, customEventNativeListener)
                 }
 
                 override fun onFailure(error: Throwable) {
@@ -77,11 +72,8 @@ class InMobiNative : CustomEventNative() {
         return mPlacementId.toString() ?: ""
     }
 
-    private fun loadNative(serverExtras: Map<String, String>, customEventNativeListener: CustomEventNativeListener) {
-//        InMobiSdk.updateGDPRConsent(InMobiGDPR.getGDPRConsentDictionary())
-        InMobiSdk.setLogLevel(InMobiSdk.LogLevel.DEBUG)
+    private fun loadNative(context: Context, serverExtras: Map<String, String>, customEventNativeListener: CustomEventNativeListener) {
         inMobiStaticNativeAd = try {
-            val context = mContext?.get()
             if (context == null) {
                 MoPubLog.log(AdapterLogEvent.CUSTOM, TAG, "Context passed to the Adapter is null or might have garbage collected")
                 customEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED)
@@ -110,12 +102,9 @@ class InMobiNative : CustomEventNative() {
             )
             inMobiStaticNativeAd?.loadAd()
         }
-
-        inMobiStaticNativeAd?.let { STATIC_MAP.putIfAbsent(inMobiStaticNativeAd.hashCode(), it) }
     }
 
     private fun handleNativeInitializationFailure() {
-//        InMobiAdapterConfiguration.setInitializationStatus(false)
         mNativeListener?.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR)
     }
 
@@ -146,7 +135,6 @@ class InMobiNative : CustomEventNative() {
                         mCustomEventNativeListener.onNativeAdFailed(errorCode)
                     }
                 })
-                STATIC_MAP.remove(this.hashCode())
             }
 
             override fun onAdLoadFailed(
@@ -198,7 +186,6 @@ class InMobiNative : CustomEventNative() {
                     }
                 }
                 MoPubLog.log(MoPubLog.SdkLogEvent.ERROR, TAG, errorMessage)
-                STATIC_MAP.remove(this.hashCode())
                 destroy()
             }
 
@@ -329,6 +316,5 @@ class InMobiNative : CustomEventNative() {
 
     companion object {
         val TAG: String = com.mopub.nativeads.InMobiNative::class.java.simpleName
-        private val STATIC_MAP = ConcurrentHashMap<Int, InMobiNativeAd>(10, 0.9f, 10)
     }
 }
