@@ -16,7 +16,6 @@ import com.mopub.common.DataKeys
 import com.mopub.common.logging.MoPubLog
 import com.mopub.common.logging.MoPubLog.AdapterLogEvent
 import com.mopub.mobileads.InMobiAdapterConfiguration
-import com.mopub.mobileads.InMobiBanner
 import java.util.*
 
 class InMobiNative : CustomEventNative() {
@@ -24,6 +23,23 @@ class InMobiNative : CustomEventNative() {
     private var inMobiStaticNativeAd: InMobiNativeAd? = null
     private var mPlacementId: Long = 0
     private var mNativeListener: CustomEventNativeListener? = null
+    private lateinit var mContext: Context
+    private lateinit var mServerExtras: Map<String, String>
+
+    companion object {
+        val ADAPTER_NAME: String = com.mopub.nativeads.InMobiNative::class.java.simpleName
+
+        private fun onError(
+            placementId: String,
+            adapterLogEvent: AdapterLogEvent,
+            nativeErrorCode: NativeErrorCode,
+            errorMsg: String,
+            customEventNativeListener: CustomEventNativeListener
+        ) {
+            customEventNativeListener.onNativeAdFailed(nativeErrorCode)
+            MoPubLog.log(placementId, adapterLogEvent, ADAPTER_NAME, nativeErrorCode, errorMsg)
+        }
+    }
 
     override fun loadNativeAd(
         context: Context,
@@ -31,6 +47,8 @@ class InMobiNative : CustomEventNative() {
         localExtras: Map<String, Any>,
         serverExtras: Map<String, String>
     ) {
+        mContext = context
+        mServerExtras = serverExtras
         mNativeListener = customEventNativeListener
 
         try {
@@ -38,7 +56,13 @@ class InMobiNative : CustomEventNative() {
         } catch (placementIdException: InMobiAdapterConfiguration.InMobiPlacementIdException) {
             val errorMsg =
                 "InMobi Native request failed. Placement Id is not available or incorrect. Please make sure you set valid Placement Id on MoPub UI."
-            onError(customEventNativeListener, errorMsg)
+            onError(
+                getAdNetworkId(),
+                AdapterLogEvent.LOAD_FAILED,
+                NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR,
+                errorMsg,
+                customEventNativeListener
+            )
             return
         }
 
@@ -51,38 +75,34 @@ class InMobiNative : CustomEventNative() {
                 }
 
                 override fun onFailure(error: Throwable) {
-                    val msg = "InMobi interstitial request failed due to InMobi initialization failed with an exception."
-                    onError(customEventNativeListener, msg)
+                    val msg = "InMobi Native request failed due to InMobi initialization failed with an exception."
+                    onError(
+                        getAdNetworkId(),
+                        AdapterLogEvent.LOAD_FAILED,
+                        NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR,
+                        msg,
+                        customEventNativeListener
+                    )
                 }
             })
     }
 
-    private fun onError(customEventNativeListener: CustomEventNativeListener, errorMsg: String) {
-        customEventNativeListener.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR)
-        MoPubLog.log(
-            getAdNetworkId(),
-            AdapterLogEvent.LOAD_FAILED,
-            TAG,
-            NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR,
-            errorMsg
-        )
-    }
-
     private fun getAdNetworkId(): String {
-        return mPlacementId.toString() ?: ""
+        return mPlacementId.toString()
     }
 
     private fun loadNative(context: Context, serverExtras: Map<String, String>, customEventNativeListener: CustomEventNativeListener) {
         inMobiStaticNativeAd = try {
-            if (context == null) {
-                MoPubLog.log(AdapterLogEvent.CUSTOM, TAG, "Context passed to the Adapter is null or might have garbage collected")
-                customEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED)
-                return
-            }
             InMobiNativeAd(context, customEventNativeListener, mPlacementId)
         } catch (e: SdkNotInitializedException) {
-            MoPubLog.log(AdapterLogEvent.CUSTOM, TAG, "Error while creating InMobiNative Object. " + e.message)
-            handleNativeInitializationFailure()
+            val msg = "Error while creating InMobiNativeAd Object. ${e.message}"
+            onError(
+                getAdNetworkId(),
+                AdapterLogEvent.CUSTOM,
+                NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR,
+                msg,
+                customEventNativeListener
+            )
             return
         }
         inMobiStaticNativeAd?.setExtras(InMobiAdapterConfiguration.inMobiTPExtras)
@@ -90,22 +110,18 @@ class InMobiNative : CustomEventNative() {
         val adMarkup = serverExtras[DataKeys.ADM_KEY]
         if (adMarkup != null) {
             MoPubLog.log(
-                AdapterLogEvent.CUSTOM, InMobiBanner.ADAPTER_NAME,
-                "Ad markup for InMobi banner ad request is present. Will make Advanced Bidding ad request " +
+                AdapterLogEvent.CUSTOM, ADAPTER_NAME,
+                "Ad markup for InMobi Native ad request is present. Will make Advanced Bidding ad request " +
                         "using markup: " + adMarkup
             )
-            inMobiStaticNativeAd?.loadAd(adMarkup?.toByteArray())
+            inMobiStaticNativeAd?.loadAd(adMarkup.toByteArray())
         } else {
             MoPubLog.log(
-                AdapterLogEvent.CUSTOM, InMobiBanner.ADAPTER_NAME,
-                "Ad markup for InMobi banner ad request is not present. Will make traditional ad request "
+                AdapterLogEvent.CUSTOM, ADAPTER_NAME,
+                "Ad markup for InMobi Native ad request is not present. Will make traditional ad request "
             )
             inMobiStaticNativeAd?.loadAd()
         }
-    }
-
-    private fun handleNativeInitializationFailure() {
-        mNativeListener?.onNativeAdFailed(NativeErrorCode.NATIVE_ADAPTER_CONFIGURATION_ERROR)
     }
 
     class InMobiNativeAd internal constructor(
@@ -142,50 +158,45 @@ class InMobiNative : CustomEventNative() {
                 inMobiAdRequestStatus: InMobiAdRequestStatus
             ) {
                 super.onAdLoadFailed(inMobiNative, inMobiAdRequestStatus)
-                var errorMessage = "Failed to load Native Strand:"
+
+                val errorMessage = "InMobi Native request failed " +
+                        "with message: ${inMobiAdRequestStatus.message} " +
+                        "and status code: ${inMobiAdRequestStatus.statusCode}."
+                val nativeErrorCode: NativeErrorCode
+
                 when (inMobiAdRequestStatus.statusCode) {
                     InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR -> {
-                        errorMessage += "INTERNAL_ERROR"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_STATE)
+                        nativeErrorCode = NativeErrorCode.NETWORK_INVALID_STATE
                     }
                     InMobiAdRequestStatus.StatusCode.REQUEST_INVALID -> {
-                        errorMessage += "INVALID_REQUEST"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_INVALID_REQUEST)
+                        nativeErrorCode = NativeErrorCode.NETWORK_INVALID_REQUEST
                     }
                     InMobiAdRequestStatus.StatusCode.NETWORK_UNREACHABLE -> {
-                        errorMessage += "NETWORK_UNREACHABLE"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.CONNECTION_ERROR)
+                        nativeErrorCode = NativeErrorCode.CONNECTION_ERROR
                     }
                     InMobiAdRequestStatus.StatusCode.NO_FILL -> {
-                        errorMessage += "NO_FILL"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_NO_FILL)
+                        nativeErrorCode = NativeErrorCode.NETWORK_NO_FILL
                     }
                     InMobiAdRequestStatus.StatusCode.REQUEST_PENDING -> {
-                        errorMessage += "REQUEST_PENDING"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED)
+                        nativeErrorCode = NativeErrorCode.UNSPECIFIED
                     }
                     InMobiAdRequestStatus.StatusCode.REQUEST_TIMED_OUT -> {
-                        errorMessage += "REQUEST_TIMED_OUT"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.NETWORK_TIMEOUT)
+                        nativeErrorCode = NativeErrorCode.NETWORK_TIMEOUT
                     }
                     InMobiAdRequestStatus.StatusCode.SERVER_ERROR -> {
-                        errorMessage += "SERVER_ERROR"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.SERVER_ERROR_RESPONSE_CODE)
+                        nativeErrorCode = NativeErrorCode.SERVER_ERROR_RESPONSE_CODE
                     }
                     InMobiAdRequestStatus.StatusCode.AD_ACTIVE -> {
-                        errorMessage += "AD_ACTIVE"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED)
+                        nativeErrorCode = NativeErrorCode.UNSPECIFIED
                     }
                     InMobiAdRequestStatus.StatusCode.EARLY_REFRESH_REQUEST -> {
-                        errorMessage += "EARLY_REFRESH_REQUEST"
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED)
+                        nativeErrorCode = NativeErrorCode.UNSPECIFIED
                     }
                     else -> {
-                        errorMessage = "UNKNOWN_ERROR" + inMobiAdRequestStatus.statusCode
-                        mCustomEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED)
+                        nativeErrorCode = NativeErrorCode.UNSPECIFIED
                     }
                 }
-                MoPubLog.log(MoPubLog.SdkLogEvent.ERROR, TAG, errorMessage)
+                onError(placementId.toString(), AdapterLogEvent.LOAD_FAILED, nativeErrorCode, errorMessage, mCustomEventNativeListener)
                 destroy()
             }
 
@@ -312,9 +323,5 @@ class InMobiNative : CustomEventNative() {
         init {
             mInMobiNative = InMobiNative(mContext, placementId, nativeAdEventListener)
         }
-    }
-
-    companion object {
-        val TAG: String = com.mopub.nativeads.InMobiNative::class.java.simpleName
     }
 }
