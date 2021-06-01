@@ -11,6 +11,7 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.ogury.core.OguryError;
+import com.ogury.ed.OguryAdImpressionListener;
 import com.ogury.ed.OguryOptinVideoAd;
 import com.ogury.ed.OguryOptinVideoAdListener;
 import com.ogury.ed.OguryReward;
@@ -21,7 +22,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOULD_REWARD;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 
-public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListener {
+public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListener, OguryAdImpressionListener {
 
     private static final String ADAPTER_NAME = OguryRewardedVideo.class.getSimpleName();
 
@@ -74,6 +75,7 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
 
         mListenerHelper.setLoadListener(mLoadListener);
         mOptInVideo.setListener(this);
+        mOptInVideo.setAdImpressionListener(this);
         mOptInVideo.load();
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -138,5 +140,14 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
         }
         MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
                 MoPubReward.DEFAULT_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
+    }
+
+    /**
+     * OguryAdImpressionListener implementation
+     */
+
+    @Override
+    public void onAdImpression() {
+        mListenerHelper.onAdImpression();
     }
 }

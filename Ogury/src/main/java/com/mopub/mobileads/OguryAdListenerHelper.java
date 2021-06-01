@@ -82,6 +82,11 @@ public class OguryAdListenerHelper {
         MoPubLog.log(mAdUnitId, SHOW_SUCCESS, mAdapterName);
         if (mInteractionListener != null) {
             mInteractionListener.onAdShown();
+        }
+    }
+
+    public void onAdImpression() {
+        if (mInteractionListener != null) {
             mInteractionListener.onAdImpression();
         }
     }

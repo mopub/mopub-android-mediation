@@ -10,6 +10,7 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.ogury.core.OguryError;
+import com.ogury.ed.OguryAdImpressionListener;
 import com.ogury.ed.OguryInterstitialAd;
 import com.ogury.ed.OguryInterstitialAdListener;
 
@@ -18,7 +19,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_FAILED;
 
-public class OguryInterstitial extends BaseAd implements OguryInterstitialAdListener {
+public class OguryInterstitial extends BaseAd implements OguryInterstitialAdListener, OguryAdImpressionListener {
 
     private static final String ADAPTER_NAME = OguryInterstitial.class.getSimpleName();
 
@@ -71,6 +72,7 @@ public class OguryInterstitial extends BaseAd implements OguryInterstitialAdList
 
         mListenerHelper.setLoadListener(mLoadListener);
         mInterstitial.setListener(this);
+        mInterstitial.setAdImpressionListener(this);
         mInterstitial.load();
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -125,5 +127,14 @@ public class OguryInterstitial extends BaseAd implements OguryInterstitialAdList
     @Override
     public void onAdError(OguryError oguryError) {
         mListenerHelper.onAdError(oguryError);
+    }
+
+    /**
+     * OguryAdImpressionListener implementation
+     */
+
+    @Override
+    public void onAdImpression() {
+        mListenerHelper.onAdImpression();
     }
 }

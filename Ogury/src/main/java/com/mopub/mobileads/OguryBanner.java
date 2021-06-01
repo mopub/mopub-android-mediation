@@ -11,6 +11,7 @@ import com.mopub.common.LifecycleListener;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.ogury.core.OguryError;
+import com.ogury.ed.OguryAdImpressionListener;
 import com.ogury.ed.OguryBannerAdListener;
 import com.ogury.ed.OguryBannerAdSize;
 import com.ogury.ed.OguryBannerAdView;
@@ -19,7 +20,7 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 
-public class OguryBanner extends BaseAd implements OguryBannerAdListener {
+public class OguryBanner extends BaseAd implements OguryBannerAdListener, OguryAdImpressionListener {
 
     private static final String ADAPTER_NAME = OguryBanner.class.getSimpleName();
 
@@ -111,6 +112,7 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
 
         mListenerHelper.setLoadListener(mLoadListener);
         mBanner.setListener(this);
+        mBanner.setAdImpressionListener(this);
         mBanner.loadAd();
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
@@ -159,5 +161,14 @@ public class OguryBanner extends BaseAd implements OguryBannerAdListener {
     @Override
     public void onAdError(OguryError oguryError) {
         mListenerHelper.onAdError(oguryError);
+    }
+
+    /**
+     * OguryAdImpressionListener implementation
+     */
+
+    @Override
+    public void onAdImpression() {
+        mListenerHelper.onAdImpression();
     }
 }
