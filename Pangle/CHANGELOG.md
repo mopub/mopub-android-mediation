@@ -1,5 +1,5 @@
 ## Changelog
-  * 3.6.0.4.1
+  * 3.6.0.4.0
      * This version of the adapters has been certified with Pangle 3.6.0.4 and MoPub SDK 5.17.0.
      * Optimize Pangle Banner rendering size 
   * 3.5.1.1.0
