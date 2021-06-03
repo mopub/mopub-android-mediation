@@ -179,7 +179,7 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
             JSONObject adapterVersionObject = new JSONObject();
             adapterVersionObject.putOpt("name", "adapter_version");
-            adapterVersionObject.putOpt("value", "1.2.0");
+            adapterVersionObject.putOpt("value", "1.3.0");
             adCallSource.put(adapterVersionObject);
         } catch (Throwable exception) {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "AdCallSource encounter parsing error: " + exception.getLocalizedMessage());

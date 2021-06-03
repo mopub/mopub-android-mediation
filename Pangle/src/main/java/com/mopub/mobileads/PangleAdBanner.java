@@ -131,15 +131,17 @@ public class PangleAdBanner extends BaseAd {
     public static int[] getAdSize(AdData adData) {
         int[] adSize = new int[]{0, 0};
 
-        if (adData == null) {
+        if (adData == null || adData.getAdWidth() == null || adData.getAdHeight() == null) {
             adSize = new int[]{600, 500};
             return adSize;
         }
 
+        int expectWidth = adData.getAdWidth();
+        int expectHeight = adData.getAdHeight();
         adSize[0] = adData.getAdWidth();
         adSize[1] = adData.getAdHeight();
 
-        final float dimensionRatio = adSize[0] / adSize[1];
+        final float dimensionRatio = 1.0f * adSize[0] / adSize[1];
 
         if (dimensionRatio == 600f / 500f || dimensionRatio == 640f / 100f) {
             return adSize;
@@ -175,6 +177,16 @@ public class PangleAdBanner extends BaseAd {
 
             adSize[0] = (int) (640f * widthRatio);
             adSize[1] = (int) (100f * widthRatio);
+        }
+
+        //Ensure that the width and height of the ad will not exceed the actual container width and height
+        if (adSize[0] > expectWidth) {
+            adSize[1] = (int) Math.floor(adSize[1] / (1.0f * adSize[0] / expectWidth));
+            adSize[0] = expectWidth;
+        }
+        if (adSize[1] > expectHeight) {
+            adSize[0] = (int) Math.floor(adSize[0] / (1.0f * adSize[1] / expectHeight));
+            adSize[1] = expectHeight;
         }
 
         if (adSize[0] <= 0) {
