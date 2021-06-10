@@ -1,0 +1,18 @@
+project.version = "15.5.21.0"
+project.ext.networkName = 'mintegral'
+
+apply from: '../shared-build.gradle'
+
+dependencies {
+    implementation "com.mbridge.msdk.oversea:videojs:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:mbjscommon:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:playercommon:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:reward:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:videocommon:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:same:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:interstitialvideo:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:mbnative:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:nativeex:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:mbbanner:${sdkVersion}"
+    implementation "com.mbridge.msdk.oversea:mbbid:${sdkVersion}"
+}

@@ -20,7 +20,6 @@ import com.verizon.ads.Configuration;
 import com.verizon.ads.ErrorInfo;
 import com.verizon.ads.Logger;
 import com.verizon.ads.VASAds;
-import com.verizon.ads.edition.StandardEdition;
 import com.verizon.ads.utils.ThreadUtils;
 
 import org.json.JSONException;
@@ -137,7 +136,7 @@ public class VerizonAdapterConfiguration extends BaseAdapterConfiguration {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (context instanceof Application && StandardEdition.initialize((Application) context,
+                if (context instanceof Application && VASAds.initialize((Application) context,
                         finalSiteId)) {
                     listener.onNetworkInitializationFinished(VerizonAdapterConfiguration.class,
                             MoPubErrorCode.ADAPTER_INITIALIZATION_SUCCESS);

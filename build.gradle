@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.3.70'
+    ext.kotlin_version = '1.4.32'
     repositories {
         google()
         jcenter()
@@ -29,10 +29,15 @@ subprojects {
         jcenter()
         // Some network SDKs are found in the following additional repositories:
         maven { url "https://adcolony.bintray.com/AdColony" }
-        maven { url 'https://dl.bintray.com/ironsource-mobile/android-sdk'}
-        maven { url 'https://tapjoy.bintray.com/maven' }
-        maven { url  "https://chartboostmobile.bintray.com/Chartboost" }
+        maven { url 'https://artifact.bytedance.com/repository/pangle' }
+        maven { url 'https://android-sdk.is.com/'}
+        maven { url 'https://sdk.tapjoy.com/' }
         maven { url "https://jitpack.io" }
+        maven { url 'https://maven.ogury.co' }
+        maven { url "https://chartboostmobile.bintray.com/Chartboost" }
+        maven { url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea"}
+        maven { url "https://fyber.bintray.com/marketplace" }
+        maven { url 'https://artifactory.verizonmedia.com/artifactory/maven'}
     }
 
     if (project.name == 'Testing')

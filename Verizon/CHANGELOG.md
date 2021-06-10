@@ -1,4 +1,10 @@
 ## Changelog
+  * 1.13.0.0
+    * This version of the adapters has been certified with Verizon 1.13.0 and MoPub 5.17.0.
+
+  * 1.9.0.1
+    * Fix a bug where a missing native ad component would cause an NPE.
+
   * 1.9.0.0
     * This version of the adapters has been certified with Verizon 1.9.0 and MoPub 5.15.0.
     * Refactor native ad impression tracking logic. No external changes for publishers.

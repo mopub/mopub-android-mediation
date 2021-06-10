@@ -1,4 +1,4 @@
-project.version = '3.6.0.1'
+project.version = '3.7.2.0'
 project.ext.networkName = 'unity'
 
 apply from: '../shared-build.gradle'

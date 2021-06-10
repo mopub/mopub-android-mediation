@@ -51,6 +51,8 @@
             android:name=".qrcode.BarcodeCaptureActivity"
             android:label="Read QR Code" />
 
+        <activity android:name="com.mopub.sdk.ReferenceFullScreenActivity" />
+
         <!-- Google Ads -->
         <!-- Note: This is the sample app ID from Google's documentation -->
         <!-- https://developers.google.com/admob/android/quick-start#update_your_androidmanifestxml -->

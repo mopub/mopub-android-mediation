@@ -1,0 +1,4 @@
+project.version = '1.0.0.1'
+project.ext.networkName = 'reference_network'
+
+apply from: '../shared-build.gradle'
