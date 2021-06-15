@@ -179,7 +179,7 @@ public class PangleAdBanner extends BaseAd {
             adSize[1] = (int) (100f * widthRatio);
         }
 
-        //Ensure that the width and height of the ad will not exceed the actual container width and height
+        // Ensure that the width and height of the ad will not exceed the actual container width and height
         if (adSize[0] > expectWidth) {
             adSize[1] = (int) Math.floor(adSize[1] / (1.0f * adSize[0] / expectWidth));
             adSize[0] = expectWidth;
