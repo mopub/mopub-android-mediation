@@ -393,10 +393,12 @@ public class GooglePlayServicesNative extends CustomEventNative {
                                     // Assuming that the URI provided is an URL.
                                     imageUrls.add(mainImage.getUri().toString());
 
-                                    com.google.android.gms.ads.nativead.NativeAd.Image iconImage =
-                                            nativeAd.getIcon();
-                                    // Assuming that the URI provided is an URL.
-                                    imageUrls.add(iconImage.getUri().toString());
+                                    if (nativeAd.getIcon() != null) {
+                                        com.google.android.gms.ads.nativead.NativeAd.Image iconImage =
+                                                nativeAd.getIcon();
+                                        // Assuming that the URI provided is an URL.
+                                        imageUrls.add(iconImage.getUri().toString());
+                                    }
                                     preCacheImages(context, imageUrls);
                                 }
                             }).withAdListener(new AdListener() {
@@ -548,7 +550,7 @@ public class GooglePlayServicesNative extends CustomEventNative {
 
         /**
          * This method will check whether or not the given ad has all the required assets
-         * (title, text, main image url, icon url and call to action) for it to be correctly
+         * (title, text, main image url and call to action) for it to be correctly
          * mapped to a {@link GooglePlayServicesNativeAd}.
          *
          * @param nativeAd to be checked if it is valid.
@@ -560,7 +562,6 @@ public class GooglePlayServicesNative extends CustomEventNative {
             return (nativeAd.getHeadline() != null && nativeAd.getBody() != null
                     && nativeAd.getImages() != null && nativeAd.getImages().size() > 0
                     && nativeAd.getImages().get(0) != null
-                    && nativeAd.getIcon() != null
                     && nativeAd.getCallToAction() != null);
         }
 
@@ -630,8 +631,10 @@ public class GooglePlayServicesNative extends CustomEventNative {
                     nativeAd.getImages();
             setMainImageUrl(images.get(0).getUri().toString());
 
-            com.google.android.gms.ads.nativead.NativeAd.Image icon = nativeAd.getIcon();
-            setIconImageUrl(icon.getUri().toString());
+            if (nativeAd.getIcon() != null) {
+                com.google.android.gms.ads.nativead.NativeAd.Image icon = nativeAd.getIcon();
+                setIconImageUrl(icon.getUri().toString());
+            }
             setCallToAction(nativeAd.getCallToAction());
             setTitle(nativeAd.getHeadline());
 

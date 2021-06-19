@@ -208,9 +208,11 @@ public class GooglePlayServicesAdRenderer implements MoPubAdRenderer<GooglePlayS
         NativeRendererHelper.addTextView(staticNativeViewHolder.mCallToActionView,
                 staticNativeAd.getCallToAction());
         nativeAdView.setCallToActionView(staticNativeViewHolder.mCallToActionView);
-        NativeImageHelper.loadImageView(staticNativeAd.getIconImageUrl(),
-                staticNativeViewHolder.mIconImageView);
-        nativeAdView.setImageView(staticNativeViewHolder.mIconImageView);
+        if (staticNativeAd.getIconImageUrl() != null) {
+            NativeImageHelper.loadImageView(staticNativeAd.getIconImageUrl(),
+                    staticNativeViewHolder.mIconImageView);
+            nativeAdView.setImageView(staticNativeViewHolder.mIconImageView);
+        }
         if (staticNativeAd.getAdvertiser() != null) {
             NativeRendererHelper.addTextView(
                     staticNativeViewHolder.mAdvertiserTextView, staticNativeAd.getAdvertiser());
