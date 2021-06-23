@@ -12,12 +12,14 @@ import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.snap.adkit.dagger.AdKitApplication;
+import com.snap.adkit.external.AdKitSlotType;
 import com.snap.adkit.external.SnapAdClicked;
 import com.snap.adkit.external.SnapAdDismissed;
 import com.snap.adkit.external.SnapAdEventListener;
 import com.snap.adkit.external.SnapAdImpressionHappened;
 import com.snap.adkit.external.SnapAdKit;
 import com.snap.adkit.external.SnapAdKitEvent;
+import com.snap.adkit.external.SnapAdKitSlot;
 import com.snap.adkit.external.SnapAdLoadFailed;
 import com.snap.adkit.external.SnapAdLoadSucceeded;
 import com.snap.adkit.external.SnapAdRewardEarned;
@@ -86,9 +88,6 @@ public class SnapAdRewardedVideo extends BaseAd {
         }
 
         mSlotId = extras.get(SLOT_ID_KEY);
-        if (!TextUtils.isEmpty(mSlotId)) {
-            snapAdKit.updateSlotId(mSlotId);
-        }
 
         snapAdKit.setupListener(new SnapAdEventListener() {
             @Override
@@ -149,7 +148,7 @@ public class SnapAdRewardedVideo extends BaseAd {
         mSnapAdAdapterConfiguration.setCachedInitializationParameters(context, extras);
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 
-        snapAdKit.loadRewarded();
+        snapAdKit.loadRewarded(mSlotId, null);
     }
 
     @Override
@@ -157,7 +156,7 @@ public class SnapAdRewardedVideo extends BaseAd {
         MoPubLog.log(getAdNetworkId(), SHOW_ATTEMPTED, ADAPTER_NAME);
 
         try {
-            snapAdKit.playAd();
+            snapAdKit.playAd(new SnapAdKitSlot(null, AdKitSlotType.REWARDED));
         } catch (Exception exception) {
             MoPubLog.log(getAdNetworkId(), CUSTOM_WITH_THROWABLE, ADAPTER_NAME, exception);
             MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
