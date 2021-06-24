@@ -109,10 +109,6 @@ public class SnapAdBanner extends BaseAd {
 
         mSlotId = extras.get(SLOT_ID_KEY);
 
-        if (!TextUtils.isEmpty(mSlotId)) {
-            mBannerView.updateSlotId(mSlotId);
-        }
-
         mBannerView.setupListener(new SnapAdEventListener() {
             @Override
             public void onEvent(SnapAdKitEvent snapAdKitEvent, String slotId) {
@@ -161,7 +157,7 @@ public class SnapAdBanner extends BaseAd {
             }
         });
 
-        mBannerView.loadAd();
+        mBannerView.loadAd(mSlotId, null);
     }
 
     private SnapAdSize getAdSize(String adUnitFormat) {
