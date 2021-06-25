@@ -1,4 +1,4 @@
-project.version = '6.10.1.0-early1'
+project.version = '6.10.1.0'
 project.ext.networkName = 'vungle'
 
 apply from: '../shared-build.gradle'
@@ -9,6 +9,6 @@ dependencies {
     if (sdkSrcDependency) {
         implementation project(':vungle-android-sdk:publisher-sdk-android')
     } else {
-        implementation 'com.github.Vungle:vungle-android-sdk:6.10.1-early1-RC3'
+        implementation 'com.github.vungle:vungle-android-sdk:6.10.1-GA-RC1'
     }
 }
