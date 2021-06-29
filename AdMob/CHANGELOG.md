@@ -1,4 +1,7 @@
 ## Changelog
+  * 20.2.0.1
+    * Make native ad icon optional.
+
   * 20.2.0.0
     * This version of the adapters has been certified with AdMob 20.2.0 and MoPub 5.17.0.
 
