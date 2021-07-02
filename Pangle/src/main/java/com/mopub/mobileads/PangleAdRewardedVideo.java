@@ -269,7 +269,7 @@ public class PangleAdRewardedVideo extends BaseAd {
         }
 
         @Override
-        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName, int errorCode, String errorMsg) {
             if (!TextUtils.isEmpty(rewardName)) {
                 MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVerify(): "
                         + rewardVerify + ", rewardAmount = " + rewardAmount +
@@ -281,6 +281,9 @@ public class PangleAdRewardedVideo extends BaseAd {
                     mInteractionListener.onAdComplete(MoPubReward.success(rewardName, rewardAmount));
                 }
             } else {
+                MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onRewardVerify(): "
+                        + rewardVerify + ", errorCode = " + errorCode +
+                        ", errorMsg = " + errorMsg);
                 MoPubLog.log(getAdNetworkId(), SHOULD_REWARD, ADAPTER_NAME,
                         MoPubReward.DEFAULT_REWARD_AMOUNT, MoPubReward.NO_REWARD_LABEL);
 

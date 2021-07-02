@@ -1,4 +1,7 @@
 ## Changelog
+  * 3.7.1.2.1
+     * Adapt to the new interface changes: onRewardVerify
+
   * 3.6.0.4.1
      * Optimize banner size mapping.
 
@@ -6,7 +9,7 @@
      * This version of the adapters has been certified with Pangle 3.6.0.4 and MoPub SDK 5.17.0.
 
   * 3.5.1.1.0
-     * This version of the adapters has been certified with Pangle 3.5.1.1 and MoPub SDK 5.17.0.
+     * This version of the adapters has been certifi`ed with Pangle 3.5.1.1 and MoPub SDK 5.17.0.
 
   * 3.5.1.0.0
      * This version of the adapters has been certified with Pangle 3.5.1.0 and MoPub SDK 5.16.4.
