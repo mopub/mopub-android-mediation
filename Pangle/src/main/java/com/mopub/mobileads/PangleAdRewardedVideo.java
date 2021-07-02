@@ -134,7 +134,6 @@ public class PangleAdRewardedVideo extends BaseAd {
 
         final AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(getAdNetworkId())
-                .setSupportDeepLink(true)
                 .setImageAcceptedSize(1080, 1920)
                 .setRewardName(PangleAdapterConfiguration.getRewardName())
                 .setRewardAmount(PangleAdapterConfiguration.getRewardAmount())

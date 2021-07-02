@@ -102,7 +102,6 @@ public class PangleAdBanner extends BaseAd {
 
         final AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
-                .setSupportDeepLink(true)
                 .isExpressAd(true)
                 .setExpressViewAcceptedSize(mBannerWidth, mBannerHeight)
                 .withBid(adm);

@@ -49,10 +49,6 @@ public class PangleAdRenderer implements MoPubAdRenderer<PangleAdNative.PangleNa
             pangleAdNativeViewHolder.mTitleView.setText(ad.getTitle());
         }
 
-        if (!TextUtils.isEmpty(ad.getAdvertiserName()) && pangleAdNativeViewHolder.mAdvertiserNameView != null) {
-            pangleAdNativeViewHolder.mAdvertiserNameView.setText(ad.getAdvertiserName());
-        }
-
         if (!TextUtils.isEmpty(ad.getDescriptionText()) && pangleAdNativeViewHolder.mDescription != null) {
             pangleAdNativeViewHolder.mDescription.setText(ad.getDescriptionText());
         }

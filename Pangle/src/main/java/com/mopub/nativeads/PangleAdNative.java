@@ -96,7 +96,6 @@ public class PangleAdNative extends CustomEventNative {
             final TTAdNative adNative = adManager.createAdNative(mContext);
             final AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(mPlacementId)
-                    .setSupportDeepLink(true)
                     .setImageAcceptedSize(mediaViewWidth, mediaViewHeight)
                     .withBid(adm)
                     .build();
@@ -198,14 +197,6 @@ public class PangleAdNative extends CustomEventNative {
             notifyAdImpressed();
         }
 
-
-        public final String getAdvertiserName() {
-            if (mTTFeedAd != null) {
-                return mTTFeedAd.getSource();
-            }
-            return null;
-        }
-
         public final String getTitle() {
             if (mTTFeedAd != null) {
                 return mTTFeedAd.getTitle();
@@ -261,46 +252,11 @@ public class PangleAdNative extends CustomEventNative {
             return null;
         }
 
-        public int getAppScore() {
-            if (mTTFeedAd != null) {
-                return mTTFeedAd.getAppScore();
-            }
-            return -1;
-        }
-
-        public int getAppCommentNum() {
-            if (mTTFeedAd != null) {
-                return mTTFeedAd.getAppCommentNum();
-            }
-            return -1;
-        }
-
-        public int getAppSize() {
-            if (mTTFeedAd != null) {
-                return mTTFeedAd.getAppSize();
-            }
-            return -1;
-        }
-
-        public int getInteractionType() {
-            if (mTTFeedAd != null) {
-                return mTTFeedAd.getInteractionType();
-            }
-            return -1;
-        }
-
         public int getImageMode() {
             if (mTTFeedAd != null) {
                 return mTTFeedAd.getImageMode();
             }
             return -1;
-        }
-
-        public List<FilterWord> getFilterWords() {
-            if (mTTFeedAd != null) {
-                return mTTFeedAd.getFilterWords();
-            }
-            return null;
         }
 
         public View getAdView() {

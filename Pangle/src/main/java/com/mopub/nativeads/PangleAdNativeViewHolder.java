@@ -21,8 +21,6 @@ public class PangleAdNativeViewHolder {
     @Nullable
     public ImageView mIcon;
     @Nullable
-    public TextView mAdvertiserNameView;
-    @Nullable
     public TextView mCallToActionView;
     @Nullable
     public ImageView mLogoView;
@@ -46,7 +44,6 @@ public class PangleAdNativeViewHolder {
             adViewHolder.mTitleView = view.findViewById(pangleAdViewBinder.mTitleId);
             adViewHolder.mDescription = view.findViewById(pangleAdViewBinder.mDescriptionTextId);
             adViewHolder.mCallToActionView = view.findViewById(pangleAdViewBinder.mCallToActionId);
-            adViewHolder.mAdvertiserNameView = view.findViewById(pangleAdViewBinder.mSourceId);
             adViewHolder.mIcon = view.findViewById(pangleAdViewBinder.mIconImageId);
             adViewHolder.mLogoView = view.findViewById(pangleAdViewBinder.mLogoViewId);
             adViewHolder.mMediaView = view.findViewById(pangleAdViewBinder.mMediaViewId);

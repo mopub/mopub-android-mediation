@@ -88,8 +88,7 @@ public class PangleAdInterstitial extends BaseAd {
 
         final AdSlot.Builder adSlotBuilder = new AdSlot.Builder()
                 .setCodeId(mPlacementId)
-                .withBid(adm)
-                .setSupportDeepLink(true);
+                .withBid(adm);
 
         MoPubLog.log(getAdNetworkId(), LOAD_ATTEMPTED, ADAPTER_NAME);
 

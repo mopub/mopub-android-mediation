@@ -154,8 +154,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
             TTAdSdk.init(context, new TTAdConfig.Builder()
                     .appId(appId)
                     .useTextureView(hasWakeLockPermission)
-                    .appName(MOPUB_NETWORK_NAME)
-                    .allowShowPageWhenScreenLock(sIsAllowAdShowInLockScreen)
                     /* Allow or deny permission to display the landing page ad in the lock screen */
                     .debug(MoPubLog.getLogLevel() == MoPubLog.LogLevel.DEBUG)
                     .supportMultiProcess(sIsSupportMultiProcess)
