@@ -1,10 +1,11 @@
 ## Changelog
-  * 6.10.1.0-early1
+  * 6.10.1.0
     * This version of the adapters has been certified with Vungle 6.10.1 and MoPub SDK 5.17.0.
     * Header bidding changes in adapter to pass the `AdMarkup` to Vungle SDK
     * Improved error mappings
     * Transitioning from VungleNativeAd to VungleBanner - new APIs, MRECs/Banners now have 
     `BannerAdConfig` for configuration
+    * `getAvailableBidTokens()` API replaced with `getAvailableBidTokensBySize()`.
    
   * 6.9.1.0
     * This version of the adapters has been certified with Vungle 6.9.1 and MoPub SDK 5.15.0.
