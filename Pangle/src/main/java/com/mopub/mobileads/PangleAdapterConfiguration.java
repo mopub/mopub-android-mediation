@@ -52,11 +52,9 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
      * Key for publisher to set on to initialize Pangle SDK. (Optional)
      */
     public static final String SUPPORT_MULTIPROCESS_EXTRA_KEY = "support_multiprocess";
-    public static final String ALLOW_AD_IN_LOCK_SCREEN_EXTRA_KEY = "allow_lock_screen";
 
     private static boolean sIsSDKInitialized;
     private static boolean sIsSupportMultiProcess;
-    private static boolean sIsAllowAdShowInLockScreen;
 
     private static String mRewardName;
     private static int mRewardAmount;
@@ -107,8 +105,6 @@ public class PangleAdapterConfiguration extends BaseAdapterConfiguration {
 
                     sIsSupportMultiProcess = configuration.get(SUPPORT_MULTIPROCESS_EXTRA_KEY) != null ?
                             Boolean.valueOf(configuration.get(SUPPORT_MULTIPROCESS_EXTRA_KEY)) : false;
-                    sIsAllowAdShowInLockScreen = configuration.get(ALLOW_AD_IN_LOCK_SCREEN_EXTRA_KEY) != null ?
-                            Boolean.valueOf(configuration.get(ALLOW_AD_IN_LOCK_SCREEN_EXTRA_KEY)) : false;
 
                     pangleSdkInit(context, appId);
                     networkInitializationSucceeded = true;

@@ -263,7 +263,7 @@ public class PangleAdRewardedVideo extends BaseAd {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onVideoError.");
 
             if (mInteractionListener != null) {
-                mInteractionListener.onAdFailed(MoPubErrorCode.VIDEO_PLAYBACK_ERROR);
+                mInteractionListener.onAdFailed(MoPubErrorCode.AD_SHOW_ERROR);
             }
         }
 
