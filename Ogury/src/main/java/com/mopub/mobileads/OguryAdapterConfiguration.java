@@ -21,6 +21,8 @@ import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM_WITH_THROWABLE;
 
 public class OguryAdapterConfiguration extends BaseAdapterConfiguration {
+    public static final String CHOICE_MANAGER_CONSENT_ORIGIN = "MOPUB";
+
     private static final String ADAPTER_NAME = OguryAdapterConfiguration.class.getSimpleName();
     private static final String ADAPTER_VERSION = BuildConfig.VERSION_NAME;
     private static final String MOPUB_NETWORK_NAME = BuildConfig.NETWORK_NAME;
