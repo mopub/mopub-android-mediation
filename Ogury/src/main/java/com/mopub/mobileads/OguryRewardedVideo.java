@@ -8,9 +8,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.LifecycleListener;
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.ogury.cm.OguryChoiceManagerExternal;
 import com.ogury.core.OguryError;
 import com.ogury.ed.OguryAdImpressionListener;
 import com.ogury.ed.OguryOptinVideoAd;
@@ -63,6 +65,11 @@ public class OguryRewardedVideo extends BaseAd implements OguryOptinVideoAdListe
     protected void load(@NonNull Context context, @NonNull AdData adData) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(adData);
+
+        if (OguryAdapterConfiguration.initialized()) {
+            OguryChoiceManagerExternal.setConsent(MoPub.canCollectPersonalInformation(),
+                    OguryAdapterConfiguration.CHOICE_MANAGER_CONSENT_ORIGIN);
+        }
 
         setAutomaticImpressionAndClickTracking(false);
 
