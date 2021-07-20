@@ -13,12 +13,14 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mopub.common.DataKeys;
 import com.mopub.common.LifecycleListener;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Views;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.AdConfig.AdSize;
-import com.vungle.warren.VungleNativeAd;
+import com.vungle.warren.BannerAdConfig;
+import com.vungle.warren.error.VungleException;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,7 +37,6 @@ import static com.vungle.warren.AdConfig.AdSize.BANNER;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_LEADERBOARD;
 import static com.vungle.warren.AdConfig.AdSize.BANNER_SHORT;
 import static com.vungle.warren.AdConfig.AdSize.VUNGLE_MREC;
-import static java.lang.Math.ceil;
 
 @Keep
 public class VungleBanner extends BaseAd {
@@ -55,13 +56,15 @@ public class VungleBanner extends BaseAd {
     private VungleBannerRouterListener mVungleRouterListener;
     private boolean mIsPlaying;
     private com.vungle.warren.VungleBanner mVungleBannerAd;
-    private VungleNativeAd mVungleMrecAd;
     private Context mContext;
     @NonNull
-    private VungleAdapterConfiguration mVungleAdapterConfiguration;
-    private AtomicBoolean mPendingRequestBanner = new AtomicBoolean(false);
-    private AdConfig mAdConfig = new AdConfig();
-    @Nullable private View mAdView;
+    private final VungleAdapterConfiguration mVungleAdapterConfiguration;
+    private final AtomicBoolean mPendingRequestBanner = new AtomicBoolean(false);
+    private final AdConfig mAdConfig = new AdConfig();
+    @Nullable
+    private View mAdView;
+    @Nullable
+    private String mAdMarkup;
 
     public VungleBanner() {
         mHandler = new Handler(Looper.getMainLooper());
@@ -120,29 +123,17 @@ public class VungleBanner extends BaseAd {
         }
 
         mAdConfig.setAdSize(vungleAdSize);
-        sVungleRouter.addRouterListener(mPlacementId, mVungleRouterListener);
 
-        VungleMediationConfiguration.adConfigWithExtras(mAdConfig, extras);
-        if (VungleMediationConfiguration.isStartMutedNotConfigured(extras)) {
-            mAdConfig.setMuted(true); // start muted by default
+        VungleMediationConfiguration.adConfigWithExtras(mAdConfig, extras, true);
+
+        mAdMarkup = extras.get(DataKeys.ADM_KEY);
+        if (TextUtils.isEmpty(mAdMarkup)) {
+            mAdMarkup = null;
         }
 
         if (AdSize.isBannerAdSize(vungleAdSize)) {
-            if (sVungleRouter.isBannerAdPlayable(mPlacementId, vungleAdSize)) {
-                mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
-                MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
-            } else {
-                sVungleRouter.loadBannerAd(mPlacementId, vungleAdSize, mVungleRouterListener);
-                MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
-            }
-        } else if (VUNGLE_MREC == vungleAdSize) {
-            if (sVungleRouter.isAdPlayableForPlacement(mPlacementId)) {
-                mVungleRouterListener.onAdAvailabilityUpdate(mPlacementId, true);
-                MoPubLog.log(mPlacementId, LOAD_SUCCESS, ADAPTER_NAME);
-            } else {
-                sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
-                MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
-            }
+            sVungleRouter.loadBannerAd(mPlacementId, mAdMarkup, vungleAdSize, mVungleRouterListener);
+            MoPubLog.log(mPlacementId, LOAD_ATTEMPTED, ADAPTER_NAME);
         } else {
             mHandler.post(new Runnable() {
                 @Override
@@ -157,10 +148,10 @@ public class VungleBanner extends BaseAd {
         }
     }
 
-    private AdConfig.AdSize getVungleAdSize(@NonNull final AdData adData) {
-        final Map<String, String> extras =  adData.getExtras();
+    private AdSize getVungleAdSize(@NonNull final AdData adData) {
+        final Map<String, String> extras = adData.getExtras();
 
-        AdConfig.AdSize adSizeType = null;
+        AdSize adSizeType = null;
         int adWidthInDp = adData.getAdWidth() != null ? adData.getAdWidth() : 0;
         int adHeightInDp = adData.getAdHeight() != null ? adData.getAdHeight() : 0;
 
@@ -203,10 +194,6 @@ public class VungleBanner extends BaseAd {
             Views.removeFromParent(mVungleBannerAd);
             mVungleBannerAd.destroyAd();
             mVungleBannerAd = null;
-        } else if (mVungleMrecAd != null) {
-            Views.removeFromParent(mVungleMrecAd.renderNativeView());
-            mVungleMrecAd.finishDisplayingAd();
-            mVungleMrecAd = null;
         }
 
         if (sVungleRouter != null) {
@@ -214,6 +201,7 @@ public class VungleBanner extends BaseAd {
         }
 
         mVungleRouterListener = null;
+        mAdMarkup = null;
     }
 
     @Nullable
@@ -321,10 +309,8 @@ public class VungleBanner extends BaseAd {
             if (mPlacementId.equals(placementReferenceId)) {
                 mIsPlaying = true;
                 //Let's load it again to mimic auto-cache
-                if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-                    sVungleRouter.loadBannerAd(mPlacementId, mAdConfig.getAdSize(), mVungleRouterListener);
-                } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
-                    sVungleRouter.loadAdForPlacement(mPlacementId, mVungleRouterListener);
+                if (AdSize.isBannerAdSize(mAdConfig.getAdSize()) && mAdMarkup == null) {
+                    sVungleRouter.loadBannerAd(mPlacementId, null, mAdConfig.getAdSize(), mVungleRouterListener);
                 }
             }
         }
@@ -348,136 +334,110 @@ public class VungleBanner extends BaseAd {
         }
 
         @Override
-        public void onUnableToPlayAd(@NonNull String placementReferenceId, String reason) {
+        public void onAdPlayError(@NonNull String placementId, VungleException exception) {
             MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onUnableToPlayAd - Placement ID: " +
-                    placementReferenceId + ", reason: " + reason);
-            if (mPlacementId.equals(placementReferenceId)) {
+                    placementId + ", reason: " + exception.getLocalizedMessage());
+            if (mPlacementId.equals(placementId)) {
+
                 mIsPlaying = false;
+                final MoPubErrorCode errorCode = VungleRouter.mapErrorCode(exception.getExceptionCode());
+
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (mInteractionListener == null && mLoadListener != null) {
-                            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                                    MoPubErrorCode.NETWORK_NO_FILL);
-                        } else if (mInteractionListener != null) {
-                            mInteractionListener.onAdFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                            MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME,
-                                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                                    MoPubErrorCode.NETWORK_NO_FILL);
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onAdFailed(errorCode);
                         }
+
+                        MoPubLog.log(getAdNetworkId(), SHOW_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
                     }
                 });
             }
         }
 
         @Override
-        public void onAdAvailabilityUpdate(@NonNull final String placementReferenceId, boolean isAdAvailable) {
-            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdAvailabilityUpdate placement id" +
-                    placementReferenceId + " isAdAvailable " + isAdAvailable);
-            if (mPlacementId.equals(placementReferenceId)) {
+        public void onAdLoadError(@NonNull String placementId, VungleException exception) {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdLoadError placement id: " + placementId);
+            if (mPlacementId.equals(placementId)) {
                 if (!mIsPlaying) {
-                    if (isAdAvailable) {
-                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
-                                "banner ad successfully loaded - Placement ID: " + placementReferenceId);
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!mPendingRequestBanner.getAndSet(false)) {
-                                    return;
-                                }
-
-                                final RelativeLayout layout = new RelativeLayout(mContext) {
-                                    @Override
-                                    protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
-                                        super.onVisibilityChanged(changedView, visibility);
-                                        if (mVungleBannerAd != null) {
-                                            mVungleBannerAd.setAdVisibility(visibility == VISIBLE);
-                                        } else if (mVungleMrecAd != null) {
-                                            mVungleMrecAd.setAdVisibility(visibility == VISIBLE);
-                                        }
-                                    }
-                                };
-
-                                //Fix for Unity Player that can't render a view with a state changed from INVISIBLE to VISIBLE.
-                                //TODO: Remove once it's fixed in MoPub Unity plugin.
-                                layout.setBackgroundColor(Color.TRANSPARENT);
-                                boolean loadSucceeded = false;
-								
-                                if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
-                                    mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementReferenceId,
-                                            mAdConfig.getAdSize());
-                                    if (mVungleBannerAd != null) {
-                                        loadSucceeded = true;
-                                        layout.addView(mVungleBannerAd);
-                                    }
-                                } else if (VUNGLE_MREC == mAdConfig.getAdSize()) {
-                                    mVungleMrecAd = sVungleRouter.getVungleMrecAd(placementReferenceId, mAdConfig);
-                                    if (mVungleMrecAd != null) {
-                                        View adView = mVungleMrecAd.renderNativeView();
-                                        if (adView != null) {
-                                            loadSucceeded = true;
-                                            float density = 0;
-
-                                            if (mContext.getResources() != null) {
-                                                if (mContext.getResources().getDisplayMetrics() != null) {
-                                                    density = mContext.getResources().getDisplayMetrics().density;
-                                                }
-                                            }
-                                            int width = (int) ceil(VUNGLE_MREC.getWidth() * density);
-                                            int height = (int) ceil(VUNGLE_MREC.getHeight() * density);
-
-                                            RelativeLayout mrecViewWrapper = new RelativeLayout(mContext);
-                                            mrecViewWrapper.addView(adView);
-                                            RelativeLayout.LayoutParams params =
-                                                    new RelativeLayout.LayoutParams(width, height);
-                                            params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-
-                                            layout.addView(mrecViewWrapper, params);
-                                        }
-                                    }
-                                }
-
-                                if (loadSucceeded) {
-                                    mAdView = layout;
-                                    if (mLoadListener != null) {
-                                        mLoadListener.onAdLoaded();
-                                    }
-                                    MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
-
-                                } else {
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (mLoadListener != null) {
-                                                mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                                            }
-                                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                                                    MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                                                    MoPubErrorCode.NETWORK_NO_FILL);
-                                        }
-                                    });
-                                }
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                            "banner ad is not loaded - Placement ID: " + placementId);
+                    final MoPubErrorCode errorCode = VungleRouter.mapErrorCode(exception.getExceptionCode());
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mLoadListener != null) {
+                                mLoadListener.onAdLoadFailed(errorCode);
                             }
-                        });
-                    } else {
-                        MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
-                                "banner ad is not loaded - Placement ID: " + placementReferenceId);
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (mLoadListener != null) {
-                                    mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
-                                }
-                                MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
-                                        MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
-                                        MoPubErrorCode.NETWORK_NO_FILL);
-                            }
-                        });
-                    }
+                            MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+                        }
+                    });
                 }
             }
         }
+
+        @Override
+        public void onAdLoaded(@NonNull final String placementId) {
+            MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME, "onAdLoaded placement id: " + placementId);
+            if (mPlacementId.equals(placementId)) {
+                if (!mIsPlaying) {
+                    MoPubLog.log(getAdNetworkId(), CUSTOM, ADAPTER_NAME,
+                            "banner ad successfully loaded - Placement ID: " + placementId);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!mPendingRequestBanner.getAndSet(false)) {
+                                return;
+                            }
+
+                            final RelativeLayout layout = new RelativeLayout(mContext) {
+                                @Override
+                                protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
+                                    super.onVisibilityChanged(changedView, visibility);
+                                    if (mVungleBannerAd != null) {
+                                        mVungleBannerAd.setAdVisibility(visibility == VISIBLE);
+                                    }
+                                }
+                            };
+
+                            //Fix for Unity Player that can't render a view with a state changed from INVISIBLE to VISIBLE.
+                            //TODO: Remove once it's fixed in MoPub Unity plugin.
+                            layout.setBackgroundColor(Color.TRANSPARENT);
+                            boolean loadSucceeded = false;
+
+                            if (AdSize.isBannerAdSize(mAdConfig.getAdSize())) {
+                                mVungleBannerAd = sVungleRouter.getVungleBannerAd(placementId,
+                                        mAdMarkup, new BannerAdConfig(mAdConfig));
+                                if (mVungleBannerAd != null) {
+                                    loadSucceeded = true;
+                                    layout.addView(mVungleBannerAd);
+                                }
+                            }
+                            if (loadSucceeded) {
+                                mAdView = layout;
+                                if (mLoadListener != null) {
+                                    mLoadListener.onAdLoaded();
+                                }
+                                MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
+
+                            } else {
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mLoadListener != null) {
+                                            mLoadListener.onAdLoadFailed(MoPubErrorCode.NETWORK_NO_FILL);
+                                        }
+                                        MoPubLog.log(getAdNetworkId(), LOAD_FAILED, ADAPTER_NAME,
+                                                MoPubErrorCode.NETWORK_NO_FILL.getIntCode(),
+                                                MoPubErrorCode.NETWORK_NO_FILL);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
     }
 }

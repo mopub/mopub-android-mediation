@@ -1,8 +1,19 @@
 ## Changelog
+  * 6.10.1.0-early1
+    * This version of the adapters has been certified with Vungle 6.10.1 and MoPub SDK 5.17.0.
+    * Header bidding changes in adapter to pass the `AdMarkup` to Vungle SDK
+    * Improved error mappings
+    * Transitioning from VungleNativeAd to VungleBanner - new APIs, MRECs/Banners now have 
+    `BannerAdConfig` for configuration
+   
   * 6.9.1.0
     * This version of the adapters has been certified with Vungle 6.9.1 and MoPub SDK 5.15.0.
     * Pass the context to Vungle's `getAvailableBidTokens()` API.
     * Introduce `onAdViewed` callback to track impression.
+
+  * 6.9.0.0
+    * This version of the adapters has been certified with Vungle 6.9.0 and MoPub SDK 5.14.0.
+    * New callback `onAdViewed` is now used and mapped for MoPub's `onAdImpression`.
 
   * 6.8.1.2
     * Fix a bug where the rewarded video adapter fails to request a new ad after a show-related error happens.

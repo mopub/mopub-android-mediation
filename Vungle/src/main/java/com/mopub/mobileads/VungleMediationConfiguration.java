@@ -70,16 +70,13 @@ public class VungleMediationConfiguration implements MediationSettings {
     }
 
     static void adConfigWithExtras(@NonNull final AdConfig adConfig,
-                                   @NonNull final Map<String, String> extras) {
+                                   @NonNull final Map<String, String> extras,
+                                   boolean defaultMuteState) {
+        adConfig.setMuted(defaultMuteState);
 
         if (extras.containsKey(Builder.EXTRA_START_MUTED_KEY)) {
             final String isStartMuted = extras.get(Builder.EXTRA_START_MUTED_KEY);
             adConfig.setMuted(Boolean.parseBoolean(isStartMuted));
-        } else if (extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY)) {
-            final String isSoundEnabled = extras.get(Builder.EXTRA_SOUND_ENABLED_KEY);
-            if (!TextUtils.isEmpty(isSoundEnabled)) {
-                adConfig.setMuted(!Boolean.parseBoolean(isSoundEnabled));
-            }
         }
 
         final String ordinalViewCount = extras.get(Builder.EXTRA_ORDINAL_VIEW_COUNT_KEY);
@@ -109,16 +106,10 @@ public class VungleMediationConfiguration implements MediationSettings {
         }
     }
 
-    static boolean isStartMutedNotConfigured(@NonNull final Map<String, String> extras) {
-        return !extras.containsKey(Builder.EXTRA_START_MUTED_KEY) &&
-                !extras.containsKey(Builder.EXTRA_SOUND_ENABLED_KEY);
-    }
-
     public static class Builder {
         private static final String EXTRA_START_MUTED_KEY = "startMuted";
-        private static final String EXTRA_SOUND_ENABLED_KEY = VungleInterstitial.SOUND_ENABLED_KEY;
-        private static final String EXTRA_ORDINAL_VIEW_COUNT_KEY = VungleInterstitial.ORDINAL_VIEW_COUNT_KEY;
-        private static final String EXTRA_ORIENTATION_KEY = VungleInterstitial.AD_ORIENTATION_KEY;
+        private static final String EXTRA_ORDINAL_VIEW_COUNT_KEY = "vungleOrdinalViewCount";
+        private static final String EXTRA_ORIENTATION_KEY = "vungleAdOrientation";
 
         @Nullable
         private String mUserId;
@@ -159,11 +150,6 @@ public class VungleMediationConfiguration implements MediationSettings {
         public Builder withCancelDialogKeepWatchingButton(@NonNull final String buttonText) {
             this.mKeepWatchingButtonText = buttonText;
             return this;
-        }
-
-        @Deprecated
-        public Builder withSoundEnabled(boolean isSoundEnabled) {
-            return withStartMuted(!isSoundEnabled);
         }
 
         public Builder withStartMuted(boolean isStartMuted) {
